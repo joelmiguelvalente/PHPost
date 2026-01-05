@@ -1,3 +1,4 @@
+
 /* Box login */
 function open_login_box(action){
 	if($('#login_box').css('display') == 'block' && action!='open')
@@ -11,9 +12,9 @@ function close_login_box(){
 
 function ir_a_categoria(cat){
 	if(cat!='root' && cat!='linea')
-		if(cat==-1) document.location.href= global_data.url + '/';
-        else if(cat==-2) document.location.href= global_data.url + '/posts/';
-		else document.location.href= global_data.url + '/posts/' + cat + '/';
+		if(cat==-1) document.location.href= route.url + '/';
+        else if(cat==-2) document.location.href= route.url + '/posts/';
+		else document.location.href= route.url + '/posts/' + cat + '/';
 }
 
 /* Editor */
@@ -78,7 +79,7 @@ function registro_load_form(data){
    $('#loading').fadeIn(250);
 	$.ajax({
 		type: 'POST',
-		url: global_data.url + '/registro-form.php?ts=false',
+		url: route.url + '/registro-form.php?ts=false',
 		data: data,
 		success: function(h){
 			switch(h.charAt(0)){
@@ -116,7 +117,7 @@ function bloquear(user, bloqueado, lugar, aceptar){
    $('#loading').fadeIn(250);
 	$.ajax({
 		type: 'POST',
-		url: global_data.url + '/bloqueos-cambiar.php',
+		url: route.url + '/bloqueos-cambiar.php',
 		data: 'user='+user+(bloqueado ? '&bloquear=1' : '')+gget('key'),
 		success: function(h){
 			mydialog.alert('Bloquear Usuarios', h.substring(3));
@@ -273,7 +274,7 @@ var notifica = {
 		$(obj).addClass('spinner');
         $('#loading').fadeIn(250);
 		$.ajax({
-			url: global_data.url + '/notificaciones-ajax.php', 
+			url: route.url + '/notificaciones-ajax.php', 
 			type: 'post', 
 			data: param.join('&') + gget('key'),
 			success: function (r) {
@@ -353,7 +354,7 @@ var notifica = {
 	},
 	filter: function (x, obj) {
 		$.ajax({
-			url: global_data.url + '/notificaciones-filtro.php', 
+			url: route.url + '/notificaciones-filtro.php', 
 			type: 'post', 
 			data: 'fid=' + x
 		});
@@ -463,7 +464,7 @@ var mensaje = {
             var cid = id.split(':');
             $('#mp_' + cid[0]).remove();
          } else if(type == 2) {
-             location.href = global_data.url + '/mensajes/';
+             location.href = route.url + '/mensajes/';
          }
       });
    },
@@ -483,7 +484,7 @@ var mensaje = {
             $(obj).parent().find('a').hide();
             $(obj).parent().find('.' + show).show();
          } else {
-            location.href = global_data.url + '/mensajes/';
+            location.href = route.url + '/mensajes/';
          }
       });
    },
@@ -492,7 +493,7 @@ var mensaje = {
       $('#loading').fadeIn(250);
       $.ajax({
    		type: 'POST',
-   		url: global_data.url + '/mensajes-' + action + '.php',
+   		url: route.url + '/mensajes-' + action + '.php',
    		data: params,
    		success: function(h){
             fn(h);
@@ -610,7 +611,7 @@ var denuncia = {
       // PLANTILLA
       var params = ['obj_id=' + obj_id, 'obj_title=' + obj_title, 'obj_user=' + obj_user].join('&')
 		$('#loading').fadeIn(250); 
-      $.post(global_data.url + '/denuncia-' + type + '.php', params, h => {
+      $.post(route.url + '/denuncia-' + type + '.php', params, h => {
          denuncia.set_dialog(h, obj_id, type);
          $('#loading').fadeOut(350);
 		});
@@ -633,7 +634,7 @@ var denuncia = {
       ].join('&');
       //
       $('#loading').fadeIn(250);                         
-		$.post(global_data.url + '/denuncia-' + type + '.php', params, h => {
+		$.post(route.url + '/denuncia-' + type + '.php', params, h => {
          mydialog.alert((h.charAt(0) === '0' ? "Error" : "Bien"),'<div class="emptyData">' + h.substring(3) +  '</div>');
          $('#loading').fadeOut(350);
 		});
@@ -669,7 +670,7 @@ function remind_resend(gew, type) {
 		mydialog.center();
 	} else {
 		page = type === 'password' ? 'pass' : 'validation'
-		$.post(global_data.url + '/recover-'+page+'.php', 'r_email=' + $('#r_email').val(), 
+		$.post(route.url + '/recover-'+page+'.php', 'r_email=' + $('#r_email').val(), 
 			a => mydialog.alert((a.charAt(0) == '0' ? 'Opps!' : 'Hecho'), a.substring(3), false)
 		);
 		mydialog.center();
@@ -752,7 +753,7 @@ var afiliado = {
         $('#loading').fadeIn(250); 
     	$.ajax({
     		type: 'POST',
-    		url: global_data.url + '/afiliado-nuevo.php',
+    		url: route.url + '/afiliado-nuevo.php',
     		data: params,
     		success: function(h){
     		  mydialog.procesando_fin();
@@ -779,7 +780,7 @@ var afiliado = {
         $('#loading').fadeIn(250); 
     	$.ajax({
     		type: 'POST',
-    		url: global_data.url + '/afiliado-detalles.php',
+    		url: route.url + '/afiliado-detalles.php',
     		data: 'ref=' + aid,
     		success: function(h){
     		    mydialog.class_aux = '';
@@ -836,4 +837,6 @@ $(document).ready(function(){
    news.slider();
    /* IMAGENES */
    imagenes.presentacion();
+   notifica.popup(global_data.notifica);
+   mensaje.popup(global_data.mensaje);
 });

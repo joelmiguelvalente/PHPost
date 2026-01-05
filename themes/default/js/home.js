@@ -5,7 +5,7 @@ function actualizar_comentarios(cat, nov){
    $('#loading').fadeIn(250);
 	$.ajax({
 		type: 'GET',
-		url: global_data.url + '/posts-last-comentarios.php',
+		url: route.url + '/posts-last-comentarios.php',
 		data: ['cat=' + cat, 'nov=' + nov].join('&'),
 		beforeSend: () => $('#ult_comm').html('<div class="emptyData">Esperando...</div>'),
 		success: h => $('#ult_comm').html(h),

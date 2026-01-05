@@ -117,7 +117,7 @@ wbbdebug = false;
 			toolbar:			true,
 			//img upload config 
 			imgupload:			true,
-			img_uploadurl:		global_data.url + "/inc/ext/wysibbupload.php",
+			img_uploadurl:		route.url + "/inc/ext/wysibbupload.php",
 			img_maxwidth:		800,
 			img_maxheight:		640,
 			hotkeys:			true,
@@ -2970,7 +2970,7 @@ wbbdebug = false;
 					$("#fupform").submit();
 				});
 				this.$modal.find("#fupform").on("submit",$.proxy(function(e) {
-					$(e.target).parents("#imguploader").hide().after('<div class="loader"><img src="'+global_data.url +'/themes/default/images/loading.gif" /><br/><br/><span>'+CURLANG.loading+'</span></div>').parent().css("text-align","center");
+					$(e.target).parents("#imguploader").hide().after('<div class="loader"><img src="'+route.url +'/themes/default/images/loading.gif" /><br/><br/><span>'+CURLANG.loading+'</span></div>').parent().css("text-align","center");
 				},this))
 				
 			}else{

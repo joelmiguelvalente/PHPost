@@ -54,12 +54,12 @@ var live = {
                setTimeout(function(){ live.hide(); }, live.hide_time);
             } else {
                 // TITULO
-                $(document).attr('title', global_data.s_title + ' (' + total_notis + ') - ' + global_data.s_slogan);
+                $(document).attr('title', global_data.title + ' (' + total_notis + ') - ' + global_data.slogan);
                 // 
                 var sound_type = (live.m_total > 0) ? 'newMessage' : 'newAlert';
                 //
                 if(live.status['sound'] == 'ON'){
-                    $('#swf').html('<embed width="1px" height="1px" wmode="transparent" allowscriptaccess="always" quality="high" bgcolor="#ffffff" src="' + global_data.url + '/inc/ext/' + sound_type + '.swf" type="application/x-shockwave-flash">');
+                    $('#swf').html('<embed width="1px" height="1px" wmode="transparent" allowscriptaccess="always" quality="high" bgcolor="#ffffff" src="' + route.url + '/inc/ext/' + sound_type + '.swf" type="application/x-shockwave-flash">');
                 }
                 // GLOBITOS
                 notifica.popup(live.n_total);
@@ -84,7 +84,7 @@ var live = {
         $('#loading').fadeIn(250);
 		$.ajax({
 			type: 'POST',
-			url: global_data.url + '/live-stream.php',
+			url: route.url + '/live-stream.php',
             data: 'nots=' + live.status['nots'] + '&mps=' + live.status['mps'],
 			success: function(h){
                 live.print(h);

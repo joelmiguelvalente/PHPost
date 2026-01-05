@@ -12,7 +12,7 @@ function borrar_com(comid, autor, postid, gew){
       $('#loading').fadeIn(250);
       $.ajax({
 			type: 'POST',
-			url: global_data.url +'/comentario-borrar.php',
+			url: route.url +'/comentario-borrar.php',
 			data: ['comid=' + comid, 'autor=' + autor, 'postid=' + postid].join('&'),
 			success: h => {
 				switch(h.charAt(0)){
@@ -41,7 +41,7 @@ function ocultar_com(comid, autor, postid){
    $('#loading').fadeIn(250);
 	$.ajax({
 		type: 'POST',
-		url: global_data.url +'/comentario-ocultar.php',
+		url: route.url +'/comentario-ocultar.php',
 		data: 'comid=' + comid + '&autor=' + autor + '&post_id=' + postid + gget('postid'),
 		success: function(h){
 			switch(h.charAt(0)){
@@ -83,7 +83,7 @@ function borrar_post(aceptar){
    $('#loading').fadeIn(250);
 	$.ajax({
 		type: 'POST',
-		url: global_data.url + '/posts-borrar.php',
+		url: route.url + '/posts-borrar.php',
 		data: gget('postid', true),
 		success: h => {
 			switch(h.charAt(0)){
@@ -123,7 +123,7 @@ function votar_post(puntos){
    $('#loading').fadeIn(250);
 	$.ajax({
 		type: 'POST',
-		url: global_data.url + '/posts-votar.php',
+		url: route.url + '/posts-votar.php',
 		data: 'puntos=' + puntos + gget('postid'),
 		success: function(h){
 			show_votar_post(true);
@@ -158,7 +158,7 @@ function add_favoritos(){
    $('#loading').fadeIn(250);
 	$.ajax({
 		type: 'POST',
-		url: global_data.url + '/favoritos-agregar.php',
+		url: route.url + '/favoritos-agregar.php',
 		data: gget('postid', true),
 		success: function(h){
 			switch(h.charAt(0)){
@@ -188,7 +188,7 @@ function dejar_un_comentario(){
 }
 /* extras */
 function emoticones(){ 
-	var winpops=window.open(global_data.url + "/emoticones.php","","width=180px,height=500px,scrollbars,resizable");
+	var winpops=window.open(route.url + "/emoticones.php","","width=180px,height=500px,scrollbars,resizable");
 }
 /* COMENTARIOS */
 var comentario = {
@@ -206,7 +206,7 @@ var comentario = {
          $('#loading').fadeIn(250);                                     
     		$.ajax({
     			type: 'POST',
-    			url: global_data.url + '/comentario-ajax.php?page=' + page,
+    			url: route.url + '/comentario-ajax.php?page=' + page,
     			data: 'postid=' + postid + '&autor=' + autor,
     			success: function(h){
     			   // CACHE
@@ -231,7 +231,7 @@ var comentario = {
       $('#loading').fadeIn(250);                                 
     	$.ajax({
     		type: 'POST',
-    		url: global_data.url + '/comentario-pages.php?page=' + page,
+    		url: route.url + '/comentario-pages.php?page=' + page,
     		data: 'postid=' + postid + '&autor=' + autor + '&total=' + total,
     		success: function(h){
     		   comentario.cache['p_' + page] = h;
@@ -266,7 +266,7 @@ var comentario = {
       $('#loading').fadeIn(250);                                 
     	$.ajax({
     		type: 'POST',
-    		url: global_data.url + '/comentario-agregar.php',
+    		url: route.url + '/comentario-agregar.php',
     		data: 'comentario=' + encodeURIComponent(text) + '&postid=' + gget('postid') + '&mostrar_resp=' + mostrar_resp + '&auser=' + auser,
     		success: function(h){
     			switch(h.charAt(0)){
@@ -316,7 +316,7 @@ var comentario = {
       $('#loading').fadeIn(250);                 
     	$.ajax({
     		type: 'POST',
-    		url: global_data.url + '/comentario-preview.php?type=' + type,
+    		url: route.url + '/comentario-preview.php?type=' + type,
     		data: 'comentario=' + encodeURIComponent(text) + '&auser=' + auser,
     		success: function(h){
     		  switch(h.charAt(0)){
@@ -354,7 +354,7 @@ var comentario = {
       $('#loading').fadeIn(250); 
     	$.ajax({
     		type: 'POST',
-    		url: global_data.url + '/comentario-votar.php',
+    		url: route.url + '/comentario-votar.php',
     		data: 'voto=' + voto + '&cid=' + cid + '&postid=' + gget('postid'),
     		success: function(h){
     			switch(h.charAt(0)){
@@ -399,7 +399,7 @@ var comentario = {
             $('#loading').fadeIn(250); 
             $.ajax({
             	type: 'POST',
-            	url: global_data.url + '/comentario-editar.php',
+            	url: route.url + '/comentario-editar.php',
             	data: 'comentario=' + encodeURIComponent(comment) + '&cid=' + id,
             	success: function(h){
             		switch(h.charAt(0)){
@@ -431,7 +431,7 @@ function moreEmoticons(margin){
     $('#loading').fadeIn(250); 
 	$.ajax({
 		type: 'GET',
-		url: global_data.url + '/emoticones.php',
+		url: route.url + '/emoticones.php',
 		data: 'ts=false',
 		success: function(h){
 		    if(margin) $(emos).css({marginTop : '1em'})

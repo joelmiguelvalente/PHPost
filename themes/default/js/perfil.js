@@ -27,7 +27,7 @@ var perfil = {
         $('#loading').slideDown(250); 
         $.ajax({
         	type: 'POST',
-        	url: global_data.url + '/perfil-' + type + '.php',
+        	url: route.url + '/perfil-' + type + '.php',
         	data: 'pid=' + $('#info').attr('pid'),
         	success: function(h){
         		switch(h.charAt(0)){
@@ -52,7 +52,7 @@ var perfil = {
     follows:function(type, page){
         $.ajax({
         	type: 'POST',
-        	url: global_data.url + '/perfil-' + type + '.php?hide=true&page=' + page,
+        	url: route.url + '/perfil-' + type + '.php?hide=true&page=' + page,
         	data: 'pid=' + $('#info').attr('pid'),
         	success: function(h){
                 $('#perfil_' + type).html(h.substring(3));
@@ -71,7 +71,7 @@ var actividad = {
         // ENVIAMOS
         $.ajax({
         	type: 'POST',
-        	url: global_data.url + '/perfil-actividad.php',
+        	url: route.url + '/perfil-actividad.php',
         	data: 'pid=' + $('#info').attr('pid') + '&ac_type=' + ac_type + '&do=' + ac_do + '&start=' + actividad.total,
         	success: function(h){
         		switch(h.charAt(0)){
@@ -96,7 +96,7 @@ var actividad = {
         // ENVIAMOS
         $.ajax({
         	type: 'POST',
-        	url: global_data.url + '/perfil-actividad.php',
+        	url: route.url + '/perfil-actividad.php',
         	data: 'pid=' + $('#info').attr('pid') + '&acid=' + id + '&do=borrar',
         	success: function(h){
         		switch(h.charAt(0)){
@@ -175,7 +175,7 @@ var muro = {
             $('#loading').fadeIn(250); 
             $.ajax({
             	type: 'POST',
-            	url: global_data.url + '/muro-stream.php?do=check&type=' + muro.stream.type,
+            	url: route.url + '/muro-stream.php?do=check&type=' + muro.stream.type,
             	data: 'url=' + encodeURIComponent(url),
             	success: function(h){
             		switch(h.charAt(0)){
@@ -284,7 +284,7 @@ var muro = {
             $('#loading').slideDown(250); 
             $.ajax({
             	type: 'POST',
-            	url: global_data.url + '/muro-stream.php?do=post&type=' + muro.stream.type,
+            	url: route.url + '/muro-stream.php?do=post&type=' + muro.stream.type,
             	data: 'adj=' + muro.stream.adjunto +'&data=' + encodeURIComponent(data) + '&pid=' + $('#info').attr('pid'),
             	success: function(h){
             		switch(h.charAt(0)){
@@ -321,7 +321,7 @@ var muro = {
             $('#loading').fadeIn(250); 
             $.ajax({
             	type: 'POST',
-            	url: global_data.url + '/muro-stream.php?do=more&type=' + type,
+            	url: route.url + '/muro-stream.php?do=more&type=' + type,
             	data: 'pid=' + $('#info').attr('pid') + '&start=' + muro.stream.total,
             	success: function(h){
             		switch(h.charAt(0)){
@@ -365,7 +365,7 @@ var muro = {
         $('#loading').slideDown(250); 
         $.ajax({
         	type: 'POST',
-        	url: global_data.url + '/muro-likes.php',
+        	url: route.url + '/muro-likes.php',
             dataType: 'json',
         	data: 'id=' + id + '&type=' + type,
         	success: function(h){
@@ -406,7 +406,7 @@ var muro = {
         $('#loading').fadeIn(250); 
         $.ajax({
         	type: 'POST',
-        	url: global_data.url + '/muro-likes.php?do=show',
+        	url: route.url + '/muro-likes.php?do=show',
             dataType: 'json',
         	data: 'id=' + id + '&type=' + type,
         	success: function(h){
@@ -418,8 +418,8 @@ var muro = {
                         var html = '<ul id="show_likes">';
                         for(var i = 0; i < h.data.length; i++){
                             html += '<li>'
-                            html += '<a href="' + global_data.url + '/perfil/' + h.data[i].user_name + '"><img src="' + global_data.url + '/files/avatar/' + h.data[i].user_id + '_50.jpg" /></a>'
-                            html += '<div class="name"><a href="' + global_data.url + '/perfil/' + h.data[i].user_name + '">' + h.data[i].user_name + '</a></div>' 
+                            html += '<a href="' + route.url + '/perfil/' + h.data[i].user_name + '"><img src="' + route.url + '/files/avatar/' + h.data[i].user_id + '_50.jpg" /></a>'
+                            html += '<div class="name"><a href="' + route.url + '/perfil/' + h.data[i].user_name + '">' + h.data[i].user_name + '</a></div>' 
                             html += '</li>'; 
                         }
                         html += '</ul>';
@@ -457,7 +457,7 @@ var muro = {
         $('#loading').fadeIn(250); 
         $.ajax({
         	type: 'POST',
-        	url: global_data.url + '/muro-stream.php?do=repost',
+        	url: route.url + '/muro-stream.php?do=repost',
         	data: 'data=' + encodeURIComponent(val) + '&pid=' + id,
         	success: function(h){
         		switch(h.charAt(0)){
@@ -487,7 +487,7 @@ var muro = {
         $('#loading').fadeIn(250); 
         $.ajax({
         	type: 'POST',
-        	url: global_data.url + '/muro-stream.php?do=more_comments',
+        	url: route.url + '/muro-stream.php?do=more_comments',
         	data: 'pid=' + id,
         	success: function(h){
         		switch(h.charAt(0)){
@@ -541,7 +541,7 @@ var muro = {
         $('#loading').slideDown(250); 
         $.ajax({
         	type: 'POST',
-        	url: global_data.url + '/muro-stream.php?do=delete',
+        	url: route.url + '/muro-stream.php?do=delete',
         	data: 'id=' + id + '&type=' + snd_type,
         	success: function(h){
         		switch(h.charAt(0)){

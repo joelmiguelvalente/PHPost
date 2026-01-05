@@ -1,50 +1,81 @@
-<?php if ( ! defined('TS_HEADER')) exit('No se permite el acceso directo al script');
+<?php
+
 /**
- * Funciones globales
- *
- * @name    c.core.php
- * @author  PHPost Team
+ * @name functions.php
+ * @author PHPost Team
+ * @copyright 2026
  */
-class tsCore {
+
+declare(strict_types=1);
+
+if (!defined('TS_HEADER')) {
+	exit('No se permite el acceso directo al script');
+}
+
+require_once dirname(__DIR__, 1) . '/utils/Extras.php';
+class tsCore extends Extras {
     
-	var $settings;		// CONFIGURACIONES DEL SITIO
-	var $querys = 0;	// CONSULTAS
-	
+	public array $settings;
 
 	function __construct() {
 		// CARGANDO CONFIGURACIONES
 		$this->settings = $this->getSettings();
-		$this->settings['domain'] = str_replace(getSSL(), '', $this->settings['url']);
-		$this->settings['categorias'] = $this->getCategorias();
-      $this->settings['default'] = $this->settings['url'].'/themes/default';
 		$this->settings['tema'] = $this->getTema();
-		#
-		$this->settings['images'] = $this->settings['tema']['t_url'].'/images';
-      $this->settings['css'] = $this->settings['tema']['t_url'].'/css';
-		$this->settings['js'] = $this->settings['tema']['t_url'].'/js';
-		#
-		$this->settings['avatar'] = $this->settings['url'].'/files/avatar';
-		$this->settings['smiles'] = $this->settings['url'].'/files/images/smiles';
-		$this->settings['flags'] = $this->settings['url'].'/files/images/flags';
-		$this->settings['med'] = $this->settings['url'].'/files/images/med';
-		$this->settings['ran'] = $this->settings['url'].'/files/images/ran';
-		$this->settings['cat'] = $this->settings['url'].'/files/images/cat';
       //
       if($_GET['do'] == 'portal' || $_GET['do'] == 'posts') $this->settings['news'] = $this->getNews();
-		# Mensaje del instalador y pendientes de moderación #
-		$this->settings['install'] = $this->existinstall();
-		$this->settings['novemods'] = $this->getNovemods();
 	}
 	
-	/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+	public function buildRoutes(): array {
+	   $baseUrl   = rtrim($this->settings['url'], '/');
+	   $theme     = $this->settings['tema']['t_path'];
+	   $images    = "$assets/images";
+	   $storage   = "$baseUrl/inc/storage";
+
+	   $routes = [
+	      'url'       => $baseUrl,
+	      'domain'    => str_replace($this->getSSLProtocol(true), '', $this->settings['url']),
+	      //'canonical' => $this->currentUrl(true),
+
+	      'tema' => [
+	         'base'   => "$baseUrl/themes/$theme",
+	         'css'    => "$baseUrl/themes/$theme/css",
+	         'js'     => "$baseUrl/themes/$theme/js",
+	         'images' => "$baseUrl/themes/$theme/images"
+	      ],
+	      'storage' => [
+	         'base'      => $storage,
+	         'avatar'    => "$storage/avatar",
+	         'portadas'  => "$storage/portadas",
+	         'uploads'   => "$storage/uploads",
+	      ]
+	   ];
+	   return $routes;
+	}
+
+	public function route(string $path = ''): string|array|null {
+	   $routes = $this->buildRoutes();
+	   if ($path === '') {
+	      return $routes;
+	   }
+
+	   $segments = explode(':', $path);
+	   $current  = $routes;
+
+	   foreach ($segments as $segment) {
+	      if (!is_array($current) || !array_key_exists($segment, $current)) {
+	         return null;
+	      }
+	      $current = $current[$segment];
+	   }
+	   return $current;
+	}
+	
 	
 	/*
 		getSettings() :: CARGA DESDE LA DB LAS CONFIGURACIONES DEL SITIO
 	*/
-	function getSettings() {
-		$query = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', 'SELECT * FROM w_configuracion'));
-		$query["providers"] = join(', ', json_decode($query["providers"], true));
-		return $query;
+	public function getSettings(): array {
+		return db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', 'SELECT * FROM w_configuracion'));
 	}
 	
 	function getNovemods() {
@@ -72,8 +103,8 @@ class tsCore {
 		getTema()
 	*/
 	function getTema() {
-		$data = db_exec('fetch_assoc', db_exec(array(__FILE__, __LINE__), 'query', "SELECT * FROM w_temas WHERE tid = {$this->settings['tema_id']} LIMIT 1"));
-      $data['t_url'] = $this->settings['url'] . '/themes/' . $data['t_path'];
+		$data = db_exec('fetch_assoc', db_exec(array(__FILE__, __LINE__), 'query', "SELECT * FROM w_temas WHERE t_path = '{$this->settings['tema']}' LIMIT 1"));
+     	$data['t_url'] = $this->settings['url'] . '/themes/' . $data['t_path'];
 		return $data;
 	}
 	/*
@@ -157,7 +188,7 @@ class tsCore {
 
 	# Obtenemos el dominio
    function getDomain(){
-      $domain = explode('/', str_replace(getSSL(), '', $this->settings['url']));
+      $domain = explode('/', str_replace($this->getSSLProtocol(true), '', $this->settings['url']));
       $domain = (is_array($domain)) ? explode('.',$domain[0]) : explode('.',$domain);
       //
       $t = count($domain);
@@ -167,7 +198,7 @@ class tsCore {
    }
 	# Obtenemos url codificada
 	function currentUrl(){
-		return urlencode(getSSL() . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
+		return urlencode($this->getSSLProtocol(true) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
 	}
 	/**
 	 * setJSON($tsContent)

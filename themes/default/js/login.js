@@ -14,7 +14,7 @@ login_ajax = () => {
 	// Imagen de cargando
 	$(".login_cuerpo").append('<div id="login_cargando"><img src="'+global_data.img+'images/large-loading.gif" width="32" height="32" alt="Iniciando sesion"></div>');
 	// Envio los datos
-	$.post(global_data.url + "/login-user.php", dato, response => {
+	$.post(route.url + "/login-user.php", dato, response => {
 		switch (response.charAt(0)) {
 			case '0':
 				$("#login_error").html(response.substring(3)).show()

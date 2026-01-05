@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Resuelve para la home
  *
@@ -6,19 +7,28 @@
  * @author  PHPost Team
  */
 
+declare(strict_types=1);
+
+// Verificamos si el sitio fue instalado
+if(!file_exists(__DIR__ . DIRECTORY_SEPARATOR . '.lock')) {
+	header("Location: ./install/index.php?step=0");
+	die;
+}
+
+// Incluimos header
+require_once __DIR__ . '/header.php';
+
 /*
  * -------------------------------------------------------------------
  *  Validamos que mostrar home/mi
  * -------------------------------------------------------------------
  */
-    // Incluimos header
-	include 'header.php';
-
-    // Checamos...
-    if($tsCore->settings['c_allow_portal'] == 1 && $tsUser->is_member == true && $_GET['do'] == 'portal') {
-        // Portal/mi
-        include('inc/php/portal.php');
-    } else {
-        // Home
-        include('inc/php/posts.php');
-    }
+// Checamos...
+$doAction = (isset($_GET['do']) && $_GET['do'] === 'portal');
+if((int)$tsCore->settings['c_allow_portal'] && $tsUser->is_member && $doAction) {
+	// Portal/mi
+	require_once __DIR__ . '/inc/php/portal.php';
+} else {
+	// Home
+	require_once __DIR__ . '/inc/php/posts.php';
+}

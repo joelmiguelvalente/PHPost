@@ -15,34 +15,14 @@ if (!defined('TS_HEADER'))
  * @version v4.0
 */
 
+// Pagina solicitada
 $smarty->assign("tsPage", $tsPage);
+# Por si quieren cambiar la pagina de error
+# Si no encuentra la plantilla t.$tsPage.tpl
+# Mostrar esta pagina
+$smarty->templateError = '404.html';
 
-// Guardamos en una variable la plantilla a usar
-$TEMP = "t.{$tsPage}.tpl";
+$smarty->setTheme(TS_TEMA);
+$smarty->setPage($tsPage);
 
-// Esta plantilla la pueden crear, cambiar nombre pero debe existir
-$ERROR_PLANTILLA = "t.error404.tpl";
-
-// Comprobamos que exista la plantilla
-$PLANTILLA = $smarty->templateExists( $TEMP ) ? $TEMP : $ERROR_PLANTILLA;
-
-// Cacheamos la plantilla
-$smarty->setCacheLifetime( CACHE_LIFE_TIME );
-
-/**
- * Borra la versión compilada del recurso de plantilla especificado
- * @link https://www.smarty.net/docs/en/api.clear.compiled.tpl.tpl
-*/
-$smarty->clearCompiledTemplate( $PLANTILLA );
-
-/**
- * Limpiamos todo el cache
- * @link https://www.smarty.net/docs/en/api.clear.all.cache.tpl
-*/
-$smarty->clearAllCache();
-
-/**
- * Cargamos todo el contenido de las plantillas en HTML
- * @link https://www.smarty.net/docs/en/api.display.tpl
-*/
-$smarty->display( $PLANTILLA );
+$smarty->load($tsPage);

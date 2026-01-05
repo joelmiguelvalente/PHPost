@@ -9,7 +9,7 @@
                             </div>
                             <div class="txt">
                                 <a href="{$tsConfig.url}/perfil/{$u.user_name}">{$u.user_name}</a><br />
-                                <img src="{$tsConfig.images}/flags/{$u.user_pais|lower}.png"/> <span class="grey">{$u.p_mensaje}</span>
+                                <img src="{$tsRoutes.tema.images}/flags/{$u.user_pais|lower}.png"/> <span class="grey">{$u.p_mensaje}</span>
                             </div>
                         </div>
                         <div class="action">
@@ -31,7 +31,7 @@
                             </div>
                             <div class="txt">
                                 <a href="{$tsConfig.url}/posts/{$p.c_seo}/{$p.f_id}/{$p.post_title|seo}.html">{$p.post_title}</a><br />
-                                <img src="{$tsConfig.images}/icons/cat/{$p.c_img}"/> <span class="grey">{$p.c_nombre}</span>
+                                <img src="{$tsRoutes.tema.images}/icons/cat/{$p.c_img}"/> <span class="grey">{$p.c_nombre}</span>
                             </div>
                         </div>
                         <div class="action">

@@ -13,7 +13,7 @@ $(() => {
       multiDrag: true,
       store: {
          // Guardar orden
-         set: sortable => $.post(global_data.url + '/admin-ordenar-categorias.php', 'cats=' + sortable.toArray().join(','))
+         set: sortable => $.post(route.url + '/admin-ordenar-categorias.php', 'cats=' + sortable.toArray().join(','))
       }
    });
    /* {/if} */
@@ -42,8 +42,8 @@ $(() => {
                   <td width="30">{$c.c_orden}</td>
                   <td style="text-align:left; padding-left:20px; background:url({$tsConfig.cat}/{$c.c_img}) no-repeat 2px center;"><b><u>{$c.c_nombre}</u></b></td>
                   <td class="admin_actions" width="100">
-                     <a href="{$tsConfig.url}/admin/cats?act=editar&cid={$c.cid}&t=cat"><img src="{$tsConfig.images}/icons/editar.png" title="Editar Categor&iacute;a"/></a>
-                     <a href="{$tsConfig.url}/admin/cats?act=borrar&cid={$c.cid}&t=cat"><img src="{$tsConfig.images}/icons/close.png" title="Borrar Categor&iacute;a"/></a>
+                     <a href="{$tsConfig.url}/admin/cats?act=editar&cid={$c.cid}&t=cat"><img src="{$tsRoutes.tema.images}/icons/editar.png" title="Editar Categor&iacute;a"/></a>
+                     <a href="{$tsConfig.url}/admin/cats?act=borrar&cid={$c.cid}&t=cat"><img src="{$tsRoutes.tema.images}/icons/close.png" title="Borrar Categor&iacute;a"/></a>
                   </td>
                </tr>
             {/foreach}
@@ -63,7 +63,7 @@ $(() => {
             <dl>
                <dt><label for="cat_img">Icono de la categor&iacute;a:</label></dt>
                <dd>
-                  <img src="{$tsConfig.images}/space.gif" style="background:url({$tsConfig.cat}/{$tsCat.c_img}) no-repeat left center;" width="16" height="16" id="c_icon"/>
+                  <img src="{$tsRoutes.tema.images}/space.gif" style="background:url({$tsConfig.cat}/{$tsCat.c_img}) no-repeat left center;" width="16" height="16" id="c_icon"/>
                   <select name="c_img" id="cat_img" style="width:164px">
                      {foreach from=$tsIcons key=i item=img}
                         <option value="{$img}" style="padding:2px 20px 0; background:#FFF url({$tsConfig.cat}/{$img}) no-repeat left center;"{if $tsCat.c_img == $img} selected{/if}>{$img}</option>
@@ -86,7 +86,7 @@ $(() => {
             <dl>
                <dt><label for="cat_img">Icono de la categor&iacute;a:</label></dt>
                <dd>
-                  <img src="{$tsConfig.images}/space.gif" width="16" height="16" id="c_icon"/>
+                  <img src="{$tsRoutes.tema.images}/space.gif" width="16" height="16" id="c_icon"/>
                   <select name="c_img" id="cat_img" style="width:164px">
                      {foreach from=$tsIcons key=i item=img}
                    	<option value="{$img}" style="padding:2px 20px 0; background:#FFF url({$tsConfig.cat}/{$img}) no-repeat left center;">{$img}</option>

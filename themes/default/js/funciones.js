@@ -11,7 +11,7 @@ var denuncia = {
 		$('#loading').fadeIn(250); 
         $.ajax({
 			type: 'POST',
-			url: global_data.url + '/denuncia-' + type + '.php',
+			url: route.url + '/denuncia-' + type + '.php',
 			data: 'obj_id=' + obj_id + '&obj_title=' + obj_title + '&obj_user=' + obj_user,
 			success: function(h){
                 denuncia.set_dialog(h, obj_id, type);
@@ -37,7 +37,7 @@ var denuncia = {
         $('#loading').fadeIn(250);                         
 		$.ajax({
 			type: 'POST',
-			url: global_data.url + '/denuncia-' + type + '.php',
+			url: route.url + '/denuncia-' + type + '.php',
 			data: 'obj_id=' + obj_id + '&razon=' + razon + '&extras=' + extras,
 			success: function(h){
                 switch(h.charAt(0)){
@@ -69,7 +69,7 @@ var comentario = {
             $('#loading').fadeIn(250);                                     
     		$.ajax({
     			type: 'POST',
-    			url: global_data.url + '/comentario-ajax.php?page=' + page,
+    			url: route.url + '/comentario-ajax.php?page=' + page,
     			data: 'postid=' + postid + '&autor=' + autor,
     			success: function(h){
     			    // CACHE
@@ -95,7 +95,7 @@ var comentario = {
         $('#loading').fadeIn(250);                                 
     	$.ajax({
     		type: 'POST',
-    		url: global_data.url + '/comentario-pages.php?page=' + page,
+    		url: route.url + '/comentario-pages.php?page=' + page,
     		data: 'postid=' + postid + '&autor=' + autor + '&total=' + total,
     		success: function(h){
     		    comentario.cache['p_' + page] = h;
@@ -130,7 +130,7 @@ var comentario = {
         $('#loading').fadeIn(250);                                 
     	$.ajax({
     		type: 'POST',
-    		url: global_data.url + '/comentario-agregar.php',
+    		url: route.url + '/comentario-agregar.php',
     		data: 'comentario=' + encodeURIComponent(text) + '&postid=' + gget('postid') + '&mostrar_resp=' + mostrar_resp + '&auser=' + auser,
     		success: function(h){
     			switch(h.charAt(0)){
@@ -184,13 +184,13 @@ var comentario = {
 		mydialog.class_aux = 'preview';
 		mydialog.show(true);
 		mydialog.title('...');
-		mydialog.body('Cargando vista previa....<br><br><img src="' + global_data.url + '/themes/default/images/loading_bar.gif">');
+		mydialog.body('Cargando vista previa....<br><br><img src="' + route.url + '/themes/default/images/loading_bar.gif">');
         mydialog.center();
         //
         $('#loading').fadeIn(250);                 
     	$.ajax({
     		type: 'POST',
-    		url: global_data.url + '/comentario-preview.php?type=' + type,
+    		url: route.url + '/comentario-preview.php?type=' + type,
     		data: 'comentario=' + encodeURIComponent(text) + '&auser=' + auser,
     		success: function(h){
     		  switch(h.charAt(0)){
@@ -230,7 +230,7 @@ var comentario = {
         $('#loading').fadeIn(250); 
     	$.ajax({
     		type: 'POST',
-    		url: global_data.url + '/comentario-votar.php',
+    		url: route.url + '/comentario-votar.php',
     		data: 'voto=' + voto + '&cid=' + cid + '&postid=' + gget('postid'),
     		success: function(h){
     			switch(h.charAt(0)){
@@ -277,7 +277,7 @@ var comentario = {
                 $('#loading').fadeIn(250); 
             	$.ajax({
             		type: 'POST',
-            		url: global_data.url + '/comentario-editar.php',
+            		url: route.url + '/comentario-editar.php',
             		data: 'comentario=' + encodeURIComponent(comment) + '&cid=' + id,
             		success: function(h){
             			switch(h.charAt(0)){
@@ -325,7 +325,7 @@ function remind_password(gew){
 	 
 	var r_email = $('#r_email').val(); 
 	
-	$.post(global_data.url + '/recover-pass.php', 'r_email=' + r_email, function(a){
+	$.post(route.url + '/recover-pass.php', 'r_email=' + r_email, function(a){
 		   
            mydialog.alert((a.charAt(0) == '0' ? 'Opps!' : 'Hecho'), a.substring(3), false);
 		   
@@ -362,7 +362,7 @@ function resend_validation(gew){
     
     $('#loading').fadeIn(250); 
 	
-	$.post(global_data.url + '/recover-validation.php', 'r_email=' + r_email, function(a){
+	$.post(route.url + '/recover-validation.php', 'r_email=' + r_email, function(a){
 		   
            mydialog.alert((a.charAt(0) == '0' ? 'Opps!' : 'Hecho'), a.substring(3), false);
 		   
@@ -449,7 +449,7 @@ var afiliado = {
         $('#loading').fadeIn(250); 
     	$.ajax({
     		type: 'POST',
-    		url: global_data.url + '/afiliado-nuevo.php',
+    		url: route.url + '/afiliado-nuevo.php',
     		data: params,
     		success: function(h){
     		  mydialog.procesando_fin();
@@ -476,7 +476,7 @@ var afiliado = {
         $('#loading').fadeIn(250); 
     	$.ajax({
     		type: 'POST',
-    		url: global_data.url + '/afiliado-detalles.php',
+    		url: route.url + '/afiliado-detalles.php',
     		data: 'ref=' + aid,
     		success: function(h){
     		    mydialog.class_aux = '';
@@ -503,7 +503,7 @@ function moreEmoticons(margin){
     $('#loading').fadeIn(250); 
 	$.ajax({
 		type: 'GET',
-		url: global_data.url + '/emoticones.php',
+		url: route.url + '/emoticones.php',
 		data: 'ts=false',
 		success: function(h){
 		    if(margin) $(emos).css({marginTop : '1em'})

@@ -84,7 +84,7 @@ var fotos = {
         $('#loading').fadeIn(250); 
        	$.ajax({
     		type: 'POST',
-    		url: global_data.url + '/comentario-agregar.php?ts=true&do=fotos',
+    		url: route.url + '/comentario-agregar.php?ts=true&do=fotos',
     		data: 'comentario=' + encodeURIComponent(text) + '&fotoid=' + gget('fotoid') + '&auser=' + auser,
     		success: function(h){
     			switch(h.charAt(0)){
@@ -120,7 +120,7 @@ var fotos = {
         $('#loading').fadeIn(250); 
     	$.ajax({
     		type: 'POST',
-    		url: global_data.url + '/comentario-votar.php?do=fotos',
+    		url: route.url + '/comentario-votar.php?do=fotos',
     		data: 'voto=' + voto + '&fotoid=' + gget('fotoid'),
     		success: function(h){
     			switch(h.charAt(0)){
@@ -157,7 +157,7 @@ var fotos = {
         $('#loading').fadeIn(250); 
     	$.ajax({
     		type: 'POST',
-    		url: global_data.url + '/comentario-borrar.php?do=fotos',
+    		url: route.url + '/comentario-borrar.php?do=fotos',
     		data: 'cid=' + cid,
     		success: function(h){
     			switch(h.charAt(0)){
@@ -184,7 +184,7 @@ var fotos = {
         $('#loading').fadeIn(250); 
     	$.ajax({
     		type: 'POST',
-    		url: global_data.url + '/fotos/borrar.php',
+    		url: route.url + '/fotos/borrar.php',
     		data: 'fid=' + fid,
     		success: function(h){
     			switch(h.charAt(0)){
@@ -193,7 +193,7 @@ var fotos = {
     					break;
     				case '1': //OK
                         mydialog.close();
-                        location.href = global_data.url + '/fotos/';
+                        location.href = route.url + '/fotos/';
                         //
     					break;
     			}

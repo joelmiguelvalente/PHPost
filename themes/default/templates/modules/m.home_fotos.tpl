@@ -1,7 +1,7 @@
-                    <script type="text/javascript">
+                    {if $tsImages.data}<script>
                         imagenes.total = {$tsImTotal-1};
                         imagenes.move = '-150px';
-                    </script>
+                    </script>{/if}
 					<div id="lastFotos" class="wMod clearbeta">
                     	<div class="wMod-h">&Uacute;ltimas Fotos</div>
                         <div class="wMod-data" style="padding:0;text-align:center;position:relative;height:150px;overflow: hidden;">

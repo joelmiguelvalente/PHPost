@@ -149,7 +149,7 @@ class tsAdmin {
       endif;
       //
       $columnas = $tsCore->getIUP( array_slice($_POST, 0, -1) );
-      if (db_exec([__FILE__, __LINE__], "query", "UPDATE w_configuracion SET {$columnas} WHERE tscript_id = 1")) return true;
+      if (db_exec([__FILE__, __LINE__], "query", "UPDATE w_configuracion SET {$columnas} WHERE phpost_id = 1")) return true;
       else exit( show_error('Error al ejecutar la consulta de la l&iacute;nea '.__LINE__.' de '.__FILE__.'.', 'Base de datos') );
    }
    /**
@@ -300,7 +300,7 @@ class tsAdmin {
          'ads_search' => $tsCore->setSecure($_POST['ads_search'])
       ]);
       # Guardamos los datos en la base
-      if (db_exec([__FILE__, __LINE__], 'query', 'UPDATE `w_configuracion` SET '.$publicidades.' WHERE tscript_id = 1')) return true;
+      if (db_exec([__FILE__, __LINE__], 'query', 'UPDATE `w_configuracion` SET '.$publicidades.' WHERE phpost_id = 1')) return true;
    }
    /**
     * ------------------------------
@@ -509,7 +509,7 @@ class tsAdmin {
          //
          $dato = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', 'SELECT rango_id, r_type FROM u_rangos WHERE rango_id = ' .$rid.' LIMIT 1'));
          if (!empty($dato['rango_id']) && intval($dato['r_type']) == 0) {
-            if (db_exec([__FILE__, __LINE__], 'query', 'UPDATE w_configuracion SET c_reg_rango = '.$rid.' WHERE tscript_id = 1')) return true;
+            if (db_exec([__FILE__, __LINE__], 'query', 'UPDATE w_configuracion SET c_reg_rango = '.$rid.' WHERE phpost_id = 1')) return true;
          } else return 'El rango no existe o no es posible utilizarlo';
       } else return 'Petici&oacute;n inv&aacute;lida';
    }

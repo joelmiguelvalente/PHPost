@@ -1,5 +1,5 @@
 {include file='sections/main_header.tpl'}
-                <script type="text/javascript" src="{$tsConfig.js}/fotos.js"></script>
+                <script type="text/javascript" src="{$tsRoutes.tema.js}/fotos.js"></script>
 				<style>
                 
 				</style>

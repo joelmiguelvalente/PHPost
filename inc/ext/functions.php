@@ -1,228 +1,66 @@
-<?php if ( ! defined('TS_HEADER')) exit('No se permite el acceso directo al script');
-
-
-$CONFIGINC = TS_ROOT . "/config.inc.php";
+<?php
 
 /**
- * Comprobamos que el archivo exista
-*/
-if( file_exists( $CONFIGINC )) {
-
-   # Ahora preguntamos si esta instalado
-   require_once $CONFIGINC;
-   if( $db["hostname"] === 'dbhost') header("Location: ./install/index.php");
-
-} else header("Location: ./install/index.php");
-
-
-/**
- * Nueva forma de conectar a la base de datos
- * https://www.php.net/manual/es/mysqli.construct.php => Ejemplo 1
-*/
-
-$db_link = new mysqli($db['hostname'], $db['username'], $db['password'], $db['database']);
-
-/**
- * Aquí comprobaremos la conexión
- * @link https://www.php.net/manual/es/mysqli.connect-errno.php 
-*/
-if (mysqli_connect_errno()):
-    $message = mysqli_connect_errno();
-   #$message = mysqli_connect_error(); // Lo mismo, pero en ingles
-   switch ($message) {
-    case 1045:
-        $pass = (empty($db['password'])) ? "NO" : "SI";
-        $message = "Acceso denegado para el usuario <b>'{$db['username']}'</b>@'localhost' ";
-        $message .= " (usando contraseña: {$pass})";
-    break;
-    case 1049:
-        $message = "La base de datos <b>{$db['database']}</b> es desconocida.";
-    break;
-    case 2002:
-        $message = "El host \"<b>{$db['hostname']}</b>\" que intentas conectar es desconocido.";
-    break;
-   }
-   exit(show_error("<p class=\"warning\">{$message}</p>", 'Conexión con MySQLI'));
-  
-else:
-
-   if (!$db_link->set_charset('utf8mb4')): # utf8 | utf8mb4
-
-    /**
-     * @link https://www.php.net/manual/es/mysqli.set-charset.php
-     * printf("Conjunto de caracteres actual: %s\n", $db_link->character_set_name());
-     * resultado: Conjunto de caracteres actual: utf8mb4
-    */
-      $message = "Error cargando el conjunto de caracteres:<br>\"<b>{$db_link->error}</b>\"";
-    exit(show_error("<p class=\"warning\">{$message}</p>", 'Juego de caracteres no válido'));
-
-   endif;
-
-endif;
-
-/**
- * Ejecutar consulta
+ * @name functions.php
+ * @author PHPost Team
+ * @copyright 2026
  */
-function db_exec()
-{
-	if(isset(func_get_args()[0])) $info = func_get_args()[0];
-	if(isset(func_get_args()[1])) $type = func_get_args()[1];
-	if(isset(func_get_args()[2])) $data = func_get_args()[2];
-	
-	global $db_link, $tsUser, $tsAjax, $display;
-    
-    // Si la primera variable contiene un string, se entiende que es la consulta que debe ejecutarse. Esto lo prepara para ello.
-    if(is_array($info)) {
-        if(!$tsUser->is_admod && $display['msgs'] != 2) { $info[0] = explode('\\', $info[0]); }
-        $info['file'] = $tsUser->is_admod || $display['msgs'] == 2 ? $info[0] : end($info[0]);
-        $info['line'] = $info[1];
-        $info['query'] = $data;
-    } else {
-        $data = $type;
-        $type = $info;
-        if($type == 'query') { $info = array(); $info['query'] = $data; }
-    }
-    
-    if($type === 'query' && !empty($data))
-    {
-        $query = mysqli_query($db_link, $data);
-        if(!$query && !$tsAjax && $display['msgs'] && ($info['file'] || $info['line'] || ($info['query'] && $tsUser->is_admod))) exit( show_error( 'No se pudo ejecutar una consulta en la base de datos.', 'db', $info ) );
-        return $query;
-    }
-    elseif($type === 'real_escape_string')
-    {
-        return mysqli_real_escape_string($db_link, $data);
-    }
-    elseif($type === 'num_rows')
-    {
-        return mysqli_num_rows($data);
-    }
-    elseif($type === 'fetch_assoc')
-    {
-        
-        return mysqli_fetch_assoc($data);
-    }
-    elseif($type === 'fetch_array')
-    {
-        return mysqli_fetch_array($data);
-    }
-    elseif($type === 'fetch_row')
-    {
-        return mysqli_fetch_row($data);
-    }
-    elseif($type === 'free_result')
-    {
-        return mysqli_free_result($data);
-    }
-    elseif($type === 'insert_id')
-    {
-        return mysqli_insert_id($db_link);
-    }
-    elseif($type === 'error')
-    {
-        return mysqli_error($db_link);
-    }
-    elseif($type === 'multi_query')
-    {
-        return mysqli_multi_query($db_link, $data);
-    }
-}
 
-/**
- * Cargar resultados
- */
-function result_array($result) {
-   $result instanceof mysqli_result;
-   if( !is_a($result, 'mysqli_result') ) return [];
-   $array = [];
-   while($row = db_exec('fetch_assoc', $result)) $array[] = $row;
-   return $array;
+declare(strict_types=1);
+
+if (!defined('TS_HEADER')) exit('No se permite el acceso directo al script');
+
+require_once dirname(__DIR__, 1) . '/config/Config.php';
+require_once dirname(__DIR__, 1) . '/database/Database.php';
+require_once dirname(__DIR__, 1) . '/database/db_legacy.php';
+
+# Evitamos problemas con algunos valores
+if (!isset($tsUser)) {
+	$tsUser = new stdClass(); // Evita errores de propiedad en null
+	$tsUser->is_admod = false; // Asigna valores por defecto
 }
 
 /**
  * Mostrar error con diseño comprimido y agradable en pantalla
  */
-function show_error($error = 'Indefinido', $type = 'db', $info = array())
-{
-    global $db_link, $tsUser, $display;
-    
-    if($type === 'db')
-    {
-        // Definir bloques HTML
-        $extra['file'] = isset($info['file']) ? '<tr><td>Archivo</td><td>'.$info['file'].'</td></tr>' : '';
-        $extra['line'] = isset($info['line']) ? '<tr><td>L&iacute;nea</td><td>'.$info['line'].'</td></tr>' : '';
-        $extra['query'] = isset($info['query']) && ($tsUser->is_admod || $display['msgs'] == 2) ? '<tr><td>Sentencia</td><td>'.$info['query'].'</td></tr>' : '';
-        $extra['error'] = mysqli_error($db_link) && ($tsUser->is_admod || $display['msgs'] == 2) ? '<tr><td colspan="2"><p class="warning">'.mysqli_error($db_link).'</p></td></tr>' : '';
-        // Definir tabla HTML
-        $table = '<table border="0"><tbody>' . $extra['file'] . $extra['line'] . $extra['query'] . $extra['error'] . '</tbody></table>';
-    }
- 
-    return '0: <head><meta charset="UTF-8" /><title>PHPost › Error</title><style type="text/css">html{background: #f9f9f9;}body {background: #FFF;color: #333;font-family: sans-serif;margin: 2em auto;padding: 1em 2em;border: 1px solid #dfdfdf;max-width: 700px;}h1 {border-bottom: 1px solid #dadada;clear: both;color: #666;font: 24px Georgia, "Times New Roman", Times, serif;padding: 0;padding-bottom: 7px;}#error-page p { background: #DDD; border: 1px solid #b1b1b1; color: #0e0e0e; font-size: 14px;line-height: 1.5;margin: 25px 0 20px;text-align: center;padding: 10;} #error-page p.warning{background-color: #f7e5e8;border: 1px solid #f0c1cb;color: #92394d;margin: 0;} td:last-child{width:250px;} table{font:normal 12px/150% Geneva,Arial,Helvetica,sans-serif;background:#fff;overflow:hidden;border:1px solid #dbe4ef;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;border-collapse:collapse;text-align:left;width:100%;} table td,table th{padding:5px 5px;} table thead th{background:#2b2b2b;color:#BEBEBE;font-size:11px;padding:8px 6px;font-weight:bold;border-left:0px solid #0070A8;} table thead th:first-child{border:none;} table tbody td a{color:#225985;} table tbody td a:hover{color:#328586;} table tbody td{padding:10px;color:#5a5a5a;background:#FDFDFD;border-bottom:1px solid #f3f3f3;font-size:12px;font-weight:normal;} table tbody .alt td{background:#E1EEf4;color:#00557F;} table tbody td:first-child{border-left: none;width: 10%;font-weight: bold;border-right: 1px solid #DFDFDF} table tbody tr:last-child td{border-bottom:none;font-weight: normal;}</style></head><body><div id="error-page"><h1>ERROR</h1><p>'.$error.'</p>'.($type === 'db' ? $table : '').'</div></body>';
+function show_error($error = 'Indefinido', $type = 'db', $info = []) {
+	global $mysqli, $tsUser;
+
+	$table = '';
+	if($type === 'db') {
+		$extra = [];
+
+		if ($tsUser->is_admod || Config::app('app.debug')) {
+			$extra[] = "<tr><td colspan=\"2\"><p class=\"warning\">".mysqli_error($mysqli)."</p></td></tr>";
+		}
+		if (isset($info['file'])) {
+			$extra[] = "<tr><td>Archivo</td><td>{$info['file']}</td></tr>";
+		}
+		if (isset($info['line'])) {
+			$extra[] = "<tr class=\"alt\"><td>Línea</td><td>{$info['line']}</td></tr>";
+		}
+		if (isset($info['query']) && ($tsUser->is_admod || Config::app('app.debug'))) {
+			$extra[] = "<tr><td colspan=\"2\"><kbd>{$info['query']}</kbd></td></tr>";
+		}
+		$table = '<table border="0"><tbody>' . implode('', $extra) . '</tbody></table>';
+	}
+
+	$title = ($type === 'db') ? "Base de datos" : $type;
+	exit("<head><meta charset=\"UTF-8\" /><link rel=\"preconnect\" href=\"https://fonts.googleapis.com\"><link href=\"https://fonts.googleapis.com/css2?family=Poppins&display=swap\" rel=\"stylesheet\"><title>Error › {$title}</title><style type=\"text/css\">*,*::after,*::before{padding:0;margin:0;box-sizing: content-box;}html{background:#EEE;}html,body{width:100%;height:100vh;}body{font-family:'Poppins',sans-serif;}#error-page{border:1px solid #CCC;background:#FFF;padding:20px;min-width:650px;max-width:780px;margin:1rem auto}#error-page h1{font-size: 28px;border-bottom: 1px solid #CCC5;padding: 6px;margin-bottom: 10px;}p.warning {background: #FFEEEE;color: #D75454;border:1px solid #D7545455;text-align: center;padding: 10px;margin: 6px 0;}table{border:1px solid #dbe4ef;border-collapse:collapse;text-align:left;width:100%;}table td,table th{padding:5px;}table tbody td{padding:10px;color:#5a5a5a;background:#FDFDFD;border-bottom:1px solid #f3f3f3;font-weight:normal;}table tbody .alt td{background:#E1EEf4;color:#00557F;}table tbody td:first-child{border-left: none;width: 10%;font-weight: bold;border-right: 1px solid #DFDFDF}table tbody tr:last-child td{border-bottom:none;font-weight: normal; }td kbd {line-height:1.325rem;display:block;padding:.875rem;font-size:1rem}</style></head><body><div id=\"error-page\"><h1>{$title}</h1>{$error}{$table}</div></body>");
 }
 
 // Borramos la variable por seguridad
-unset($db);
+unset($mysqli);
 
-function ip_banned() {
-   $IPBAN = (isset($_SERVER["X_FORWARDED_FOR"])) ? $_SERVER['X_FORWARDED_FOR'] : $_SERVER['REMOTE_ADDR'];
-   if(!filter_var($IPBAN, FILTER_VALIDATE_IP)) exit('Su ip no se pudo validar.');
-   if(db_exec( 'num_rows', db_exec([__FILE__, __LINE__], 'query', 
-         "SELECT id FROM w_blacklist WHERE type = 1 && value = '{$IPBAN}' LIMIT 1"
-   ))) die('Tu IP fue bloqueada por el administrador/moderador.');
+// Helpers
+if (!function_exists('safe_count')) {
+	function safe_count($data, $mode = COUNT_NORMAL) {
+		return (is_array($data) || $data instanceof Countable) ? count($data, $mode) : 0;
+	}
 }
 
-function user_banned() {
-   global $tsCore, $tsUser, $smarty;
-   $banned_data = $tsUser->getUserBanned();
-
-   if(!empty($banned_data)){
-      if(empty($_GET['action'])){
-         $smarty->assign([
-            'tsTitle' => "Usuario baneado - {$tsCore->settings['titulo']}",
-            'tsBanned' => $banned_data
-         ]);
-         $smarty->loadFilter('output', 'trimwhitespace');
-         $smarty->display('suspension.tpl');
-
-      } else die('<div class="emptyError">Usuario suspendido</div>');
-      //
-      exit;
-   }
-
-}
-
-function site_in_maintenance() {
-   global $tsCore, $tsUser, $smarty;
-   if($tsCore->settings['offline'] == 1 && ($tsUser->is_admod != 1 && $tsUser->permisos['govwm'] == false) && $_GET['action'] != 'login-user'){
-      $smarty->assign('tsTitle', "Sitio en mantenimiento - {$tsCore->settings['titulo']}");
-      $smarty->assign('tsLogin', (isset($_GET["login"]) and $_GET["login"] == 'admin' ? true : false));
-
-      if(empty($_GET["action"])) {
-         $smarty->loadFilter('output', 'trimwhitespace');
-         $smarty->display('mantenimiento.tpl');
-      } else die('Espera un poco...');
-      exit();
-   }
-}
-
-function getSSL() {
-   if (!isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] != 'on') $isSecure = false;
-   elseif (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') $isSecure = true;
-   elseif (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https' || !empty($_SERVER['HTTP_X_FORWARDED_SSL']) && $_SERVER['HTTP_X_FORWARDED_SSL'] == 'on') {
-      $isSecure = true;
-   }
-   $isSecure = ($isSecure == true) ? 'https://' : 'http://';
-   return $isSecure;
-}
-
-/**
- * Función is_countable
- * @link https://www.php.net/manual/es/function.is-countable.php
- * NOTA:
- * Si no puede actualizar a PHP 7.3, puede usar este polyfill simple:
-*/
-if (!function_exists('is_countable')) {
-   function is_countable($var) {
-      return (is_array($var) || $var instanceof Countable);
-   }
+if (!function_exists('safe_unserialize')) {
+	function safe_unserialize($data) {
+		return (!is_null($data) && ($data !== false || $data === 'b:0;')) ? unserialize($data) : [];
+	}
 }

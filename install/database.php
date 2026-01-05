@@ -2,92 +2,107 @@
 /**
  * @name database.php
  * @author PHPost Team & Miguel92
- * @copyright 2011-2022
+ * @copyright 2011-2025
  */
 
-$phpos_sql['f_comentarios'] = "CREATE TABLE IF NOT EXISTS `f_comentarios` (
-  `cid` int(11) NOT NULL AUTO_INCREMENT,
-  `c_foto_id` int(11) NOT NULL,
-  `c_user` int(11) NOT NULL,
-  `c_date` int(10) NOT NULL,
-  `c_body` text NOT NULL,
-  `c_ip` varchar(15) NOT NULL,
-  PRIMARY KEY (`cid`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;";
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `f_comentarios` (
+  `cid` INT AUTO_INCREMENT PRIMARY KEY,
+  `c_foto_id` INT DEFAULT 0,
+  `c_user` INT DEFAULT 0,
+  `c_date` INT NOT NULL DEFAULT 0,
+  `c_update` INT NOT NULL DEFAULT 0,
+  `c_body` TEXT NULL,
+  `c_ip` VARBINARY(16) DEFAULT NULL,
+  INDEX (c_foto_id),
+  INDEX (c_user)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
 
-$phpos_sql['w_visitas'] = "CREATE TABLE IF NOT EXISTS `w_visitas` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `user` int(11) NOT NULL,
-  `for` int(11) NOT NULL,
-  `type` int(1) NOT NULL,
-  `date` int(11) NOT NULL,
-  `ip` varchar(15) NOT NULL,
-  PRIMARY KEY (`id`),
-  INDEX (`for`, `type`, `user`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;";
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `f_favoritos` (
+  `fid` INT AUTO_INCREMENT PRIMARY KEY,
+  `f_foto_id` INT DEFAULT 0,
+  `f_user` INT DEFAULT 0,
+  `f_date` INT NOT NULL DEFAULT 0,
+  INDEX (f_foto_id),
+  INDEX (f_user)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
 
-$phpos_sql['f_fotos'] = "
-CREATE TABLE IF NOT EXISTS `f_fotos` (
-  `foto_id` int(11) NOT NULL AUTO_INCREMENT,
-  `f_title` varchar(40) NOT NULL,
-  `f_date` int(10) NOT NULL,
-  `f_description` text NOT NULL,
-  `f_url` varchar(200) NOT NULL,
-  `f_user` int(11) NOT NULL,
-  `f_closed` int(1) NOT NULL DEFAULT '0',
-  `f_visitas` int(1) NOT NULL DEFAULT '0',
-  `f_votos_pos` int(3) NOT NULL DEFAULT '0',
-  `f_votos_neg` int(3) NOT NULL DEFAULT '0',
-  `f_status` int(1) NOT NULL DEFAULT '0',
-  `f_last` int(1) NOT NULL DEFAULT '0',
-  `f_hits` int(11) NOT NULL DEFAULT '0',
-  `f_ip` varchar(15) NOT NULL,
-  PRIMARY KEY (`foto_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;";
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `f_fotos` (
+  `foto_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `f_album` INT DEFAULT 0,
+  `f_title` VARCHAR(80) NOT NULL DEFAULT '',
+  `f_date` INT NOT NULL DEFAULT 0,
+  `f_description` TEXT DEFAULT NULL,
+  `f_url` VARCHAR(255) NOT NULL DEFAULT '',
+  `f_user` INT DEFAULT 0,
+  `f_closed` TINYINT NOT NULL DEFAULT 0,
+  `f_visitas` BIGINT DEFAULT 0,
+  `f_status` TINYINT NOT NULL DEFAULT 0,
+  `f_last` INT NOT NULL DEFAULT 0,
+  `f_hits` BIGINT NOT NULL DEFAULT 0,
+  `f_ip` VARBINARY(16) DEFAULT NULL,
+  INDEX (f_user),
+  INDEX (f_album),
+  INDEX (f_date),
+  INDEX (f_status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
 
-$phpos_sql['f_votos'] = "
-CREATE TABLE IF NOT EXISTS `f_votos` (
-  `vid` int(11) NOT NULL AUTO_INCREMENT,
-  `v_foto_id` int(11) NOT NULL,
-  `v_user` int(11) NOT NULL,
-  `v_type` int(1) NOT NULL,
-  `v_date` int(11) NOT NULL,
-  PRIMARY KEY (`vid`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;";
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `f_votos` (
+  `vid` INT AUTO_INCREMENT PRIMARY KEY,
+  `v_foto_id` INT DEFAULT 0,
+  `v_user` INT DEFAULT 0,
+  `v_pos` BIGINT NOT NULL DEFAULT 0,
+  `v_neg` BIGINT NOT NULL DEFAULT 0,
+  `v_date` INT NOT NULL DEFAULT 0,
+  INDEX (v_foto_id),
+  INDEX (v_user)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
 
-$phpos_sql['p_borradores'] = "
-CREATE TABLE IF NOT EXISTS `p_borradores` (
-  `bid` int(11) NOT NULL AUTO_INCREMENT,
-  `b_user` int(11) NOT NULL,
-  `b_date` int(10) NOT NULL,
-  `b_title` varchar(60) NOT NULL,
-  `b_body` text,
-  `b_tags` varchar(128) DEFAULT NULL,
-  `b_category` int(4) NOT NULL,
-  `b_private` int(1) NOT NULL DEFAULT '0',
-  `b_block_comments` int(1) NOT NULL DEFAULT '0',
-  `b_sponsored` int(1) NOT NULL DEFAULT '0',
-  `b_sticky` int(1) NOT NULL DEFAULT '0',
-  `b_smileys` int(1) NOT NULL,
-  `b_visitantes` int(1) NOT NULL DEFAULT '0',
-  `b_post_id` int(11) NOT NULL DEFAULT '0',
-  `b_status` int(1) NOT NULL DEFAULT '1',
-  `b_causa` varchar(128) NOT NULL,
-  PRIMARY KEY (`bid`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;";
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `f_album` (
+  `aid` INT AUTO_INCREMENT PRIMARY KEY,
+  `a_name` VARCHAR(60) NOT NULL DEFAULT '',
+  `a_cover` VARCHAR(255) NOT NULL DEFAULT '',
+  `a_description` VARCHAR(255) DEFAULT NULL,
+  `a_status` TINYINT NOT NULL DEFAULT 0,
+  `a_date` INT NOT NULL DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
 
-$phpos_sql['p_categorias'] = "
-CREATE TABLE IF NOT EXISTS `p_categorias` (
-  `cid` int(11) NOT NULL AUTO_INCREMENT,
-  `c_orden` int(11) NOT NULL,
-  `c_nombre` varchar(32) NOT NULL,
-  `c_seo` varchar(32) NOT NULL,
-  `c_img` varchar(32) NOT NULL DEFAULT 'comments.png',
-  PRIMARY KEY (`cid`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=34 ;";
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `p_borradores` (
+  `bid` INT AUTO_INCREMENT PRIMARY KEY,
+  `b_post_id` INT DEFAULT 0,
+  `b_user` INT DEFAULT 0,
+  `b_date` INT NOT NULL DEFAULT 0,
+  `b_update` INT NOT NULL DEFAULT 0,
+  `b_title` VARCHAR(120) DEFAULT '',
+  `b_portada` VARCHAR(255) NOT NULL DEFAULT '',
+  `b_body` TEXT NULL,
+  `b_tags` VARCHAR(128) NOT NULL DEFAULT '',
+  `b_category` INT DEFAULT 0,
+  `b_private` TINYINT NOT NULL DEFAULT 0,
+  `b_block_comments` TINYINT NOT NULL DEFAULT 0,
+  `b_sponsored` TINYINT NOT NULL DEFAULT 0,
+  `b_sticky` TINYINT NOT NULL DEFAULT 0,
+  `b_smileys` TINYINT NOT NULL DEFAULT 0,
+  `b_visitantes` TINYINT NOT NULL DEFAULT 0,
+  `b_status` TINYINT NOT NULL DEFAULT 0,
+  `b_causa` varchar(128) NOT NULL DEFAULT '',
+  `b_fuentes` TEXT NULL,
+  `b_ip` VARBINARY(16) DEFAULT NULL,
+  FULLTEXT INDEX ft_index (b_tags),
+  INDEX idx_category (b_category),
+  INDEX idx_user (b_user),
+  INDEX idx_status (b_status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
 
-$phpos_sql['pv_categorias'] = "
-INSERT INTO `p_categorias` (`cid`, `c_orden`, `c_nombre`, `c_seo`, `c_img`) VALUES
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `p_categorias` (
+   `cid` INT AUTO_INCREMENT PRIMARY KEY,
+  `c_orden` INT NOT NULL,
+  `c_nombre` VARCHAR(50) NOT NULL DEFAULT '',
+  `c_seo` VARCHAR(50) NOT NULL DEFAULT '',
+  `c_img` VARCHAR(50) NOT NULL DEFAULT '',
+  `c_color` CHAR(12) NOT NULL DEFAULT ''
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
+
+$phpost_sql[] = "INSERT INTO `p_categorias` (`cid`, `c_orden`, `c_nombre`, `c_seo`, `c_img`) VALUES
 (1, 1, 'Animaciones', 'animaciones', 'flash.png'),
 (2, 2, 'Apuntes y Monografías', 'apuntesymonografias', 'report.png'),
 (3, 3, 'Arte', 'arte', 'palette.png'),
@@ -122,305 +137,302 @@ INSERT INTO `p_categorias` (`cid`, `c_orden`, `c_nombre`, `c_seo`, `c_img`) VALU
 (32, 32, 'TV, Peliculas y series', 'tvpeliculasyseries', 'tv.png'),
 (33, 33, 'Videos On-line', 'videosonline', 'film.png');";
 
-$phpos_sql['p_comentarios'] = "
-CREATE TABLE IF NOT EXISTS `p_comentarios` (
-  `cid` int(11) NOT NULL AUTO_INCREMENT,
-  `c_post_id` int(11) NOT NULL,
-  `c_user` int(11) NOT NULL,
-  `c_date` int(10) NOT NULL,
-  `c_body` text NOT NULL,
-  `c_votos` int(3) NOT NULL DEFAULT '0',
-  `c_status` ENUM(  '0',  '1' ) NOT NULL DEFAULT  '0',
-  `c_ip` varchar(15) NOT NULL,
-  PRIMARY KEY (`cid`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;";
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `p_comentarios` (
+   `cid` INT AUTO_INCREMENT PRIMARY KEY,
+  `c_post_id` INT NOT NULL,
+  `c_user` INT NOT NULL,
+  `c_date` INT NOT NULL DEFAULT 0,
+  `c_body` TEXT NULL,
+  `c_votos` INT NOT NULL DEFAULT 0,
+  `c_status` INT NOT NULL DEFAULT 0,
+  `c_answer` INT NOT NULL DEFAULT 0,
+  `c_answer_cid` INT NOT NULL DEFAULT 0,
+  `c_ip` VARBINARY(16) DEFAULT NULL,
+  INDEX idx_post (c_post_id),
+  INDEX idx_user (c_user)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
 
-$phpos_sql['p_favoritos'] = "
-CREATE TABLE IF NOT EXISTS `p_favoritos` (
-  `fav_id` int(11) NOT NULL AUTO_INCREMENT,
-  `fav_user` int(11) NOT NULL,
-  `fav_post_id` int(11) NOT NULL,
-  `fav_date` int(10) NOT NULL,
-  PRIMARY KEY (`fav_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;";
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `p_favoritos` (
+    `fav_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `fav_user` INT NOT NULL,
+  `fav_post_id` INT NOT NULL,
+  `fav_date` INT NOT NULL DEFAULT 0,
+  INDEX idx_post (fav_post_id),
+  INDEX idx_user (fav_user)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
 
-$phpos_sql['p_posts'] = "
-CREATE TABLE IF NOT EXISTS `p_posts` (
-  `post_id` int(11) NOT NULL AUTO_INCREMENT,
-  `post_user` int(11) NOT NULL,
-  `post_category` int(4) NOT NULL,
-  `post_title` varchar(60) NOT NULL,
-  `post_body` text NOT NULL,
-  `post_date` int(10) NOT NULL,
-  `post_tags` varchar(128) NOT NULL,
-  `post_puntos` int(11) unsigned NOT NULL DEFAULT '0',
-  `post_comments` int(11) NOT NULL,
-  `post_seguidores` int(11) NOT NULL,
-  `post_shared` int(11) NOT NULL,
-  `post_favoritos` int(11) NOT NULL,
-  `post_cache` int(10) NOT NULL,
-  `post_hits` int(11) NOT NULL DEFAULT '0',
-  `post_ip` varchar(15) NOT NULL,
-  `post_private` int(1) NOT NULL DEFAULT '0',
-  `post_block_comments` int(1) NOT NULL DEFAULT '0',
-  `post_sponsored` int(1) NOT NULL DEFAULT '0',
-  `post_sticky` int(1) NOT NULL DEFAULT '0',
-  `post_smileys` int(1) NOT NULL,
-  `post_visitantes` int(1) NOT NULL DEFAULT '0',
-  `post_status` int(1) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`post_id`),
-  FULLTEXT `Search` (`post_title`, `post_body`, `post_tags`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=2 ;";
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `p_posts` (
+  `post_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `post_category` INT DEFAULT 0,
+  `post_title` VARCHAR(120) DEFAULT '',
+  `post_body` TEXT NULL,
+  `post_user` INT DEFAULT 0,
+  `post_cache` INT DEFAULT 0,
+  `post_comments` BIGINT DEFAULT 0,
+  `post_favoritos` INT NOT NULL DEFAULT 0,
+  `post_hits` INT NOT NULL DEFAULT 0,
+  `post_portada` VARCHAR(255) NOT NULL DEFAULT '',
+  `post_private` TINYINT NOT NULL DEFAULT 0,
+  `post_puntos` BIGINT UNSIGNED NOT NULL DEFAULT 0,
+  `post_seguidores` BIGINT NOT NULL DEFAULT 0,
+  `post_shared` BIGINT NOT NULL DEFAULT 0,
+  `post_smileys` TINYINT NOT NULL DEFAULT 0,
+  `post_sponsored` TINYINT NOT NULL DEFAULT 0,
+  `post_draft` TINYINT NOT NULL DEFAULT 0,
+  `post_status` TINYINT NOT NULL DEFAULT 0,
+  `post_sticky` TINYINT NOT NULL DEFAULT 0,
+  `post_tags` VARCHAR(128) NOT NULL DEFAULT '',
+  `post_fuentes` TEXT NULL,
+  `post_date` INT NOT NULL DEFAULT 0,
+  `post_update` INT NOT NULL DEFAULT 0,
+  `post_block_comments` TINYINT NOT NULL DEFAULT 0,
+  `post_visitantes` TINYINT NOT NULL DEFAULT 0,
+  `post_ip` VARBINARY(16) DEFAULT NULL,
+  FULLTEXT INDEX ft_index (post_tags),
+  INDEX idx_category (post_category),
+  INDEX idx_user (post_user),
+  INDEX idx_status (post_status),
+  INDEX idx_draft (post_draft)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
 
-$phpos_sql['pv_posts'] = "
-INSERT INTO `p_posts` (`post_id`, `post_user`, `post_category`, `post_title`, `post_body`, `post_date`, `post_tags`, `post_puntos`, `post_hits`,  `post_private`, `post_block_comments`, `post_sponsored`, `post_sticky`, `post_status`) VALUES
-(1, 1, 30, 'Bienvenido a PHPost Risus', '[align=center][size=18]Este es el primer post de los miles que tendrá tu web  ;)  \r\n\r\nGracias por elegir a [url=http://www.phpost.net]PHPost[/url] como tu Link Sharing System.[/size][/align]', 0, 'PHPost, Risus, 1.3.0, Taringa!', 0, 0, 0, 0, 0, 0, 0);";
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `p_votos` (
+  `voto_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `cant` INT NOT NULL DEFAULT 0,
+  `date` INT NOT NULL DEFAULT 0,
+  `tid` INT NOT NULL,
+  `tuser` INT NOT NULL,
+  `type` TINYINT(1) NOT NULL DEFAULT 1,
+  INDEX idx_post (tid),
+  INDEX idx_user (tuser)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
 
-$phpos_sql['p_votos'] = "
-CREATE TABLE IF NOT EXISTS `p_votos` (
-  `voto_id` int(11) NOT NULL AUTO_INCREMENT,
-  `tid` int(11) NOT NULL,
-  `tuser` int(11) NOT NULL,
-  `cant` int(11) NOT NULL,
-  `type` int(1) NOT NULL DEFAULT '1',
-  `date` int(11) NOT NULL,
-  PRIMARY KEY (`voto_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;";
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `u_actividad` (
+    `ac_id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `ac_date` INT NOT NULL DEFAULT 0,
+  `ac_type` TINYINT UNSIGNED NOT NULL DEFAULT 0,
+  `obj_uno` INT UNSIGNED NOT NULL DEFAULT 0,
+  `obj_dos` INT UNSIGNED NOT NULL DEFAULT 0,
+  `user_id` INT UNSIGNED NOT NULL,
+  INDEX (`ac_type`),
+  INDEX (`user_id`),
+  INDEX (`ac_date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
 
-$phpos_sql['u_actividad'] = "
-CREATE TABLE IF NOT EXISTS `u_actividad` (
-  `ac_id` int(11) NOT NULL AUTO_INCREMENT,
-  `user_id` int(11) NOT NULL,
-  `obj_uno` int(11) NOT NULL,
-  `obj_dos` int(11) NOT NULL,
-  `ac_type` int(2) NOT NULL,
-  `ac_date` int(10) NOT NULL,
-  PRIMARY KEY (`ac_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;";
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `u_avisos` (
+  `av_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `user_id` INT NOT NULL,
+  `av_subject` VARCHAR(42) DEFAULT NULL,
+  `av_body` TEXT DEFAULT NULL,
+  `av_date` INT NOT NULL DEFAULT 0,
+  `av_read` TINYINT NOT NULL DEFAULT 0,
+  `av_type` TINYINT NOT NULL DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
 
-$phpos_sql['u_avisos'] = "
-CREATE TABLE IF NOT EXISTS `u_avisos` (
-  `av_id` int(11) NOT NULL AUTO_INCREMENT,
-  `user_id` int(11) NOT NULL,
-  `av_subject` varchar(24) NOT NULL,
-  `av_body` text NOT NULL,
-  `av_date` int(10) NOT NULL,
-  `av_read` int(1) NOT NULL DEFAULT '0',
-  `av_type` int(1) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`av_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;";
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `u_bloqueos` (
+    `bid` INT AUTO_INCREMENT PRIMARY KEY,
+  `b_user` INT NOT NULL,
+  `b_auser` INT NOT NULL,
+  `b_date` INT NOT NULL DEFAULT 0,
+  UNIQUE KEY unique_lock (b_user, b_auser),
+  INDEX idx_user (b_user),
+  INDEX idx_auser (b_auser) 
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
 
-$phpos_sql['u_bloqueos'] = "
-CREATE TABLE IF NOT EXISTS `u_bloqueos` (
-  `bid` int(11) NOT NULL AUTO_INCREMENT,
-  `b_user` int(11) NOT NULL,
-  `b_auser` int(11) NOT NULL,
-  PRIMARY KEY (`bid`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;";
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `u_follows` (
+  `follow_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `f_date` INT NOT NULL DEFAULT 0,
+  `f_id` INT NOT NULL,
+  `f_type` TINYINT NOT NULL DEFAULT 0,
+  `f_user` INT NOT NULL,
+  UNIQUE KEY unique_follow (f_user, f_id, f_type),
+  INDEX idx_user (f_user),
+  INDEX idx_target (f_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
 
-$phpos_sql['u_follows'] = "
-CREATE TABLE IF NOT EXISTS `u_follows` (
-  `follow_id` int(11) NOT NULL AUTO_INCREMENT,
-  `f_user` int(11) NOT NULL,
-  `f_id` int(11) NOT NULL,
-  `f_type` int(1) NOT NULL,
-  `f_date` int(10) NOT NULL,
-  PRIMARY KEY (`follow_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;";
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `u_mensajes` (
+  `mp_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `mp_answer` TINYINT NOT NULL DEFAULT 0,
+  `mp_date` INT NOT NULL DEFAULT 0,
+  `mp_del_from` TINYINT NOT NULL DEFAULT 0,
+  `mp_del_to` TINYINT NOT NULL DEFAULT 0,
+  `mp_from` INT NOT NULL,
+  `mp_preview` VARCHAR(100) DEFAULT NULL,
+  `mp_read_from` TINYINT NOT NULL DEFAULT 1,
+  `mp_read_mon_from` TINYINT NOT NULL DEFAULT 1,
+  `mp_read_mon_to` TINYINT NOT NULL DEFAULT 0,
+  `mp_read_to` TINYINT NOT NULL DEFAULT 0,
+  `mp_subject` VARCHAR(100) DEFAULT NULL,
+  `mp_to` INT NOT NULL,
+  INDEX idx_to (mp_to),
+  INDEX idx_from (mp_from),
+  INDEX idx_read_to (mp_read_to),
+  INDEX idx_read_from (mp_read_from)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
 
-$phpos_sql['u_mensajes'] = "
-CREATE TABLE IF NOT EXISTS `u_mensajes` (
-  `mp_id` int(11) NOT NULL AUTO_INCREMENT,
-  `mp_to` int(11) NOT NULL,
-  `mp_from` int(11) NOT NULL,
-  `mp_answer` int(1) NOT NULL DEFAULT '0',
-  `mp_read_to` int(1) NOT NULL DEFAULT '0',
-  `mp_read_from` int(1) NOT NULL DEFAULT '1',
-  `mp_read_mon_to` int(1) NOT NULL DEFAULT '0',
-  `mp_read_mon_from` int(1) NOT NULL DEFAULT '1',
-  `mp_del_to` int(1) NOT NULL DEFAULT '0',
-  `mp_del_from` int(1) NOT NULL DEFAULT '0',
-  `mp_subject` varchar(50) NOT NULL,
-  `mp_preview` varchar(75) NOT NULL,
-  `mp_date` int(10) NOT NULL,
-  PRIMARY KEY (`mp_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;";
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `u_miembros` (
+  `user_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `user_activo` TINYINT NOT NULL DEFAULT 0,
+  `user_amigos` BIGINT NOT NULL DEFAULT 0,
+  `user_bad_hits` INT DEFAULT 0,
+  `user_baneado` TINYINT NOT NULL DEFAULT 0,
+  `user_cache` INT NOT NULL DEFAULT 0,
+  `user_comentarios` BIGINT DEFAULT 0,
+  `user_email` VARCHAR(255) UNIQUE NOT NULL,
+  `user_last_ip` VARBINARY(16) DEFAULT NULL,
+  `user_lastactive` INT NOT NULL DEFAULT 0,
+  `user_lastlogin` INT NOT NULL DEFAULT 0,
+  `user_lastpost` INT NOT NULL DEFAULT 0,
+  `user_name_changes` TINYINT UNSIGNED NOT NULL DEFAULT 3,
+  `user_name` VARCHAR(50) UNIQUE NOT NULL,
+  `user_nextpuntos` INT NOT NULL DEFAULT 0,
+  `user_password` VARCHAR(255) NOT NULL,
+  `user_posts` BIGINT DEFAULT 0,
+  `user_puntos` BIGINT DEFAULT 0,
+  `user_puntosxdar` INT DEFAULT 0,
+  `user_rango` INT DEFAULT 3,
+  `user_registro` INT NOT NULL DEFAULT 0,
+  `user_seguidores` BIGINT NOT NULL DEFAULT 0,
+  `user_seguidos` BIGINT NOT NULL DEFAULT 0,
+  INDEX idx_name (user_name),
+  INDEX idx_email (user_email),
+  INDEX idx_activo (user_activo),
+  INDEX idx_baneado (user_baneado),
+  INDEX idx_status (user_activo, user_baneado)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
 
-$phpos_sql['u_miembros'] = "
-CREATE TABLE IF NOT EXISTS `u_miembros` (
-  `user_id` int(11) NOT NULL AUTO_INCREMENT,
-  `user_name` varchar(16) NOT NULL,
-  `user_password` varchar(32) NOT NULL,
-  `user_email` varchar(35) NOT NULL,
-  `user_rango` int(3) NOT NULL DEFAULT '3',
-  `user_puntos` int(6) unsigned NOT NULL DEFAULT '0',
-  `user_posts` int(11) NOT NULL,
-  `user_comentarios` int(11) NOT NULL,
-  `user_seguidores` int(11) NOT NULL,
-  `user_cache` int(10) NOT NULL,
-  `user_puntosxdar` int(2) unsigned NOT NULL DEFAULT '0',
-  `user_bad_hits` int(2) unsigned NOT NULL DEFAULT '0',
-  `user_nextpuntos` int(10) NOT NULL DEFAULT '0',
-  `user_registro` int(10) NOT NULL DEFAULT '0',
-  `user_lastlogin` int(10) NOT NULL DEFAULT '0',
-  `user_lastactive` int(10) NOT NULL DEFAULT '0',
-  `user_lastpost` int(10) NOT NULL DEFAULT '0',
-  `user_last_ip` varchar(15) NOT NULL DEFAULT '0',
-  `user_name_changes` int(11) NOT NULL DEFAULT '3',
-  `user_activo` int(1) NOT NULL DEFAULT '0',
-  `user_baneado` int(1) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`user_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;";
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `u_miembros_sets` (
+  `user_id` INT PRIMARY KEY,
+  `user_avatares` TEXT NULL,
+  `user_chat` INT NOT NULL DEFAULT 0,
+  `user_cover` TEXT NULL,
+  `user_double_secret` TEXT NULL, /* user_secret_2fa */
+  `user_portada` VARCHAR(255) DEFAULT NULL,
+  `user_recovery` TEXT NULL,
+  `user_socials` TEXT NULL,
+  `user_vip` TINYINT NOT NULL DEFAULT 0,
+  `user_verificado` TINYINT NOT NULL DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
 
-$phpos_sql['u_nicks'] = "
-CREATE TABLE IF NOT EXISTS `u_nicks` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `user_id` int(11) NOT NULL,
-  `user_email` varchar(50) NOT NULL,
-  `name_1` varchar(15) NOT NULL,
-  `name_2` varchar(15) NOT NULL,
-  `hash` varchar(32) NOT NULL,
-  `time` int(11) NOT NULL,
-  `ip` varchar(15) NOT NULL,
-  `estado` int(1) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;";
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `u_nicks` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `user_id` INT NOT NULL,
+  `name_1` VARCHAR(50) UNIQUE NOT NULL,
+  `name_2` VARCHAR(50) UNIQUE NOT NULL,
+  `user_email` VARCHAR(255) UNIQUE NOT NULL,
+  `estado` TINYINT NOT NULL DEFAULT 0,
+  `hash` VARCHAR(200) NOT NULL DEFAULT '',
+  `ip` VARBINARY(16) DEFAULT NULL,
+  `time` INT NOT NULL DEFAULT 0,
+  INDEX idx_user_id (user_id),
+  INDEX idx_estado (estado)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
 
-$phpos_sql['u_monitor'] = "
-CREATE TABLE IF NOT EXISTS `u_monitor` (
-  `not_id` int(11) NOT NULL AUTO_INCREMENT,
-  `user_id` int(11) NOT NULL,
-  `obj_user` int(11) NOT NULL,
-  `obj_uno` int(11) NOT NULL DEFAULT '0',
-  `obj_dos` int(11) NOT NULL DEFAULT '0',
-  `obj_tres` int(11) NOT NULL DEFAULT '0',
-  `not_type` int(2) NOT NULL,
-  `not_date` int(10) NOT NULL,
-  `not_total` int(2) NOT NULL DEFAULT '1',
-  `not_menubar` int(1) NOT NULL DEFAULT '2',
-  `not_monitor` int(1) NOT NULL DEFAULT '1',
-  PRIMARY KEY (`not_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;";
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `u_monitor` (
+  `not_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `not_date` INT NOT NULL DEFAULT 0,
+  `not_menubar` TINYINT NOT NULL DEFAULT 2,
+  `not_monitor` TINYINT NOT NULL DEFAULT 1,
+  `not_total` TINYINT NOT NULL DEFAULT 1,
+  `not_type` TINYINT NOT NULL DEFAULT 0,
+  `obj_uno` INT NOT NULL DEFAULT 0,
+  `obj_dos` INT NOT NULL DEFAULT 0,
+  `obj_tres` INT NOT NULL DEFAULT 0,
+  `obj_user` INT DEFAULT NULL,
+  `user_id` INT DEFAULT NULL,
+  INDEX idx_user (user_id),
+  INDEX idx_type (not_type),
+  INDEX idx_date (not_date)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
 
-$phpos_sql['u_muro'] = "
-CREATE TABLE IF NOT EXISTS `u_muro` (
-  `pub_id` int(11) NOT NULL AUTO_INCREMENT,
-  `p_user` int(11) NOT NULL,
-  `p_user_pub` int(11) NOT NULL,
-  `p_date` int(10) NOT NULL,
-  `p_comments` int(4) NOT NULL DEFAULT '0',
-  `p_body` text NOT NULL,
-  `p_likes` int(4) NOT NULL DEFAULT '0',
-  `p_type` int(1) NOT NULL,
-  `p_ip` varchar(15) NOT NULL,
-  PRIMARY KEY (`pub_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;";
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `u_muro` (
+  `pub_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `p_body` TEXT DEFAULT NULL,
+  `p_comments` INT DEFAULT 0,
+  `p_date` INT NOT NULL DEFAULT 0,
+  `p_ip` VARBINARY(16) DEFAULT NULL,
+  `p_likes` INT DEFAULT 0,
+  `p_nick` VARCHAR(24) NOT NULL DEFAULT '',
+  `p_type` TINYINT DEFAULT 0,
+  `p_update` INT NOT NULL DEFAULT 0,
+  `p_user_pub` INT DEFAULT NULL,
+  `p_user` INT DEFAULT NULL,
+  `p_edit` INT NOT NULL DEFAULT 0,
+  /* Posibilidad de usarlo */
+  `p_visibility` ENUM('everyone','followers','friends','nobody') DEFAULT 'everyone',
+  `p_adult` TINYINT DEFAULT 0,
+  INDEX idx_user (p_user),
+  INDEX idx_user_pub (p_user_pub),
+  INDEX idx_date (p_date)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
 
-$phpos_sql['u_muro_adjuntos'] = "
-CREATE TABLE IF NOT EXISTS `u_muro_adjuntos` (
-  `adj_id` int(11) NOT NULL AUTO_INCREMENT,
-  `pub_id` int(11) NOT NULL,
-  `a_title` varchar(100) NOT NULL,
-  `a_url` text NOT NULL,
-  `a_img` text NOT NULL,
-  `a_desc` text NOT NULL,
-  PRIMARY KEY (`adj_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;";
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `u_muro_adjuntos` (
+  `adj_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `adj_description` VARCHAR(255) NOT NULL DEFAULT '', # a_desc
+  `adj_image` VARCHAR(255) NOT NULL DEFAULT '', # a_img
+  `adj_title` VARCHAR(100) NOT NULL DEFAULT '',
+  `adj_url` VARCHAR(255) NOT NULL DEFAULT '',
+  `adj_date` VARCHAR(255) NOT NULL DEFAULT '',
+  `pub_id` INT NOT NULL DEFAULT 0,
+  INDEX idx_pub_id (pub_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
 
-$phpos_sql['u_muro_comentarios'] = "
-CREATE TABLE IF NOT EXISTS `u_muro_comentarios` (
-  `cid` int(11) NOT NULL AUTO_INCREMENT,
-  `pub_id` int(11) NOT NULL,
-  `c_user` int(11) NOT NULL,
-  `c_date` int(10) NOT NULL,
-  `c_body` text NOT NULL,
-  `c_likes` int(4) NOT NULL,
-  `c_ip` varchar(15) NOT NULL,
-  PRIMARY KEY (`cid`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;";
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `u_muro_comentarios` (
+  `cid` INT AUTO_INCREMENT PRIMARY KEY,
+  `pub_id` INT DEFAULT NULL,
+  `c_user` INT DEFAULT NULL,
+  `c_date` INT NOT NULL DEFAULT 0,
+  `c_body` TEXT,
+  `c_likes` INT DEFAULT 0,
+  `c_ip` VARBINARY(16) DEFAULT NULL,
+  INDEX idx_pub_id (pub_id),
+  INDEX idx_c_user (c_user)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
 
-$phpos_sql['u_muro_likes'] = "
-CREATE TABLE IF NOT EXISTS `u_muro_likes` (
-  `like_id` int(11) NOT NULL AUTO_INCREMENT,
-  `user_id` int(11) NOT NULL,
-  `obj_id` int(11) NOT NULL,
-  `obj_type` int(1) NOT NULL,
-  PRIMARY KEY (`like_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;";
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `u_muro_likes` (
+  `like_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `user_id` INT DEFAULT NULL,
+  `obj_id` INT DEFAULT NULL,
+  `obj_type` TINYINT NOT NULL,
+  INDEX idx_obj (obj_type, obj_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
 
-$phpos_sql['u_perfil'] = "
-CREATE TABLE IF NOT EXISTS `u_perfil` (
-  `user_id` int(11) NOT NULL,
-  `user_dia` int(2) NOT NULL,
-  `user_mes` int(2) NOT NULL,
-  `user_ano` int(4) NOT NULL,
-  `user_pais` varchar(2) NOT NULL,
-  `user_estado` int(2) NOT NULL DEFAULT '1',
-  `user_sexo` int(1) NOT NULL DEFAULT '1',
-  `user_firma` text NOT NULL,
-  `p_nombre` varchar(32) NOT NULL,
-  `p_avatar` int(1) NOT NULL DEFAULT '0',
-  `p_mensaje` varchar(60) NOT NULL,
-  `p_sitio` varchar(60) NOT NULL,
-  `p_socials` text NOT NULL,
-  `p_gustos` varchar(71) NOT NULL DEFAULT 'a:5:{i:0;i:0;i:1;i:0;i:2;i:0;i:3;i:0;i:4;i:0;}',
-  `p_estado` int(1) NOT NULL DEFAULT '0',
-  `p_hijos` int(1) NOT NULL DEFAULT '0',
-  `p_vivo` int(1) NOT NULL DEFAULT '0',
-  `p_altura` int(3) NOT NULL DEFAULT '0',
-  `p_peso` int(3) NOT NULL DEFAULT '0',
-  `p_pelo` int(1) NOT NULL DEFAULT '0',
-  `p_ojos` int(1) NOT NULL DEFAULT '0',
-  `p_fisico` int(1) NOT NULL DEFAULT '0',
-  `p_dieta` int(1) NOT NULL DEFAULT '0',
-  `p_tengo` varchar(60) NOT NULL DEFAULT 'a:2:{i:0;i:0;i:1;i:0;}',
-  `p_fumo` int(1) NOT NULL DEFAULT '0',
-  `p_tomo` int(1) NOT NULL DEFAULT '0',
-  `p_estudios` int(1) NOT NULL DEFAULT '0',
-  `p_idiomas` varchar(102) NOT NULL DEFAULT 'a:7:{i:0;i:0;i:1;i:0;i:2;i:0;i:3;i:0;i:4;i:0;i:5;i:0;i:6;i:0;}',
-  `p_profesion` varchar(32) NOT NULL,
-  `p_empresa` varchar(32) NOT NULL,
-  `p_sector` int(2) NOT NULL DEFAULT '0',
-  `p_ingresos` int(1) NOT NULL DEFAULT '0',
-  `p_int_prof` text NOT NULL,
-  `p_hab_prof` text NOT NULL,
-  `p_intereses` text NOT NULL,
-  `p_hobbies` text NOT NULL,
-  `p_tv` text NOT NULL,
-  `p_musica` text NOT NULL,
-  `p_deportes` text NOT NULL,
-  `p_libros` text NOT NULL,
-  `p_peliculas` text NOT NULL,
-  `p_comida` text NOT NULL,
-  `p_heroes` text NOT NULL,
-  `p_configs` varchar(100) NOT NULL DEFAULT 'a:3:{s:1:\"m\";s:1:\"5\";s:2:\"mf\";i:5;s:3:\"rmp\";s:1:\"5\";}',
-  `p_total` varchar(54) NOT NULL DEFAULT 'a:6:{i:0;i:5;i:1;i:0;i:2;i:0;i:3;i:0;i:4;i:0;i:5;i:0;}',
-  PRIMARY KEY (`user_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `u_perfil` (
+  `user_id` INT PRIMARY KEY,
+  `user_dia` TINYINT DEFAULT 0,
+  `user_mes` TINYINT DEFAULT 0,
+  `user_ano` SMALLINT DEFAULT 0,
+  `user_pais` CHAR(2) NOT NULL DEFAULT '',
+  `user_estado` TINYINT NOT NULL DEFAULT 1,
+  `user_sexo` CHAR(10) NOT NULL DEFAULT 'none',
+  `user_firma` VARCHAR(255) NOT NULL DEFAULT '',
+  `p_nombre` VARCHAR(100) DEFAULT NULL,
+  `p_avatar` TINYINT NOT NULL DEFAULT 0,
+  `p_mensaje` TEXT DEFAULT NULL,
+  `p_sitio` VARCHAR(255) DEFAULT NULL,
+  `p_socials` TEXT DEFAULT NULL,
+  `p_configs` VARCHAR(180) NOT NULL DEFAULT 'a:3:{s:1:\"m\";s:1:\"5\";s:2:\"mf\";i:5;s:3:\"rmp\";s:1:\"5\";}',
+  `p_total` VARCHAR(54) NOT NULL DEFAULT 'a:6:{i:0;i:5;i:1;i:0;i:2;i:0;i:3;i:0;i:4;i:0;i:5;i:0;}'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
 
-$phpos_sql['u_portal'] = "
-CREATE TABLE IF NOT EXISTS `u_portal` (
-  `user_id` int(11) NOT NULL,
-  `last_posts_visited` text NOT NULL,
-  `last_posts_shared` text NOT NULL,
-  `last_posts_cats` text NOT NULL,
-  `c_monitor` text NOT NULL,
-  PRIMARY KEY (`user_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `u_portal` (
+  `user_id` INT PRIMARY KEY,
+  `last_posts_visited` TEXT NULL,
+  `last_posts_shared` TEXT NULL,
+  `last_posts_cats` TEXT NULL,
+  `c_monitor` VARCHAR(255) NOT NULL DEFAULT 'f1,f2,f3,f8,f9,f4,f5,f10,f6,f7,f11,f12,f13,f14,f18,f19,20,f21'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
 
-$phpos_sql['u_rangos'] = "
-CREATE TABLE IF NOT EXISTS `u_rangos` (
-  `rango_id` int(3) NOT NULL AUTO_INCREMENT,
-  `r_name` varchar(32) NOT NULL,
-  `r_color` varchar(6) NOT NULL DEFAULT '171717',
-  `r_image` varchar(32) NOT NULL DEFAULT 'new.png',
-  `r_cant` int(5) NOT NULL,
-  `r_allows` varchar(1000) NOT NULL,
-  `r_type` int(1) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`rango_id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=8 ;";
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `u_rangos` (
+  `rango_id` INT PRIMARY KEY AUTO_INCREMENT,
+  `r_allows` VARCHAR(1000) NOT NULL DEFAULT '',
+  `r_cant` INT NOT NULL DEFAULT 0,
+  `r_color` CHAR(12) NOT NULL DEFAULT '171717',
+  `r_image` VARCHAR(32) NOT NULL DEFAULT 'new.png',
+  `r_name` VARCHAR(32) NOT NULL DEFAULT '',
+  `r_type` INT NOT NULL DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
 
-$phpos_sql['uv_rangos'] = "
+$phpost_sql[] = "
 INSERT INTO `u_rangos` (`rango_id`, `r_name`, `r_color`, `r_image`, `r_cant`, `r_allows`, `r_type`) VALUES
 (1, 'Administrador', 'D6030B', 'rosette.png', 0, 'a:4:{s:4:\"suad\";s:2:\"on\";s:4:\"goaf\";s:1:\"5\";s:5:\"gopfp\";s:2:\"20\";s:5:\"gopfd\";s:2:\"50\";}', 0),
 (2, 'Moderador', 'ff9900', 'shield.png', 0, 'a:4:{s:4:\"sumo\";s:2:\"on\";s:4:\"goaf\";s:2:\"15\";s:5:\"gopfp\";s:2:\"18\";s:5:\"gopfd\";s:2:\"30\";}', 0),
@@ -430,241 +442,275 @@ INSERT INTO `u_rangos` (`rango_id`, `r_name`, `r_color`, `r_image`, `r_cant`, `r
 (6, 'Great User', '01A021', 'star_gold_3.png', 0, 'a:12:{s:4:\"godp\";s:2:\"on\";s:4:\"gopp\";s:2:\"on\";s:5:\"gopcp\";s:2:\"on\";s:5:\"govpp\";s:2:\"on\";s:5:\"govpn\";s:2:\"on\";s:5:\"goepc\";s:2:\"on\";s:5:\"godpc\";s:2:\"on\";s:4:\"gopf\";s:2:\"on\";s:5:\"gopcf\";s:2:\"on\";s:4:\"goaf\";s:2:\"20\";s:5:\"gopfp\";s:2:\"11\";s:5:\"gopfd\";s:2:\"15\";}', 0),
 (7, 'Gold User', 'cc6600', 'asterisk_yellow.png', 120, 'a:12:{s:4:\"godp\";s:2:\"on\";s:4:\"gopp\";s:2:\"on\";s:5:\"gopcp\";s:2:\"on\";s:5:\"govpp\";s:2:\"on\";s:5:\"govpn\";s:2:\"on\";s:5:\"goepc\";s:2:\"on\";s:5:\"godpc\";s:2:\"on\";s:4:\"gopf\";s:2:\"on\";s:5:\"gopcf\";s:2:\"on\";s:4:\"goaf\";s:2:\"20\";s:5:\"gopfp\";s:2:\"12\";s:5:\"gopfd\";s:2:\"25\";}', 1);";
 
-$phpos_sql['u_respuestas'] = "
-CREATE TABLE IF NOT EXISTS `u_respuestas` (
-  `mr_id` int(11) NOT NULL AUTO_INCREMENT,
-  `mp_id` int(11) NOT NULL,
-  `mr_from` int(11) NOT NULL,
-  `mr_body` text NOT NULL,
-  `mr_ip` varchar(15) NOT NULL,
-  `mr_date` int(10) NOT NULL,
-  PRIMARY KEY (`mr_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;";
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `u_respuestas` (
+  `mr_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `mp_id` INT NOT NULL,
+  `mr_from` INT NOT NULL,
+  `mr_body` TEXT DEFAULT NULL,
+  `mr_ip` VARBINARY(16) DEFAULT NULL,
+  `mr_date` INT NOT NULL DEFAULT 0,
+  INDEX idx_mp_id (mp_id),
+  INDEX idx_mr_from (mr_from)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
 
-$phpos_sql['u_sessions'] = "
-CREATE TABLE IF NOT EXISTS `u_sessions` (
-  `session_id` varchar(32) NOT NULL,
-  `session_user_id` int(11) unsigned NOT NULL DEFAULT '0',
-  `session_ip` varchar(40) NOT NULL,
-  `session_time` int(10) unsigned NOT NULL DEFAULT '0',
-  `session_autologin` tinyint(1) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`session_id`),
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `u_sessions` (
+  `session_id` CHAR(32) PRIMARY KEY DEFAULT '',
+  `session_user_id` INT UNSIGNED NOT NULL DEFAULT 0,
+  `session_ip` VARBINARY(16) DEFAULT NULL,
+  `session_token` CHAR(100) NOT NULL DEFAULT '',
+  `session_time` INT NOT NULL DEFAULT 0,
+  `session_autologin` TINYINT NOT NULL DEFAULT 0,
   KEY `session_user_id` (`session_user_id`),
   KEY `session_time` (`session_time`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
 
-$phpos_sql['u_suspension'] = "
-CREATE TABLE IF NOT EXISTS `u_suspension` (
-  `susp_id` int(11) NOT NULL AUTO_INCREMENT,
-  `user_id` int(11) NOT NULL,
-  `susp_causa` text NOT NULL,
-  `susp_date` int(10) NOT NULL,
-  `susp_termina` int(10) NOT NULL,
-  `susp_mod` int(11) NOT NULL,
-  `susp_ip` varchar(15) NOT NULL,
-  PRIMARY KEY (`susp_id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;";
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `u_suspension` (
+  `susp_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `user_id` INT DEFAULT 0,
+  `susp_causa` TEXT DEFAULT NULL,
+  `susp_date` INT NOT NULL DEFAULT 0,
+  `susp_termina` INT NOT NULL DEFAULT 0,
+  `susp_mod` INT DEFAULT 0,
+  `susp_ip` VARBINARY(16) DEFAULT NULL,
+  INDEX idx_user (user_id),
+  INDEX idx_mod (susp_mod)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
 
-$phpos_sql['w_afiliados'] = "
-CREATE TABLE IF NOT EXISTS `w_afiliados` (
-  `aid` int(11) NOT NULL AUTO_INCREMENT,
-  `a_titulo` varchar(35) NOT NULL,
-  `a_url` varchar(40) NOT NULL,
-  `a_banner` varchar(100) NOT NULL,
-  `a_descripcion` varchar(200) NOT NULL,
-  `a_sid` int(11) NOT NULL DEFAULT '0',
-  `a_hits_in` int(11) NOT NULL DEFAULT '0',
-  `a_hits_out` int(11) NOT NULL DEFAULT '0',
-  `a_date` int(10) NOT NULL,
-  `a_active` int(1) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`aid`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;";
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `w_afiliados` (
+  `aid` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `a_titulo` VARCHAR(80) NOT NULL,
+  `a_url` VARCHAR(255) NOT NULL,
+  `a_banner` VARCHAR(255) DEFAULT NULL,
+  `a_descripcion` VARCHAR(255) DEFAULT NULL,
+  `a_sid` VARCHAR(32) DEFAULT NULL,
+  `a_hits_in` INT UNSIGNED DEFAULT 0,
+  `a_hits_out` INT UNSIGNED DEFAULT 0,
+  `a_date` INT NOT NULL DEFAULT 0,
+  `a_active` TINYINT DEFAULT 1,
+  INDEX idx_active (a_active),
+  INDEX idx_code (a_sid)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
 
-$phpos_sql['w_configuracion'] = "
-CREATE TABLE IF NOT EXISTS `w_configuracion` (
-  `tscript_id` int(11) NOT NULL,
-  `titulo` varchar(24) NOT NULL,
-  `slogan` varchar(32) NOT NULL,
-  `url` tinytext NOT NULL,
-  `providers` text,
-  `email` varchar(60) NOT NULL,
-  `banner` varchar(100) NOT NULL,
-  `tema_id` int(11) NOT NULL,
-  `ads_300` text NOT NULL,
-  `ads_468` text NOT NULL,
-  `ads_160` text NOT NULL,
-  `ads_728` text NOT NULL,
-  `ads_search` varchar(50) NOT NULL,
-  `chat_id` varchar(20) NOT NULL,
-  `xat_id` varchar(20) NOT NULL,
-  `c_last_active` int(2) NOT NULL,
-  `c_allow_sess_ip` int(1) NOT NULL,
-  `c_count_guests` int(1) NOT NULL,
-  `c_reg_active` int(1) NOT NULL,
-  `c_reg_activate` int(1) NOT NULL,
-  `c_reg_rango` int(5) NOT NULL,
-  `c_met_welcome` int(1) NOT NULL,
-  `c_message_welcome` varchar(500) NOT NULL,
-  `c_fotos_private` int(11) NOT NULL,
-  `c_hits_guest` int(1) NOT NULL,
-  `c_keep_points` int(1) NOT NULL,
-  `c_allow_points` int(11) NOT NULL,
-  `c_allow_edad` int(11) NOT NULL,
-  `c_max_posts` int(2) NOT NULL,
-  `c_max_com` int(3) NOT NULL,
-  `c_max_nots` int(3) NOT NULL,
-  `c_max_acts` int(3) NOT NULL,
-  `c_newr_type` int(11) NOT NULL,
-  `c_allow_sump` int(11) NOT NULL,
-  `c_allow_firma` int(1) NOT NULL,
-  `c_allow_upload` int(1) NOT NULL,
-  `c_allow_portal` int(1) NOT NULL,
-  `c_allow_live` int(1) NOT NULL,
-  `c_see_mod` int(1) NOT NULL,
-  `c_stats_cache` int(7) NOT NULL DEFAULT '15',
-  `c_desapprove_post` int(1) NOT NULL,
-  `offline` int(1) NOT NULL DEFAULT '0',
-  `offline_message` varchar(255) NOT NULL,
-  `pkey` varchar(55) NOT NULL,
-  `skey` varchar(55) NOT NULL,
-  `version` varchar(16) NOT NULL,
-  `version_code` varchar(16) NOT NULL,
-  PRIMARY KEY (`tscript_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `w_configuracion` (
+  `phpost_id` INT PRIMARY KEY,
+  `titulo` VARCHAR(64) UNIQUE NOT NULL DEFAULT '',
+  `slogan` VARCHAR(128) UNIQUE NOT NULL DEFAULT '',
+  `url` VARCHAR(255) NOT NULL DEFAULT '',
+  `email` VARCHAR(255) UNIQUE NOT NULL DEFAULT '',
+  `banner` VARCHAR(255) NOT NULL DEFAULT '',
+  `tema` VARCHAR(30) NOT NULL DEFAULT 'default',
+  `ads_300` TEXT DEFAULT NULL,
+  `ads_468` TEXT DEFAULT NULL,
+  `ads_160` TEXT DEFAULT NULL,
+  `ads_728` TEXT DEFAULT NULL,
+  `ads_search` VARCHAR(100) NOT NULL DEFAULT '',
+  `c_ver_vistas_global` TINYINT NOT NULL DEFAULT 0,
+  `c_quitar_vistas_global` TINYINT NOT NULL DEFAULT 0,
+  `c_visitas_tiempo` TINYINT NOT NULL DEFAULT 5,
+  `c_avatar` TINYINT NOT NULL DEFAULT 0,
+  `c_last_active` TINYINT NOT NULL DEFAULT 3,
+  `c_allow_sess_ip` TINYINT NOT NULL DEFAULT 1,
+  `c_count_guests` TINYINT NOT NULL DEFAULT 0,
+  `c_reg_active` TINYINT NOT NULL DEFAULT 1,
+  `c_reg_activate` TINYINT NOT NULL DEFAULT 1,
+  `c_reg_rango` INT NOT NULL DEFAULT 3,
+  `c_met_welcome` TINYINT NOT NULL DEFAULT 0,
+  `c_message_welcome` varchar(500) NOT NULL DEFAULT 'Hola [usuario], [welcome] a [b][web][/b].',
+  `c_fotos_private` TINYINT NOT NULL DEFAULT 0,
+  `c_hits_guest` TINYINT NOT NULL DEFAULT 0,
+  `c_keep_points` TINYINT NOT NULL DEFAULT 0,
+  `c_allow_points` TINYINT NOT NULL DEFAULT 0,
+  `c_allow_edad` TINYINT NOT NULL DEFAULT 16,
+  `c_max_posts` INT NOT NULL DEFAULT 16,
+  `c_max_com` INT NOT NULL DEFAULT 25,
+  `c_max_nots` INT NOT NULL DEFAULT 99,
+  `c_max_acts` INT NOT NULL DEFAULT 99,
+  `c_newr_type` TINYINT NOT NULL DEFAULT 0,
+  `c_allow_ticket` TINYINT NOT NULL DEFAULT 0,
+  `c_allow_foro` TINYINT NOT NULL DEFAULT 0,
+  `c_allow_fuentes` TINYINT NOT NULL DEFAULT 0,
+  `c_allow_sump` TINYINT NOT NULL DEFAULT 0,
+  `c_allow_firma` TINYINT NOT NULL DEFAULT 1,
+  `c_allow_upload` TINYINT NOT NULL DEFAULT 0,
+  `c_allow_portal` TINYINT NOT NULL DEFAULT 1,
+  `c_allow_live` TINYINT NOT NULL DEFAULT 1,
+  `c_see_mod` TINYINT NOT NULL DEFAULT 0,
+  `c_stats_cache` TINYINT NOT NULL DEFAULT 15,
+  `c_desapprove_post` TINYINT NOT NULL DEFAULT 0,
+  `offline` TINYINT NOT NULL DEFAULT 0,
+  `offline_message` VARCHAR(255) NOT NULL DEFAULT 'Estamos en mantenimiento',
+  `pkey` VARCHAR(72) NOT NULL DEFAULT '',
+  `skey` VARCHAR(72) NOT NULL DEFAULT '',
+  `version` VARCHAR(30) NOT NULL DEFAULT '',
+  `version_code` VARCHAR(30) NOT NULL DEFAULT ''
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
 
-$phpos_sql['wv_configuracion'] = "
-INSERT INTO `w_configuracion` (`tscript_id`, `titulo`, `slogan`, `url`, `providers`, `email`, `banner`, `tema_id`, `ads_300`, `ads_468`, `ads_160`, `ads_728`, `ads_search`, `chat_id`, `xat_id`, `c_last_active`, `c_allow_sess_ip`, `c_count_guests`, `c_reg_active`, `c_reg_activate`, `c_reg_rango`, `c_met_welcome`, `c_message_welcome`, `c_fotos_private`, `c_hits_guest`, `c_keep_points`, `c_allow_points`, `c_allow_edad`, `c_max_posts`, `c_max_com`, `c_max_nots`, `c_max_acts`, `c_newr_type`, `c_allow_sump`, `c_allow_firma`, `c_allow_upload`, `c_allow_portal`, `c_allow_live`, `c_see_mod`, `c_stats_cache`, `c_desapprove_post`, `offline`, `offline_message`, `pkey`, `skey`, `version`, `version_code`) VALUES
-(1, 'Taringa!', 'Inteligencia Recargada', '', '', '', 'http://i.imgur.com/2nEr3s.png?1', 1, '<a href=\"http://www.phpost.net/\" target=\"_blank\"><img src=\"/themes/default/images/ad300.gif\"/></a>', '<a href=\"http://www.phpost.net/\" target=\"_blank\"><img src=\"/themes/default/images/ad468.png\"/></a>', '<a href=\"http://www.phpost.net/\" target=\"_blank\"><img src=\"/themes/default/images/ad160.gif\"/></a>', '<a href=\"http://www.phpost.net/\" target=\"_blank\"><img src=\"/themes/default/images/ad728.gif\"/></a>', 'partner-pub-5535725517227860:7900040286', '', 0, 15, 1, 0, 1, 1, 3, 0, 'Hola [usuario], [welcome] a [b][web][/b].', 0, 0, 0, 0, 18, 50, 50, 99, 99, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 'Estamos en mantenimiento', '', '', 'Risus 1.3.0', 'risus_1_3_0');";
+$phpost_sql[] = "INSERT INTO `w_configuracion` (`phpost_id`) VALUES (1);";
 
-$phpos_sql['w_denuncias'] = "
-CREATE TABLE IF NOT EXISTS `w_denuncias` (
-  `did` int(11) NOT NULL AUTO_INCREMENT,
-  `obj_id` int(11) NOT NULL,
-  `d_user` int(11) NOT NULL,
-  `d_razon` int(2) NOT NULL,
-  `d_extra` text NOT NULL,
-  `d_total` int(1) NOT NULL DEFAULT '1',
-  `d_type` int(1) NOT NULL,
-  `d_date` int(10) NOT NULL,
-  PRIMARY KEY (`did`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;";
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `w_sitemap` (
+  `id` INT PRIMARY KEY AUTO_INCREMENT,
+  `url` VARCHAR(255) NULL,
+  `frecuencia` VARCHAR(15) NOT NULL DEFAULT '',
+  `fecha` INT NOT NULL DEFAULT 0,
+  `prioridad` DECIMAL(2,1) NOT NULL DEFAULT 0,
+  INDEX idx_url (url)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 AUTO_INCREMENT=1;";
 
-$phpos_sql['w_contacts'] = "
-CREATE TABLE IF NOT EXISTS `w_contacts` (
-`id` int(11) NOT NULL AUTO_INCREMENT,
-`user_id` int(11) NOT NULL,
-`user_email` varchar(50) NOT NULL,
-`time` int(15) NOT NULL,
-`type` int(1) NOT NULL,
-`hash` varchar(32) NOT NULL,
-PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;";
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `w_sitemap_control` (
+  `sid` INT PRIMARY KEY DEFAULT 0,
+  `register_post` TINYINT NOT NULL DEFAULT 0,
+  `register_foto` TINYINT NOT NULL DEFAULT 0,
+  `register_comunidades` TINYINT NOT NULL DEFAULT 0,
+  `register_temas` TINYINT NOT NULL DEFAULT 0,
+  `register_respuestas` TINYINT NOT NULL DEFAULT 0,
+  `update_post` TINYINT NOT NULL DEFAULT 0,
+  `update_foto` TINYINT NOT NULL DEFAULT 0,
+  `update_comunidades` TINYINT NOT NULL DEFAULT 0,
+  `update_temas` TINYINT NOT NULL DEFAULT 0,
+  `update_respuestas` TINYINT NOT NULL DEFAULT 0,
+  INDEX idx_sid (sid)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
 
-$phpos_sql['w_medallas'] = "
-CREATE TABLE IF NOT EXISTS `w_medallas` (
-  `medal_id` int(11) NOT NULL AUTO_INCREMENT,
-  `m_autor` int(11) NOT NULL,
-  `m_title` varchar(25) NOT NULL,
-  `m_description` varchar(120) NOT NULL,
-  `m_image` varchar(120) NOT NULL,
-  `m_cant` int(11) NOT NULL,
-  `m_type` int(1) NOT NULL,
-  `m_cond_user` int(11) NOT NULL,
-  `m_cond_user_rango` int(11) NOT NULL,
-  `m_cond_post` int(11) NOT NULL,
-  `m_cond_foto` int(11) NOT NULL,
-  `m_date` int(11) NOT NULL,
-  `m_total` int(11) NOT NULL,
-  PRIMARY KEY (`medal_id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;";
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `w_denuncias` (
+  `did` INT AUTO_INCREMENT PRIMARY KEY,
+  `d_date` INT NOT NULL DEFAULT 0,
+  `d_extra` TEXT DEFAULT NULL,
+  `d_razon` TINYINT NOT NULL,
+  `d_total` SMALLINT NOT NULL DEFAULT 1,
+  `d_type` TINYINT NOT NULL DEFAULT 0,
+  `d_user` INT NOT NULL,
+  `obj_id` INT NOT NULL,
+  INDEX idx_type (d_type),
+  INDEX idx_obj (obj_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
 
-$phpos_sql['w_medallas_assign'] = "
-CREATE TABLE IF NOT EXISTS `w_medallas_assign` (
-`id` int(11) NOT NULL AUTO_INCREMENT,
-`medal_id` int(11) NOT NULL,
-`medal_for` int(11) NOT NULL,
-`medal_date` int(11) NOT NULL,
-`medal_ip` varchar(15) NOT NULL,
-PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;";
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `w_contacts` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `user_id` INT NOT NULL,
+  `user_email` VARCHAR(255) UNIQUE NOT NULL,
+  `time` INT NOT NULL DEFAULT 0,
+  `type` TINYINT NOT NULL DEFAULT 0,
+  `hash` CHAR(128) NOT NULL DEFAULT '',
+  `ip` VARBINARY(16) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
 
-$phpos_sql['w_historial'] = "
-CREATE TABLE IF NOT EXISTS `w_historial` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `pofid` int(11) NOT NULL,
-  `type` int(1) NOT NULL,
-  `action` int(1) NOT NULL,
-  `mod` int(11) NOT NULL DEFAULT '0',
-  `reason` text NOT NULL,
-  `date` int(11) NOT NULL,
-  `mod_ip` varchar(15) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;";
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `w_medallas` (
+  `medal_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `m_autor` INT NOT NULL,
+  `m_cant` INT NOT NULL DEFAULT 0,
+  `m_cond_foto` INT DEFAULT 0,
+  `m_cond_post` INT DEFAULT 0,
+  `m_cond_user` INT DEFAULT 0,
+  `m_cond_user_rango` INT DEFAULT 0,
+  `m_cond_comunidad` INT DEFAULT 0,
+  `m_cond_video` INT DEFAULT 0,
+  `m_date` INT NOT NULL DEFAULT 0,
+  `m_description` VARCHAR(255) NOT NULL DEFAULT '',
+  `m_image` VARCHAR(150) NOT NULL DEFAULT '',
+  `m_title` VARCHAR(50) NOT NULL DEFAULT '',
+  `m_total` INT NOT NULL DEFAULT 0,
+  `m_type` TINYINT NOT NULL DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
 
-$phpos_sql['w_noticias'] = "
-CREATE TABLE IF NOT EXISTS `w_noticias` (
-  `not_id` int(11) NOT NULL AUTO_INCREMENT,
-  `not_body` text NOT NULL,
-  `not_autor` INT( 11 ) NOT NULL,
-  `not_date` int(10) NOT NULL,
-  `not_active` int(1) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`not_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;";
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `w_medallas_assign` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `medal_id` INT NOT NULL,
+  `medal_for` INT NOT NULL,
+  `medal_date` INT NOT NULL DEFAULT 0,
+  `medal_ip` VARBINARY(16) DEFAULT NULL,
+  UNIQUE KEY unique_award (medal_id, medal_for)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
 
-$phpos_sql['w_blacklist'] = "
-CREATE TABLE IF NOT EXISTS `w_blacklist` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `type` int(1) NOT NULL,
-  `value` varchar(50) NOT NULL,
-  `reason` varchar(120) NOT NULL,
-  `author` int(11) NOT NULL,
-  `date` int(11) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1;";
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `w_historial` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `pofid` INT DEFAULT NULL,
+  `type` TINYINT NOT NULL DEFAULT 0,
+  `action` TINYINT NOT NULL DEFAULT 0,
+  `mod` INT DEFAULT NULL,
+  `reason` TEXT NULL,
+  `date` INT NOT NULL DEFAULT 0,
+  `mod_ip` VARBINARY(16) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
 
-$phpos_sql['w_badwords'] = "
-CREATE TABLE IF NOT EXISTS `w_badwords` (
-  `wid` int(11) NOT NULL AUTO_INCREMENT,
-  `word` varchar(250) NOT NULL,
-  `swop` varchar(250) NOT NULL,
-  `method` int(1) NOT NULL,
-  `type` int(1) NOT NULL,
-  `author` int(11) NOT NULL,
-  `reason` varchar(255) NOT NULL,
-  `date` int(11) NOT NULL,
-  PRIMARY KEY (`wid`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1;";
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `w_noticias` (
+  `not_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `not_title` VARCHAR(100) NOT NULL DEFAULT '',
+  `not_body` TEXT NULL,
+  `not_autor` INT DEFAULT 0,
+  `not_date` INT NOT NULL DEFAULT 0,
+  `not_expires` INT NOT NULL DEFAULT 0,
+  `not_type` TINYINT NOT NULL DEFAULT 0, # 0 Normal | 1 Importante | 2 Cambios
+  `not_color` ENUM('info','success','warning','danger','primary','secondary') DEFAULT 'info', 
+  `not_active` TINYINT NOT NULL DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
 
-$phpos_sql['w_stats'] = "
-CREATE TABLE IF NOT EXISTS `w_stats` (
-  `stats_no` int(1) NOT NULL,
-  `stats_max_online` int(11) NOT NULL,
-  `stats_max_time` int(10) NOT NULL,
-  `stats_time` int(10) NOT NULL,
-  `stats_time_cache` int(10) NOT NULL,
-  `stats_time_foundation` int(11) NOT NULL,
-  `stats_time_upgrade` int(11) NOT NULL,
-  `stats_miembros` int(11) NOT NULL,
-  `stats_posts` int(11) NOT NULL,
-  `stats_fotos` int(11) NOT NULL,
-  `stats_comments` int(11) NOT NULL,
-  `stats_foto_comments` int(11) NOT NULL,
-  PRIMARY KEY (`stats_no`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `w_blacklist` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `type` TINYINT NOT NULL DEFAULT 0,
+  `value` VARCHAR(100) NOT NULL,
+  `reason` VARCHAR(255) DEFAULT NULL,
+  `author` INT DEFAULT NULL,
+  `date` INT NOT NULL DEFAULT 0,
+  INDEX idx_value (value)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1;";
 
-$phpos_sql['wv_stats'] = "
-INSERT INTO `w_stats` (`stats_no`, `stats_max_online`) VALUES (1, 0);";
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `w_badwords` (
+  `wid` INT AUTO_INCREMENT PRIMARY KEY,
+  `word` VARCHAR(255) DEFAULT NULL,
+  `swop` VARCHAR(255) DEFAULT NULL,
+  `method` TINYINT NOT NULL DEFAULT 0,
+  `type` TINYINT NOT NULL DEFAULT 0,
+  `author` INT DEFAULT NULL,
+  `reason` VARCHAR(255) DEFAULT NULL,
+  `date` INT NOT NULL DEFAULT 0,
+  INDEX idx_word (word)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1;";
 
-$phpos_sql['w_temas'] = "
-CREATE TABLE IF NOT EXISTS `w_temas` (
-  `tid` int(11) NOT NULL AUTO_INCREMENT,
-  `t_name` tinytext NOT NULL,
-  `t_url` tinytext NOT NULL,
-  `t_path` tinytext NOT NULL,
-  `t_copy` tinytext NOT NULL,
-  PRIMARY KEY (`tid`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=2;";
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `w_stats` (
+  `stats_no` INT PRIMARY KEY DEFAULT 0,
+  `stats_max_online` BIGINT NOT NULL DEFAULT 0,
+  `stats_max_time` INT NOT NULL DEFAULT 0,
+  `stats_time` INT NOT NULL DEFAULT 0,
+  `stats_time_cache` INT NOT NULL DEFAULT 0,
+  `stats_time_foundation` INT NOT NULL DEFAULT 0,
+  `stats_time_upgrade` INT NOT NULL DEFAULT 0,
+  `stats_miembros` BIGINT NOT NULL DEFAULT 0,
+  `stats_posts` BIGINT NOT NULL DEFAULT 0,
+  `stats_fotos` BIGINT NOT NULL DEFAULT 0,
+  `stats_comments` BIGINT NOT NULL DEFAULT 0,
+  `stats_foto_comments` BIGINT NOT NULL DEFAULT 0,
+  `stats_comunidades` BIGINT NOT NULL DEFAULT 0,
+  `stats_temas` BIGINT NOT NULL DEFAULT 0,
+  `stats_respuestas` BIGINT NOT NULL DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
 
-$phpos_sql['wv_temas'] = "
-INSERT INTO `w_temas` (`tid`, `t_name`, `t_url`, `t_path`, `t_copy`) VALUES
-(1, 'PHPost Default', '/themes/default', 'default', 'Taringa!');";
+$phpost_sql[] = "INSERT INTO `w_stats` (`stats_no`, `stats_max_online`) VALUES (1, 0);";
+
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `w_temas` (
+  `tid` INT AUTO_INCREMENT PRIMARY KEY,
+  `t_name` VARCHAR(72) NOT NULL DEFAULT '',
+  `t_path` VARCHAR(72) NOT NULL DEFAULT '',
+  `t_copy` VARCHAR(72) NOT NULL DEFAULT ''
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1;";
+
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `w_visitas` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `user` INT NOT NULL,
+  `for` INT NOT NULL,
+  `type` TINYINT NOT NULL DEFAULT 0,
+  `date` INT NOT NULL DEFAULT 0,
+  `ip` VARBINARY(16) DEFAULT NULL,
+  INDEX (`for`, `type`, `user`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
+
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `w_social` (
+  `social_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `social_name` CHAR(22) NOT NULL DEFAULT '',
+  `social_client_id` VARCHAR(255) NOT NULL DEFAULT '',
+  `social_client_secret` VARCHAR(255) NOT NULL DEFAULT '',
+  `social_redirect_uri` VARCHAR(255) NOT NULL DEFAULT '',
+  `social_status` TINYINT NOT NULL DEFAULT 0,
+  `social_icon` VARCHAR(20) NOT NULL DEFAULT '',
+  INDEX idx_status (social_status),
+  INDEX idx_name (social_name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";

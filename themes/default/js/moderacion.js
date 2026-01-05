@@ -4,7 +4,7 @@ var mod = {
             $('#loading').fadeIn(250);
 			$.ajax({
 				type: 'post',
-				url: global_data.url + '/moderacion-posts.php?do=view',
+				url: route.url + '/moderacion-posts.php?do=view',
 				data: 'postid=' + pid,
 				success: function(r) {
         			mydialog.class_aux = 'preview';
@@ -32,7 +32,7 @@ var mod = {
     		return;
     	}else{
 		
-		$.post(global_data.url + '/moderacion-posts.php?do=ocultar', 'razon=' + text + '&pid=' + pid, function(a){
+		$.post(route.url + '/moderacion-posts.php?do=ocultar', 'razon=' + text + '&pid=' + pid, function(a){
 		   
            mydialog.alert((a.charAt(0) == '0' ? 'Opps!' : 'Hecho'), a.substring(3), true);
 		   
@@ -49,7 +49,7 @@ var mod = {
         	   $('#loading').fadeIn(250);
             	$.ajax({
             		type: 'POST',
-            		url: global_data.url + '/moderacion-posts.php?do=borrar',
+            		url: route.url + '/moderacion-posts.php?do=borrar',
             		success: function(h){
             			mydialog.show();
             			mydialog.title('Borrar Post');
@@ -72,7 +72,7 @@ var mod = {
 				$('#loading').fadeIn(250);
             	$.ajax({
             		type: 'POST',
-            		url: global_data.url + '/moderacion-posts.php?do=borrar',
+            		url: route.url + '/moderacion-posts.php?do=borrar',
             		data: 'postid=' + pid + '&razon=' + razon + '&razon_desc=' + razon_desc + '&send_b=' + send_b,
             		success: function(h){
             			switch(h.charAt(0)){
@@ -119,7 +119,7 @@ var mod = {
             
             $('#loading').fadeIn(250);
 		
-           $.post(global_data.url + '/moderacion-mps.php?do=borrar', 'mpid=' + mid, function(a){
+           $.post(route.url + '/moderacion-mps.php?do=borrar', 'mpid=' + mid, function(a){
 		   
            mydialog.alert((a.charAt(0) == '0' ? 'Opps!' : 'Hecho'), a.substring(3), false);
 		   
@@ -140,7 +140,7 @@ fotos : {
         	if(!aceptar){
             	$.ajax({
             		type: 'POST',
-            		url: global_data.url + '/moderacion-fotos.php?do=borrar',
+            		url: route.url + '/moderacion-fotos.php?do=borrar',
             		success: function(h){
             			mydialog.show();
             			mydialog.title('Borrar Foto');
@@ -158,7 +158,7 @@ fotos : {
             	$('#loading').fadeIn(250);
                 $.ajax({
             		type: 'POST',
-            		url: global_data.url + '/moderacion-fotos.php?do=borrar',
+            		url: route.url + '/moderacion-fotos.php?do=borrar',
             		data: 'fid=' + fid + '&razon=' + razon + '&razon_desc=' + razon_desc,
             		success: function(h){
             			switch(h.charAt(0)){
@@ -217,7 +217,7 @@ fotos : {
         $('#loading').fadeIn(250);
     	$.ajax({
     		type: 'POST',
-    		url: global_data.url + url_get,
+    		url: route.url + url_get,
             data: url_data,
     		success: function(h){
     			mydialog.show();
@@ -235,7 +235,7 @@ fotos : {
     	mydialog.procesando_inicio('Procesando...', 'Espere');
     	$.ajax({
     		type: 'POST',
-    		url: global_data.url + url_post,
+    		url: route.url + url_post,
     		data: url_data,
     		success: function(h){
     			switch(h.charAt(0)){
@@ -260,7 +260,7 @@ fotos : {
         $('#loading').fadeIn(250);
 		$.ajax({
 			type: 'post',
-			url: global_data.url + '/moderacion-' + type +'.php?do=' + hdo,
+			url: route.url + '/moderacion-' + type +'.php?do=' + hdo,
 			data: 'id=' + id,
 			success: function(h) {
                 switch(h.charAt(0)){
@@ -279,6 +279,6 @@ fotos : {
 		});
     },
     redirect: function(url_ref, time){
-        setTimeout(function(){document.location.href = global_data.url + url_ref;}, time)
+        setTimeout(function(){document.location.href = route.url + url_ref;}, time)
     }
 }

@@ -14,7 +14,7 @@ function desactivate(few) {
 	} else {
 		var pass = $('#passi');
 		$('#loading').fadeIn(250); 
-		$.post(global_data.url + '/cuenta.php?action=desactivate', 'validar=' + 'ajaxcontinue', function(a){
+		$.post(route.url + '/cuenta.php?action=desactivate', 'validar=' + 'ajaxcontinue', function(a){
 			mydialog.alert((a.charAt(0) == '0' ? 'Opps!' : 'Hecho'), (a.charAt(0) == '0' ? 'No se pudo desactivar' : 'Cuenta desactivada'), true);
 			mydialog.center();
 			$('#loading').fadeOut(250); 
@@ -39,7 +39,7 @@ var cuenta = {
 			//Obtengo las estados
 			$(estado).html('');
          $('#loading').fadeIn(250); 
-         $.get(global_data.url + '/registro-geo.php', 'pais_code=' + pais, h => {
+         $.get(route.url + '/registro-geo.php', 'pais_code=' + pais, h => {
          	if(h.charAt(0) === '1') estado.append(h.substring(3)).removeAttr('disabled').val('').focus();
          	$('#loading').fadeOut(250); 
          })
@@ -49,7 +49,7 @@ var cuenta = {
 		$('#loading').slideDown(250);
 		$.ajax({
 			type: 'post', 
-			url: global_data.url + '/cuenta-guardar.php', 
+			url: route.url + '/cuenta-guardar.php', 
 			data: $("form[name=editarcuenta]").serialize(), 
 			dataType: 'json',
 			success: response => cuenta.alerta(response.error)

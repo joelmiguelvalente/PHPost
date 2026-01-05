@@ -31,7 +31,7 @@ var portal = {
         $('#loading').fadeIn(250);
         $.ajax({
         	type: 'POST',
-        	url: global_data.url + '/portal-posts_config.php',
+        	url: route.url + '/portal-posts_config.php',
         	data: 'cids=' + cat_ids,
         	success: function(h){
         		switch(h.charAt(0)){
@@ -56,7 +56,7 @@ var portal = {
             $('#loading').fadeIn(250);
     		$.ajax({
     			type: 'GET',
-    			url: global_data.url + '/portal-' + type + '_pages.php?page=' + page,
+    			url: route.url + '/portal-' + type + '_pages.php?page=' + page,
     			success: function(h){
     			    // CACHE
                     portal.cache[type + '_' + page] = h;

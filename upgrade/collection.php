@@ -454,7 +454,7 @@ $collection = add_query('Fecha fundación', $collection, $d);
 unset($d);
 
 //Actualizamos la versión y tema
-$collection = add_query('Versión del script', $collection, 'UPDATE w_configuracion SET version = \'Risus\', version_code = \'risus\', tema_id = \'1\' WHERE tscript_id = \'1\'');
+$collection = add_query('Versión del script', $collection, 'UPDATE w_configuracion SET version = \'Risus\', version_code = \'risus\', tema_id = \'1\' WHERE phpost_id = \'1\'');
 
 //Vaciamos los temas
 $collection = add_query('Vaciar plantillas', $collection, 'DELETE FROM `w_temas` WHERE `tid` != \'1\'');

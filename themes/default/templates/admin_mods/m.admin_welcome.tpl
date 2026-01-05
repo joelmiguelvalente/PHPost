@@ -39,7 +39,7 @@
 $(document).ready(function(){
     $.ajax({
         type: "GET",
-        url: global_data.url + "/feed-support.php",
+        url: route.url + "/feed-support.php",
         dataType: "json",
         success: function(r) {
             $('#news_pp').html('');
@@ -56,7 +56,7 @@ $(document).ready(function(){
     });
     $.ajax({
         type: "GET",
-        url: global_data.url + "/feed-version.php?v=risus",
+        url: route.url + "/feed-version.php?v=risus",
         dataType: "json",
         success: function(r) {
             for(var i = 0; i < r.length; i++){

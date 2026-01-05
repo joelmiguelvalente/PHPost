@@ -37,7 +37,7 @@ function save_borrador(){
 	if(!empty($('input[name="borrador_id"]').val())){
 		$.ajax({
 			type: 'POST',
-			url: global_data.url + '/borradores-guardar.php',
+			url: route.url + '/borradores-guardar.php',
 			data: params + '&borrador_id=' + encodeURIComponent($('input[name="borrador_id"]').val()),
 			success: function(h){
 				switch(h.charAt(0)){
@@ -60,7 +60,7 @@ function save_borrador(){
 	}else{
 		$.ajax({
 			type: 'POST',
-			url: global_data.url + '/borradores-agregar.php',
+			url: route.url + '/borradores-agregar.php',
 			data: params,
 			success: function(h){
 				switch(h.charAt(0)){
@@ -127,7 +127,7 @@ $(document).ready(function(){
         var q = $(this).val();
 		$.ajax({
 			type: 'post',
-			url: global_data.url + '/posts-genbus.php?do=search',
+			url: route.url + '/posts-genbus.php?do=search',
 			data: 'q=' + q,
 			success: function(h) {
                 $('#repost').html(h);
@@ -140,7 +140,7 @@ $(document).ready(function(){
         var q = $('input[name=titulo]').val();
 		$.ajax({
 			type: 'post',
-			url: global_data.url + '/posts-genbus.php?do=generador',
+			url: route.url + '/posts-genbus.php?do=generador',
 			data: 'q=' + q,
 			success: function(h) {
                 $('input[name=tags]').val(h);
@@ -186,12 +186,12 @@ $(document).ready(function(){
 			mydialog.class_aux = 'preview';
 			mydialog.show(true);
 			mydialog.title('...');
-			mydialog.body('Cargando vista previa....<br><br><img src="' + global_data.url + '/themes/default/images/loading_bar.gif">');
+			mydialog.body('Cargando vista previa....<br><br><img src="' + route.url + '/themes/default/images/loading_bar.gif">');
             mydialog.center();
             // PREVIEW
 			$.ajax({
 				type: 'post',
-				url: global_data.url + '/posts-preview.php?ts=true',
+				url: route.url + '/posts-preview.php?ts=true',
 				data: 'titulo=' + encodeURIComponent($('input[name=titulo]').val()) + '&cuerpo=' + encodeURIComponent($('textarea[name=cuerpo]').val()),
 				success: function(r) {
 					mydialog.body(r);

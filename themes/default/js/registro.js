@@ -53,7 +53,7 @@ var validar = e => {
          campo = target.name;
          helper.html("<em>Comprobando "+campo+"</em>");
          data = (campo == 'nick') ? {nick:target.value} : {email:target.value};
-         $.post(`${global_data.url}/registro-check-${campo}.php`, data, h => {
+         $.post(`${route.url}/registro-check-${campo}.php`, data, h => {
             Approved[campo] = ChequearCampos({
                expresion: (campo == 'nick' ? expresiones.nick : expresiones.email),
                campo: (campo == 'nick' ? '#register_nick' : '#register_email'), 
@@ -101,7 +101,7 @@ $('form[name=formulario]').on('submit', e => {
    e.preventDefault();
    $("#dualRegister").append('<div class="registro--box__loading"><div class="loading"></div></div>')
    if(Approved.nick && Approved.password && Approved.email && document.formulario.terminos.checked) {
-      $.post(`${global_data.url}/registro-nuevo.php`, $('form[name=formulario]').serialize(), h => {
+      $.post(`${route.url}/registro-nuevo.php`, $('form[name=formulario]').serialize(), h => {
 
          switch(h.charAt(0)){
             case '0':
@@ -122,4 +122,4 @@ $('form[name=formulario]').on('submit', e => {
    } else mydialog.alert('Error', 'Por favor, rellene todos los campos.');
 });
 
-recargar = () => location.href = global_data.url + '/cuenta/';
+recargar = () => location.href = route.url + '/cuenta/';

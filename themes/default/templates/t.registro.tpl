@@ -60,7 +60,7 @@
 			</form>
 			<script>public_key = '{$public_key}';</script>
 			<script src="https://www.google.com/recaptcha/api.js?render={$public_key}"></script>
-			<script src="{$tsConfig.js}/registro.js?{$smarty.now}"></script>
+			<script src="{$tsRoutes.tema.js}/registro.js?{$smarty.now}"></script>
 		{else}
 			<div class="box-end">
 				<p>El registro se encuentra cerrado por el momento...</p>

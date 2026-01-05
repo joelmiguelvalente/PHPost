@@ -3,7 +3,7 @@
 */
 function admin_send_post(objeto) {
 	// URL -> DATA -> RESPONSE -> CALLBACK
-	var xhr = $.post(`${global_data.url}/${objeto.pagina}.php`, objeto.parametros, response => response)
+	var xhr = $.post(`${route.url}/${objeto.pagina}.php`, objeto.parametros, response => response)
 	if(typeof objeto.done !== 'undefined') xhr.done(() => objeto.done)
 	return xhr
 }

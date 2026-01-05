@@ -9,7 +9,7 @@
 /* {literal} */
 .btn_follow a {
 /* {/literal} */
-	background-image: url('{$tsConfig.images}/btn_follow.png');
+	background-image: url('{$tsRoutes.tema.images}/btn_follow.png');
 /* {literal} */
 	background-repeat: no-repeat;
 	background-position: top left;
@@ -35,7 +35,7 @@ width:13px;
 	width: 19px;
 	height: 19px;
 /* {/literal} */
-	background-image: url('{$tsConfig.images}/follow_actions.png');
+	background-image: url('{$tsRoutes.tema.images}/follow_actions.png');
 /* {literal} */
 	background-repeat: no-repeat;
 }

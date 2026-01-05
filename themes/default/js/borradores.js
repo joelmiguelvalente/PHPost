@@ -159,7 +159,7 @@ var borradores = {
 		  $('#loading').fadeIn(250);
 			$.ajax({
 				type: 'POST',
-				url: global_data.url + '/borradores-eliminar.php',
+				url: route.url + '/borradores-eliminar.php',
 				data: 'borrador_id=' + id,
 				success: function(h){
 					switch(h.charAt(0)){
@@ -217,7 +217,7 @@ var borradores = {
         $('#loading').fadeIn(250);
 		$.ajax({
 			type: 'POST',
-			url: global_data.url + '/borradores-get.php',
+			url: route.url + '/borradores-get.php',
 			data: 'borrador_id=' + id,
 			success: function(h){
 				switch(h.charAt(0)){

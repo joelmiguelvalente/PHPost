@@ -1,14 +1,14 @@
 <?php
 
-require_once 'JBBCode/Parser.php';
-require_once 'JBBCode/definitions/Video.php';
-require_once 'JBBCode/validators/ColorValidator.php';
-require_once 'JBBCode/validators/UrlValidator.php';
-require_once 'JBBCode/validators/AlignValidator.php';
-require_once 'JBBCode/validators/SizeValidator.php';
-require_once 'JBBCode/validators/SwfValidator.php';
-require_once 'JBBCode/validators/ImgValidator.php';
-require_once 'JBBCode/validators/FontValidator.php';
+require_once TS_LIBS . '/JBBCode/Parser.php';
+require_once TS_LIBS . '/JBBCode/definitions/Video.php';
+require_once TS_LIBS . '/JBBCode/validators/ColorValidator.php';
+require_once TS_LIBS . '/JBBCode/validators/UrlValidator.php';
+require_once TS_LIBS . '/JBBCode/validators/AlignValidator.php';
+require_once TS_LIBS . '/JBBCode/validators/SizeValidator.php';
+require_once TS_LIBS . '/JBBCode/validators/SwfValidator.php';
+require_once TS_LIBS . '/JBBCode/validators/ImgValidator.php';
+require_once TS_LIBS . '/JBBCode/validators/FontValidator.php';
 
 /**
  * Clase responsable de la conversión de texto en formato

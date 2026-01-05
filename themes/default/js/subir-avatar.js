@@ -45,7 +45,7 @@ var avatar = {
 			datoUrl.append('url', (input.name == 'url') ? input.value : input.files[0])
 			
 			if(!empty(input.value)) {
-				fetch(global_data.url + '/upload-avatar.php', {
+				fetch(route.url + '/upload-avatar.php', {
 					method: 'POST',
 					body: datoUrl
 				})
@@ -101,7 +101,7 @@ var avatar = {
 			coordenadas.append('y', avatar.informacion.y)
 			coordenadas.append('w', avatar.informacion.width)
 			coordenadas.append('h', avatar.informacion.height)
-			fetch(global_data.url + '/upload-crop.php', {
+			fetch(route.url + '/upload-crop.php', {
 				method: 'POST',
 				body: coordenadas
 			})
