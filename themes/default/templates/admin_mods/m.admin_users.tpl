@@ -165,7 +165,7 @@
 					<legend>Eliminaci&oacute;n de contenidos</legend>
 					<input type="checkbox" id="bocuenta" name="bocuenta" onclick="$('#ext').slideToggle();"/><label style="font-weight:bold;" for="bocuenta">Cuenta Completa</label><label for="bocuenta"> &nbsp; Se eliminar&aacute; la cuenta y todo el contenido relacionado a {$tsUsername}.</label>
 					<div id="ext">
-						{* Configurado en inc/ext/datos.php *}
+						{* Configurado en inc/extras/datos.php *}
 						{foreach $tsContenido item=del}
 							<hr/>
 							<input type="checkbox" id="bo{$del.for}" name="bo{$del.for}"/><label style="font-weight:bold;" for="bo{$del.for}">{$del.title}</label><label for="bo{$del.for}"> &nbsp; {$del.desc}</label>

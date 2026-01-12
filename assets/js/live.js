@@ -59,7 +59,7 @@ var live = {
                 var sound_type = (live.m_total > 0) ? 'newMessage' : 'newAlert';
                 //
                 if(live.status['sound'] == 'ON'){
-                    $('#swf').html('<embed width="1px" height="1px" wmode="transparent" allowscriptaccess="always" quality="high" bgcolor="#ffffff" src="' + route.url + '/inc/ext/' + sound_type + '.swf" type="application/x-shockwave-flash">');
+                    $('#swf').html('<embed width="1px" height="1px" wmode="transparent" allowscriptaccess="always" quality="high" bgcolor="#ffffff" src="' + route.url + '/inc/extras/' + sound_type + '.swf" type="application/x-shockwave-flash">');
                 }
                 // GLOBITOS
                 notifica.popup(live.n_total);

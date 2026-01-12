@@ -1,63 +1,42 @@
-<?php 
+<?php
+
 /**
- * Controlador
- *
- * @name    ajax_files.php
- * @author  PHPost Team
-*/
+ * @name ajax.login.php
+ * @author PHPost Team
+ * @copyright 2026
+ */
 
-/**********************************\
+declare(strict_types=1);
 
-*	(VARIABLES POR DEFAULT)		*
-
-\*********************************/
-
-	$tsPage = "";	// tsPage.tpl -> PLANTILLA PARA MOSTRAR CON ESTE ARCHIVO.
-
-	$tsLevel = 0;		// NIVEL DE ACCESO A ESTA PAGINA. => VER FAQs
-
-	$tsAjax = empty($_GET['ajax']) ? 0 : 1; // LA RESPUESTA SERA AJAX?
+/**
+ * Inicializamos variable
+ * 
+ * $tsPage	= Plantilla para mostrar con este archivo.
+ * $tsLevel	= Nivel de acceso a esta pagina (ver faqs).
+ * $tsAjax	= La respuesta sera por ajax si/no.
+ */
+$tsPage = "";
+$tsLevel = 0;
+$tsAjax = (!isset($_GET['ajax']) && empty($_GET['ajax']));
 	
-/*++++++++ = ++++++++*/
+require_once dirname(__DIR__, 2) . "/header.php";
+$tsTitle = "{$tsCore->settings['titulo']} - {$tsCore->settings['slogan']}";
 
-	include "../../header.php"; // INCLUIR EL HEADER
+$action = trim($_GET['action'] ?? '');
+[$actionType] = explode('-', $action, 2);
 
-	$tsTitle = $tsCore->settings['titulo'].' - '.$tsCore->settings['slogan']; 	// TITULO DE LA PAGINA ACTUAL
+# QUE ARCHIVO NECESITAMOS?
+$actionFile = __DIR__ . "/ajax/ajax.$actionType.php";
 
-/*++++++++ = ++++++++*/
+# Verificamos que exista el archivo
+if(!file_exists($actionFile)) {
+	echo "0: No se encontró el archivo que se ha solicitado.";
+}
 
-/**********************************\
+# Desde esta archivo se modificaran las variables
+require_once $actionFile;
 
-* (VARIABLES LOCALES ESTE ARCHIVO)	*
-
-\*********************************/
-
-	$action = htmlspecialchars($_GET['action']);
-	$action_type = explode('-',$action);
-	$action_type = $action_type[0];
-
-/**********************************\
-
-*	(INSTRUCCIONES DE CODIGO)		*
-
-\*********************************/
-
-	// QUE ARCHIVO NECESITAMOS?
-	$file = './ajax/ajax.'.$action_type.'.php';
-	//
-	if(file_exists($file)) include($file);
-	else die("0: No se encontro el archivo que se ha solicitado." . $file);
-	
-/**********************************\
-
-* (AGREGAR DATOS GENERADOS | SMARTY) *
-
-\*********************************/
-
-if(empty($tsAjax)) {	// SI LA PETICION SE HIZO POR AJAX DETENER EL SCRIPT Y NO MOSTRAR PLANTILLA, SI NO ENTONCES MOSTRARLA.
-	$smarty->assign("tsTitle",$tsTitle);	// AGREGAR EL TITULO DE LA PAGINA ACTUAL
-
-	/*++++++++ = ++++++++*/
-	include("../../footer.php");
-	/*++++++++ = ++++++++*/
+if($tsAjax) {
+	$smarty->assign("tsTitle", $tsTitle);
+	require_once dirname(__DIR__, 2) . "/footer.php";
 }

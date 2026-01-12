@@ -60,7 +60,7 @@
                     'obj_user' => $tsCore->setSecure($_POST['obj_user']), 
                 );
     			// DATOS
-                include("../ext/datos.php");
+                include("../extras/datos.php");
     			$smarty->assign("tsData",$tsData);
     			$smarty->assign("tsDenuncias",$tsDenuncias['posts']);
             }
@@ -79,7 +79,7 @@
                     'obj_user' => $tsCore->setSecure($_POST['obj_user']), 
                 );
     			// DATOS
-                include("../ext/datos.php");
+                include("../extras/datos.php");
     			$smarty->assign("tsData",$tsData);
     			$smarty->assign("tsDenuncias",$tsDenuncias['fotos']);
             }
@@ -96,7 +96,7 @@
                 echo $tsSwat->setDenuncia($obj_id, 'usuario');
             }
 			// DATOS
-            include("../ext/datos.php");
+            include("../extras/datos.php");
             $smarty->assign("tsData",array('nick' => $_POST['obj_user']));
     		$smarty->assign("tsDenuncias",$tsDenuncias['users']);
         break;

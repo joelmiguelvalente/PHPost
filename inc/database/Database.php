@@ -1,6 +1,16 @@
 <?php
 
+/**
+ * @name c.session.php
+ * @author PHPost Team
+ * @copyright 2026
+ */
+
 declare(strict_types=1);
+
+if (!defined('TS_HEADER')) {
+    exit('No se permite el acceso directo al script');
+}
 
 final class Database
 {

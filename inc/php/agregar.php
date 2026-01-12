@@ -70,7 +70,7 @@
 			if($post_save == 1) {
 				$tsPost = (int)$_GET['pid'];
 				$tsCat = (int)$_POST['categoria'];
-				$query = db_exec(array(__FILE__, __LINE__), 'query', "SELECT c.c_seo FROM p_categorias AS c WHERE c.cid = $tsCat LIMIT 1");
+				$query = db_exec([__FILE__, __LINE__], 'query', "SELECT c.c_seo FROM p_categorias AS c WHERE c.cid = $tsCat LIMIT 1");
 				$tsCat = db_exec('fetch_assoc', $query);
 				
 				//
@@ -104,7 +104,7 @@
 		$tsAjax = 0;
 		if($tsPost > 0) {
 			$tsCat = (int)$_POST['categoria'];
-			$query = db_exec(array(__FILE__, __LINE__), 'query', "SELECT c.c_seo FROM p_categorias AS c WHERE c.cid = $tsCat LIMIT 1");
+			$query = db_exec([__FILE__, __LINE__], 'query', "SELECT c.c_seo FROM p_categorias AS c WHERE c.cid = $tsCat LIMIT 1");
 			$tsCat = db_exec('fetch_assoc', $query);
 			
 			//

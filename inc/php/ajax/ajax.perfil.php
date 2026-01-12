@@ -87,7 +87,7 @@
         break;
 		case 'perfil-info':
 			//<---
-            include('../ext/datos.php');
+            include('../extras/datos.php');
     		// PERFIL INFO
             $tsPerfil = $tsCuenta->loadPerfil($user_id);
     		$smarty->assign("tsPerfil",$tsPerfil);

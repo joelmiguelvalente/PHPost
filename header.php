@@ -1,12 +1,12 @@
-<?php
+<?php 
+
 /**
- * Archivo de Inicialización del Sistema
- *
- * Carga las clases base y ejecuta la solicitud.
- *
- * @name    header.php
- * @author  PHPost Team
+ * @package     PHPost
+ * @author      Miguel92
+ * @copyright   2026
+ * @version     2.0.0
  */
+declare(strict_types=1);
 
 /*
  * -------------------------------------------------------------------
@@ -14,101 +14,95 @@
  * -------------------------------------------------------------------
  */
 
-	if( defined('TS_HEADER') ) return;
+defined('TS_HEADER') OR define('TS_HEADER', TRUE);
 
-	// Sesión
-	if(!isset($_SESSION)) session_start();
+//DEFINICION DE CONSTANTES
+define('TS_ROOT', __DIR__);
 
-	// Reporte de errores
-	error_reporting(E_ALL ^ E_WARNING ^ E_NOTICE);
-	ini_set('display_errors', TRUE);
+define('TS_THEMES',	TS_ROOT . '/themes/');
+define('TS_INCLUDES',TS_ROOT . '/inc/');
+define('TS_STORAGE', TS_INCLUDES . 'storage/');
+define('TS_CLASS', 	TS_INCLUDES . 'class/');
+define('TS_LIBS', 	TS_INCLUDES . 'libs/');
+define('TS_CONFIG', 	TS_INCLUDES . 'config/');
+define('TS_UTILS', 	TS_INCLUDES . 'utils/');
+define('TS_EXTRA', 	TS_INCLUDES . 'extras/');
+define('TS_ASSETS', 	TS_ROOT . '/assets/');
+define('TS_SMARTY', 	TS_LIBS . 'smarty/');
+define('TS_PLUGINS', TS_LIBS . 'plugins/');
+define('TS_CACHE', 	TS_STORAGE . 'cache/');
 
-	// Límite de ejecución
-	set_time_limit(300);
+set_include_path(get_include_path() . PATH_SEPARATOR . realpath('./'));
 
-/*
- * -------------------------------------------------------------------
- *  Definiendo constantes
- * -------------------------------------------------------------------
- */
-	//DEFINICION DE CONSTANTES
-	define('TS_ROOT', __DIR__);
+// Sesión
+if(!isset($_SESSION)) session_start();
 
-	define('TS_HEADER', TRUE);
+require_once TS_CONFIG . 'Config.php';
 
-	define('TS_THEMES',	TS_ROOT . '/themes/');
-	define('TS_INCLUDES',TS_ROOT . '/inc/');
-	define('TS_STORAGE', TS_INCLUDES . 'storage/');
-	define('TS_CLASS', 	TS_INCLUDES . 'class/');
-	define('TS_LIBS', 	TS_INCLUDES . 'libs/');
-	define('TS_EXTRA', 	TS_INCLUDES . 'ext/');
-	define('TS_FILES', 	TS_ROOT . '/files/');
-	define('TS_SMARTY', 	TS_LIBS . 'smarty/');
-	define('TS_PLUGINS', TS_LIBS . 'plugins/');
-	define('TS_CACHE', 	TS_STORAGE . 'cache/');
+// Reporte de errores
+error_reporting((Config::app('app.debug_all') ? E_ALL : (Config::app('app.debug') ? (E_ALL & ~E_WARNING & ~E_NOTICE & ~E_DEPRECATED) : 0)));
+
+ini_set('display_errors', Config::app('app.debug') ? '1' : '0');
+ini_set('log_errors',     '1');
+ini_set('error_log',      Config::app('paths.logs') . '/log-' . date('dmy') . '.log');
+
+// Límite de ejecución
+set_time_limit(300);
+
+// Funciones
+require_once TS_UTILS.'Paginator.php';
+$Paginator = new Paginator;
+
+require_once TS_EXTRA.'functions.php';
+
+// Nucleo
+require_once TS_CLASS.'c.core.php';
 	
-	set_include_path(get_include_path() . PATH_SEPARATOR . realpath('./'));
+// Controlador de usuarios
+require_once TS_CLASS.'c.user.php';
 
-/*
- * -------------------------------------------------------------------
- *  Agregamos los archivos globales
- * -------------------------------------------------------------------
- */
-
-	// Funciones
-	include TS_EXTRA.'functions.php';
-
-	// Nucleo
-	include TS_CLASS.'c.core.php';
+// Monitor de usuario
+require_once TS_CLASS.'c.monitor.php';
 	
-	// Controlador de usuarios
-	include TS_CLASS.'c.user.php';
+// Actividad de usuario
+require_once TS_CLASS.'c.actividad.php';
 
-	// Monitor de usuario
-	include TS_CLASS.'c.monitor.php';
-	
-	// Actividad de usuario
-	include TS_CLASS.'c.actividad.php';
+// Mensajes de usuario
+require_once TS_CLASS.'c.mensajes.php';
 
-	// Mensajes de usuario
-	include TS_CLASS.'c.mensajes.php';
-
-	// Smarty
-	require_once TS_CLASS . 'c.smarty.php';
-	
-	// Crean requests
-	include TS_EXTRA.'QueryString.php';
+// Crean requests
+require_once TS_EXTRA.'QueryString.php';
 
 /*
  * -------------------------------------------------------------------
  *  Inicializamos los objetos principales
  * -------------------------------------------------------------------
  */
+$cleanRequest = new LimpiarSolicitud();
+$cleanRequest->limpiar();
 
-	// Cargamos el nucleo
-	$tsCore = new tsCore();
-	
-	// Usuario
-	$tsUser = new tsUser();
+// Cargamos el nucleo
+$tsCore = new tsCore();
 
-	// Monitor
-	$tsMonitor = new tsMonitor();
+// Usuario
+$tsUser = new tsUser();
 
-	// Actividad
-	$tsActividad = new tsActividad();
+// Monitor
+$tsMonitor = new tsMonitor();
 
-	// Mensajes
-	$tsMP = new tsMensajes();
+// Actividad
+$tsActividad = new tsActividad();
 
-	// Definimos el template a utilizar
-	$tsTema = $tsCore->settings['tema']['t_path'];
-	if(empty($tsTema)) $tsTema = 'default';
-	define('TS_TEMA', $tsTema);
+// Mensajes
+$tsMP = new tsMensajes();
 
-	// Smarty
-	$smarty = new tsSmarty();
-	// Nueva configuración
-	$smarty->output(false);
+// Definimos el template a utilizar
+define('TS_TEMA', $tsCore->settings['tema']['t_path'] ?? 'default');
+
+// Smarty
+require_once TS_CLASS . 'c.smarty.php';
+$smarty = new tsSmarty();
+$smarty->output(false);
 
 /*
  * -------------------------------------------------------------------
@@ -118,6 +112,7 @@
 // Configuraciones
 $smarty->assign('tsConfig', $tsCore->settings);
 $smarty->assign('tsRoutes', $tsCore->route());
+$smarty->assign('tsCategories', $tsCore->getCategorias());
 
 // Obtejo usuario
 $smarty->assign('tsUser', $tsUser);

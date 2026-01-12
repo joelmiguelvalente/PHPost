@@ -594,6 +594,17 @@ $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `w_contacts` (
   `ip` VARBINARY(16) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
 
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `w_activate` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `user_id` INT NOT NULL,
+  `user_email` VARCHAR(255) UNIQUE NOT NULL,
+  `code_hash` CHAR(128) NOT NULL DEFAULT '',
+  `expire_at` INT NOT NULL DEFAULT 0,
+  `type` ENUM('activation','reset') DEFAULT 'activation',
+  `used` TINYINT NOT NULL DEFAULT 0,
+  `ip` VARBINARY(16) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
+
 $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `w_medallas` (
   `medal_id` INT AUTO_INCREMENT PRIMARY KEY,
   `m_autor` INT NOT NULL,

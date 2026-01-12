@@ -1,11 +1,77 @@
-<?php if ( ! defined('TS_HEADER')) exit('No se permite el acceso directo al script');
+<?php
+
 /**
- * Modelo para el control del registro de usuarios
- *
- * @name    c.registro.php
- * @author  PHPost Team
+ * @name c.registro.php
+ * @author PHPost Team
+ * @copyright 2026
  */
-class tsRegistro{
+
+declare(strict_types=1);
+
+if (!defined('TS_HEADER')) {
+	exit('No se permite el acceso directo al script');
+}
+
+require_once __DIR__ . '/c.emails.php';
+require_once dirname(__DIR__, 1) . '/utils/PasswordHandler.php';
+require_once dirname(__DIR__, 1) . '/utils/reCaptcha.php';
+
+class tsRegistro {
+
+	protected tsCore $Core;
+	protected tsUser $User;
+
+	public function __construct() {
+		global $tsCore, $tsUser;
+		$this->Core = $tsCore;
+		$this->User = $tsUser;
+	}
+
+	/**
+    * @name strstr
+    * @access private
+    * @param string
+    * @return string
+   */
+	private function strstr(string $haystack, bool $before_needle = false): string {
+	   return empty($haystack) ? '' : $this->Core->setSecure(strstr($haystack, '@', $before_needle));
+	}
+
+	/**
+    * @name strstr($string)
+    * @access private
+    * @param string
+    * @param string
+    * @return bool
+   */
+	private function checkUserExists(string $username = '', string $email = ''): bool {
+		$username = $this->Core->setSecure($username);
+		$email = $this->Core->setSecure($email);
+		$q = !empty($username) ? "user_name = '$username'" : "LOWER(user_email) = '$email'";
+		return db_exec('num_rows', db_exec([__FILE__, __LINE__], 'query', "SELECT user_id FROM u_miembros WHERE $q LIMIT 1")) === 1;
+	}
+
+	private function getPostData(bool $check = false): array {
+		$username = $this->Core->setSecure($this->Core->parseBadWords(htmlspecialchars($_POST['nick'] ?? '')));
+		$email = $this->Core->setSecure(strtolower($_POST['email'] ?? ''));
+		// DATOS NECESARIOS
+		$data = [
+			'user_nick' => $username,
+			'user_email' => $email
+		];
+		
+		if($check) {
+			$data = [
+				...$data,
+				'user_password' => $this->Core->parseBadWords($_POST['password']),
+				'user_sexo' => 'none',
+				'user_terminos' => $_POST['terminos'],
+				'user_captcha' => $_POST['response'],
+				'user_registro' => time(),
+			];
+		}
+		return $data;
+	}
 
    /**
     * @name checkUserEmail($pid)
@@ -13,180 +79,182 @@ class tsRegistro{
     * @param
     * @return string
    */
-	public function checkUserEmail(){
-	global $tsCore;
+	public function checkUserEmail() {
 		// Variables
-		$username = strtolower($_POST['nick']);
-		$email = strtolower($_POST['email']);
-      $which = empty($username) ? 'email' : 'nick'; 
-        // MENSAJE
-		$valid = '1: El '.$which.' est&aacute; disponible.';	// DEFAULT
-		if($email) {
-			$provider = explode('@', $email)[1];
-			$whitelist = $tsCore->settings["providers"];
-			if(!empty($whitelist)) {
-				$decode = explode(', ', $whitelist);
-				$msg = "0: Tu proveedor de correo no est&aacute; permitido en este sitio.";
-				if(count($decode) <= 1) {
-				   if($provider !== $whitelist) return $msg;
-				} else {
-				   if(!in_array($provider, $decode, false)) return $msg;
-				}
+		$vars = $this->getPostData();
+      $which = empty($vars['user_nick']) ? 'email' : 'nick';
+		// No puede ser solo números
+		if (!empty($vars['user_nick']) AND ctype_digit($vars['user_nick'])) return "3: T&uacute; nick no pueder solo n&uacute;meros.";
+		// Existe el usuario
+		if($this->checkUserExists($vars['user_nick'], $vars['user_email'])) return '0: El '.$which.' ya se encuentra registrado.';
+		// Verificamos que no este en la lista negra
+     	if(db_exec('num_rows', db_exec([__FILE__, __LINE__], 'query', 
+         "SELECT id FROM w_blacklist WHERE 
+         (type = 3 AND value = '{$this->strstr($vars['user_email'])}') || 
+         (type = 4 AND value = '{$this->strstr($vars['user_email'], true)}') || 
+         (type = 4 AND value = '{$vars['user_nick']}') LIMIT 1"))
+     	) return '0: Parte del '.$which.' no est&aacute; permitida';
+	
+		// retornar valor
+		return "1: El $which est&aacute; disponible.";
+	}
+
+   /**
+    * @name registerUser
+    * @access private
+    * @param
+    * @return string
+   */
+	private function verifyCaptcha(string $captcha) {
+		// Verificando el captcha
+      $reCaptcha = new reCaptcha();  // Usar la misma clave para reCAPTCHA o hCaptcha
+		$reCaptcha->RECAPTCHA_TOKEN = $captcha;  // Token de reCAPTCHA o hCaptcha
+		$reCaptcha->verify_human();
+	}
+
+	private function verifyEmailUser(string $username, string $email) {
+		// COMPROBAR NUEVAMENTE QUE EL USUARIO O EMAIL NO SE ENCUENTREN REGISTRADOS
+		$query = db_exec([__FILE__, __LINE__], 'query', "SELECT user_name,user_email FROM u_miembros WHERE user_name = '$username' OR LOWER(user_email) = '$email' LIMIT 1");
+
+		if(db_exec('num_rows', $query) === 0 || !filter_var($email, FILTER_VALIDATE_EMAIL) || (int)$this->Core->settings['c_reg_active'] === 0) {
+			return '0: Hubo problemas al intentar registrarle, hay campos vac&iacute;os, inv&aacute;lidos o no se le permite el registro.';
+		}
+	}
+
+	private function sendMessageWelcome(int $uid, array $tsData = []) {
+		$send_welcome = $this->Core->settings['c_met_welcome'];
+		if($send_welcome > 0 && $send_welcome < 4) {
+			$sexo = 'Bienvenid' . (in_array($tsData['user_sexo'], ['none','male']) ? 'o' : 'a'); 
+         $msg_bienvenida = str_replace(
+         	['[usuario]', '[welcome]', '[web]'], 
+         	[$tsData['user_nick'], $sexo, $this->Core->settings['titulo']], 
+	         $this->Core->parseBBCode($this->Core->settings['c_message_welcome'])
+	      );
+         //
+         $time = time();
+	      switch($send_welcome) {
+	         case 1:
+					db_exec([__FILE__, __LINE__], 'query', "INSERT INTO u_muro (p_user, p_user_pub, p_date, p_body, p_type) VALUES ($uid, 1, $time, '$msg_bienvenida', 1)"); 
+		         $m_id = db_exec('insert_id');
+					db_exec([__FILE__, __LINE__], 'query', "INSERT INTO u_monitor (user_id,obj_user,obj_uno, not_type,not_total,not_menubar,not_monitor) VALUES ($uid, 1, $m_id, 12, 1, 1, 1)");
+				break;
+	         case 2:
+					$preview = substr($msg_bienvenida, 0, 75); 
+					if(db_exec([__FILE__, __LINE__], 'query', "INSERT INTO u_mensajes (`mp_to`, `mp_from`, `mp_subject`, `mp_preview`, `mp_date`) VALUES ($uid, 1, '$sexo a {$this->Core->settings['titulo']}', '$preview', $time)")) {
+		            $mp_id = db_exec('insert_id');
+		            db_exec([__FILE__, __LINE__], 'query', "INSERT INTO u_respuestas (mp_id, mr_from, mr_body, mr_ip, mr_date) VALUES ($mp_id, 1, '$msg_bienvenida', '{$_SERVER['REMOTE_ADDR']}', $time)"); 
+		         }
+				break;
+		 		case 3:
+					db_exec([__FILE__, __LINE__], 'query', "INSERT INTO u_avisos (`user_id`, `av_subject`, `av_body`, `av_date`, `av_type`) VALUES ($uid, '$sexo a {$this->Core->settings['titulo']}', '$msg_bienvenida', $time, 4)");			
+         	break;
 			}
 		}
-		//
-		if(!empty($username) || !empty($email)){
-			$query = db_exec(array(__FILE__, __LINE__), 'query', 'SELECT `user_id` FROM `u_miembros` WHERE '. ( !empty($username) ? 'LOWER(user_name) = \''.$tsCore->setSecure($username).'\'' : 'LOWER(user_email) = \''.$tsCore->setSecure($email).'\'' ) .' LIMIT 1');
-			if(db_exec('num_rows', $query) > 0) $valid = '0: El '.$which.' ya se encuentra registrado.';	// EXISTE
-            if(db_exec('num_rows', db_exec(array(__FILE__, __LINE__), 'query', 'SELECT id FROM w_blacklist WHERE (type = \'3\' && value = \''.$tsCore->setSecure(strstr($email, '@')).'\') ||  (type = \'4\' && value = \''.$tsCore->setSecure(strstr($email, '@', true)).'\') || (type = \'4\' && value = \''.$tsCore->setSecure($username).'\') LIMIT 1'))) $valid = '0: Parte del '.$which.' no est&aacute; permitida';
-			
-		} else $valid = '0: Faltan datos y no se puede procesar tu solicitud.';
-		// retornar valor
-		return $valid;
 	}
-    /**
-     * @name registerUser()
-     * @access public
-     * @param
-     * @return string
-     */
-	function registerUser(){
-		global $tsCore, $tsUser;
+
+	private function sendEmail(int $uid, array $tsData = []) {
+		$pin = strtoupper(bin2hex(random_bytes(4))); // ej: A9F3C8D2
+		$pinHash = password_hash($pin, PASSWORD_DEFAULT);
+		$time = time();
+		$expires = $time + 900; // 15 minutos
+				
+		if(!db_exec([__FILE__, __LINE__], 'query', "INSERT INTO w_activate (user_id, user_email, code_hash, expire_at, type, used, ip) VALUES ($uid, '{$tsData['user_email']}', '$pinHash', $time, 'activation', 0, $ip)")) {
+			return '0: Ocurri&oacute; un error, int&eacute;ntelo de nuevo.';
+		}
+					
+		$tsEmail = new tsEmail('activar', 'registro');
+		$to = $tsData['user_email'];
+		$subject = 'Active su cuenta';
+		$title = $this->Core->settings['titulo'];
+		$body = <<<ACTIVE
+		<div style="background:#0f7dc1;padding:10px;font-family:Arial, Helvetica,sans-serif;color:#000">
+			<h1 style="color:#FFFFFF; font-weight:bold; font-size:30px;">$title</h1>
+			<div style="background:#FFF;padding:10px;font-size:14px">
+				<h2 style="font-family:Arial, Helvetica,sans-serif;color:#000;font-size:22px">Hola {$tsData['user_nick']}</h2>
+				<p style="font-family:Arial, Helvetica,sans-serif;color:#000">&iexcl;Te damos la bienvenida a $title!</p>
+				<p>Para finalizar con el proceso de registro, confirma tu direcci&oacute;n de email accediendo a <a href="{$this->Core->route('url')}/validar/$pinHash/2/{$tsData['user_email']}">este enlace</a>
+				</p><br /> <br />
+				<p>Posteriormente podr&aacute; acceder con las siguientes credenciales:</p>
+				<p>Usuario: {$tsData['user_nick']}</p>
+				<p>Contrase&ntilde;a: {$tsData['user_password']}</p><br />
+				<p>Antes de empezar a interactuar con la comunidad, te recomendamos que visites el <a target="_blank" href="{$this->Core->route('url')}/pages/protocolo/">Protocolo</a> del sitio.</p>
+				<p>Esperamos que disfrutes enormemente tu visita.</p>
+				<p>&iexcl;Te damos la bienvenida a Muchas gracias!</p>
+				<p>Staff de $title.</p>		
+				<div style="border-top:#CCC solid 1px;padding:10px 0">
+					<span style="color:#666;font-size:11px">
+						<center>El staff de <strong>$title</strong></center>
+					</span> 
+				</div>
+			</div>
+		</div>
+		ACTIVE;
+		// <--
+		$tsEmail->emailTo = $to;
+		$tsEmail->emailSubject = $subject;
+		$tsEmail->emailBody = $body;
+		$tsEmail->emailHeaders = $tsEmail->setEmailHeaders();
+		$tsEmail->sendEmail($from, $to, $subject, $body) or die('0: Hubo un error al intentar procesar lo solicitado');				
+		return "1: Te hemos enviado un correo a <b>$to</b> con los &uacute;ltimos pasos para finalizar con el registro.<br><br>Si en los pr&oacute;ximos minutos no lo encuentras en tu bandeja de entrada, por favor, revisa tu carpeta de correo no deseado, es posible que se haya filtrado.<br><br>&iexcl;Muchas gracias!";	
+	}
+
+   /**
+    * @name registerUser
+    * @access public
+    * @param
+    * @return string
+   */
+	public function registerUser(): string {
 		// DATOS NECESARIOS
-		$tsData = array(
-			'user_nick' => $tsCore->parseBadWords($_POST['nick']),
-			'user_password' => $tsCore->parseBadWords($_POST['password']),
-			'user_email' => $_POST['email'],
-			'user_sexo' => intval($_POST['sexo'] == 'f' ? 0 : 1),
-			'user_terminos' => $_POST['terminos'],
-			'user_captcha' => $_POST['response'],
-			'user_registro' => time(),
-		);
+		$tsData = $this->getPostData(true);
 		// ERRORS
-		$errors = array(
-			'default' => 'El campo es requerido',
-			'nick' =>'El nombre de usuario ya se encuentra registrado.',
-			'password' => 'La contrase&ntilde;a tiene que ser distinta que el nick',
-			'email' => 'El formato es incorrecto',
-			'email_2' => 'El email ya est&aacute; en uso',
-			'captcha' => 'Validaci&oacute;n incorrecta',
-		);
+		$errors = [
+			'default'	=> 'El campo es requerido',
+			'nick' 		=> 'El nombre de usuario ya se encuentra registrado.',
+			'password' 	=> 'La contrase&ntilde;a tiene que ser distinta que el nick',
+			'email' 		=> 'El formato es incorrecto',
+			'email_2' 	=> 'El email ya est&aacute; en uso',
+			'captcha' 	=> 'Validaci&oacute;n incorrecta',
+		];
+		// Verificar captcha
+		$this->verifyCaptcha($tsData['user_captcha']);
 		// COMPROBAR VACIOS
 		foreach($tsData as $key => $val){
-			if($val == '') {
-				$key_error = str_replace('user_','',$key);
-				return $key_error.': '.$errors['default'];
-			}
+			if(empty($val)) return str_replace('user_', '', $key) . ": El campo es requerido";
 		}
-
-		/**
-		 * Comprobamos el recaptcha v3
-		*/
-      $response = $tsCore->reCaptcha($tsData['user_captcha']);
-      if (!$response) return 'recaptcha: No hemos podido validar tu humanidad';
-		
-        // COMPROBAR QUE EL NOMBRE DE USUARIO SEA VÁLIDO
-        if( !preg_match("/^[a-zA-Z0-9_-]{4,16}$/", $tsData['user_nick']) ) {
-            die('nick: Nombre de usuario inv&aacute;lido');
-        }
-        
-		// COMPROBAR NUEVAMENTE QUE EL USUARIO O EMAIL NO SE ENCUENTREN REGISTRADOS
-		$query = db_exec(array(__FILE__, __LINE__), 'query', 'SELECT `user_name`,`user_email` FROM `u_miembros` WHERE LOWER(user_name) = \''.$tsCore->setSecure($tsData['user_nick']).'\' OR LOWER(user_email) = \''.$tsCore->setSecure($tsData['user_email']).'\' LIMIT 1');
-		if(db_exec('num_rows', $query) > 0 || !filter_var($tsData['user_email'], FILTER_VALIDATE_EMAIL) || $tsCore->settings['c_reg_active'] == 0) die('0: Hubo problemas al intentar registrarle, hay campos vac&iacute;os, inv&aacute;lidos o no se le permite el registro.');
-		
+		// COMPROBAR QUE EL NOMBRE DE USUARIO SEA VALIDO
+      if(!preg_match("/^[a-zA-Z0-9_-]{4,16}$/", $tsData['user_nick'])) {
+      	return '0: Nombre de usuario inv&aacute;lido';
+      }
+		$this->verifyEmailUser($tsData['user_nick'], $tsData['user_email']);
 		// PASAMOS BIEN... AHORA INSERTAR DATOS
-		$key = md5(md5($tsData['user_password']).strtolower($tsData['user_nick']));
+		$PasswordHandler = new PasswordHandler;
+		$newPassword = $PasswordHandler->create($tsData['user_password']);
+		// Rango por defecto
+		$rango = (int)$this->Core->settings['c_reg_rango'] ?? 3;
 		//
-		if(db_exec(array(__FILE__, __LINE__), 'query', 'INSERT INTO `u_miembros` (`user_name`, `user_password`, `user_email`, `user_rango`, `user_registro`) VALUES (\''.$tsCore->setSecure($tsData['user_nick']).'\', \''.$tsCore->setSecure($key).'\', \''.$tsCore->setSecure($tsData['user_email']).'\', '.(empty($tsCore->settings['c_reg_rango']) ? 3 : $tsCore->settings['c_reg_rango']).', \''.$tsData['user_registro'].'\')')){
-            $tsData['user_id'] = db_exec('insert_id');
-            db_exec([__FILE__, __LINE__], "query", "INSERT INTO u_perfil (user_id, p_avatar, user_sexo) VALUES({$tsData['user_id']}, 1, {$tsData['user_sexo']})");
-         db_exec([__FILE__, __LINE__], "query", "INSERT INTO u_portal (user_id) VALUES({$tsData['user_id']})");
+		if(db_exec([__FILE__, __LINE__], 'query', "INSERT INTO `u_miembros` (`user_name`, `user_password`, `user_email`, `user_rango`, `user_registro`) VALUES ('{$tsData['user_nick']}', '$newPassword', '{$tsData['user_email']}', $rango, {$tsData['user_registro']})")) {
+         $uid = (int)db_exec('insert_id');
+         // Agregamos datos en diversas tablas
+         db_exec([__FILE__, __LINE__], "query", "INSERT INTO u_perfil (user_id, p_avatar, user_sexo) VALUES($uid, 1, '{$tsData['user_sexo']}')");
+         db_exec([__FILE__, __LINE__], "query", "INSERT INTO u_portal (user_id) VALUES($uid)");
+         db_exec([__FILE__, __LINE__], "query", "INSERT INTO u_miembros_sets (user_id) VALUES($uid)");
          
          # Generamos automaticamente un avatar
-         $avatar = "https://ui-avatars.com/api/?name=$1&background=random&size=160&font-size=0.60&bold=true&length=1";
-         $copy = "../../files/avatar/$2_$3.jpg";
-         $sizes = [50, 120];
-         foreach ($sizes as $size) {
-         	copy(
-	         	str_replace('$1', $tsData['user_nick'], $avatar), 
-	         	str_replace(['$2', '$3'], [$tsData['user_id'], $size], $copy)
-	         );
-         }
-
-			
+         $avatar = "https://ui-avatars.com/api/?name={$tsData['user_nick']}&background=random&size=200&font-size=0.50&bold=false&length=2&format=webp";
+					
+			copy($avatar, TS_STORAGE . "avatar/avatar_{$uid}.webp");
 			// MENSAJE PARA DAR LA BIENVENIDA BIENVENIDA
-			$send_welcome = $tsCore->settings['c_met_welcome'];
-			if($send_welcome > 0 && $send_welcome < 4) {
-			$msg_bienvenida = $tsCore->parseBBCode($tsCore->settings['c_message_welcome']);
-			$sexo = 'Bienvenid' . ($tsData['user_sexo'] == 1 ? 'o' : 'a'); 
-			$b = array('[usuario]', '[welcome]', '[web]');
-			$r = array($tsData['user_nick'], $sexo, $tsCore->settings['titulo']);
-            $msg_bienvenida = str_ireplace($b, $r, $msg_bienvenida);
-			
-			switch($send_welcome) {
-            case 1:
-			db_exec(array(__FILE__, __LINE__), 'query', 'INSERT INTO `u_muro` (p_user, p_user_pub, p_date, p_body, p_type) VALUES (\''.(int)$tsData['user_id'].'\', \'1\', \''.time().'\', \''.$msg_bienvenida.'\', \'1\')'); 
-            $m_id = db_exec('insert_id');
-			db_exec(array(__FILE__, __LINE__), 'query', 'INSERT INTO `u_monitor` (user_id,obj_user,obj_uno, not_type,not_total,not_menubar,not_monitor) VALUES (\''.(int)$tsData['user_id'].'\', \'1\', \''.$m_id.'\', \'12\', \'1\', \'1\', \'1\')');
-			break;
-            case 2:
-			$preview = substr($msg_bienvenida,0,75); 
-			if(db_exec(array(__FILE__, __LINE__), 'query', 'INSERT INTO `u_mensajes` (`mp_to`, `mp_from`, `mp_subject`, `mp_preview`, `mp_date`) VALUES ('.$tsData['user_id'].', \'1\', \''.$sexo.' a ' .$tsCore->settings['titulo'].'\', \''.$preview.'\',\''.time().'\')')) {
-            $mp_id = db_exec('insert_id');
-            db_exec(array(__FILE__, __LINE__), 'query', 'INSERT INTO `u_respuestas` (mp_id, mr_from, mr_body, mr_ip, mr_date) VALUES (\''.(int)$mp_id.'\', \'1\', \''.$msg_bienvenida.'\',  \''.$_SERVER['REMOTE_ADDR'].'\', \''.time().'\')'); }
-			break;
-		    case 3:
-			db_exec(array(__FILE__, __LINE__), 'query', 'INSERT INTO `u_avisos` (`user_id`, `av_subject`, `av_body`, `av_date`, `av_type`) VALUES (\''.$tsData['user_id'].'\', \''.$sexo.' a ' .$tsCore->settings['titulo'].'\', \''.$msg_bienvenida.'\', \''.time().'\', \'4\')');			
-            break;
-			}
-		}
+			$this->sendMessageWelcome($uid, $tsData);
+
 			// ENVIAMOS EL EMAIL
-			if(empty($tsCore->settings['c_reg_activate'])){
-			
-			$key = substr(md5(time()),0,32); //La otra opción muestra más ceros de la cuenta e.e con un substr en el envío tal vez se solucione.
-			
-			if(db_exec(array(__FILE__, __LINE__), 'query', 'INSERT INTO w_contacts (user_id, user_email, time, type, hash) VALUES (\''.(int)$tsData['user_id'].'\', \''.$tsCore->setSecure($tsData['user_email']).'\', \''.time().'\', \'2\', \''.$key.'\' )')){	
-			
-			include(TS_ROOT.DIRECTORY_SEPARATOR.'inc'.DIRECTORY_SEPARATOR.'class'.DIRECTORY_SEPARATOR.'c.emails.php');
-			$tsEmail = new tsEmail('activar', 'registro'); 
-			$to = $tsData['user_email'];
-			$subject = 'Active su cuenta';
-			$body = '<div style="background:#0f7dc1;padding:10px;font-family:Arial, Helvetica,sans-serif;color:#000">
-				<h1 style="color:#FFFFFF; font-weight:bold; font-size:30px;">'.$tsCore->settings['titulo'].'</h1>
-				<div style="background:#FFF;padding:10px;font-size:14px">
-					<h2 style="font-family:Arial, Helvetica,sans-serif;color:#000;font-size:22px">Hola '.$tsData['user_nick'].'</h2>
-					<p style="font-family:Arial, Helvetica,sans-serif;color:#000">&iexcl;Te damos la bienvenida a '.$tsCore->settings['titulo'].'!</p>
-					<p>Para finalizar con el proceso de registro, confirma tu direcci&oacute;n de email accediendo a <a href="'.$tsCore->settings['url'].'/validar/'.$key.'/2/'.$tsCore->setSecure($tsData['user_email']).'">este enlace</a>
-					</p><br /> <br />
-					<p>Posteriormente podr&aacute; acceder con las siguientes credenciales:</p>
-					<p>Usuario: '.$tsData['user_nick'].' <br /> Contrase&ntilde;a: '.$tsData['user_password'].'</p><br />
-					<p>Antes de empezar a interactuar con la comunidad, te recomendamos que visites el <a target="_blank" href="http://'.$tsCore->settings['url'].'/pages/protocolo/">Protocolo</a> del sitio.</p>
-					<p>Esperamos que disfrutes enormemente tu visita.</p>
-					<p>&iexcl;Te damos la bienvenida a Muchas gracias!</p>
-					<p>Staff de '.$tsCore->settings['titulo'].'.</p>		
-					<div style="border-top:#CCC solid 1px;padding:10px 0">
-						<span style="color:#666;font-size:11px">
-							<center>El staff de <strong>'.$tsCore->settings['titulo'].'</strong></center>
-						</span> 
-					</div>
-				</div>
-			</div>';
-			// <--
-			$tsEmail->emailTo = $to;
-			$tsEmail->emailSubject = $subject;
-			$tsEmail->emailBody = $body;
-			$tsEmail->emailHeaders = $tsEmail->setEmailHeaders();
-			$tsEmail->sendEmail($from, $to, $subject, $body)  or die('0: Hubo un error al intentar procesar lo solicitado');				
-						return '1: <div class="box_cuerpo" style="padding: 12px 20px; border-top:1px solid #CCC">Te hemos enviado un correo a <b>'.$to.'</b> con los &uacute;ltimos pasos para finalizar con el registro.<br><br>Si en los pr&oacute;ximos minutos no lo encuentras en tu bandeja de entrada, por favor, revisa tu carpeta de correo no deseado, es posible que se haya filtrado.<br><br>&iexcl;Muchas gracias!</div>';	
-				}else{
-				return '0: <div class="box_cuerpo" style="padding: 12px 20px; border-top:1px solid #CCC">Ocurri&oacute; un error, int&eacute;ntelo de nuevo.</div>';				
-				}
+			if((int)$this->Core->settings['c_reg_activate'] === 0) {
+				$this->sendEmail($uid, $tsData);
 			} else {
-				$tsUser->userActivate($tsData['user_id'],md5($tsData['user_registro']));
-				$tsUser->loginUser($tsData['user_nick'], $tsData['user_password'], true);
-				return '2: <div class="box_cuerpo" style="padding: 12px 20px; border-top:1px solid #CCC">Bienvenido a <b>'.$tsCore->settings['titulo'].'</b>, Ahora estas registrado y tu cuenta ha sido activada, podr&aacute;s disfrutar de esta comunidad inmediatamente.<br><br>&iexcl;Muchas gracias! :)</div>';
+				db_exec([__FILE__, __LINE__], 'query', "UPDATE u_miembros SET user_activo = 1 WHERE user_id = $uid");
+				$this->User->loginUser($tsData['user_nick'], $tsData['user_password'], true);
+				return "2: Bienvenido a <strong>{$this->Core->settings['titulo']}</strong>, Ahora estas registrado y tu cuenta ha sido activada, podr&aacute;s disfrutar de esta comunidad inmediatamente.<br><br>&iexcl;Muchas gracias!";
 			}
 		} else return '0: Ocurrio un error, intentalo ma&aacute;s tarde.';
 	}
-	/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 }

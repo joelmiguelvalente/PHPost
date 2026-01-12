@@ -10,7 +10,6 @@ declare(strict_types=1);
 
 if (!defined('TS_HEADER')) exit('No se permite el acceso directo al script');
 
-require_once dirname(__DIR__, 1) . '/config/Config.php';
 require_once dirname(__DIR__, 1) . '/database/Database.php';
 require_once dirname(__DIR__, 1) . '/database/db_legacy.php';
 
@@ -31,7 +30,7 @@ function show_error($error = 'Indefinido', $type = 'db', $info = []) {
 		$extra = [];
 
 		if ($tsUser->is_admod || Config::app('app.debug')) {
-			$extra[] = "<tr><td colspan=\"2\"><p class=\"warning\">".mysqli_error($mysqli)."</p></td></tr>";
+			$extra[] = "<tr><td colspan=\"2\"><p class=\"warning\">".$mysqli->error()."</p></td></tr>";
 		}
 		if (isset($info['file'])) {
 			$extra[] = "<tr><td>Archivo</td><td>{$info['file']}</td></tr>";
@@ -41,6 +40,9 @@ function show_error($error = 'Indefinido', $type = 'db', $info = []) {
 		}
 		if (isset($info['query']) && ($tsUser->is_admod || Config::app('app.debug'))) {
 			$extra[] = "<tr><td colspan=\"2\"><kbd>{$info['query']}</kbd></td></tr>";
+		}
+		if (isset($info['error']) && Config::app('app.debug')) {
+			$extra[] = "<tr><td colspan=\"2\"><kbd>{$info['error']}</kbd></td></tr>";
 		}
 		$table = '<table border="0"><tbody>' . implode('', $extra) . '</tbody></table>';
 	}

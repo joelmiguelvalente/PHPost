@@ -68,7 +68,7 @@
 	} elseif(in_array($action, $denuncia)) {
 		$smarty->assign("plantilla", "mod_report_" . $action);
       // DATOS EXTRA
-      include('../ext/datos.php');
+      include('../extras/datos.php');
       // SEGUNDA ACCION
 		if(empty($act)){
 		 	$smarty->assign("tsReports", $tsMod->getDenuncias($action));

@@ -1,71 +1,68 @@
-<?php if ( ! defined('TS_HEADER')) exit('No se permite el acceso directo al script');
+<?php
+
 /**
- * Controlador AJAX
- *
- * @name    ajax.login.php
- * @author  PHPost Team
-*/
-/**********************************\
+ * @name ajax.login.php
+ * @author PHPost Team
+ * @copyright 2026
+ */
 
-*	(VARIABLES POR DEFAULT)		*
+declare(strict_types=1);
 
-\*********************************/
+if (!defined('TS_HEADER')) {
+	exit('No se permite el acceso directo al script');
+}
 
-	// NIVELES DE ACCESO Y PLANTILLAS DE CADA ACCI�N
-	$files = array(
-		'login-user' => array('n' => 1, 'p' => ''),
-		'login-activar' => array('n' => 1, 'p' => ''),
-	);
+const ACTIONS = [
+   'login-user'	 => ['nivel' => 1, 'template' => '', 'ajax' => false],
+   'login-activar' => ['nivel' => 1, 'template' => '', 'ajax' => false],
+   'login-salir' 	 => ['nivel' => 1, 'template' => '', 'ajax' => false]
+];
 
-/**********************************\
+if (!array_key_exists($action, ACTIONS)) {
+   http_response_code(403);
+   exit('Acción inválida');
+}
 
-* (VARIABLES LOCALES ESTE ARCHIVO)	*
+$config = ACTIONS[$action];
 
-\*********************************/
+$tsLevel = $config['nivel'];
+$tsAjax  = (int) $config['ajax'];
+$tsPage  = sprintf('php_files/p.login.%s', $config['template']);
 
-	// REDEFINIR VARIABLES
-	$tsPage = 'php_files/p.login.'.$files[$action]['p'];
-	$tsLevel = $files[$action]['n'];
-	$tsAjax = empty($files[$action]['p']) ? 1 : 0;
+// DEPENDE EL NIVEL
+$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
+if(!$tsLevelMsg) { 
+	echo '0: '.$tsLevelMsg; 
+	die();
+}
 
-/**********************************\
-
-*	(INSTRUCCIONES DE CODIGO)		*
-
-\*********************************/
-	
-	// DEPENDE EL NIVEL
-	$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
-	if($tsLevelMsg != 1) { echo '0: '.$tsLevelMsg; die();}
-	// CODIGO
-	switch($action){
-		case 'login-user':
-			//<---
-			$user = $tsCore->setSecure($_POST['nick']);
-			$pass = $tsCore->setSecure($_POST['pass']);
-			$reme = ($_POST['rem'] == 'true') ? true : false;
-			//
-			if(empty($user) or empty($pass)) echo '0: Faltan datos';
-			else echo $tsUser->loginUser($user, $pass, $reme);
-			//--->
-		break;
-		case 'login-activar':
-			//<--
-				$activar = $tsUser->userActivate();
-				if($activar['user_password'])
-					$tsUser->loginUser($activar['user_nick'], $activar['user_password'], true, $tsCore->settings['url'].'/cuenta/');
-				else {
-					$tsPage = "aviso";
-					$tsAjax = 0;
-					$tsAviso = array('titulo' => 'Error al activar tu cuenta', 'mensaje' => 'El c&oacute;digo de validaci&oacute;n es incorrecto.');
-					//
-					$smarty->assign("tsAviso",$tsAviso);
-				}
-			//-->
-		break;
-		case 'login-salir':
-			//<---
-				$tsUser->logoutUser($tsUser->uid, $tsCore->settings['url']);
-			//--->
-		break;
-	}
+// CODIGO
+switch($action){
+	case 'login-user':
+		$username = $tsCore->setSecure($_POST['username']);
+		$password = $tsCore->setSecure($_POST['password']);
+		$remember = ((string)$_POST['remember'] === 'true');
+		//
+		if(empty($username) || empty($password)) echo '0: Faltan datos';
+		else echo $tsUser->loginUser($username, $password, $remember, null);
+	break;
+	case 'login-activar':
+		//<--
+			$activar = $tsUser->userActivate();
+			if($activar['user_password'])
+				$tsUser->loginUser($activar['user_nick'], $activar['user_password'], true, $tsCore->settings['url'].'/cuenta/');
+			else {
+				$tsPage = "aviso";
+				$tsAjax = 0;
+				$tsAviso = array('titulo' => 'Error al activar tu cuenta', 'mensaje' => 'El c&oacute;digo de validaci&oacute;n es incorrecto.');
+				//
+				$smarty->assign("tsAviso",$tsAviso);
+			}
+		//-->
+	break;
+	case 'login-salir':
+		//<---
+		$tsUser->logoutUser((int)$tsUser->uid, $tsCore->settings['url']);
+		//--->
+	break;
+}

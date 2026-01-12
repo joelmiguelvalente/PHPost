@@ -70,7 +70,7 @@
                             $tsAjax = 1;
                             echo $tsMod->deletePost($pid);
                         }else {
-                            include("../ext/datos.php");
+                            include("../extras/datos.php");
                             $tsPage = 'php_files/p.posts.mod';
                             $smarty->assign("tsDenuncias",$tsDenuncias['posts']);   
                         }
@@ -161,7 +161,7 @@
                             $tsAjax = 1;
                             echo $tsMod->deleteFoto($fid);
                         }else {
-                            include('../ext/datos.php');
+                            include('../extras/datos.php');
                             $tsPage = 'php_files/p.fotos.mod';
                             $smarty->assign("tsDenuncias",$tsDenuncias['fotos']);   
                         }

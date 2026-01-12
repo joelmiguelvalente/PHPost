@@ -117,7 +117,7 @@ wbbdebug = false;
 			toolbar:			true,
 			//img upload config 
 			imgupload:			true,
-			img_uploadurl:		route.url + "/inc/ext/wysibbupload.php",
+			img_uploadurl:		route.url + "/inc/extras/wysibbupload.php",
 			img_maxwidth:		800,
 			img_maxheight:		640,
 			hotkeys:			true,

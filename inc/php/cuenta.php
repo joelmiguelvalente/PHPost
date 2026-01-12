@@ -57,8 +57,8 @@
 \*********************************/
 
 	if(empty($action)){
-		include('../ext/datos.php');
-		include('../ext/geodata.php');
+		include('../extras/datos.php');
+		include('../extras/geodata.php');
 		// SOLO MENORES DE 100 AÑOS xD Y MAYORES DE...
 		$now_year = date("Y",time());
 		$max_year = 100 - $tsCore->settings['c_allow_edad'];
@@ -74,12 +74,12 @@
 		// DATOS
 		$smarty->assign("tsPaises",$tsPaises);
 		$smarty->assign("tsEstados",$estados[$tsPerfil['user_pais']]);
-		$smarty->assign("tsMeces",$tsMeces);
+		$smarty->assign("tsMeses",$tsMeses);
       // BLOQUEOS
       $smarty->assign("tsBlocks",$tsCuenta->loadBloqueos());
         
 	} elseif($action == 'save'){
-		echo $tsCore->setJSON($tsCuenta->savePerfil());
+		echo json_encode($tsCuenta->savePerfil());
 	} elseif($action == 'desactivate'){
 		if(!empty($_POST['validar'])) echo $tsCuenta->desCuenta();
 	}

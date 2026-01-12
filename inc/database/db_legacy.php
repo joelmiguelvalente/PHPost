@@ -1,6 +1,17 @@
 <?php
 
 /**
+ * @name c.session.php
+ * @author PHPost Team
+ * @copyright 2026
+ */
+
+declare(strict_types=1);
+
+if (!defined('TS_HEADER')) {
+	exit('No se permite el acceso directo al script');
+}
+/**
  * LEGACY DATABASE WRAPPER
  * Mantiene compatibilidad total con db_exec()
  */
@@ -42,16 +53,16 @@ function db_exec()
 			default              => null,
 		};
 	} catch (Throwable $e) {
+		/*echo '<pre>';
+		var_dump($e);
+		echo '</pre>';
+		die;*/
 		if (
 			!$tsAjax &&
 			Config::app('app.debug') &&
 			($info['file'] || $info['line'] || ($info['query'] && $tsUser->is_admod))
 		) {
-			show_error(
-				'Error en consulta SQL.',
-				'db',
-				$info + ['error' => $e->getMessage()]
-			);
+			show_error('Error en consulta SQL.', 'db', $info + ['error' => $e->getMessage()]);
 		}
 
 		return false;

@@ -10,7 +10,7 @@
 	if($tsLevelMsg != 1){ die('0: '.$tsLevelMsg); }
 	
 	$email = $tsCore->setSecure($_REQUEST['r_email']);
-	$user_info = db_exec(array(__FILE__, __LINE__), 'query', 'SELECT user_id, user_name, user_registro, user_activo FROM u_miembros WHERE user_email = \''.$email.'\'') or die('0: '.show_error('Error al ejecutar la consulta de la l&iacute;nea '.__LINE__.' de '.__FILE__.'.', 'db'));
+	$user_info = db_exec([__FILE__, __LINE__], 'query', 'SELECT user_id, user_name, user_registro, user_activo FROM u_miembros WHERE user_email = \''.$email.'\'') or die('0: '.show_error('Error al ejecutar la consulta de la l&iacute;nea '.__LINE__.' de '.__FILE__.'.', 'db'));
 	if(!db_exec('num_rows', $user_info)){
 		die('0: <div class="dialog_box">El email no se encuentra registrado.</div>');
 	}
@@ -23,7 +23,7 @@
 		case 'recover-pass':
 			$tsEmail = new tsEmail('nope', 'chuck testa!'); // wtf
 			$key = md5(sha1(uniqid(time().$email.microtime(true), true)));
-			db_exec(array(__FILE__, __LINE__), 'query', 'INSERT INTO w_contacts (user_id, user_email, `time`, `type`, `hash`) VALUES (\''.$tsData['user_id'].'\', \''.$email.'\', \''.time().'\', \'1\', \''.$key.'\')');
+			db_exec([__FILE__, __LINE__], 'query', 'INSERT INTO w_contacts (user_id, user_email, `time`, `type`, `hash`) VALUES (\''.$tsData['user_id'].'\', \''.$email.'\', \''.time().'\', \'1\', \''.$key.'\')');
 
 			$to = $email;
 			$subject = 'Recuperar acceso';
@@ -50,7 +50,7 @@
 
      		$tsEmail = new tsEmail($tsData, 'signup');
 			$key = md5(sha1(uniqid(time().$email.microtime(true), true)));
-			db_exec(array(__FILE__, __LINE__), 'query', 'INSERT INTO w_contacts (user_id, user_email, `time`, `type`, `hash`) VALUES (\''.$tsData['user_id'].'\', \''.$email.'\', \''.time().'\', \'2\', \''.$key.'\')');
+			db_exec([__FILE__, __LINE__], 'query', 'INSERT INTO w_contacts (user_id, user_email, `time`, `type`, `hash`) VALUES (\''.$tsData['user_id'].'\', \''.$email.'\', \''.time().'\', \'2\', \''.$key.'\')');
 
 			$to = $email;
 			$subject = ''.$tsData['user_name'].', active su cuenta ahora';

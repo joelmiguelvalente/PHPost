@@ -59,7 +59,7 @@
          // <--
          echo json_encode($tsUpload->cropAvatar($tsUser->uid));
 			// PARA EL PERFIL
-			db_exec(array(__FILE__, __LINE__), 'query', 'UPDATE u_perfil SET p_avatar = 1 WHERE user_id = ' . $tsUser->uid);
+			db_exec([__FILE__, __LINE__], 'query', 'UPDATE u_perfil SET p_avatar = 1 WHERE user_id = ' . $tsUser->uid);
           // -->
       break;
 		case 'upload-images':

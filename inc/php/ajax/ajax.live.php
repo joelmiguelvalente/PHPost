@@ -36,7 +36,10 @@
 	
 	// DEPENDE EL NIVEL
 	$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
-	if($tsLevelMsg != 1) { echo '0: '.$tsLevelMsg['mensaje']; die();}
+	if(!$tsLevelMsg) { 
+		echo '0: '.$tsLevelMsg['mensaje']; 
+		die();
+	}
 	// CODIGO
 	switch($action){
 		case 'live-stream':

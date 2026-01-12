@@ -11,12 +11,16 @@ function smarty_function_load($params, Smarty\Template $template) {
 
 	$checkFile = function (string $filename, string $type) use ($routes) {
       $basePath = TS_THEMES . TS_TEMA;
+      $assetPath = TS_ASSETS;
       $file     = "$filename.$type";
       if (file_exists("$basePath/$file")) { // Base
          return "{$routes['tema']['base']}/$file";
       }
       if (file_exists("$basePath/$type/$file")) { // Folder
          return "{$routes['tema'][$type]}/$file";
+      }
+      if (file_exists("$assetPath/$type/$file")) { // Folder
+         return "{$routes['assets'][$type]}/$file";
       }
       return null;
    };

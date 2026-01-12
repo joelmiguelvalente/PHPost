@@ -53,7 +53,7 @@
 
 \*********************************/
     // PAICES
-    include("../ext/datos.php");
+    include("../extras/datos.php");
     $smarty->assign("tsPaises",$tsPaises);
     // USUARIOS
     $tsUsers = $tsUser->getUsuarios();
@@ -63,7 +63,7 @@
     // FILTROS
     $smarty->assign("tsFiltro",array('online' => $_GET['online'], 'avatar' => $_GET['avatar'], 'sex' => $_GET['sexo'], 'pais' => $_GET['pais'], 'rango' => $_GET['rango']));
     // RANGOS
-	$query = db_exec(array(__FILE__, __LINE__), 'query', 'SELECT rango_id, r_name FROM u_rangos ORDER BY rango_id');
+	$query = db_exec([__FILE__, __LINE__], 'query', 'SELECT rango_id, r_name FROM u_rangos ORDER BY rango_id');
     $smarty->assign("tsRangos",result_array($query));
     
 

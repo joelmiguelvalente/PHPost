@@ -1,68 +1,58 @@
 <?php
-/**
- * Registro
- * -------------------------------------------------------------
- * File:     registro.php
- * Name:     registro
- * Purpose:  Control del registro
- * @link:    https://phpost.net/foro/
- * @link:    https://phpost.es/
- * @author:  Miguel92
- * @version: 1.0
- * -------------------------------------------------------------
-*/
 
 /**
- * Nombre asignado para el archivo .tpl
-*/
-$tsPage = "registro";
+ * @name registro.php
+ * @author PHPost Team
+ * @copyright 2026
+ */
+
+declare(strict_types=1);
 
 /**
- * Nivel de acceso a esta página
- * 0 - todos | 1 - visitantes | 2 - miembros | 3 - moderadores | 4 - administradores
-*/
+ * Inicializamos variable
+ * 
+ * $tsPage  = Plantilla para mostrar con este archivo.
+ * $tsLevel = Nivel de acceso a esta pagina (ver faqs).
+ * $tsAjax  = La respuesta sera por ajax si/no.
+ */
+
+$tsPage  = "registro";
 $tsLevel = 1; 
+$tsAjax  = (!isset($_GET['ajax']) && empty($_GET['ajax']));
 
-/**
- * Tipo de respuesta
-*/
-$tsAjax = empty($_GET['ajax']) ? 0 : 1;
+require_once dirname(__DIR__, 2) . "/header.php";
+$tsTitle = "{$tsCore->settings['titulo']} - {$tsCore->settings['slogan']}";
 
 /**
  * En caso de problemas la variable cambia
 */
 $tsContinue = true;  // CONTINUAR EL SCRIPT
 
-include '../../header.php';
-
-/**
- * Incluimos el título a la página
-*/
-$tsTitle = "Crea tu cuenta en {$tsCore->settings['titulo']}";
-
 /**
  * Verificamos el nivel de acceso
 */
 $tsLevelMsg = $tsCore->setLevel($tsLevel, true);
-if ($tsLevelMsg != 1) {
+if (!$tsLevelMsg) {
    $tsPage = 'aviso';
    $tsAjax = 0;
    $smarty->assign("tsAviso", $tsLevelMsg);
    $tsContinue = false;
 }
 
+if($tsUser->is_member) {
+   header("Location: {$tsCore->route('url')}");
+   die;
+}
+
 /**
  * Si no hay problemas, continuamos
 */
 if ($tsContinue) {
-
-   $smarty->assign("public_key", $tsCore->settings["pkey"]);
+   $smarty->assign("publicKey", $tsCore->settings["pkey"]);
    $smarty->assign("tsAbierto", $tsCore->settings["c_reg_active"]);
-      
 }
 
-
-if(empty($tsAjax)) {	
+if($tsAjax) {
 	$smarty->assign("tsTitle", $tsTitle);
-	include TS_ROOT . "/footer.php";
+   require_once dirname(__DIR__, 2) . "/footer.php";
 }

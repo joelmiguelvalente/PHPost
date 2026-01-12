@@ -1,19 +1,15 @@
 <?php 
 
+/**
+ * @package     PHPost
+ * @author      Miguel92
+ * @copyright   2026
+ * @version     2.0.0
+ */
+declare(strict_types=1);
+
 if (!defined('TS_HEADER')) 
     exit('No se permite el acceso directo al script');
-
-/**
- * El footer permite mostrar la plantilla
- *
- * @name    footer.php
- * @package Smarty 4.0
- * @link https://github.com/smarty-php/smarty
- * @author  PHPost Team
- * @author  Miguel92
- * @copyright PHPost 2022
- * @version v4.0
-*/
 
 // Pagina solicitada
 $smarty->assign("tsPage", $tsPage);

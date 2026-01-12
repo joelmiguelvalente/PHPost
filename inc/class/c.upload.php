@@ -298,7 +298,7 @@ class tsUpload {
          case 'imgur':
             global $tsCore;
             //
-            $image_data = $tsCore->setJSON($code, 'decode');
+            $image_data = json_decode($code);
             $src = $image_data->data->link;
             return $src;
          break;

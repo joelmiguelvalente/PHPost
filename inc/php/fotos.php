@@ -63,7 +63,7 @@
         case '':
             $smarty->assign("tsLastFotos", $tsFotos->getLastFotos());
             $smarty->assign("tsLastComments", $tsFotos->getLastComments());
-			$q = db_exec('fetch_assoc', db_exec(array(__FILE__, __LINE__), 'query', 'SELECT stats_miembros, stats_fotos, stats_foto_comments FROM w_stats WHERE stats_no = \'1\''));
+			$q = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', 'SELECT stats_miembros, stats_fotos, stats_foto_comments FROM w_stats WHERE stats_no = \'1\''));
             $smarty->assign("tsStats", $q);
             
         break;

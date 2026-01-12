@@ -2,30 +2,30 @@
    <!--LEFT MENU-->
 	<ul class="menuTabs">
       {if $tsConfig.c_allow_portal && $tsUser->is_member == true}
-         <li class="tabbed {if $tsPage != 'home' && $tsPage != 'posts' && $tsPage != 'tops' && $tsPage != 'admin' && $tsPage != 'fotos'}here{/if}" id="tabbedhome">
+         <li class="tabbed{if $tsPage != 'home' && $tsPage != 'posts' && $tsPage != 'tops' && $tsPage != 'admin' && $tsPage != 'fotos'} here{/if}" id="tabbedhome">
             <a title="Ir a Inicio" href="{$tsConfig.url}/mi/"><span>&nbsp;</span></a>
          </li>
       {/if}
-      <li class="tabbed {if $tsPage == 'posts' || $tsPage == 'home'}here{/if}">
-         <a title="Ir a Posts" href="{$tsConfig.url}/posts/">Posts <img alt="Drop Down" src="{$tsRoutes.tema.images}/arrowdown.png"></a>
+      <li class="tabbed{if $tsPage == 'posts' || $tsPage == 'home'} here{/if}">
+         <a title="Ir a Posts" href="{$tsConfig.url}/posts/">Posts</a>
       </li>				
 		{if $tsConfig.c_fotos_private == '1' && !$tsUser->is_member}{else}								
-         <li class="tabbed {if $tsPage == 'fotos'}here{/if}">
-            <a title="Ir a Fotos" href="{$tsConfig.url}/fotos/">Fotos <img alt="Drop Down" src="{$tsRoutes.tema.images}/arrowdown.png"></a>
+         <li class="tabbed{if $tsPage == 'fotos'} here{/if}">
+            <a title="Ir a Fotos" href="{$tsConfig.url}/fotos/">Fotos</a>
          </li>								
 		{/if}
-      <li class="tabbed {if $tsPage == 'tops'}here{/if}">
-         <a title="Ir a TOPs" href="{$tsConfig.url}/top/">TOPs <img alt="Drop Down" src="{$tsRoutes.tema.images}/arrowdown.png"></a>
+      <li class="tabbed{if $tsPage == 'tops'} here{/if}">
+         <a title="Ir a TOPs" href="{$tsConfig.url}/top/">TOPs</a>
       </li>
       {if $tsUser->is_member}
          {if $tsUser->is_admod == 1}
-            <li class="tabbed {if $tsPage == 'admin'}here{/if}">
-               <a title="Panel de Administrador" href="{$tsConfig.url}/admin/">Administraci&oacute;n <img alt="Drop Down" src="{$tsRoutes.tema.images}/arrowdown.png"></a>
+            <li class="tabbed{if $tsPage == 'admin'} here{/if}">
+               <a title="Panel de Administrador" href="{$tsConfig.url}/admin/">Administraci&oacute;n</a>
             </li>
          {/if}
       {else}
          <li class="tabbed registrate">
-            <a title="Registrate!" href="{$tsConfig.url}/registro/"><b>Registrate!</b></a>
+            <a title="Registrate!" href="{$tsConfig.url}/registro/">Registrate!</a>
          </li>
       {/if}
       <li class="clearBoth"></li>
@@ -83,39 +83,7 @@
          </div>
       {else}
          <div class="identificarme">
-			   <a title="Identificarme" href="javascript:open_login_box()" class="iniciar_sesion">Identificarme</a>
-         </div>
-         <script src="{$tsRoutes.tema.js}/login.js?{$smarty.now}"></script>
-         <div id="login_box" style="display:;">
-          	<div class="login_cuerpo">
-               <!-- Cerrar el login -->
-               <img title="Cerrar mensaje" onclick="close_login_box();" class="login_cerrar" src="{$tsRoutes.tema.images}/cross-button.png" style="left:220px">
-               <!-- Mensaje de error -->
-               <div id="login_error" style="display: none; padding:3px 0;margin-bottom: 8px;"></div>
-               <!-- Formulario para logue -->
-               <form action="javascript:login_ajax()" name="login_user" method="post">
-                  <div class="form-line">
-                     <label for="nickname">Usuario</label>
-                     <div class="error"></div>
-                     <input type="text" class="ilogin" id="nickname" name="nick" maxlength="64">
-                  </div>
-                  <div class="form-line">
-                     <label for="password">Contrase&ntilde;a</label>
-                     <div class="error"></div>
-                     <input type="password" class="ilogin" id="password" name="pass" maxlength="64">
-                  </div>
-                  <div class="form-line">
-                     <input type="checkbox" id="rem" name="rem" value="true" checked="checked" /> 
-                     <label for="rem">Recordar usuario</label>
-                  </div>
-                  <input type="submit" title="Entrar" value="Entrar" style="width:198px; margin-top:5px;" class="mBtn btnOk">
-               </form>
-               <div class="login_footer">
-                  <a href="javascript:remind_password();">&#191;Olvidaste tu contrase&#241;a?</a>
-                  <a href="javascript:resend_validation();">&#191;No lleg&oacute; el correo de validaci&oacute;n?</a>
-                  <a style="color:green;" href="{$tsConfig.url}/registro/"><strong>Registrate Ahora!</strong></a>
-               </div>
-            </div>
+			   <a title="Identificarme" href="{$tsRoutes.url}/login/" class="iniciar_sesion">Identificarme</a>
          </div>
       {/if}
 	</div>

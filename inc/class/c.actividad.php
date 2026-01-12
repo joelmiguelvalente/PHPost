@@ -85,27 +85,27 @@ class tsActividad {
       # VARIABLES LOCALES
       $ac_date = time();
       # BUSCAMOS ACTIVIDADES				
-		$data = result_array(db_exec(array(__FILE__, __LINE__), 'query', 'SELECT `ac_id` FROM `u_actividad` WHERE user_id = \''.$tsUser->uid.'\' ORDER BY ac_date DESC')); 
+		$data = result_array(db_exec([__FILE__, __LINE__], 'query', 'SELECT `ac_id` FROM `u_actividad` WHERE user_id = \''.$tsUser->uid.'\' ORDER BY ac_date DESC')); 
       //
       $ntotal = empty($data) ? 0 : count($data);
       // ID DE ULTIMA NOTIFICACION
       $delid = $data[$ntotal-1]['ac_id'];
 		// ELIMINAR ACTIVIDADES?
 		if($ntotal >= $tsCore->settings['c_max_acts']) {
-         db_exec(array(__FILE__, __LINE__), 'query', 'DELETE FROM `u_actividad` WHERE `ac_id` = '.$delid);
+         db_exec([__FILE__, __LINE__], 'query', 'DELETE FROM `u_actividad` WHERE `ac_id` = '.$delid);
 		}
       # SE HACE UN CONTEO PROGRESIVO SI HACE ESTA ACCON MAS DE 1 VEZ AL DIA
       if(intval($ac_type) === 5) {
          //
-         $data = db_exec('fetch_assoc', db_exec(array(__FILE__, __LINE__), 'query', 'SELECT `ac_id`, `ac_date` FROM `u_actividad` WHERE user_id = \''.$tsUser->uid.'\' AND obj_uno = \''.$obj_uno.'\' AND ac_type = \''.$ac_type.'\' LIMIT 1'));
+         $data = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', 'SELECT `ac_id`, `ac_date` FROM `u_actividad` WHERE user_id = \''.$tsUser->uid.'\' AND obj_uno = \''.$obj_uno.'\' AND ac_type = \''.$ac_type.'\' LIMIT 1'));
          //
          $hace = $this->makeFecha($data['ac_date']);
          if($hace === 'today') {                
-			   if(db_exec(array(__FILE__, __LINE__), 'query', 'UPDATE `u_actividad` SET obj_dos = obj_dos + 1 WHERE ac_id = \''.$data['ac_id'].'\' LIMIT 1')) return true;			
+			   if(db_exec([__FILE__, __LINE__], 'query', 'UPDATE `u_actividad` SET obj_dos = obj_dos + 1 WHERE ac_id = \''.$data['ac_id'].'\' LIMIT 1')) return true;			
          }
       }
       # INSERCION DE DATOS        
-		return (db_exec(array(__FILE__, __LINE__), 'query', 'INSERT INTO `u_actividad` (`user_id`, `obj_uno`, `obj_dos`, `ac_type`, `ac_date`) VALUES ('.$tsUser->uid.', '.$obj_uno.', '.$obj_dos.', '.$ac_type.', '.$ac_date.')')) ? true : false;
+		return (db_exec([__FILE__, __LINE__], 'query', 'INSERT INTO `u_actividad` (`user_id`, `obj_uno`, `obj_dos`, `ac_type`, `ac_date`) VALUES ('.$tsUser->uid.', '.$obj_uno.', '.$obj_dos.', '.$ac_type.', '.$ac_date.')')) ? true : false;
    }
    /**
     * @name getActividad
@@ -119,7 +119,7 @@ class tsActividad {
       # VARIABLES LOCALES
       $ac_type = (intval($ac_type) !== 0) ? ' AND ac_type = \''.$ac_type.'\'' : '';
       # CONSULTA
-		$data = result_array(db_exec(array(__FILE__, __LINE__), 'query', 'SELECT `ac_id`, `user_id`, `obj_uno`, `obj_dos`, `ac_type`, `ac_date` FROM `u_actividad` WHERE user_id = '.$user_id.' '.$ac_type.' ORDER BY ac_date DESC LIMIT '.$start.', 25'));
+		$data = result_array(db_exec([__FILE__, __LINE__], 'query', 'SELECT `ac_id`, `user_id`, `obj_uno`, `obj_dos`, `ac_type`, `ac_date` FROM `u_actividad` WHERE user_id = '.$user_id.' '.$ac_type.' ORDER BY ac_date DESC LIMIT '.$start.', 25'));
       # ARMAR ACTIVIDAD
       $actividad = $this->armActividad($data);
       # RETORNAR ACTIVIDAD
@@ -139,7 +139,7 @@ class tsActividad {
       // SOLO MOSTRAREMOS LAS ULTIMAS 100 ACTIVIDADES
       if($start > 90) return ['total' => '-1'];
       // SEGUIDORES
-      $follows = result_array(db_exec(array(__FILE__, __LINE__), 'query', 'SELECT `f_id` FROM `u_follows` WHERE f_user = '.$tsUser->uid.' AND f_type = 1'));
+      $follows = result_array(db_exec([__FILE__, __LINE__], 'query', 'SELECT `f_id` FROM `u_follows` WHERE f_user = '.$tsUser->uid.' AND f_type = 1'));
       // ORDENAMOS 
       foreach($follows as $key => $val) $amigos[] = "'".$val['f_id']."'";
       // ME AGREGO A LA LISTA DE AMIGOS
@@ -147,7 +147,7 @@ class tsActividad {
       // CONVERTIMOS EL ARRAY EN STRING
       $amigos = implode(', ',$amigos);
       // OBTENEMOS LAS ULTIMAS PUBLICACIONES
-      $data = result_array(db_exec(array(__FILE__, __LINE__), 'query', 'SELECT a.*, u.user_name AS usuario FROM u_actividad AS a LEFT JOIN u_miembros AS u ON a.user_id = u.user_id WHERE a.user_id IN('.$amigos.') ORDER BY ac_date DESC LIMIT '.$start.', 25'));
+      $data = result_array(db_exec([__FILE__, __LINE__], 'query', 'SELECT a.*, u.user_name AS usuario FROM u_actividad AS a LEFT JOIN u_miembros AS u ON a.user_id = u.user_id WHERE a.user_id IN('.$amigos.') ORDER BY ac_date DESC LIMIT '.$start.', 25'));
       # ARMAR ACTIVIDAD
       if(empty($data)) return 'No hay actividad o no sigues a ning&uacute;n usuario.';
       $actividad = $this->armActividad($data);
@@ -165,10 +165,10 @@ class tsActividad {
       # VARIABLES LOCALES
       $ac_id = intval($_POST['acid']);
       # CONSULTAS		
-		$data = db_exec('fetch_assoc', db_exec(array(__FILE__, __LINE__), 'query', 'SELECT user_id FROM u_actividad WHERE ac_id = \''.$ac_id.'\' LIMIT 1'));
+		$data = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', 'SELECT user_id FROM u_actividad WHERE ac_id = \''.$ac_id.'\' LIMIT 1'));
       # COMPROBAMOS
       if($data['user_id'] === $tsUser->uid) {
-         if(db_exec(array(__FILE__, __LINE__), 'query', 'DELETE FROM `u_actividad` WHERE ac_id = ' . $ac_id)) return '1: Actividad borrada';
+         if(db_exec([__FILE__, __LINE__], 'query', 'DELETE FROM `u_actividad` WHERE ac_id = ' . $ac_id)) return '1: Actividad borrada';
       }
       //
       return '0: No puedes borrar esta actividad.';
@@ -196,7 +196,7 @@ class tsActividad {
          // CREAR CONSULTA
          $sql = $this->makeConsulta($val);
          // CONSULTAMOS
-			$dato = db_exec('fetch_assoc', db_exec(array(__FILE__, __LINE__), 'query', $sql));
+			$dato = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', $sql));
          //
          if(!empty($dato)) {
             // AGREGAMOS AL ARRAY ORIGINAL

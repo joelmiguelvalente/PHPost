@@ -39,9 +39,9 @@
 	//$email = str_replace('/', '@', $tsCore->setSecure($email));
 	$type = intval($_GET['type']);
 	$key = htmlspecialchars($_GET['hash']);
-	$tsData = db_exec(array(__FILE__, __LINE__), 'query', 'SELECT user_id, user_name, user_email FROM u_miembros WHERE user_email = \''.$email.'\'') or exit( show_error('Error al ejecutar la consulta de la l&iacute;nea '.__LINE__.' de '.__FILE__.'.', 'db') );
+	$tsData = db_exec([__FILE__, __LINE__], 'query', 'SELECT user_id, user_name, user_email FROM u_miembros WHERE user_email = \''.$email.'\'') or exit( show_error('Error al ejecutar la consulta de la l&iacute;nea '.__LINE__.' de '.__FILE__.'.', 'db') );
 	// borrar viejos
-	db_exec(array(__FILE__, __LINE__), 'query', 'DELETE FROM `w_contacts` WHERE `time` < \''.(time() - 86400).'\'') or exit( show_error('Error al ejecutar la consulta de la l&iacute;nea '.__LINE__.' de '.__FILE__.'.', 'db') );
+	db_exec([__FILE__, __LINE__], 'query', 'DELETE FROM `w_contacts` WHERE `time` < \''.(time() - 86400).'\'') or exit( show_error('Error al ejecutar la consulta de la l&iacute;nea '.__LINE__.' de '.__FILE__.'.', 'db') );
 	// EXISTE?
 	if(!db_exec('num_rows', $tsData)){
 		$tsAjax = 0;
@@ -50,7 +50,7 @@
 		$tsContinue = false;
 	}
 	// hash
-	$hash = db_exec(array(__FILE__, __LINE__), 'query', 'SELECT * FROM w_contacts WHERE hash = \''.$tsCore->setSecure($key).'\' AND user_email = \''.$email.'\' AND type = '.(int)$type.' ORDER BY id DESC LIMIT 1') or exit( show_error('Error al ejecutar la consulta de la l&iacute;nea '.__LINE__.' de '.__FILE__.'.', 'db') );
+	$hash = db_exec([__FILE__, __LINE__], 'query', 'SELECT * FROM w_contacts WHERE hash = \''.$tsCore->setSecure($key).'\' AND user_email = \''.$email.'\' AND type = '.(int)$type.' ORDER BY id DESC LIMIT 1') or exit( show_error('Error al ejecutar la consulta de la l&iacute;nea '.__LINE__.' de '.__FILE__.'.', 'db') );
 	if(!db_exec('num_rows', $hash)){
 		$tsAjax = 0;
 		$smarty->assign("tsAviso",array('titulo' => 'Opps!', 'mensaje' => 'La clave de validaci&oacute;n no es correcta'));
@@ -61,8 +61,8 @@
 	if($tsContinue){
 	$data = db_exec('fetch_assoc', $tsData);
 	if($type == 2){
-			if(db_exec(array(__FILE__, __LINE__), 'query', 'UPDATE u_miembros SET user_activo = \'1\' WHERE user_id = \''.$data['user_id'].'\'') or exit( show_error('Error al ejecutar la consulta de la l&iacute;nea '.__LINE__.' de '.__FILE__.'.', 'db') )) {
-			db_exec(array(__FILE__, __LINE__), 'query', 'DELETE FROM w_contacts WHERE user_id = \''.$data['user_id'].'\'') or exit( show_error('Error al ejecutar la consulta de la l&iacute;nea '.__LINE__.' de '.__FILE__.'.', 'db') );
+			if(db_exec([__FILE__, __LINE__], 'query', 'UPDATE u_miembros SET user_activo = \'1\' WHERE user_id = \''.$data['user_id'].'\'') or exit( show_error('Error al ejecutar la consulta de la l&iacute;nea '.__LINE__.' de '.__FILE__.'.', 'db') )) {
+			db_exec([__FILE__, __LINE__], 'query', 'DELETE FROM w_contacts WHERE user_id = \''.$data['user_id'].'\'') or exit( show_error('Error al ejecutar la consulta de la l&iacute;nea '.__LINE__.' de '.__FILE__.'.', 'db') );
 			$smarty->assign('tsAviso', array('titulo' => 'Ok', 'mensaje' => 'Cuenta validada', 'but' => 'Ir a la p&aacute;gina principal'));;
 			}else{
 			$smarty->assign('tsAviso', array('titulo' => 'Opps', 'mensaje' => 'Ha ocurrido un error', 'but' => 'Reintentar', 'link' => ''.$tsCore->settings['url'].'/validar/'.$key.'/2/'.$email.''));}
@@ -71,8 +71,8 @@
 			if(empty($_POST['pass'])){ 
 			$smarty->assign('tsAviso', array('titulo' => 'Opps', 'mensaje' => 'Escriba una contrase&ntilde;a', 'but' => 'Volver', 'link' => ''.$tsCore->settings['url'].'/password/'.$key.'/1/'.$email.''));
 			}else{
-			db_exec(array(__FILE__, __LINE__), 'query', 'UPDATE u_miembros SET user_password = \''.md5(md5($_POST['pass']).strtolower($data['user_name'])).'\' WHERE user_id = \''.$data['user_id'].'\'') or exit( show_error('Error al ejecutar la consulta de la l&iacute;nea '.__LINE__.' de '.__FILE__.'.', 'db') );
-			db_exec(array(__FILE__, __LINE__), 'query', 'DELETE FROM w_contacts WHERE user_id = \''.$data['user_id'].'\'') or exit( show_error('Error al ejecutar la consulta de la l&iacute;nea '.__LINE__.' de '.__FILE__.'.', 'db') );
+			db_exec([__FILE__, __LINE__], 'query', 'UPDATE u_miembros SET user_password = \''.md5(md5($_POST['pass']).strtolower($data['user_name'])).'\' WHERE user_id = \''.$data['user_id'].'\'') or exit( show_error('Error al ejecutar la consulta de la l&iacute;nea '.__LINE__.' de '.__FILE__.'.', 'db') );
+			db_exec([__FILE__, __LINE__], 'query', 'DELETE FROM w_contacts WHERE user_id = \''.$data['user_id'].'\'') or exit( show_error('Error al ejecutar la consulta de la l&iacute;nea '.__LINE__.' de '.__FILE__.'.', 'db') );
 			$smarty->assign('tsAviso', array('titulo' => 'Ok', 'mensaje' => 'Contrase&ntilde;a actualizada', 'but' => 'Ir a la p&aacute;gina principal'));
 			}
 		}else{

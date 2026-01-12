@@ -44,7 +44,7 @@
          {/section}                            
 		</select>
 		<select class="cuenta-save-1" name="mes">
-         {foreach from=$tsMeces key=mid item=mes}
+         {foreach from=$tsMeses key=mid item=mes}
             <option value="{$mid}"{if $tsPerfil.user_mes == $mid} selected{/if}>{$mes}</option>
          {/foreach}
 		</select>

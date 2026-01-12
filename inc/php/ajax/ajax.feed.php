@@ -46,8 +46,8 @@
             $version_now = 'Risus 1.3.0';
             # ACTUALIZAR VERSIÓN
             if($tsCore->settings['version'] != $version_now){
-			    db_exec(array(__FILE__, __LINE__), 'query', 'UPDATE `w_configuracion` SET version = \''.$version_now.'\', version_code = \'risus_1_3_0\' WHERE phpost_id = \'1\' LIMIT 1');
-                db_exec(array(__FILE__, __LINE__), 'query', 'UPDATE `w_stats` SET stats_time_upgrade = \''.time().'\' WHERE stats_no = \'1\' LIMIT 1');
+			    db_exec([__FILE__, __LINE__], 'query', 'UPDATE `w_configuracion` SET version = \''.$version_now.'\', version_code = \'risus_1_3_0\' WHERE phpost_id = \'1\' LIMIT 1');
+                db_exec([__FILE__, __LINE__], 'query', 'UPDATE `w_stats` SET stats_time_upgrade = \''.time().'\' WHERE stats_no = \'1\' LIMIT 1');
             }
 			//<---
             $json = $tsCore->getUrlContent('http://www.phpost.net/feed/index.php?type=version&key='.$key);

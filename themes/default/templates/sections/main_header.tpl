@@ -21,16 +21,17 @@ const global_data = {
 };
 const route = {
    url:'{$tsConfig.url}',
+   assets:'{$tsRoutes.assets.base}',
    img:'{$tsRoutes.tema.images}',
    smiles:'{$tsConfig.url}/files/smiles'
 }
 </script>
 {load file=['jquery.min','jquery.plugins','acciones','wysibb',$tsPage] type="js"}
 {if $tsUser->is_admod || $tsUser->permisos.moacp || $tsUser->permisos.most || $tsUser->permisos.moayca || $tsUser->permisos.mosu || $tsUser->permisos.modu || $tsUser->permisos.moep || $tsUser->permisos.moop || $tsUser->permisos.moedcopo || $tsUser->permisos.moaydcp || $tsUser->permisos.moecp}
-<script src="{$tsRoutes.tema.js}/moderacion.js?{$smarty.now}" defer></script>
+<script src="{$tsRoutes.assets.js}/moderacion.js?{$smarty.now}" defer></script>
 {/if}
 {if $tsConfig.c_allow_live}
-<script src="{$tsRoutes.tema.js}/live.js?{$smarty.now}" defer></script>
+<script src="{$tsRoutes.assets.js}/live.js?{$smarty.now}" defer></script>
 {/if}
 </head>
 <body>

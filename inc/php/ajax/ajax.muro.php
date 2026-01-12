@@ -119,9 +119,9 @@
         case 'muro-likes':
             //<---
             if(empty($_GET['do']))
-                echo $tsCore->setJSON($tsMuro->likePost());
+                echo json_encode($tsMuro->likePost());
             else {
-                echo $tsCore->setJSON($tsMuro->showLikes());
+                echo json_encode($tsMuro->showLikes());
             }
             //--->
         break;

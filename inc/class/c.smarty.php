@@ -97,10 +97,12 @@ class tsSmarty extends \Smarty\Smarty {
 
 	private function resolvePage(string $page): string {
 		$file = match ($page) {
+			'registro', 'login' => 'base.tpl',
 			'admin', 'moderacion' => 'main.tpl',
 			'saliendo' => 'views/html/saliendo.html',
 			default => "t.$page.tpl"
 		};
+		
 		return $this->templateExists($file) ? $file : $this->templateError;
 	}
 
@@ -109,7 +111,8 @@ class tsSmarty extends \Smarty\Smarty {
 	 */
 	private function mapDirectories(): array {
 		$directories = [
-			'root'       => TS_ROOT
+			'root'	=> TS_ROOT,
+			'auth'	=> TS_THEMES . 'auth',
 		];
 		return $directories;
 	}
