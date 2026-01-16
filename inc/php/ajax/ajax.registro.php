@@ -70,35 +70,22 @@ switch($action) {
 		case 'registro-check-email':	
 			echo $tsRegistro->checkUserEmail();
 		break;
-		
 		case 'registro-geo':
-		
-			//<--
-			
-			include("../extras/geodata.php");
-			
-			$pais = htmlspecialchars($_GET['pais_code']);
-			
-			//
-			
-			if($pais) $html = '1: ';
-			
-			else $html = '0: El campo <b>pais_code</b> es requerido para esta operacion';
-			
-			foreach($estados[$pais] as $key => $estado){
-			
-				$html .= '<option value="'.($key+1).'">'.$estado.'</option>'."\n";
-				
+			$tsEstados = require dirname(__DIR__, 2) . '/extras/geodata.php';
+			$pais = trim($_GET['pais_code'] ?? '');
+			if ($pais === '') {
+			   echo '0: El campo <b>pais_code</b> es requerido para esta operación';
+			   return;
 			}
-			
-			//
-			
-			if(strlen($html) > 3) echo $html;
-			
-			else echo '0: Código de pais incorrecto.';
-			
-			//-->
-			
+			if (!isset($tsEstados[$pais]) || !is_array($tsEstados[$pais])) {
+			   echo '0: Código de país incorrecto.';
+			   return;
+			}
+			$paisOption = [];
+			foreach ($tsEstados[$pais] as $key => $country) {
+			   $paisOption[] = '<option value="' . $key . '">' . $country . '</option>';
+			}
+			echo '1: ' . implode("\n", $paisOption);
 		break;
 		
 		case 'registro-nuevo':

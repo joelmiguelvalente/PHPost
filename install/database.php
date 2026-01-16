@@ -229,7 +229,7 @@ $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `u_avisos` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
 
 $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `u_bloqueos` (
-    `bid` INT AUTO_INCREMENT PRIMARY KEY,
+  `bid` INT AUTO_INCREMENT PRIMARY KEY,
   `b_user` INT NOT NULL,
   `b_auser` INT NOT NULL,
   `b_date` INT NOT NULL DEFAULT 0,
@@ -396,6 +396,7 @@ $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `u_muro_likes` (
   INDEX idx_obj (obj_type, obj_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
 
+$enum = "ENUM('everyone','registered','followers','following','friends_mutual','friends_any','nobody')";
 $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `u_perfil` (
   `user_id` INT PRIMARY KEY,
   `user_dia` TINYINT DEFAULT 0,
@@ -410,7 +411,10 @@ $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `u_perfil` (
   `p_mensaje` TEXT DEFAULT NULL,
   `p_sitio` VARCHAR(255) DEFAULT NULL,
   `p_socials` TEXT DEFAULT NULL,
-  `p_configs` VARCHAR(180) NOT NULL DEFAULT 'a:3:{s:1:\"m\";s:1:\"5\";s:2:\"mf\";i:5;s:3:\"rmp\";s:1:\"5\";}',
+  `p_privacidad` $enum DEFAULT 'everyone',
+  `p_mensajes_privados` $enum DEFAULT 'everyone',
+  `p_publicar_muro` $enum DEFAULT 'everyone',
+  `p_muro_visitas` $enum DEFAULT 'everyone',
   `p_total` VARCHAR(54) NOT NULL DEFAULT 'a:6:{i:0;i:5;i:1;i:0;i:2;i:0;i:3;i:0;i:4;i:0;i:5;i:0;}'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
 
@@ -725,3 +729,9 @@ $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `w_social` (
   INDEX idx_status (social_status),
   INDEX idx_name (social_name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
+
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `w_migrations` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `migration` VARCHAR(120) NOT NULL UNIQUE,
+  `executed_at` INT NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 AUTO_INCREMENT=1 ;";

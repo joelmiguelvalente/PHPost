@@ -90,4 +90,29 @@ final class Database
     {
         return $result->num_rows;
     }
+
+    /* ================= Transactions ================= */
+
+    public function beginTransaction(): void
+    {
+        $this->connection->begin_transaction();
+    }
+
+    public function commit(): void
+    {
+        $this->connection->commit();
+    }
+
+    public function rollback(): void
+    {
+        $this->connection->rollback();
+    }
+
+    /* ================= Low-level access ================= */
+
+    public function query(string $sql): mysqli_result|bool
+    {
+        return $this->connection->query($sql);
+    }
+
 }

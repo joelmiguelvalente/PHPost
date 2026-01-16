@@ -13,6 +13,7 @@ if (!defined('TS_HEADER')) {
 }
 
 require_once dirname(__DIR__, 1) . '/utils/AsignarMedallas.php';
+require_once dirname(__DIR__, 1) . '/utils/Avatar.php';
 require_once dirname(__DIR__, 1) . '/utils/PasswordHandler.php';
 require_once __DIR__ . '/c.session.php';
 
@@ -26,6 +27,7 @@ class tsUser {
 	public $is_member = 0;		// EL USUARIO ESTA LOGUEADO?
 	public $is_admod = 0;
 	public $is_banned = 0;
+	public $avatar = '';
 	public $nick = 'Visitante';// NOMBRE A MOSTRAR
 	public $uid = 0;			// USER ID
 	public $is_error;			// SI OCURRE UN ERROR ESTA VARIABLE CONTENDRA EL NUMERO DE ERROR
@@ -114,6 +116,9 @@ class tsUser {
 		$this->nick = $this->info['user_name'];
 		$this->uid = $this->info['user_id'];
 		$this->is_banned = $this->info['user_baneado'];
+		// Avatar
+		$Avatar = new Avatar;
+		$this->avatar = $Avatar->get((int)$this->uid, $this->nick);
 		$time = time();
 		// ULTIMA ACCION
 		db_exec([__FILE__, __LINE__], 'query', "UPDATE u_miembros SET user_lastactive = $time WHERE user_id = {$this->uid}");

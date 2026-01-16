@@ -1,10 +1,10 @@
 <?php
 
 /**
- * @package		PHPost
- * @author 		Miguel92
- * @copyright 	2026
- * @version 	2.0.0
+ * @package    PHPost
+ * @author     Miguel92
+ * @copyright  2026
+ * @version    2.0.0
 */
 
 declare(strict_types=1);
@@ -69,7 +69,7 @@ class PasswordHandler {
 	/**
 	 * Verifica si dos contraseñas coinciden
 	 */
-	public function match(string $password, string $confirm): bool
+	public function equals(string $password, string $confirm): bool
 	{
 		return hash_equals($password, $confirm);
 	}

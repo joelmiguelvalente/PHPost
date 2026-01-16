@@ -1,36 +1,50 @@
-<?php if ( ! defined('TS_HEADER')) exit('No se permite el acceso directo al script');
+<?php
 
 /**
- * Controlador AJAX
- *
- * @name    ajax.cuenta.php
- * @author  Miguel92
-*/
+ * @name ajax.login.php
+ * @author PHPost Team
+ * @copyright 2026
+ */
 
+declare(strict_types=1);
 
-$files = [
-   'cuenta-guardar' => ['n' => 2, 'p' => ''],
+if (!defined('TS_HEADER')) {
+	exit('No se permite el acceso directo al script');
+}
+
+const ACTIONS = [
+   'cuenta-desactivar' => ['nivel' => 2, 'template' => '', 'ajax' => false],
+   'cuenta-guardar' => ['nivel' => 2, 'template' => '', 'ajax' => false]
 ];
 
-// REDEFINIR VARIABLES
-$tsPage = 'ajax/p.cuenta.'.$files[$action]['p'];
-$tsLevel = $files[$action]['n'];
-$tsAjax = empty($files[$action]['p']) ? 1 : 0;
+if (!array_key_exists($action, ACTIONS)) {
+   http_response_code(403);
+   exit('Acción inválida');
+}
+
+$config = ACTIONS[$action];
+
+$tsLevel = $config['nivel'];
+$tsAjax  = (int) $config['ajax'];
+$tsPage  = sprintf('php_files/p.cuenta.%s', $config['template']);
 
 // DEPENDE EL NIVEL
 $tsLevelMsg = $tsCore->setLevel($tsLevel, true);
-if($tsLevelMsg != 1):
-	echo '0: '.$tsLevelMsg['mensaje']; 
+if(!$tsLevelMsg) { 
+	echo '0: '.$tsLevelMsg; 
 	die();
-endif;
+}
 
 // CLASE
-require("../class/c.cuenta.php");
-$tsCuenta = new tsCuenta();
+require_once dirname(__DIR__, 2) . "/class/c.cuenta.php";
+$tsCuenta = new tsCuenta($tsCore, $tsUser);
 
 // CODIGO
-switch($action){
+switch($action) {
+	case 'cuenta-desactivar':
+		echo $tsCuenta->desactivarCuenta();
+	break;
 	case 'cuenta-guardar':
-		echo json_encode($tsCuenta->savePerfil());
+		echo $tsCuenta->savePerfil();
 	break;
 }

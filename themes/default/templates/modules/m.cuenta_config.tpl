@@ -3,56 +3,44 @@
 		<h2 class="active">&iquest;Qui&eacute;n puede...</h2>
 		<div class="field">
 			<label>ver tu muro?</label>
-			<div class="input-fake">
-				<select name="muro" class="cuenta-save-7">
-               {foreach from=$tsPrivacidad item=p key=i}
-                  <option value="{$i}"{if $tsPerfil.p_configs.m == $i} selected{/if}>{$p}</option>
-               {/foreach}
-            </select>
-         </div>
-      </div>
-      {$tsPerfil.p_configs.muro}
-      <div class="field">
+			<select name="privacidad" class="cuenta-save-7">
+				{foreach $tsPrivacidad key=val item=label}
+					<option value="{$val}"{if $tsPerfil.p_privacidad == $val} selected{/if}>{$label}</option>
+				{/foreach}
+			</select>
+		</div>
+		{*$tsPerfil.p_configs.muro*}
+		<div class="field">
       	<label>firmar tu muro?</label>
-      	<div class="input-fake">
-      		<select name="muro_firm" class="cuenta-save-7">
-      			{foreach from=$tsPrivacidad item=p key=i}
-	      			{if $i != 6}
-	      				<option value="{$i}"{if $tsPerfil.p_configs.mf == $i} selected{/if}>{$p}</option>
-	      			{/if}
-      			{/foreach}
-      		</select>
-      	</div>
+      	<select name="publicar_muro" class="cuenta-save-7">
+      		{foreach from=$tsPrivacidad key=val item=label}
+	      		{if $val != 'everyone'}
+	      			<option value="{$val}"{if $tsPerfil.p_publicar_muro == $val} selected{/if}>{$label}</option>
+	      		{/if}
+      		{/foreach}
+      	</select>
       </div>
       <div class="field">
       	<label>ver &uacute;ltimas visitas?</label>
-      	<div class="input-fake">
-      		<select name="last_hits" class="cuenta-save-7">
-      			{foreach from=$tsPrivacidad item=p key=i}
-	      			{if $i != 1 && $i != 2}
-	      				<option value="{$i}"{if $tsPerfil.p_configs.hits == $i} selected{/if}>{$p}</option>
-	      			{/if}
+      	<select name="muro_visitas" class="cuenta-save-7">
+      		{foreach from=$tsPrivacidad key=val item=label}
+	      		{if $val != 'only_friends' && $val != 'friends'}
+	      			<option value="{$val}"{if $tsPerfil.p_muro_visitas == $val} selected{/if}>{$label}</option>
+	      		{/if}
+      		{/foreach}
+      	</select>
+      </div>
+      {if !$tsUser->is_admod}
+      	<div class="field">
+      		<label>enviarte MPs?</label>
+      		<select name="mensajes_privados" class="cuenta-save-7">
+      			{foreach from=$tsPrivacidad key=val item=label}
+      				{if $val != 'everyone'}
+      					<option value="{$val}"{if $tsPerfil.p_mensajes_privados == $val} selected{/if}>{$label}</option>
+      				{/if}
       			{/foreach}
       		</select>
       	</div>
-      </div>
-      {if !$tsUser->is_admod}
-      	{if $tsPerfil.p_configs.rmp != 8}
-      		<div class="field">
-      			<label>enviarte MPs?</label>
-      			<div class="input-fake">
-      				<select name="rec_mps" class="cuenta-save-7">
-      					{foreach from=$tsPrivacidad item=p key=i}
-      						{if $i != 6}
-      							<option value="{$i}"{if $tsPerfil.p_configs.rmp == $i} selected{/if}>{$p}</option>
-      						{/if}
-      					{/foreach}
-      				</select>
-      			</div>
-      		</div>
-      	{else}
-      		<div class="mensajes error">Algunas opciones de su privacidad han sido deshabilitadas, contacte con la administraci&oacute;n.</div>
-      	{/if}
       {/if}
    </fieldset>
 	{if !$tsUser->is_admod}

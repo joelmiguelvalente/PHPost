@@ -1,102 +1,93 @@
-<?php 
+<?php
+
 /**
- * Controlador
- *
- * @name    cuenta.php
- * @author  PHPost Team
-*/
+ * @name cuenta.php
+ * @author PHPost Team
+ * @copyright 2026
+ */
 
-/**********************************\
+declare(strict_types=1);
 
-*	(VARIABLES POR DEFAULT)		*
+/**
+ * Inicializamos variable
+ * 
+ * $tsPage  	= Plantilla para mostrar con este archivo.
+ * $tsLevel 	= Nivel de acceso a esta pagina (ver faqs).
+ * $tsAjax  	= La respuesta sera por ajax si/no.
+ * $tsContinue	= Continuar con la ejecución
+ */
 
-\*********************************/
+$tsPage  = "cuenta";
+$tsLevel = 2; 
+$tsAjax  = (!isset($_GET['ajax']) && empty($_GET['ajax']));
+$tsContinue = true;
 
-	$tsPage = "cuenta";	// tsPage.tpl -> PLANTILLA PARA MOSTRAR CON ESTE ARCHIVO.
-
-	$tsLevel = 2;		// NIVEL DE ACCESO A ESTA PAGINA. => VER FAQs
-
-	$tsAjax = empty($_GET['ajax']) ? 0 : 1; // LA RESPUESTA SERA AJAX?
+require_once dirname(__DIR__, 2) . "/header.php";
+$tsTitle = "{$tsCore->settings['titulo']} - {$tsCore->settings['slogan']}";
 	
-	$tsContinue = true;	// CONTINUAR EL SCRIPT
-	
-/*++++++++ = ++++++++*/
-
-	include "../../header.php"; // INCLUIR EL HEADER
-
-	$tsTitle = $tsCore->settings['titulo'].' - '.$tsCore->settings['slogan']; 	// TITULO DE LA PAGINA ACTUAL
-
-/*++++++++ = ++++++++*/
-	
-	// VERIFICAMOS EL NIVEL DE ACCSESO ANTES CONFIGURADO
-	$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
-	if($tsLevelMsg != 1){	
-		$tsPage = 'aviso';
-		$tsAjax = 0;
-		$smarty->assign("tsAviso",$tsLevelMsg);
-		//
-		$tsContinue = false;
-	}
+// VERIFICAMOS EL NIVEL DE ACCESO ANTES CONFIGURADO
+$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
+if(!$tsLevelMsg){	
+	$tsPage = 'aviso';
+	$tsAjax = 0;
+	$smarty->assign("tsAviso",$tsLevelMsg);
 	//
-	if($tsContinue){
-/**********************************\
+	$tsContinue = false;
+}
 
-* (VARIABLES LOCALES ESTE ARCHIVO)	*
+if($tsContinue) {
 
-\*********************************/
-
-	$action = $_GET['action'];
+	$action = trim($_GET['action'] ?? '');
 	//
-	include("../class/c.cuenta.php");
-	$tsCuenta = new tsCuenta();
+	require_once dirname(__DIR__, 1) . "/class/c.cuenta.php";
+	$tsCuenta = new tsCuenta($tsCore, $tsUser);
 
-/**********************************\
+	if(empty($action)) {
+		require_once dirname(__DIR__, 1) . "/extras/datos.php";
+		$tsMeses = require_once dirname(__DIR__, 1) . "/extras/Meses.php";
+		$tsPaises = require_once dirname(__DIR__, 1) . "/extras/Paises.php";
+		$tsEstados = require_once dirname(__DIR__, 1) . "/extras/geodata.php";
 
-*	(INSTRUCCIONES DE CODIGO)		*
+		$minAge = (int)$tsCore->settings['c_allow_edad']; // ej. 16
+		$maxAge = 100;
 
-\*********************************/
+		$today = new DateTimeImmutable('today');
+		$maxDate = $today->modify("-{$minAge} years"); // ej. 2010-xx-xx
+		$minDate = $today->modify("-{$maxAge} years"); // ej. 1926-xx-xx
+		$smarty->assign('birthMin', $minDate->format('Y-m-d'));
+		$smarty->assign('birthMax', $maxDate->format('Y-m-d'));
 
-	if(empty($action)){
-		include('../extras/datos.php');
-		include('../extras/geodata.php');
-		// SOLO MENORES DE 100 AÑOS xD Y MAYORES DE...
-		$now_year = date("Y",time());
-		$max_year = 100 - $tsCore->settings['c_allow_edad'];
-		$end_year = $now_year - $tsCore->settings['c_allow_edad'];
-		$smarty->assign("tsMax",$max_year);
-		$smarty->assign("tsEndY",$end_year);
+		$smarty->assign("tsMenuCuenta", [
+			'' => 'Cuenta',
+			'perfil' => 'Perfil', 
+         'block' => 'Bloqueados',
+         'clave' => 'Cambiar Clave',
+         'nick' => 'Cambiar Nick',
+         'config' => 'Privacidad'
+		]);
+
 		// PERFIL INFO
       $tsPerfil = $tsCuenta->loadPerfil();
-		$smarty->assign("tsPerfil",$tsPerfil);
+		$smarty->assign("tsPerfil", $tsPerfil);
+		#var_dump($tsPerfil);
 		// PERFIL DATA
-		$smarty->assign("tsPData",$tsPerfilData);
-      $smarty->assign("tsPrivacidad",$tsPrivacidad);
+      $smarty->assign("tsPrivacidad", $tsPrivacidad);
+		#var_dump($tsPrivacidad);
 		// DATOS
-		$smarty->assign("tsPaises",$tsPaises);
-		$smarty->assign("tsEstados",$estados[$tsPerfil['user_pais']]);
-		$smarty->assign("tsMeses",$tsMeses);
+		$smarty->assign("tsPaises", 	$tsPaises);
+		$smarty->assign("tsEstados",	$tsEstados[$tsPerfil['user_pais']]);
+		$smarty->assign("tsMeses",		$tsMeses);
       // BLOQUEOS
-      $smarty->assign("tsBlocks",$tsCuenta->loadBloqueos());
+      $smarty->assign("tsBlocks", $tsCuenta->loadBloqueos());
         
-	} elseif($action == 'save'){
+	} elseif($action === 'save'){
 		echo json_encode($tsCuenta->savePerfil());
-	} elseif($action == 'desactivate'){
-		if(!empty($_POST['validar'])) echo $tsCuenta->desCuenta();
 	}
-   $smarty->assign("tsAccion", $_GET["accion"]);
+}
+
+$smarty->assign("tsAccion", $_GET["accion"] ?? '');
 	
-/**********************************\
-
-* (AGREGAR DATOS GENERADOS | SMARTY) *
-
-\*********************************/
-	}
-
-if(empty($tsAjax)) {	// SI LA PETICION SE HIZO POR AJAX DETENER EL SCRIPT Y NO MOSTRAR PLANTILLA, SI NO ENTONCES MOSTRARLA.
-
-	$smarty->assign("tsTitle",$tsTitle);	// AGREGAR EL TITULO DE LA PAGINA ACTUAL
-
-	/*++++++++ = ++++++++*/
-	include("../../footer.php");
-	/*++++++++ = ++++++++*/
+if($tsAjax) {
+	$smarty->assign("tsTitle", $tsTitle);
+   require_once dirname(__DIR__, 2) . "/footer.php";
 }

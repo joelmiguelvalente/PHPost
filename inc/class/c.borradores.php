@@ -35,7 +35,7 @@ class tsDrafts {
 			if($save) {
 				// UPDATE
 				$bid = intval($_POST['borrador_id']);
-				$updates = $tsCore->getIUP($draftData, 'b_');
+				$updates = $tsCore->buildSqlSet($draftData, 'b_');
 				//
                 if(db_exec([__FILE__, __LINE__], 'query', 'UPDATE `p_borradores` SET '.$updates.' WHERE bid = \''.(int)$bid.'\' AND b_user = \''.$tsUser->info['user_id'].'\'')) return '1: '.$bid;
 				else return '0: '.show_error('Error al ejecutar la consulta de la l&iacute;nea '.__LINE__.' de '.__FILE__.'.', 'db');

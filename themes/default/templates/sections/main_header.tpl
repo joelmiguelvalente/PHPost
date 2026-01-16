@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="shortcut icon" href="{$tsRoutes.tema.images}/favicon.ico" type="image/x-icon" />
-{load file=['estilo','phpost','extras','wysibb',$tsPage] type="css"}
+{load file=['estilo','phpost','extras','dialog',$tsPage] type="css"}
 <script>
 const global_data = {
    app: {
@@ -16,8 +16,13 @@ const global_data = {
    user_key: {$tsUser->uid},
    postid: {$tsPost.post_id|default:0},
    fotoid: {$tsFoto.foto_id|default:0},
-   notifica: {$tsNots},
-   mensaje: {$tsMPs}
+   notifica: {$tsNots|default:0},
+   mensaje: {$tsMPs|default:0},
+   muro: {
+      stream: {
+         total: {$tsMuro.total|default:0}
+      }
+   }
 };
 const route = {
    url:'{$tsConfig.url}',
@@ -26,7 +31,7 @@ const route = {
    smiles:'{$tsConfig.url}/files/smiles'
 }
 </script>
-{load file=['jquery.min','jquery.plugins','acciones','wysibb',$tsPage] type="js"}
+{load file=['jquery.min','jquery.plugins','acciones',$tsPage] type="js"}
 {if $tsUser->is_admod || $tsUser->permisos.moacp || $tsUser->permisos.most || $tsUser->permisos.moayca || $tsUser->permisos.mosu || $tsUser->permisos.modu || $tsUser->permisos.moep || $tsUser->permisos.moop || $tsUser->permisos.moedcopo || $tsUser->permisos.moaydcp || $tsUser->permisos.moecp}
 <script src="{$tsRoutes.assets.js}/moderacion.js?{$smarty.now}" defer></script>
 {/if}
@@ -44,8 +49,6 @@ const route = {
 
    <div id="swf"></div>
    <div id="js" style="display:none"></div>
-   <div id="mask"></div>
-   <div id="mydialog"></div>
    <div class="UIBeeper" id="BeeperBox"></div>
 
    <div id="brandday">

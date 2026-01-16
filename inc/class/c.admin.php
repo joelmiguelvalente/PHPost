@@ -148,7 +148,7 @@ class tsAdmin {
          $_POST["providers"] = json_encode(explode(', ', $_POST["providers"]), JSON_FORCE_OBJECT);
       endif;
       //
-      $columnas = $tsCore->getIUP( array_slice($_POST, 0, -1) );
+      $columnas = $tsCore->buildSqlSet( array_slice($_POST, 0, -1) );
       if (db_exec([__FILE__, __LINE__], "query", "UPDATE w_configuracion SET {$columnas} WHERE phpost_id = 1")) return true;
       else exit( show_error('Error al ejecutar la consulta de la l&iacute;nea '.__LINE__.' de '.__FILE__.'.', 'Base de datos') );
    }
@@ -232,7 +232,7 @@ class tsAdmin {
       # Obtenemos el ID por GET
       $tema_id = intval($_GET['tid']);
       # Creamos un arreglo para agregar
-      $t = $tsCore->getIUP([
+      $t = $tsCore->buildSqlSet([
          't_url' => $tsCore->setSecure($_POST['url']), 
          't_path' => $tsCore->setSecure($_POST['path'])
       ]);
@@ -292,7 +292,7 @@ class tsAdmin {
        * no lo creo pues cuando definimos el nivel de acceso solo 
        * pueden entrar administradores.
       */
-      $publicidades = $tsCore->getIUP([
+      $publicidades = $tsCore->buildSqlSet([
          'ads_300' => $tsCore->setSecure(html_entity_decode($_POST['ads_300'])),
          'ads_468' => $tsCore->setSecure(html_entity_decode($_POST['ads_468'])),
          'ads_160' => $tsCore->setSecure(html_entity_decode($_POST['ads_160'])),
@@ -340,7 +340,7 @@ class tsAdmin {
       $cid = intval($_GET['cid']);
       //
       $nombre = $tsCore->setSecure($tsCore->parseBadWords($_POST['c_nombre']));
-      $categoria = $tsCore->getIUP([
+      $categoria = $tsCore->buildSqlSet([
          "nombre" => $nombre,
          "seo" => $tsCore->setSEO($nombre),
          "img" => $tsCore->setSecure($tsCore->parseBadWords($_POST['c_img'])),
@@ -468,7 +468,7 @@ class tsAdmin {
       if (empty($r['r_name']))  return 'Debes ingresar el nombre del nuevo rango.';
       if ($_POST['global-pointsforposts'] > $_POST['global-pointsforday']) return 'El rango no puede dar m&aacute;s puntos de los que tiene al d&iacute;a.';
       //
-      $columnas = $tsCore->getIUP( $r );
+      $columnas = $tsCore->buildSqlSet( $r );
       // 
       return (db_exec([__FILE__, __LINE__], 'query', 'UPDATE `u_rangos` SET '.$columnas.' WHERE rango_id = ' . $rid)) ? true : exit( show_error('Error al ejecutar la consulta de la l&iacute;nea '.__LINE__.' de '.__FILE__.'.', 'db') );
    }
@@ -564,7 +564,7 @@ class tsAdmin {
          'hits' => $see_hits
       ]);
       //
-      $updates = $tsCore->getIUP($perfilData, 'p_');
+      $updates = $tsCore->buildSqlSet($perfilData, 'p_');
       if (db_exec([__FILE__, __LINE__], 'query', 'UPDATE u_perfil SET ' . $updates . ' WHERE user_id = ' . $uid)) return true;
    }
    public function getUserData() {
@@ -611,7 +611,7 @@ class tsAdmin {
          $up["user_password"] = $tsCore->setSecure(md5(md5($password) . strtolower($user_nick)));
       }
       # Guardamos los nuevos datos
-      $update = $tsCore->getIUP($up);
+      $update = $tsCore->buildSqlSet($up);
       if (db_exec([__FILE__, __LINE__], 'query', 'UPDATE `u_miembros` SET '.$update.' WHERE user_id = ' . $user_id)) {
          if ($_POST['sendata']) {
             mail($email, "Nuevos datos de acceso", "Sus datos de acceso a {$tsCore->settings['titulo']} han sido cambiados por un administrador. Los nuevos datos son: usuario: {$user_nick}, contraseña: {$password}. Disculpe las molestias", "From: {$tsCore->settings['titulo']} <no-reply@{$tsCore->settings['domain']}>");

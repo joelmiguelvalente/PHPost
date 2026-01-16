@@ -1,11 +1,11 @@
 {if $tsInfo.p_socials != '' || $tsInfo.p_sitio != ''}
-   <div class="perfil-redes" style="display: flex;justify-content: space-around;align-items: center;margin-bottom: 10px;">
+   <div class="perfil-redes" style="display: flex;justify-content: flex-start;align-items: center;margin-bottom: 10px;gap:.5rem">
       {if $tsInfo.p_sitio}
-        <a class="sitio" target="_blank" href="{$tsInfo.p_sitio}" title="Mi sitio"><img height="30" width="30" alt="{$name}" src="{$tsRoutes.tema.images}/redes/sitio.png"/></a>
+        <a class="sitio" target="_blank" href="{$tsInfo.p_sitio}" title="Mi sitio"><img height="30" width="30" alt="{$name}" src="{$tsRoutes.assets.images}/redes/icon_site.svg"/></a>
       {/if}
       {foreach $tsRedes key=name item=red}
-         {if $tsInfo.p_socials.$name !== ''}
-            <a class="sitio {$name}" target="_blank" href="https://{$name}.{if $name == 'twitch'}tv{else}com{/if}/{$tsInfo.p_socials.$name}" title="{$red}"><img height="30" width="30" alt="{$name}" src="{$tsRoutes.tema.images}/redes/{$name}.png"/></a>
+         {if !empty($tsInfo.p_socials.$name)}
+            <a class="sitio {$name}" target="_blank" href="https://{$name}.{if $name == 'twitch'}tv{else}com{/if}/{$tsInfo.p_socials.$name}" title="{$red}"><img height="30" width="30" alt="{$name}" src="{$tsRoutes.assets.images}/redes/icon_{$name}.svg"/></a>
          {/if}
       {/foreach}
    </div>
@@ -63,6 +63,7 @@
             <li>
                <a href="{$tsConfig.url}/perfil/{$s.user_name}" class="hovercard" uid="{$s.user_id}" style="display:inline-block;">
                   <img src="{$tsConfig.url}/files/avatar/{$s.user_id}_50.jpg" width="32" height="32"/>
+                  {$s.user_avatar}
                </a>
             </li>
          {/foreach}
@@ -85,8 +86,9 @@
             {foreach from=$tsInfo.visitas item=v}
    			   <li>
                   <a href="{$tsConfig.url}/perfil/{$v.user_name}" class="hovercard" uid="{$v.user_id}" style="display:inline-block;">
-                     <img src="{$tsConfig.url}/files/avatar/{$v.user_id}_50.jpg" class="vctip" title="{$v.date|hace:true}" width="32" height="32"/>
+                     <img src="{$v.user_avatar}" class="vctip" title="{$v.date|hace:true}" width="32" height="32"/>
                   </a>
+
                </li>
             {/foreach}
    		</ul>

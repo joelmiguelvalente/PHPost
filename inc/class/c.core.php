@@ -622,18 +622,27 @@ class tsCore extends Extras {
 		return $this->setSecure($ip);
 	}
 
-	/* 
-		getIUP()
-	*/
-	function getIUP(array $array = [], string $prefix = ''){
-		$fields = array_keys($array);
-		$valores = array_values($array);
-		foreach($valores as $i => $val) {
-			$va_ = is_numeric($val) ? intval($val) : "'{$this->setSecure($val)}'";
-			$sets[$i] = $prefix.$fields[$i]." = $va_";
-		}
-		$values = implode(', ',$sets);
-		return $values;
+	/**
+	 * @param array  $data
+	 * @param string $prefix
+	 * @return string
+	 */
+	public function buildSqlSet(array $data, string $prefix = ''): string {
+	   if (empty($data)) {
+	      return '';
+	   }
+	   $sets = [];
+	   foreach ($data as $field => $value) {
+	   	$field = $prefix . $field;
+	   	$sets[] = match (true) {
+            is_int($value),
+            is_float($value)   => "$field = $value",
+            is_bool($value)    => "$field = " . (int) $value,
+            $value === null    => "$field = NULL",
+            default            => "$field = '" . $this->setSecure((string)$value) . "'",
+        };
+	   }
+	   return implode(', ', $sets);
 	}
 	
 }

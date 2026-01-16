@@ -11,11 +11,8 @@
             <input type="password" maxlength="32" name="password" id="password" class="text cuenta-save-8"/>
          </div>
          <div class="field">
-            <label for="pemail">Recibir respuesta en</label>
-            <div class="input-fake input-hide-pemail">
-               {$tsUser->info.user_email} (<a onclick="input_fake('pemail')">Cambiar</a>)
-            </div>
-            <input type="text" style="display: none" value="{$tsUser->info.user_email}" maxlength="35" name="pemail" id="pemail" class="text cuenta-save-8 input-hidden-pemail">
+            <label for="email">Recibir respuesta en</label>
+            <input type="text" value="{$tsUser->info.user_email}" maxlength="35" name="email" id="email" class="text cuenta-save-8 input-hidden-pemail">
          </div>
       </fieldset>
       <div class="buttons">

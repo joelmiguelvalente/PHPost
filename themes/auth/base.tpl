@@ -7,6 +7,7 @@
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+{load file=['dialog'] type="css"}
 <script>
 const global_data = {
    app: {
@@ -53,6 +54,75 @@ const route = {
    }
 </script>
 <style type="text/tailwindcss">
+	:root {
+	 --font-base: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+	 --font-size-base: 14px;
+	 --font-size-sm: 13px;
+	 --font-size-lg: 16px;
+	 --font-weight-normal: 400;
+	 --font-weight-medium: 500;
+	 --font-weight-bold: 600;
+
+	 --color-bg: #f4f6f8;
+	 --color-surface: #ffffff;
+	 --color-surface-alt: #f1f3f5;
+
+	 --color-text: #2b2f33;
+	 --color-text-muted: #6b7280;
+	 --color-border: #dcdfe3;
+
+	 --color-primary: #1a73e8;
+	 --color-primary-contrast: #ffffff;
+
+	 --color-success: #1e8e3e;
+	 --color-danger: #d93025;
+	 --color-warning: #f9ab00;
+	 --color-info: #1b9bd7;
+	 --color-secondary: #5f6368;
+
+	 --color-hover: color-mix(in srgb, currentColor 85%, #000);
+	 --color-surface-hover: color-mix(in srgb, var(--color-surface) 92%, #000);
+	 --color-primary-hover: color-mix(in srgb, var(--color-primary) 85%, #000);
+	 --color-danger-hover: color-mix(in srgb, var(--color-danger) 85%, #000);
+	 --color-success-hover: color-mix(in srgb, var(--color-success) 85%, #000);
+
+	 --radius-xs: 3px;
+	 --radius-sm: 4px;
+	 --radius-md: 6px;
+	 --radius-lg: 10px;
+
+	 --border-width: 1px;
+	 --border-base: var(--border-width) solid var(--color-border);
+
+	 --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.08);
+	 --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
+	 --shadow-lg: 0 12px 30px rgba(0, 0, 0, 0.18);
+
+	 --transition-fast: 0.15s ease;
+	 --transition-base: 0.25s ease;
+}
+[data-theme="dark"] {
+	 --color-bg: #0f1419;
+	 --color-surface: #161b22;
+	 --color-surface-alt: #1c222b;
+
+	 --color-text: #e6e8eb;
+	 --color-text-muted: #9aa0a6;
+	 --color-border: #2a2f36;
+
+	 --color-primary: #4c8dff;
+	 --color-primary-contrast: #0f1419;
+
+	 --color-success: #34a853;
+	 --color-danger: #ea4335;
+	 --color-warning: #fbbc04;
+	 --color-info: #5bbcff;
+	 --color-secondary: #9aa0a6;
+
+	 --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+	 --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.6);
+	 --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.7);
+}
    body {
       font-family: 'Inter', sans-serif;
    }

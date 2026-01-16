@@ -1,7 +1,5 @@
                     <div id="perfil_wall" status="activo">
-                        <script type="text/javascript">
-                            muro.stream.total = {$tsMuro.total};
-                        </script>
+                       
                         {if $tsGeneral.fotos_total > 0}
                         <div id="perfil-foto-bar">
                             {include file='modules/m.perfil_muro_fotos.tpl'}

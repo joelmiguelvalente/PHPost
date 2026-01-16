@@ -105,9 +105,7 @@ class tsSession {
 		}
 
 		// Obtener sesión desde DB
-		$query = db_exec([__FILE__, __LINE__], 'query', 
-			'SELECT * FROM u_sessions WHERE session_id = \'' . $this->ID . '\''
-		);
+		$query = db_exec([__FILE__, __LINE__], 'query', 'SELECT * FROM u_sessions WHERE session_id = \'' . $this->ID . '\'');
 
 		$session = db_exec('fetch_assoc', $query);
 
@@ -147,10 +145,7 @@ class tsSession {
 		$this->ID = $this->gen_session_id();
 
 		// Crear sesión base (usuario 0)
-		db_exec([__FILE__, __LINE__], 'query',
-			'INSERT INTO u_sessions (session_id, session_user_id, session_ip, session_time)
-			 VALUES (\'' . $this->ID . '\', \'0\', \'' . $this->ip_address . '\', \'' . $this->time_now . '\')'
-		);
+		db_exec([__FILE__, __LINE__], 'query', 'INSERT INTO u_sessions (session_id, session_user_id, session_ip, session_time) VALUES (\'' . $this->ID . '\', \'0\', \'' . $this->ip_address . '\', \'' . $this->time_now . '\')');
 		// Cookie de sesión
 		$this->set_cookie('sid', $this->ID, $this->sess_expiration);
 	}
@@ -181,17 +176,16 @@ class tsSession {
 		$this->userdata['session_time']    = $this->time_now;
 
 		$autologin = $autologin ? 1 : 0;
-		$this->userdata['session_autologin'] =
-			$this->userdata['session_autologin'] ?? $autologin;
+		$this->userdata['session_autologin'] = $autologin;
 
 		// Actualizar DB
 		db_exec([__FILE__, __LINE__], 'query',
-			'UPDATE u_sessions SET
-				session_user_id = \'' . $this->userdata['session_user_id'] . '\',
-				session_ip = \'' . $this->userdata['session_ip'] . '\',
-				session_time = \'' . $this->userdata['session_time'] . '\',
-				session_autologin = \'' . $this->userdata['session_autologin'] . '\'
-			 WHERE session_id = \'' . $this->ID . '\''
+			"UPDATE u_sessions SET
+				session_user_id = '{$this->userdata['session_user_id']}',
+				session_ip = '{$this->userdata['session_ip']}',
+				session_time = '{$this->userdata['session_time']}',
+				session_autologin = $autologin
+			 WHERE session_id = '{$this->ID}'"
 		);
 
 		// Limpieza ocasional

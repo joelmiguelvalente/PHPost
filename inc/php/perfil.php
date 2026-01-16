@@ -25,7 +25,7 @@ $tsContinue = true;
 require_once dirname(__DIR__, 2) . "/header.php";
 $tsTitle = "{$tsCore->settings['titulo']} - {$tsCore->settings['slogan']}";
 
-// VERIFICAMOS EL NIVEL DE ACCSESO ANTES CONFIGURADO
+// VERIFICAMOS EL NIVEL DE ACCESO ANTES CONFIGURADO
 $tsLevelMsg = $tsCore->setLevel($tsLevel, true);
 if(!$tsLevelMsg){	
 	$tsPage = 'aviso';
@@ -55,38 +55,38 @@ if($tsContinue) {
 		require_once dirname(__DIR__, 1) . "/class/c.muro.php";
 		$tsPaises = require_once dirname(__DIR__, 1) . "/extras/Paises.php";
 
-		$tsCuenta = new tsCuenta();
+		$tsCuenta = new tsCuenta($tsCore, $tsUser);
 		$Extras = new Extras();
 
 		$tsInfo = $tsCuenta->loadHeadInfo((int)$usuario['user_id']);
-		$tsInfo['uid'] = $usuario['user_id'];
+		$tsInfo['uid'] = (int)$usuario['user_id'];
 		// IS ONLINE?
 		$tsInfo['status'] = $Extras->isOnline($tsInfo, (int)$tsCore->settings['c_last_active']);
 		// GENERAL
-		$tsGeneral = $tsCuenta->loadGeneral($usuario['user_id']);
+		$tsGeneral = $tsCuenta->loadGeneral($tsInfo['uid']);
 		$tsInfo['nick'] = $tsInfo['user_name'];
-		$tsInfo = array_merge($tsInfo,$tsGeneral);
+		//$tsInfo = array_merge($tsInfo,$tsGeneral);
 		// PAIS
-		$tsInfo['user_pais'] = $tsPaises[$tsInfo['user_pais'] ?? 'XX'];
+		$tsInfo['user_pais'] = $tsPaises[$tsInfo['user_pais']];
 		// LO SIGO?
-		$tsInfo['follow'] = $tsCuenta->iFollow($usuario['user_id']);
+		$tsInfo['follow'] = $tsCuenta->isFollowed($tsInfo['uid'], true);
 		// ME SIGUE?
-		$tsInfo['yfollow'] = $tsCuenta->yFollow($usuario['user_id']);
+		$tsInfo['yfollow'] = $tsCuenta->isFollowed($tsInfo['uid'], false);
 		// MANDAR A PLANTILLA
 		$smarty->assign("tsInfo", $tsInfo);
 		$smarty->assign("tsRedes", $tsCuenta->redes);
 		$smarty->assign("tsGeneral", $tsGeneral);
 		
 		// MURO
-		$tsMuro = new tsMuro();
+		$tsMuro = new tsMuro($tsCore, $tsUser);
 		// PERMISOS
-		$priv = $tsMuro->getPrivacity((int)$usuario['user_id'], $username, $tsInfo['follow'], $tsInfo['yfollow']);
+		$privacidad = $tsMuro->getPrivacity((int)$tsInfo['user_id'], $username, (int)$tsInfo['follow'], (int)$tsInfo['yfollow']);
 		// SE PERMITE VER EL MURO?
-		if($priv['m']['v'] === true) {
+		if($privacidad['muro']['status']) {
 			// CARGAR HISTORIA
 			if(!empty($_GET['pid'])) {
 				$pub_id = $tsCore->setSecure($_GET['pid']);
-				$story = $tsMuro->getStory($pub_id, $usuario['user_id']);
+				$story = $tsMuro->getStory($pub_id, $tsInfo['user_id']);
 				//
 				if(!is_array($story)) {
 					$tsPage = 'aviso';
@@ -105,11 +105,11 @@ if($tsContinue) {
 				$smarty->assign("tsMuro", $tsMuro->getNews());
 				$smarty->assign("tsType", "news");
 			}else{
-				$smarty->assign("tsMuro", $tsMuro->getWall($usuario['user_id']));
+				$smarty->assign("tsMuro", $tsMuro->getWall($tsInfo['user_id']));
 				$smarty->assign("tsType", "wall");
 			}
 		}
-		$smarty->assign("tsPrivacidad",$priv);
+		$smarty->assign("tsPrivacidad", $privacidad);
 		// TITULO
 		$tsTitle = "Perfil de {$tsInfo['nick']} | {$tsCore->settings['titulo']}";
 	}

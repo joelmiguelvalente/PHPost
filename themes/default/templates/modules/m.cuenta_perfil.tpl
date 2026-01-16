@@ -2,7 +2,7 @@
    <fieldset>
       <div class="field">
          <label for="nombrez">Nombre completo</label>
-         <input type="text" value="{$tsPerfil.p_nombre}" maxlength="60" name="nombrez" id="nombrez" class="text cuenta-save-2" style="width:230px">
+         <input type="text" value="{$tsPerfil.p_nombre}" maxlength="60" name="nombre" id="nombre" class="text cuenta-save-2" style="width:230px">
       </div>
       <div class="field">
          <label for="sitio">Mensaje Personal</label>
@@ -25,26 +25,7 @@
             {/foreach}
          </div>
       </div>
-      <div class="field">
-      	<label>Me gustar&iacute;a</label>
-      	<div class="input-fake">
-      		<ul>
-               {foreach from=$tsPData.gustos key=val item=text}
-                  <li><input type="checkbox" name="g_{$val}" class="cuenta-save-2" value="1"{if $tsPerfil.p_gustos.$val == 1} checked{/if}>{$text}</li>
-               {/foreach}
-            </ul>
-         </div>
-      </div>
-      <div class="field">
-         <label for="estado">Estado Civil</label>
-         <div class="input-fake">
-            <select class="cuenta-save-2" name="estado" id="estado">
-              	{foreach from=$tsPData.estado key=val item=text}
-                  <option value="{$val}"{if $tsPerfil.p_estado == $val} selected{/if}>{$text}</option>
-               {/foreach}
-            </select>
-         </div>
-      </div>
+     
 		<div class="buttons">
 		   <input type="button" value="Guardar" onclick="cuenta.guardar_datos()" class="mBtn btnOk">
 		</div>

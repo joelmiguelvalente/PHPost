@@ -33,7 +33,7 @@
 	}else{		
 	$tsLevel = 2;		
 	}
-	// VERIFICAMOS EL NIVEL DE ACCSESO ANTES CONFIGURADO
+	// VERIFICAMOS EL NIVEL DE ACCESO ANTES CONFIGURADO
 	$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
 	if($tsLevelMsg != 1){	
 		$tsPage = 'aviso';

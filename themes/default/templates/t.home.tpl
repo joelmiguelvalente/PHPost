@@ -1,4 +1,6 @@
 {include file='sections/main_header.tpl'}
+
+
 {$tsInstall}
                 <div id="izquierda">
 					{include file='modules/m.home_last_posts.tpl'}

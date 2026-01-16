@@ -13,6 +13,7 @@ if (!defined('TS_HEADER')) {
 }
 
 require_once __DIR__ . '/c.emails.php';
+require_once dirname(__DIR__, 1) . '/utils/Avatar.php';
 require_once dirname(__DIR__, 1) . '/utils/PasswordHandler.php';
 require_once dirname(__DIR__, 1) . '/utils/reCaptcha.php';
 
@@ -132,6 +133,7 @@ class tsRegistro {
 	      );
          //
          $time = time();
+         $titulo = "$sexo a {$this->Core->settings['titulo']}";
 	      switch($send_welcome) {
 	         case 1:
 					db_exec([__FILE__, __LINE__], 'query', "INSERT INTO u_muro (p_user, p_user_pub, p_date, p_body, p_type) VALUES ($uid, 1, $time, '$msg_bienvenida', 1)"); 
@@ -140,13 +142,13 @@ class tsRegistro {
 				break;
 	         case 2:
 					$preview = substr($msg_bienvenida, 0, 75); 
-					if(db_exec([__FILE__, __LINE__], 'query', "INSERT INTO u_mensajes (`mp_to`, `mp_from`, `mp_subject`, `mp_preview`, `mp_date`) VALUES ($uid, 1, '$sexo a {$this->Core->settings['titulo']}', '$preview', $time)")) {
+					if(db_exec([__FILE__, __LINE__], 'query', "INSERT INTO u_mensajes (`mp_to`, `mp_from`, `mp_subject`, `mp_preview`, `mp_date`) VALUES ($uid, 1, '$titulo', '$preview', $time)")) {
 		            $mp_id = db_exec('insert_id');
 		            db_exec([__FILE__, __LINE__], 'query', "INSERT INTO u_respuestas (mp_id, mr_from, mr_body, mr_ip, mr_date) VALUES ($mp_id, 1, '$msg_bienvenida', '{$_SERVER['REMOTE_ADDR']}', $time)"); 
 		         }
 				break;
 		 		case 3:
-					db_exec([__FILE__, __LINE__], 'query', "INSERT INTO u_avisos (`user_id`, `av_subject`, `av_body`, `av_date`, `av_type`) VALUES ($uid, '$sexo a {$this->Core->settings['titulo']}', '$msg_bienvenida', $time, 4)");			
+					db_exec([__FILE__, __LINE__], 'query', "INSERT INTO u_avisos (`user_id`, `av_subject`, `av_body`, `av_date`, `av_type`) VALUES ($uid, '$titulo', '$msg_bienvenida', $time, 4)");			
          	break;
 			}
 		}
@@ -157,6 +159,7 @@ class tsRegistro {
 		$pinHash = password_hash($pin, PASSWORD_DEFAULT);
 		$time = time();
 		$expires = $time + 900; // 15 minutos
+		#$words = str_split($pin, 1);
 				
 		if(!db_exec([__FILE__, __LINE__], 'query', "INSERT INTO w_activate (user_id, user_email, code_hash, expire_at, type, used, ip) VALUES ($uid, '{$tsData['user_email']}', '$pinHash', $time, 'activation', 0, $ip)")) {
 			return '0: Ocurri&oacute; un error, int&eacute;ntelo de nuevo.';
@@ -166,17 +169,21 @@ class tsRegistro {
 		$to = $tsData['user_email'];
 		$subject = 'Active su cuenta';
 		$title = $this->Core->settings['titulo'];
+
 		$body = <<<ACTIVE
 		<div style="background:#0f7dc1;padding:10px;font-family:Arial, Helvetica,sans-serif;color:#000">
 			<h1 style="color:#FFFFFF; font-weight:bold; font-size:30px;">$title</h1>
-			<div style="background:#FFF;padding:10px;font-size:14px">
+			<div style="background:#FFF;padding:10px;font-size:16px">
 				<h2 style="font-family:Arial, Helvetica,sans-serif;color:#000;font-size:22px">Hola {$tsData['user_nick']}</h2>
 				<p style="font-family:Arial, Helvetica,sans-serif;color:#000">&iexcl;Te damos la bienvenida a $title!</p>
-				<p>Para finalizar con el proceso de registro, confirma tu direcci&oacute;n de email accediendo a <a href="{$this->Core->route('url')}/validar/$pinHash/2/{$tsData['user_email']}">este enlace</a>
-				</p><br /> <br />
+				<p>Para finalizar con el proceso de registro, confirma tu direcci&oacute;n de email accediendo a <a href="{$this->Core->route('url')}/validar/$pinHash/2/{$tsData['user_email']}">este enlace</a> y luego ingresando este pin <strong>$pin</strong>
+				</p>
+
+				<br /> <br />
 				<p>Posteriormente podr&aacute; acceder con las siguientes credenciales:</p>
-				<p>Usuario: {$tsData['user_nick']}</p>
-				<p>Contrase&ntilde;a: {$tsData['user_password']}</p><br />
+				<p>Usuario: <strong>{$tsData['user_nick']}</strong></p>
+				<p>Contrase&ntilde;a: <strong>{$tsData['user_password']}</strong></p>
+				<hr />
 				<p>Antes de empezar a interactuar con la comunidad, te recomendamos que visites el <a target="_blank" href="{$this->Core->route('url')}/pages/protocolo/">Protocolo</a> del sitio.</p>
 				<p>Esperamos que disfrutes enormemente tu visita.</p>
 				<p>&iexcl;Te damos la bienvenida a Muchas gracias!</p>
@@ -190,11 +197,8 @@ class tsRegistro {
 		</div>
 		ACTIVE;
 		// <--
-		$tsEmail->emailTo = $to;
-		$tsEmail->emailSubject = $subject;
-		$tsEmail->emailBody = $body;
-		$tsEmail->emailHeaders = $tsEmail->setEmailHeaders();
-		$tsEmail->sendEmail($from, $to, $subject, $body) or die('0: Hubo un error al intentar procesar lo solicitado');				
+		$email = new tsEmail($tsCore);
+		$email->sendSignup($to, $bodyHtml) OR die('0: Hubo un error al intentar procesar lo solicitado');
 		return "1: Te hemos enviado un correo a <b>$to</b> con los &uacute;ltimos pasos para finalizar con el registro.<br><br>Si en los pr&oacute;ximos minutos no lo encuentras en tu bandeja de entrada, por favor, revisa tu carpeta de correo no deseado, es posible que se haya filtrado.<br><br>&iexcl;Muchas gracias!";	
 	}
 
@@ -236,21 +240,21 @@ class tsRegistro {
 		if(db_exec([__FILE__, __LINE__], 'query', "INSERT INTO `u_miembros` (`user_name`, `user_password`, `user_email`, `user_rango`, `user_registro`) VALUES ('{$tsData['user_nick']}', '$newPassword', '{$tsData['user_email']}', $rango, {$tsData['user_registro']})")) {
          $uid = (int)db_exec('insert_id');
          // Agregamos datos en diversas tablas
-         db_exec([__FILE__, __LINE__], "query", "INSERT INTO u_perfil (user_id, p_avatar, user_sexo) VALUES($uid, 1, '{$tsData['user_sexo']}')");
+         db_exec([__FILE__, __LINE__], "query", "INSERT INTO u_perfil (user_id, user_pais, p_avatar, user_sexo) VALUES($uid, 'XX', 1, '{$tsData['user_sexo']}')");
          db_exec([__FILE__, __LINE__], "query", "INSERT INTO u_portal (user_id) VALUES($uid)");
          db_exec([__FILE__, __LINE__], "query", "INSERT INTO u_miembros_sets (user_id) VALUES($uid)");
          
          # Generamos automaticamente un avatar
-         $avatar = "https://ui-avatars.com/api/?name={$tsData['user_nick']}&background=random&size=200&font-size=0.50&bold=false&length=2&format=webp";
-					
-			copy($avatar, TS_STORAGE . "avatar/avatar_{$uid}.webp");
-			// MENSAJE PARA DAR LA BIENVENIDA BIENVENIDA
+         (new Avatar)->create((int)$uid, $tsData['user_nick']);
+
+			# MENSAJE PARA DAR LA BIENVENIDA BIENVENIDA
 			$this->sendMessageWelcome($uid, $tsData);
 
 			// ENVIAMOS EL EMAIL
 			if((int)$this->Core->settings['c_reg_activate'] === 0) {
 				$this->sendEmail($uid, $tsData);
 			} else {
+				# Activamos cuenta directamente!
 				db_exec([__FILE__, __LINE__], 'query', "UPDATE u_miembros SET user_activo = 1 WHERE user_id = $uid");
 				$this->User->loginUser($tsData['user_nick'], $tsData['user_password'], true);
 				return "2: Bienvenido a <strong>{$this->Core->settings['titulo']}</strong>, Ahora estas registrado y tu cuenta ha sido activada, podr&aacute;s disfrutar de esta comunidad inmediatamente.<br><br>&iexcl;Muchas gracias!";

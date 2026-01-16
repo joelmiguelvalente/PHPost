@@ -40,17 +40,21 @@ const PASSWORD_LEVEL = {
 const $iWantPassword = $(".seePassword");
 const $inputPassword = $('input[type="password"]');
 
-/**
- * Constructor de peticiones POST simplificado para el módulo de registro.
- * @param {string} page - El endpoint PHP (ej: 'check-nick').
- * @param {object|string} data - Los datos a enviar (objeto o string serializado).
- * @returns {Promise<string>} La promesa de la respuesta del servidor (texto).
- */
-const up = {
-	post: async function(page, data) {
-		return await $.post(`/registro-${page}.php?ajax=true`, data);
+function showLoader(show = true) {
+	const $loader = $('#loader');
+
+	if (show && !$loader.length) {
+		$form.append(
+			`<div id="loader" class="fixed flex justify-center items-center bg-gray-50/50" style="inset:0;">
+				<img src="${route.img}/large-loading.gif" width="32" height="32" alt="Iniciando sesión">
+			</div>`
+		);
 	}
-};
+
+	if (!show) {
+		$loader.remove();
+	}
+}
 
 /**
  * Muestra mensajes de validación al usuario.
@@ -257,6 +261,7 @@ function createAccount() {
 	// Solo continuar si todos los campos requeridos han pasado la validación
 	if (areAllApproved(approved)) {
 		btnLoad(true);
+		showLoader(true);
 		let formData = $('#RegistroForm').serializeArray();
 		//showDialog('Estamos procesando...');
 		// Petición de creación de cuenta
@@ -264,22 +269,25 @@ function createAccount() {
 			const { status, message } = $.parseResponse(response);
 		
 			if (status === STATUS.ERROR || status === STATUS.WARNING) {
-				showDialog(message);
+				showLoader(true);
 				btnLoad();
 				return;
 			}
 			
 			// Éxito o Acción Especial (e.g., 2FA)
 			if (status === STATUS.SUCCESS || status === STATUS.WARNING) { // Warning 2 puede ser redirigir
-				showDialog(message, false);
+				showLoader(false);
 				setTimeout(() => location.href = route.url, 5000);
 			}
 		}).catch(error => {
 			showDialog('Fallo al enviar la solicitud al servidor.');
+			showLoader(false);
 			btnLoad();
 		});
 	} else {
 		showDialog('Por favor, complete correctamente todos los campos requeridos.');
+		showLoader(false);
+		btnLoad();
 	}
 }
 

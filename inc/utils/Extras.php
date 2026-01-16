@@ -1,13 +1,17 @@
 <?php
 
 /**
- * @package     PHPost
- * @author      Miguel92
- * @copyright   2026
- * @version     2.0.0
- */
+ * @package    PHPost
+ * @author     Miguel92
+ * @copyright  2026
+ * @version    2.0.0
+*/
 
 declare(strict_types=1);
+
+if (!defined('TS_HEADER')) {
+   exit('No se permite el acceso directo al script');
+}
 
 class Extras {
 

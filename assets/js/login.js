@@ -1,17 +1,10 @@
 'use strict';
 
-/* =========================
- * Selectores
- * ========================= */
 const $form        = $('#LoginForm');
 const $btnLogin    = $('#btn-login');
 const $passwordInp = $('input[type="password"]');
 const $togglePass  = $('.seePassword');
-const $messageBox  = $('.display-message');
 
-/* =========================
- * Utilidades
- * ========================= */
 const getValue = id => {
 	const $el = $(`#${id}`);
 	const value = $el.val().trim();
@@ -26,12 +19,8 @@ const getValue = id => {
 const resetUI = () => {
 	showLoader(false);
 	setButtonLoading(false);
-	$messageBox.html('').hide();
 };
 
-/* =========================
- * UI helpers
- * ========================= */
 function showLoader(show = true) {
 	const $loader = $('#loader');
 
@@ -49,14 +38,9 @@ function showLoader(show = true) {
 }
 
 function setButtonLoading(loading = false) {
-	$btnLogin
-		.prop('disabled', loading)
-		.html(loading ? 'Iniciando sesión...' : 'Ingresar');
+	$btnLogin.prop('disabled', loading).html(loading ? 'Iniciando sesión...' : 'Ingresar');
 }
 
-/* =========================
- * Login
- * ========================= */
 function iniciarSesion() {
 
 	const username = getValue('username');
@@ -75,27 +59,22 @@ function iniciarSesion() {
 	showLoader(true);
 	setButtonLoading(true);
 
-	$.post(`${route.url}/login-user.php`, $.param(params))
-		.done(response => {
-			const { status, message } = $.parseResponse(response);
+	$.post(`${route.url}/login-user.php`, $.param(params), response => {
+		const { status, message } = $.parseResponse(response);
 
-			if (status === 1) {
-				setTimeout(() => location.reload(), 1500);
-				return;
-			}
-
-			$messageBox.html(message).show();
-			resetUI();
-		})
-		.fail(() => {
-			$messageBox.html('Error al procesar la petición').show();
-			resetUI();
-		});
+		if (status === 1) {
+			setTimeout(() => location.reload(), 1500);
+			return;
+		}
+		dialog.alert('Atención', message);
+		resetUI();
+	})
+	.fail(() => {
+		dialog.alert('Error', 'Error al procesar la petición');
+		resetUI();
+	});
 }
 
-/* =========================
- * Password toggle
- * ========================= */
 function togglePasswordVisibility() {
 	$togglePass.on('click', () => {
 		const isText = $passwordInp.attr('type') === 'text';
@@ -103,10 +82,7 @@ function togglePasswordVisibility() {
 	});
 }
 
-/* =========================
- * Init
- * ========================= */
-$(() => {
+$(document).ready(function() {
 
 	$form.on('keyup focusout', 'input', resetUI);
 

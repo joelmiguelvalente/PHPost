@@ -4,13 +4,13 @@
  * Privacidad
 */
 $tsPrivacidad = [
-   'Nadie',
-	'Usuarios que sigo y me siguen',
-	'Usuarios que sigo o me siguen',
-   'Mis seguidores',
-	'Usuarios que sigo',
-   'Usuarios registrados',
-   'Todos'
+   'nobody'        => 'Nadie',
+   'friends_mutual'=> 'Usuarios que sigo y me siguen',
+   'friends_any'   => 'Usuarios que sigo o me siguen',
+   'followers'     => 'Mis seguidores',
+   'following'     => 'Usuarios que sigo',
+   'registered'    => 'Usuarios registrados',
+   'everyone'      => 'Todos'
 ];
 
 /**

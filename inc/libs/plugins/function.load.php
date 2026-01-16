@@ -28,6 +28,27 @@ function smarty_function_load($params, Smarty\Template $template) {
    $files  = is_array($params['file']) ? $params['file'] : [$params['file']];
    $output = '';
 
+   if ($params['type'] === 'js' && in_array('cuenta', $files, true)) {
+      $deps = ['croppr.min', 'upload.avatar'];
+      $ordered = [];
+      foreach ($files as $file) {
+         if ($file === 'cuenta') {
+            // insertar dependencias ANTES
+            foreach ($deps as $dep) {
+               if (!in_array($dep, $files, true)) {
+                  $ordered[] = $dep;
+               }
+            }
+         }
+         $ordered[] = $file;
+      }
+      $files = $ordered;
+   }
+   if (in_array('agregar', $files, true)) {
+      $files = [...$files, 'wysibb'];
+   }
+
+
 	foreach ($files as $filename) {
       if (!is_string($filename)) {
          continue;
