@@ -6,6 +6,14 @@
  * @author  PHPost Team
  */
 class tsAfiliado {
+    
+    protected tsCore $Core;
+    protected tsUser $User;
+
+    public function __construct(tsCore $Core, tsUser $User) {
+        $this->Core = $Core;
+        $this->User = $User;
+    }
 
 	/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*\
 								AFILIADOS
@@ -160,7 +168,7 @@ class tsAfiliado {
     /*
         urlIn()
     */
-    function urlIn(){
+    function urlInRef(){
         global $tsCore;
         //
         $ref = (int)$_GET['ref'];

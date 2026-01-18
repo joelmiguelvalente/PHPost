@@ -1,6 +1,7 @@
 'use strict';
 
 // --- CONSTANTES Y CONFIGURACIÓN ---
+const $form	= $('#RegistroForm');
 
 /** Códigos de estado del Backend (el primer carácter de la respuesta) */
 const STATUS = {
@@ -250,8 +251,11 @@ function btnLoad(action = false) {
 }
 
 function showDialog(message, show = true) {
-	$('#RegistroForm')[!show ? 'show' : 'hide']();
-	$('.display-message').html(message)[show ? 'show' : 'hide']();
+	if(show) {
+		dialog.alert('Info...', message)
+	} else {
+		dialog.close();
+	}
 }
 
 /**
@@ -267,9 +271,11 @@ function createAccount() {
 		// Petición de creación de cuenta
 		$.post(`${route.url}/registro-nuevo.php?ajax=true`, $.param(formData), response => {
 			const { status, message } = $.parseResponse(response);
+			showDialog(message);
 		
 			if (status === STATUS.ERROR || status === STATUS.WARNING) {
 				showLoader(true);
+				showDialog('', false);
 				btnLoad();
 				return;
 			}

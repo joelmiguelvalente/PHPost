@@ -88,6 +88,7 @@ $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `p_borradores` (
   `b_fuentes` TEXT NULL,
   `b_ip` VARBINARY(16) DEFAULT NULL,
   FULLTEXT INDEX ft_index (b_tags),
+  FULLTEXT INDEX ft_title (b_title),
   INDEX idx_category (b_category),
   INDEX idx_user (b_user),
   INDEX idx_status (b_status)
@@ -138,7 +139,7 @@ $phpost_sql[] = "INSERT INTO `p_categorias` (`cid`, `c_orden`, `c_nombre`, `c_se
 (33, 33, 'Videos On-line', 'videosonline', 'film.png');";
 
 $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `p_comentarios` (
-   `cid` INT AUTO_INCREMENT PRIMARY KEY,
+  `cid` INT AUTO_INCREMENT PRIMARY KEY,
   `c_post_id` INT NOT NULL,
   `c_user` INT NOT NULL,
   `c_date` INT NOT NULL DEFAULT 0,
@@ -153,7 +154,7 @@ $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `p_comentarios` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
 
 $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `p_favoritos` (
-    `fav_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `fav_id` INT AUTO_INCREMENT PRIMARY KEY,
   `fav_user` INT NOT NULL,
   `fav_post_id` INT NOT NULL,
   `fav_date` INT NOT NULL DEFAULT 0,
@@ -189,6 +190,7 @@ $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `p_posts` (
   `post_visitantes` TINYINT NOT NULL DEFAULT 0,
   `post_ip` VARBINARY(16) DEFAULT NULL,
   FULLTEXT INDEX ft_index (post_tags),
+  FULLTEXT INDEX ft_post_title (post_title),
   INDEX idx_category (post_category),
   INDEX idx_user (post_user),
   INDEX idx_status (post_status),

@@ -22,8 +22,7 @@ class tsRegistro {
 	protected tsCore $Core;
 	protected tsUser $User;
 
-	public function __construct() {
-		global $tsCore, $tsUser;
+	public function __construct(tsCore $Core, tsUser $User) {
 		$this->Core = $tsCore;
 		$this->User = $tsUser;
 	}
@@ -47,7 +46,7 @@ class tsRegistro {
    */
 	private function checkUserExists(string $username = '', string $email = ''): bool {
 		$username = $this->Core->setSecure($username);
-		$email = $this->Core->setSecure($email);
+		$email = $this->Core->setSecure(strtolower($email ?? ''));
 		$q = !empty($username) ? "user_name = '$username'" : "LOWER(user_email) = '$email'";
 		return db_exec('num_rows', db_exec([__FILE__, __LINE__], 'query', "SELECT user_id FROM u_miembros WHERE $q LIMIT 1")) === 1;
 	}
@@ -199,7 +198,7 @@ class tsRegistro {
 		// <--
 		$email = new tsEmail($tsCore);
 		$email->sendSignup($to, $bodyHtml) OR die('0: Hubo un error al intentar procesar lo solicitado');
-		return "1: Te hemos enviado un correo a <b>$to</b> con los &uacute;ltimos pasos para finalizar con el registro.<br><br>Si en los pr&oacute;ximos minutos no lo encuentras en tu bandeja de entrada, por favor, revisa tu carpeta de correo no deseado, es posible que se haya filtrado.<br><br>&iexcl;Muchas gracias!";	
+		return "2: Te hemos enviado un correo a <b>$to</b> con los &uacute;ltimos pasos para finalizar con el registro.<br><br>Si en los pr&oacute;ximos minutos no lo encuentras en tu bandeja de entrada, por favor, revisa tu carpeta de correo no deseado, es posible que se haya filtrado.<br><br>&iexcl;Muchas gracias!";	
 	}
 
    /**
@@ -237,28 +236,29 @@ class tsRegistro {
 		// Rango por defecto
 		$rango = (int)$this->Core->settings['c_reg_rango'] ?? 3;
 		//
-		if(db_exec([__FILE__, __LINE__], 'query', "INSERT INTO `u_miembros` (`user_name`, `user_password`, `user_email`, `user_rango`, `user_registro`) VALUES ('{$tsData['user_nick']}', '$newPassword', '{$tsData['user_email']}', $rango, {$tsData['user_registro']})")) {
-         $uid = (int)db_exec('insert_id');
-         // Agregamos datos en diversas tablas
-         db_exec([__FILE__, __LINE__], "query", "INSERT INTO u_perfil (user_id, user_pais, p_avatar, user_sexo) VALUES($uid, 'XX', 1, '{$tsData['user_sexo']}')");
-         db_exec([__FILE__, __LINE__], "query", "INSERT INTO u_portal (user_id) VALUES($uid)");
-         db_exec([__FILE__, __LINE__], "query", "INSERT INTO u_miembros_sets (user_id) VALUES($uid)");
-         
-         # Generamos automaticamente un avatar
-         (new Avatar)->create((int)$uid, $tsData['user_nick']);
+		if(!db_exec([__FILE__, __LINE__], 'query', "INSERT INTO `u_miembros` (`user_name`, `user_password`, `user_email`, `user_rango`, `user_registro`) VALUES ('{$tsData['user_nick']}', '$newPassword', '{$tsData['user_email']}', $rango, {$tsData['user_registro']})")) {
+			return '0: Ocurrio un error, intentalo ma&aacute;s tarde.';
+		}
+      $uid = (int)db_exec('insert_id');
+      // Agregamos datos en diversas tablas
+      db_exec([__FILE__, __LINE__], "query", "INSERT INTO u_perfil (user_id, user_pais, p_avatar, user_sexo) VALUES($uid, 'XX', 1, '{$tsData['user_sexo']}')");
+      db_exec([__FILE__, __LINE__], "query", "INSERT INTO u_portal (user_id) VALUES($uid)");
+      db_exec([__FILE__, __LINE__], "query", "INSERT INTO u_miembros_sets (user_id) VALUES($uid)");
+      
+      # Generamos automaticamente un avatar
+      (new Avatar)->create((int)$uid, $tsData['user_nick']);
 
-			# MENSAJE PARA DAR LA BIENVENIDA BIENVENIDA
-			$this->sendMessageWelcome($uid, $tsData);
+		# MENSAJE PARA DAR LA BIENVENIDA BIENVENIDA
+		$this->sendMessageWelcome($uid, $tsData);
 
-			// ENVIAMOS EL EMAIL
-			if((int)$this->Core->settings['c_reg_activate'] === 0) {
-				$this->sendEmail($uid, $tsData);
-			} else {
-				# Activamos cuenta directamente!
-				db_exec([__FILE__, __LINE__], 'query', "UPDATE u_miembros SET user_activo = 1 WHERE user_id = $uid");
-				$this->User->loginUser($tsData['user_nick'], $tsData['user_password'], true);
-				return "2: Bienvenido a <strong>{$this->Core->settings['titulo']}</strong>, Ahora estas registrado y tu cuenta ha sido activada, podr&aacute;s disfrutar de esta comunidad inmediatamente.<br><br>&iexcl;Muchas gracias!";
-			}
-		} else return '0: Ocurrio un error, intentalo ma&aacute;s tarde.';
+		// ENVIAMOS EL EMAIL
+		if((int)$this->Core->settings['c_reg_activate'] === 0) {
+			$this->sendEmail($uid, $tsData);
+		} else {
+			# Activamos cuenta directamente!
+			db_exec([__FILE__, __LINE__], 'query', "UPDATE u_miembros SET user_activo = 1 WHERE user_id = $uid");
+			$this->User->loginUser($tsData['user_nick'], $tsData['user_password'], true);
+			return "1: Bienvenido a <strong>{$this->Core->settings['titulo']}</strong>, Ahora estas registrado y tu cuenta ha sido activada, podr&aacute;s disfrutar de esta comunidad inmediatamente.<br><br>&iexcl;Muchas gracias!";
+		}
 	}
 }

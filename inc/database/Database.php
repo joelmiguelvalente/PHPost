@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name c.session.php
+ * @name Database.php
  * @author PHPost Team
  * @copyright 2026
  */
@@ -84,6 +84,11 @@ final class Database
     public function fetch(mysqli_result $result): ?array
     {
         return $result->fetch_assoc() ?: null;
+    }
+
+    public function fetchRow(mysqli_result $result): ?array
+    {
+        return $result->fetch_row() ?: null;
     }
 
     public function numRows(mysqli_result $result): int

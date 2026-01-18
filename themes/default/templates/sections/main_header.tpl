@@ -28,7 +28,7 @@ const route = {
    url:'{$tsConfig.url}',
    assets:'{$tsRoutes.assets.base}',
    img:'{$tsRoutes.tema.images}',
-   smiles:'{$tsConfig.url}/files/smiles'
+   smiles:'{$tsRoutes.assets.images}/smiles'
 }
 </script>
 {load file=['jquery.min','jquery.plugins','acciones',$tsPage] type="js"}

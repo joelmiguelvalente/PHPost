@@ -12,10 +12,15 @@ if (!defined('TS_HEADER')) {
 	exit('No se permite el acceso directo al script');
 }
 
+require_once dirname(__DIR__, 1) . '/helpers/CoreHelper.php';
+require_once dirname(__DIR__, 1) . '/helpers/MuroHelper.php';
+
 class tsMuro {
 
 	protected tsCore $Core;
 	protected tsUser $User;
+	protected CoreHelper $CoreHelper;
+	protected MuroHelper $MuroHelper;
 
 	private array $status = [
 		'muro' 				=> ['status' => true, 'message' => ''],
@@ -27,6 +32,7 @@ class tsMuro {
 	public function __construct(tsCore $Core, tsUser $User) {
 		$this->Core = $Core;
 		$this->User = $User;
+		$this->MuroHelper = new MuroHelper($Core->settings['url'], $User);
 	}
 
 	private function evaluatePrivacyRule(string $type, array $context, callable $deny, array $messages): void {
@@ -175,7 +181,7 @@ class tsMuro {
 			case 'enlace':
 				// VALIDAR
 				if(strlen($url) > 400) return '0: La url es demasiado larga.';
-				$data = $this->Core->getUrlContent($url);
+				$data = (new CoreHelper)->getUrlContent($url);
 				// VALIDAR #1
 				if(!$data) return '0: El enlace ingresado no es v&aacute;lido, no esta disponible o no existe.';
 				// OBTENER META TITULO
@@ -252,7 +258,7 @@ class tsMuro {
 					//
 					$type = ($pid == $this->User->uid) ? 'status' : 'mpub';
 					// RETORNAMOS DATOS PARA EL TEMPLATE
-					$return = array('pub_id' => $pub_id, 'p_user' => $pid, 'p_user_pub' => $this->User->uid, 'p_body' => $this->Core->parseBadWords($this->Core->setMenciones($data), true), 'p_date' => $date, 'p_likes' => 0, 'p_type' => 1, 'likes' => array('link' => 'Me gusta'));
+					$return = array('pub_id' => $pub_id, 'p_user' => $pid, 'p_user_pub' => $this->User->uid, 'p_body' => $this->Core->parseBadWords($this->MuroHelper->setMenciones($data), true), 'p_date' => $date, 'p_likes' => 0, 'p_type' => 1, 'likes' => array('link' => 'Me gusta'));
 				}
 			break;
 			 // PUBLICAR FOTO
@@ -269,7 +275,7 @@ class tsMuro {
 					if(db_exec([__FILE__, __LINE__], 'query', 'INSERT INTO u_muro_adjuntos (pub_id, a_url, a_img) VALUES (\''.(int)$pub_id.'\', \''.$this->Core->setSecure($foto, true).'\', \''.$this->Core->setSecure($foto, true).'\') ')){
 						$type = 'mfoto';
 						// RETORNAMOS DATOS PARA EL TEMPLATE
-						$return = array('pub_id' => $pub_id, 'p_user' => $pid, 'p_user_pub' => $this->User->uid, 'p_body' => $this->Core->setMenciones($data), 'p_date' => $date, 'p_likes' => 0, 'p_type' => 2, 'likes' => array('link' => 'Me gusta'), 'a_url' => $foto, 'a_img' => $foto);   
+						$return = array('pub_id' => $pub_id, 'p_user' => $pid, 'p_user_pub' => $this->User->uid, 'p_body' => $this->MuroHelper->setMenciones($data), 'p_date' => $date, 'p_likes' => 0, 'p_type' => 2, 'likes' => array('link' => 'Me gusta'), 'a_url' => $foto, 'a_img' => $foto);   
 					}
 				}
 			break;
@@ -286,7 +292,7 @@ class tsMuro {
 					if(db_exec([__FILE__, __LINE__], 'query', 'INSERT INTO u_muro_adjuntos (pub_id, a_title, a_url) VALUES (\''.(int)$pub_id.'\', \''.$this->Core->setSecure($this->Core->parseBadWords($enlace['title']), true).'\', \''.$this->Core->setSecure($this->Core->parseBadWords($enlace['url']), true).'\') ')){
 						$type = 'mlink';
 						// RETORNAMOS DATOS PARA EL TEMPLATE
-						$return = array('pub_id' => $pub_id, 'p_user' => $pid, 'p_user_pub' => $this->User->uid, 'p_body' => $this->Core->setMenciones($data), 'p_date' => $date, 'p_likes' => 0, 'p_type' => 3, 'likes' => array('link' => 'Me gusta'), 'a_title' => $enlace['title'], 'a_url' => $enlace['url']);   
+						$return = array('pub_id' => $pub_id, 'p_user' => $pid, 'p_user_pub' => $this->User->uid, 'p_body' => $this->MuroHelper->setMenciones($data), 'p_date' => $date, 'p_likes' => 0, 'p_type' => 3, 'likes' => array('link' => 'Me gusta'), 'a_title' => $enlace['title'], 'a_url' => $enlace['url']);   
 					}
 				}
 			break;
@@ -303,7 +309,7 @@ class tsMuro {
 					if(db_exec([__FILE__, __LINE__], 'query', 'INSERT INTO u_muro_adjuntos (pub_id, a_title, a_url, a_img, a_desc) VALUES (\''.(int)$pub_id.'\', \''.$this->Core->setSecure($this->Core->parseBadWords($video['title']), true).'\', \''.$video['ID'].'\', \'\', \''.$this->Core->setSecure($this->Core->parseBadWords($video['desc']), true).'\') ')){
 						$type = 'mvideo';
 						// RETORNAMOS DATOS PARA EL TEMPLATE
-						$return = array('pub_id' => $pub_id, 'p_user' => $pid, 'p_user_pub' => $this->User->uid, 'p_body' => $this->Core->setMenciones($data), 'p_date' => $date, 'p_likes' => 0, 'p_type' => 4, 'likes' => array('link' => 'Me gusta'), 'a_title' => $video['title'], 'a_url' => $video['ID'], 'a_desc' => $video['desc']);   
+						$return = array('pub_id' => $pub_id, 'p_user' => $pid, 'p_user_pub' => $this->User->uid, 'p_body' => $this->MuroHelper->setMenciones($data), 'p_date' => $date, 'p_likes' => 0, 'p_type' => 4, 'likes' => array('link' => 'Me gusta'), 'a_title' => $video['title'], 'a_url' => $video['ID'], 'a_desc' => $video['desc']);   
 					}
 				}
 			break;
@@ -391,7 +397,7 @@ class tsMuro {
 				$row['comments'] = $this->getPubExtras($row['pub_id'], 'comments', 2);
 			}
 			// MENCIONES
-			$row['p_body'] = $this->Core->parseBadWords($this->Core->setMenciones($row['p_body']), true);
+			$row['p_body'] = $this->Core->parseBadWords($this->MuroHelper->setMenciones($row['p_body']), true);
 			// CARGAR ADJUNTOS
 			if($row['p_type'] != 1){
 				$queryDos = db_exec([__FILE__, __LINE__], 'query', 'SELECT * FROM u_muro_adjuntos WHERE pub_id = \''.$row['pub_id'].'\' LIMIT 1');
@@ -425,7 +431,7 @@ class tsMuro {
 				$row['comments'] = $this->getPubExtras($row['pub_id'], 'comments', 2);
 			}
 			// MENCIONES
-			$row['p_body'] = $this->Core->parseBadWords($this->Core->parseSmiles($this->Core->setMenciones($row['p_body'])), true);
+			$row['p_body'] = $this->Core->parseBadWords($this->Core->parseBBCode($this->MuroHelper->setMenciones($row['p_body'])), true);
 			// CARGAR ADJUNTOS
 			if($row['p_type'] != 1){
 				$queryDos = db_exec([__FILE__, __LINE__], 'query', 'SELECT * FROM u_muro_adjuntos WHERE pub_id = \''.$row['pub_id'].'\' LIMIT 1');
@@ -495,7 +501,7 @@ class tsMuro {
 				//
 				$query = db_exec([__FILE__, __LINE__], 'query', 'SELECT c.*, u.user_name FROM u_muro_comentarios AS c LEFT JOIN u_miembros AS u ON c.c_user = u.user_id WHERE c.pub_id = \''.(int)$pub_id.'\' ORDER BY c.c_date DESC '.$limit.'');
 				while($row = db_exec('fetch_array', $query)){
-					$row['c_body'] = $this->Core->parseBadWords($this->Core->parseSmiles($this->Core->setMenciones($row['c_body'])), true);
+					$row['c_body'] = $this->Core->parseBadWords($this->Core->parseBBCode($this->MuroHelper->setMenciones($row['c_body'])), true);
 					$row['like'] = 'Me gusta';
 					// ME GUSTA?
 					if($row['c_likes'] > 0){

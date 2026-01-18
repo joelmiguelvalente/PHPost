@@ -38,6 +38,7 @@ class tsActividad {
 
    # NO ES NESESARIO HACER ALGO EN EL CONSTRUCTOR
    public function __construct(){}
+   
    /**
     * @name makeActividad
     * @access private

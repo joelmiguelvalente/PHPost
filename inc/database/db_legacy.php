@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name c.session.php
+ * @name db_legacy.php
  * @author PHPost Team
  * @copyright 2026
  */
@@ -11,13 +11,13 @@ declare(strict_types=1);
 if (!defined('TS_HEADER')) {
 	exit('No se permite el acceso directo al script');
 }
+
 /**
  * LEGACY DATABASE WRAPPER
  * Mantiene compatibilidad total con db_exec()
  */
 
-function db_exec()
-{
+function db_exec() {
 	global $tsUser, $tsAjax;
 
 	[$info, $type, $data] = array_pad(func_get_args(), 3, null);
@@ -43,20 +43,16 @@ function db_exec()
 		return match ($type) {
 			'query'              => $db->rawQuery($data),
 			'real_escape_string' => $db->escape((string) $data),
-			'num_rows'           => $data->num_rows,
-			'fetch_assoc'        => $data->fetch_assoc(),
-			'fetch_array'        => $data->fetch_array(),
-			'fetch_row'          => $data->fetch_row(),
+			'num_rows'           => $db->numRows($data),
+			'fetch_assoc'        => $db->fetch($data),
+			'fetch_array'        => $db->fetchAll($data),
+			'fetch_row'          => $db->fetchRow($data),
 			'free_result'        => $data->free(),
 			'insert_id'          => $db->insertId(),
 			'error'              => $db->error(),
 			default              => null,
 		};
 	} catch (Throwable $e) {
-		/*echo '<pre>';
-		var_dump($e);
-		echo '</pre>';
-		die;*/
 		if (
 			!$tsAjax &&
 			Config::app('app.debug') &&

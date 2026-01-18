@@ -40,7 +40,7 @@ if(!$tsLevelMsg) {
 	
 // CLASE
 require_once dirname(__DIR__, 2) . '/class/c.registro.php';
-$tsRegistro = new tsRegistro;
+$tsRegistro = new tsRegistro($tsCore, $tsUser);
 	
 // CODIGO
 switch($action) {
@@ -66,38 +66,29 @@ switch($action) {
 			$smarty->assign("tsMeses", $tsMeses);	
 		}
 	break;
-		case 'registro-check-nick':	
-		case 'registro-check-email':	
-			echo $tsRegistro->checkUserEmail();
-		break;
-		case 'registro-geo':
-			$tsEstados = require dirname(__DIR__, 2) . '/extras/geodata.php';
-			$pais = trim($_GET['pais_code'] ?? '');
-			if ($pais === '') {
-			   echo '0: El campo <b>pais_code</b> es requerido para esta operación';
-			   return;
-			}
-			if (!isset($tsEstados[$pais]) || !is_array($tsEstados[$pais])) {
-			   echo '0: Código de país incorrecto.';
-			   return;
-			}
-			$paisOption = [];
-			foreach ($tsEstados[$pais] as $key => $country) {
-			   $paisOption[] = '<option value="' . $key . '">' . $country . '</option>';
-			}
-			echo '1: ' . implode("\n", $paisOption);
-		break;
-		
-		case 'registro-nuevo':
-		
-			//<--
-			
-                $result = $tsRegistro->registerUser();
-				
-				echo $result;
-				
-			//-->
-			
-		break;
-		
-	}
+	case 'registro-check-nick':	
+	case 'registro-check-email':	
+		echo $tsRegistro->checkUserEmail();
+	break;
+	case 'registro-geo':
+		$tsEstados = require dirname(__DIR__, 2) . '/extras/geodata.php';
+		$pais = trim($_GET['pais_code'] ?? '');
+		if ($pais === '') {
+		   echo '0: El campo <b>pais_code</b> es requerido para esta operación';
+		   return;
+		}
+		if (!isset($tsEstados[$pais]) || !is_array($tsEstados[$pais])) {
+		   echo '0: Código de país incorrecto.';
+		   return;
+		}
+		$paisOption = [];
+		foreach ($tsEstados[$pais] as $key => $country) {
+		   $paisOption[] = '<option value="' . $key . '">' . $country . '</option>';
+		}
+		echo '1: ' . implode("\n", $paisOption);
+	break;
+	
+	case 'registro-nuevo':
+		echo $tsRegistro->registerUser();
+	break;
+}

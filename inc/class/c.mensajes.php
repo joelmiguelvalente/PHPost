@@ -174,7 +174,7 @@ class tsMensajes {
                 //
                 $return['mp_date'] = time();
 				$return['mp_ip'] = $_SERVER['REMOTE_ADDR'];
-                $return['mp_body'] = $tsCore->parseBadWords($tsCore->parseSmiles($tsCore->parseBBCode($mp_body)), true);
+                $return['mp_body'] = $tsCore->parseBadWords($tsCore->parseBBCode($mp_body), true);
                 //
                 return $return;
             }
@@ -313,7 +313,7 @@ class tsMensajes {
         $query = db_exec([__FILE__, __LINE__], 'query', 'SELECT r.*, u.user_name FROM u_respuestas AS r LEFT JOIN u_miembros AS u ON r.mr_from = u.user_id WHERE r.mp_id = \''.intval($mp_id).'\' ORDER BY mr_id');
 		//$history['res'] = result_array($query);
         while($row = db_exec('fetch_assoc', $query)){
-        $row['mr_body'] = $tsCore->parseBadWords($tsCore->parseSmiles($tsCore->parseBBCode($row['mr_body'])), true);
+        $row['mr_body'] = $tsCore->parseBadWords($tsCore->parseBBCode($row['mr_body']), true);
             $history['res'][] = $row;
         }
 		

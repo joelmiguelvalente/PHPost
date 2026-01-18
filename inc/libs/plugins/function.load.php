@@ -28,26 +28,32 @@ function smarty_function_load($params, Smarty\Template $template) {
    $files  = is_array($params['file']) ? $params['file'] : [$params['file']];
    $output = '';
 
-   if ($params['type'] === 'js' && in_array('cuenta', $files, true)) {
-      $deps = ['croppr.min', 'upload.avatar'];
+   $dependencyMap = [
+      'cuenta'  => ['croppr.min', 'upload.avatar'],
+      'agregar' => ['wysibb'],
+   ];
+
+   if ($params['type'] === 'js') {
       $ordered = [];
+
       foreach ($files as $file) {
-         if ($file === 'cuenta') {
-            // insertar dependencias ANTES
-            foreach ($deps as $dep) {
-               if (!in_array($dep, $files, true)) {
+         if (isset($dependencyMap[$file])) {
+            foreach ($dependencyMap[$file] as $dep) {
+               if (!in_array($dep, $files, true) && !in_array($dep, $ordered, true)) {
                   $ordered[] = $dep;
                }
             }
          }
+
          $ordered[] = $file;
       }
+
       $files = $ordered;
    }
-   if (in_array('agregar', $files, true)) {
+
+   if ($params['type'] === 'css' && in_array('agregar', $files, true)) {
       $files = [...$files, 'wysibb'];
    }
-
 
 	foreach ($files as $filename) {
       if (!is_string($filename)) {

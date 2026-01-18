@@ -1,69 +1,66 @@
-<?php 
+<?php
+
 /**
- * Controlador
- *
- * @name    posts.php
- * @author  PHPost Team
+ * @name posts.php
+ * @author PHPost Team
+ * @copyright 2026
+ */
+
+declare(strict_types=1);
+
+/**
+ * Inicializamos variable
+ * 
+ * $tsPage  = Plantilla para mostrar con este archivo.
+ * $tsLevel = Nivel de acceso a esta pagina (ver faqs).
+ * $tsAjax  = La respuesta sera por ajax si/no.
+ */
+
+$tsPage  = "posts";
+$tsLevel = 0; 
+$tsAjax  = (!isset($_GET['ajax']) && empty($_GET['ajax']));
+
+require_once dirname(__DIR__, 2) . "/header.php";
+$tsTitle = "{$tsCore->settings['titulo']} - {$tsCore->settings['slogan']}";
+
+/**
+ * En caso de problemas la variable cambia
 */
+$tsContinue = true;  // CONTINUAR EL SCRIPT
 
-/*
- * -------------------------------------------------------------------
- *  Definiendo variables por defecto
- * -------------------------------------------------------------------
- */
+/**
+ * Verificamos el nivel de acceso
+*/
+$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
+if (!$tsLevelMsg) {
+   $tsPage = 'aviso';
+   $tsAjax = 0;
+   $smarty->assign("tsAviso", $tsLevelMsg);
+   $tsContinue = false;
+}
 
-	$tsPage = "posts";	// tsPage.tpl -> PLANTILLA PARA MOSTRAR CON ESTE ARCHIVO.
+if($tsContinue) {
 
-	$tsLevel = 0;		// NIVEL DE ACCESO A ESTA PAGINA
-
-	$tsAjax = empty($_GET['ajax']) ? 0 : 1; // LA RESPUESTA SERA AJAX?
-	
-	$tsContinue = true;	// CONTINUAR EL SCRIPT
-
-	$tsTitle = $tsCore->settings['titulo']; 	// TITULO DE LA PAGINA ACTUAL
-
-/*
- * -------------------------------------------------------------------
- *  Validando nivel de acceso
- * -------------------------------------------------------------------
- */
-
-	// Nivel y permisos de acceso
-	$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
-	if($tsLevelMsg != 1)
-	{
-		$tsPage = 'aviso';
-		$tsAjax = 0;
-		$smarty->assign("tsAviso",$tsLevelMsg);
-		//
-		$tsContinue = false;
-	}
-	//
-	if($tsContinue)
-	{
-
-/*
- * -------------------------------------------------------------------
- *  Estableciendo variables y archivos 
- * -------------------------------------------------------------------
- */
 	// Afiliados
-	include(TS_CLASS."c.afiliado.php");
-	$tsAfiliado = new tsAfiliado();
+	require_once dirname(__DIR__, 1) . "/class/c.afiliado.php";
+	require_once dirname(__DIR__, 1) . "/class/c.posts.php";
+
+	// Posts Class
+	$tsPosts = new tsPosts($tsCore, $tsUser);
+	// Afiliado Class
+	$tsAfiliado = new tsAfiliado($tsCore, $tsUser);
 		
 	// Referido?
-	if(!empty($_GET['ref'])) $tsAfiliado->urlIn();
-	
-	// Posts Class
-	include(TS_CLASS."c.posts.php");
-	$tsPosts = new tsPosts();
+	if(!empty($_GET['ref'])) {
+		$tsAfiliado->urlInRef();
+	}
 	
 	// Category
-	$category = isset($_GET['cat']) ? trim($_GET['cat']) : '';
+	$category = trim($_GET['cat'] ?? '');
 	
 	// Post anterior/siguiente
 	if(isset($_GET['action']) && in_array($_GET['action'], ['next', 'prev', 'fortuitae'])) {
-		$tsPosts->setNP();
+		$tsPosts->navigatePost();
 	}
 
 /*
@@ -71,22 +68,21 @@
  *  Tareas principales
  * -------------------------------------------------------------------
  */
-	if(!empty($_GET['post_id'])){
-		
+	if(!empty($_GET['post_id'])) {
 		// DATOS DEL POST
 		$tsPost = $tsPosts->getPost();
 		//
-		if($tsPost['post_id'] > 0) {
+		if((int)$tsPost['post_id'] !== 0) {
 			// TITULO NUEVO
 			$tsTitle = $tsPost['post_title'].' - '.$tsTitle;
 			// ASIGNAMOS A LA PLANTILLA
-			$smarty->assign("tsPost",$tsPost);
+			$smarty->assign("tsPost", $tsPost);
 			// DATOS DEL AUTOR
-			$smarty->assign("tsAutor",$tsPosts->getAutor($tsPost['post_user']));						
+			$smarty->assign("tsAutor", $tsPosts->getAutor($tsPost['post_user']));						
 			// DATOS DEL RANGO DEL PUTEADOR						
-			$smarty->assign("tsPunteador",$tsPosts->getPunteador());
+			$smarty->assign("tsPunteador", $tsPosts->getPunteador());
 			// RELACIONADOS
-			$tsRelated = $tsPosts->getRelated($tsPost['post_tags']);
+			$tsRelated = $tsPosts->getPostsRelatedByTags($tsPost['post_tags']);
 			$smarty->assign("tsRelated",$tsRelated);
 			// COMENTARIOS
 			/*$tsComments = $tsPosts->getComentarios($tsPost['post_id']);
@@ -123,61 +119,56 @@
 		// PAGINA
 		$tsPage = "home";
 		$tsTitle = $tsTitle.' - '.$tsCore->settings['slogan']; 	// TITULO DE LA PAGINA ACTUAL
-		
 		// CLASE TOPS
-		include(TS_CLASS."c.tops.php");
-		$tsTops = new tsTops();
+		require_once dirname(__DIR__, 1) . "/class/c.home.php";
+		require_once dirname(__DIR__, 1) . "/class/c.comentarios.php";
+		$tsHome = new tsHome($tsCore, $tsUser);
+		$tsComentarios = new tsComentarios($tsCore, $tsUser);
 
+		require_once dirname(__DIR__, 1) . "/class/c.tops.php";
+		$tsTops = new tsTops();
+		
 		// ULTIMOS POSTS
-		$tsLastPosts = $tsPosts->getLastPosts($category);
-		$smarty->assign("tsPosts",$tsLastPosts['data']);
-		$smarty->assign("tsPages",$tsLastPosts['pages']);
+		$tsLastPosts = $tsHome->getLastPosts($category);
+		$smarty->assign("tsPosts", $tsLastPosts['data']);
+		$smarty->assign("tsPages", $tsLastPosts['pages']);
 		// ULTIMOS POSTS FIJOS
-		if($tsLastPosts['pages']['current'] == 1){
-		   $tsLastStickys = $tsPosts->getLastPosts($category, '', true);
-		   $smarty->assign("tsPostsStickys",$tsLastStickys['data']);
+		if($tsLastPosts['pages']['current'] === 1) {
+		   $tsLastStickys = $tsHome->getLastStickys($category);
+		   $smarty->assign("tsPostsStickys", $tsLastStickys['data']);
 		}
 		// CAT
-		$smarty->assign("tsCat",$category);
-		$smarty->assign("tsStats",$tsTops->getStats());
+		$smarty->assign("tsCat", $category);
+		$smarty->assign("tsStats", $tsTops->getStats());
 		// ULTIMOS COMENTARIOS
-		$smarty->assign("tsComments",$tsPosts->getLastComentarios());
+		$smarty->assign("tsComments", $tsComentarios->getLastComentarios());
 		// TOP POSTS
-		$smarty->assign("tsTopPosts",$tsTops->getHomeTopPosts());
+		$smarty->assign("tsTopPosts", $tsTops->getHomeTopPosts());
 		// TOP USERS
-		$smarty->assign("tsTopUsers",$tsTops->getHomeTopUsers());
+		$smarty->assign("tsTopUsers", $tsTops->getHomeTopUsers());
 		// TITULO
 		if(!empty($category)) {
-			$catData = $tsPosts->getCatData();
-			$tsTitle = $tsCore->settings['titulo'].' - '.$catData['c_nombre'];
-			$smarty->assign("tsCatData",$catData);
+			$categorie = $tsHome->getDataCategorie();
+			$tsTitle = $tsCore->settings['titulo'].' - '.$categorie['c_nombre'];
+			$smarty->assign("tsCatData", $categorie);
 		}
 		// IMAGENES
-		// FOTOS
-		include(TS_CLASS."c.fotos.php");
+		require_once dirname(__DIR__, 1) . "/class/c.fotos.php";
 		$tsFotos = new tsFotos();
 		$tsImages = $tsFotos->getLastFotos();
 		$smarty->assign("tsImages",$tsImages);
-		$smarty->assign("tsImTotal",count($tsImages));
+		$smarty->assign("tsImTotal", count($tsImages ?? []));
 		
 		// AFILIADOS
-		$smarty->assign("tsAfiliados",$tsAfiliado->getAfiliados());
+		$smarty->assign("tsAfiliados", $tsAfiliado->getAfiliados());
 		// DO <= PARA EL MENU
 		$smarty->assign("tsDo", $_GET['do'] ?? '');
 
 	}
 
 }
-/*
- * -------------------------------------------------------------------
- *  Incluir plantilla
- * -------------------------------------------------------------------
- */
 
-if(empty($tsAjax)) 
-{
-	// Asignamos título
-	$smarty->assign("tsTitle",$tsTitle);
-	// Incluir footer
-	include(TS_ROOT . "/footer.php");
+if($tsAjax) {
+	$smarty->assign("tsTitle", $tsTitle);
+   require_once dirname(__DIR__, 2) . "/footer.php";
 }

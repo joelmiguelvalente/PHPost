@@ -40,7 +40,7 @@
          {foreach from=$tsGeneral.segs.data item=s}
             <li>
                <a href="{$tsConfig.url}/perfil/{$s.user_name}" class="hovercard" uid="{$s.user_id}" style="display:inline-block;">
-                  <img src="{$tsConfig.url}/files/avatar/{$s.user_id}_50.jpg" width="32" height="32"/>
+                  <img src="{$s.user_avatar}" width="32" height="32"/>
                </a>
             </li>
          {/foreach}
@@ -62,7 +62,7 @@
          {foreach from=$tsGeneral.sigd.data item=s}
             <li>
                <a href="{$tsConfig.url}/perfil/{$s.user_name}" class="hovercard" uid="{$s.user_id}" style="display:inline-block;">
-                  <img src="{$tsConfig.url}/files/avatar/{$s.user_id}_50.jpg" width="32" height="32"/>
+                  <img src="{$s.user_avatar}" width="32" height="32"/>
                   {$s.user_avatar}
                </a>
             </li>

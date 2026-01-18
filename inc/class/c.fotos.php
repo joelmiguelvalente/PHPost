@@ -230,7 +230,7 @@ class tsFotos {
         $data['foto']['user_foto_comments'] = $q1[0];
         $data['foto']['user_fotos'] = $q2[0];
 		$data['foto']['exist'] = db_exec('num_rows', $query);
-        $data['foto']['f_description'] = $tsCore->parseSmiles($data['foto']['f_description']);
+        $data['foto']['f_description'] = $tsCore->parseBBCode($data['foto']['f_description']);
         
         include('../extras/datos.php');
         $pais = $data['foto']['user_pais'];
@@ -250,7 +250,7 @@ class tsFotos {
         $query = db_exec([__FILE__, __LINE__], 'query', 'SELECT c.*, u.user_name, u.user_activo FROM f_comentarios AS c LEFT JOIN u_miembros AS u ON c.c_user = u.user_id WHERE c.c_foto_id = \''.(int)$fid.'\' '.($tsUser->is_admod && $tsCore->settings['c_see_mod'] == 1 ? '' : 'AND u.user_activo = \'1\' && u.user_baneado = \'0\''));
         $comments = result_array($query);
         foreach($comments as $key => $val){
-            $val['c_body'] = $tsCore->parseBadWords($tsCore->parseSmiles($val['c_body']), true);
+            $val['c_body'] = $tsCore->parseBadWords($tsCore->parseBBCode($val['c_body']), true);
             $data['comments'][] = $val;
         }
         $data['foto']['f_comments'] = count($comments);
@@ -395,7 +395,7 @@ class tsFotos {
                     // NOTIFICAR AL USUARIO
                     $tsMonitor->setNotificacion(11, $data['f_user'], $tsUser->uid, $fid);
         		  	// array(comid, com, fecha, autor_del_post)
-        			return array($cid,$tsCore->parseBadWords($tsCore->parseSmiles($comentario), true), $fecha, $_POST['auser']);
+        			return array($cid,$tsCore->parseBadWords($tsCore->parseBBCode($comentario), true), $fecha, $_POST['auser']);
         		} else return '0: Ocurri&oacute; un error int&eacute;ntalo m&aacute;s tarde.';
             } else return '0: La foto se encuentra cerrada y no se permiten comentarios.';
         } else return '0: La foto no existe.';

@@ -1,11 +1,10 @@
 <?php
 
 /**
- * @package    PHPost
- * @author     Miguel92
- * @copyright  2026
- * @version    2.0.0
-*/
+ * @name Extras.php
+ * @author PHPost Team
+ * @copyright 2026
+ */
 
 declare(strict_types=1);
 
@@ -26,13 +25,11 @@ class Extras {
 		if ($text === '') {
 			return '';
 		}
-
 		$text = preg_replace('~[^\pL\d]+~u', $separator, $text) ?? '';
 		$text = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $text) ?: $text;
 		$text = preg_replace('~[^-\w]+~', '', $text) ?? '';
 		$text = trim($text, $separator);
 		$text = preg_replace('~-+~', $separator, $text) ?? '';
-
 		return strtolower($text);
 	}
 

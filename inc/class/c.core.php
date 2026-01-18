@@ -13,6 +13,7 @@ if (!defined('TS_HEADER')) {
 }
 
 require_once dirname(__DIR__, 1) . '/utils/Extras.php';
+require_once dirname(__DIR__, 1) . '/extras/bbcode.inc.php';
 
 class tsCore extends Extras {
 	 
@@ -470,15 +471,13 @@ class tsCore extends Extras {
 
 	# MAXIMA CONVERSION => URL AMIGABLES | Ya no usaremos esta funcion...
 	# la dejó asi lo voy cambiando de a poco
-	public function setSEO($string, $max = NULL) {
+	public function setSEO($string, $max = '-') {
 		return $this->slugify($string, $max);
 	}
 	/*
 		parseBBCode($bbcode)
 	*/
-	public function parseBBCode($bbcode, $type = 'normal') {
-		// Class BBCode
-		include_once TS_EXTRA . 'bbcode.inc.php';
+	public function parseBBCode(string $bbcode, string $type = 'normal') {
 		// Class BBCode
 		$parser = new BBCode();
 		// Seleccionar texto
@@ -501,115 +500,7 @@ class tsCore extends Extras {
 		// Retornar resultado en HTML
 		return $parser->getAsHtml();
 	}
-
-	/**
-	 * @name setMenciones
-	 * @access public
-	 * @param string
-	 * @return string
-	 */
-	public function setMenciones(string $html = ''): string {
-		global $tsUser;
-		return preg_replace_callback('/\B@([a-zA-Z0-9_-]{4,16})\b/', function ($matches) use ($tsUser) {
-			$username = $matches[1];
-			$uid = $tsUser->getUserID($username);
-			if (!$uid) {
-				return $matches[0]; // Mención sin reemplazo
-			}
-			$url = "{$this->settings['url']}/perfil/{$username}";
-			return "@<a href=\"{$url}\">{$username}</a>";
-		}, $html);
-	}
-
-	 /*
-		  parseSmiles($st)
-	 */
-	 public function parseSmiles($bbcode){
-		// SOLO SMILES (Esta opción se mantiene por compatibilidad con versiones anteriores, pero en su lugar se utiliza la opción "normal")
-		  return $this->parseBBCode($bbcode, 'normal');
-	 }
-	/*
-		parseBBCodeFirma($bbcode)
-	*/
-	function parseBBCodeFirma($bbcode){
-		return $this->parseBBCode($bbcode, 'firma');
-	}
-	/**
-	 * setHace()
-	 * if ternario
-	*/
-	function setHace($fecha, $show = false){
-		$fecha = $fecha; 
-		$ahora = time();
-		$tiempo = $ahora-$fecha; 
-		if($fecha <= 0) return 'Nunca';
-		elseif(round($tiempo / 31536000) <= 0){ 
-			if(round($tiempo / 2678400) <= 0) { 
-				if(round($tiempo / 86400) <= 0) { 
-					if(round($tiempo / 3600) <= 0) { 
-						if(round($tiempo / 60) <= 0) { 
-						if($tiempo <= 60) $hace = 'instantes';
-						} else  { 
-							$can = round($tiempo / 60); 
-							$word = ($can <= 1) ? 'minuto' : 'minutos';
-							$hace = "{$can} {$word}"; 
-						} 
-					} else { 
-						$can = round($tiempo / 3600); 
-						$word = ($can <= 1) ? 'hora' : 'horas';
-						$hace = "{$can} {$word}"; 
-					} 
-				} else  { 
-					$can = round($tiempo / 86400); 
-					$word = ($can <= 1) ? 'd&iacute;a' : 'd&iacute;as';
-					$hace = "{$can} {$word}";
-				} 
-			} else  { 
-				$can = round($tiempo / 2678400);  
-				$word = ($can <= 1) ? 'mes' : 'meses';
-				$hace = "{$can} {$word}"; 
-			}
-		} else {
-			$can = round($tiempo / 31536000); 
-			$word = ($can <= 1) ? 'a&ntilde;o' : 'a&ntilde;os';
-			$hace = "{$can} {$word}"; 
-		}
-		return ($show == true) ? 'Hace '.$hace : $hace;
-	}
-	/*
-		getUrlContent($tsUrl)
-	*/
-	function getUrlContent($tsUrl){
-		// USAMOS CURL O FILE
-		if(function_exists('curl_init')){
-			//Abrir conexion  
-			$ch = curl_init();  
-			curl_setopt($ch, CURLOPT_USERAGENT, 		$_SERVER['HTTP_USER_AGENT']);
-			curl_setopt($ch, CURLOPT_URL,		 			$tsUrl);
-			curl_setopt($ch, CURLOPT_TIMEOUT, 		  	60);
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 	1);
-			$result = curl_exec($ch);
-			curl_close($ch); 
-		} else $result = @file_get_contents($tsUrl);
-		return $result;
-	}
-	# Función para comprobar reCaptcha v3
-	public function reCaptcha(string $publico = '') {
-		// call curl to POST request
-		$http = http_build_query([
-			'secret' => $this->settings["skey"], 
-			'response' => $publico, 
-			'remoteip' => $this->getIP()
-		]);
-		$init = curl_init();
-		curl_setopt($init, CURLOPT_URL, "https://www.google.com/recaptcha/api/siteverify");
-		curl_setopt($init, CURLOPT_POST, 1);
-		curl_setopt($init, CURLOPT_POSTFIELDS, $http);
-		curl_setopt($init, CURLOPT_RETURNTRANSFER, true);
-		$response = curl_exec($init);
-		curl_close($init);
-		return json_decode($response, true);
-	}
+	
 	/*
 		 getIP
 	*/

@@ -101,7 +101,7 @@ class tsUser {
 		// PERMISOS SEGUN RANGO
 		$rango = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', 'SELECT r_allows FROM u_rangos WHERE rango_id = \''.$this->info['user_rango'].'\' LIMIT 1'));
 		$this->permisos = @unserialize($rango['r_allows']);
-		foreach(['moat', 'sumo', 'suad'] as $perm) {
+		foreach(['moat', 'sumo', 'suad', 'gopp', 'gorpap', 'most'] as $perm) {
 			if(!isset($this->permisos[$perm])) $this->permisos[$perm] = false;
 		}
 		/* ES MIEMBRO */

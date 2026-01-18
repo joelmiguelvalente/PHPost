@@ -1,11 +1,10 @@
 <?php
 
 /**
- * @package    PHPost
- * @author     Miguel92
- * @copyright  2026
- * @version    2.0.0
-*/
+ * @name Paginator.php
+ * @author PHPost Team
+ * @copyright 2026
+ */
 
 declare(strict_types=1);
 
@@ -63,7 +62,7 @@ class Paginator {
 			'current' => $this->page,
 			'pages'   => $totalPages,
 			'section' => $totalPages + 1,
-			'prev'    => max(1, $this->page - 1),
+			'prev'    => max(0, $this->page - 1),
 			'next'    => ($this->page < $totalPages) ? $this->page + 1 : $totalPages,
 			'max'     => $this->setMaximos($tsLimit, $tsTotal),
 		];

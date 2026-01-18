@@ -88,7 +88,7 @@ $tsCore = new tsCore();
 $tsUser = new tsUser();
 
 // Monitor
-$tsMonitor = new tsMonitor();
+$tsMonitor = new tsMonitor($tsCore, $tsUser);
 
 // Actividad
 $tsActividad = new tsActividad();

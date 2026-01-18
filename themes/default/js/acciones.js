@@ -19,11 +19,6 @@ function ir_a_categoria(cat){
 
 /* Editor */
 function print_editor() {
-   //Editor de posts
-   if($('#markItUp').length && !$('.wysibb-texarea').length || $('#wysibb').length && !$('.wysibb-texarea').length){
-      $('#markItUp, #wysibb').removeAttr('onblur onfocus class style').css('height', '400').addClass('required').wysibb();
-      $('#moreemofn, #emoticons').remove();
-   }
    //Editor de respuesta de mensajes
    if($('#respuesta').length && !$('.wysibb-texarea').length){
       var wbbOpt = { buttons: "smilebox,|,bold,italic,underline,strike,sup,sub,|,img,video,link,|,removeFormat" }
