@@ -4,16 +4,14 @@
 const perfil = (() => {
    const cache = new Map();
    const ui = {
-      tabs: $('#tabs_menu > li'),
       content: $('#perfil_content'),
       loader: $('#perfil_load'),
       globalLoader: $('#loading'),
-      info: $('#info'),
       tabContent: type => $(`#perfil_${type}`)
    };
-   const getPid = () => ui.info.attr('pid');
+   const getPid = () => $('#info').attr('pid');
    const setActiveTab = obj => {
-      ui.tabs.removeClass('selected');
+      $('#tabs_menu > li').removeClass('selected');
       $(obj).parent().addClass('selected');
    };
    const showLoader = () => {
@@ -52,9 +50,7 @@ const perfil = (() => {
       .always(hideLoader);
    };
    const loadFollows = (type, page = 1) => {
-   	console.log(type, page)
       $.post(`${route.url}/perfil-${type}.php?hide=true&page=${page}`, { pid: getPid() }, response => {
-      	console.log(response)
          const { message } = $.parseResponse(response);
          ui.tabContent(type).html(message);
       });
@@ -66,58 +62,53 @@ const perfil = (() => {
 })();
 
 /** ACTIVIDAD **/
-var actividad = {
+const actividad = {
 	total: 25,
 	show: 25,
-	cargar: function(id, ac_do, ac_type){
+	cargar: (id, ac_do, ac_type) => {
 		// ELIMINAR
 		$('#last-activity-view-more').remove();
-		if(ac_do == 'filtrar') actividad.total = 0;
+		if(ac_do === 'filtrar') actividad.total = 0;
+		let params = { pid: perfil.getPid(), ac_type, do: ac_do, start: actividad.total };
 		// ENVIAMOS
-		$.ajax({
-			type: 'POST',
-			url: route.url + '/perfil-actividad.php',
-			data: 'pid=' + $('#info').attr('pid') + '&ac_type=' + ac_type + '&do=' + ac_do + '&start=' + actividad.total,
-			success: function(h){
-				switch(h.charAt(0)){
-					case '0': //Error
-						mydialog.alert('Error', h.substring(3));
-						break;
-					case '1': //OK
-							if(ac_do == 'more')
-								$('#last-activity-container').append(h.substring(3));
-							else 
-								$('#last-activity-container').html(h.substring(3));
-							// TOTALES
-							var total_pubs = $('#total_acts').attr('val');
-							actividad.total = actividad.total + parseInt(total_pubs);
-							$('#total_acts').remove();
-						break;
-				}
+		$.post(`${route.url}/perfil-actividad.php`, params)
+		.done(response => {
+			const { status, message } = $.parseResponse(response);
+			switch(status) {
+				case 0: //Error
+					dialog.alert('Error', message);
+				break;
+				case 1: //OK
+					const add = (ac_do === 'more') ? 'append' : 'html';
+					$('#last-activity-container')[add](message);
+					// TOTALES
+					const total_pubs = $('#total_acts').attr('val');
+					actividad.total = actividad.total + parseInt(total_pubs);
+					$('#total_acts').remove();
+				break;
 			}
 		});
 	},
-	borrar: function(id, obj){
+	borrar: (id, obj) =>{
 		// ENVIAMOS
-		$.ajax({
-			type: 'POST',
-			url: route.url + '/perfil-actividad.php',
-			data: 'pid=' + $('#info').attr('pid') + '&acid=' + id + '&do=borrar',
-			success: function(h){
-				switch(h.charAt(0)){
-					case '0': //Error
-						mydialog.alert('Error', h.substring(3));
-						break;
-					case '1': //OK
-						$(obj).parent().parent().parent().remove();
-						break;
-				}
+		let params = { pid: perfil.getPid(), acid: id, do: 'borrar' };
+		$.post(`${route.url}/perfil-actividad.php`, params)
+		.done(response => {
+			const { status, message } = $.parseResponse(response);
+			switch(status) {
+				case 0: //Error
+					dialog.alert('Error', message);
+				break;
+				case 1: //OK
+					$(obj).parent().parent().parent().remove();
+				break;
 			}
 		});
 	}
 }
+
 /** MURO **/
-window.muro = {
+const muro = {
 	maxWidth: 463, // WIDTH PARA LAS FOTOS Y VIDEOS
 	stream: {
 		total: 0, // TOTAL DE PUBLICACIONES CARGADAS
@@ -126,22 +117,18 @@ window.muro = {
 		status: 0, // PARA EVITAR CLICKS INESESARIOS
 		adjunto: '', // SE HA CARGADO UN ARCHIVO ADJUNTO?
 		// CARGAR EL TIPO DE PUBLICACION :
-		load: function(aid, obj){
+		load: (nameAction, obj) => {
 			// ACTUAL
-			muro.stream.type = aid;
+			muro.stream.type = nameAction;
 			//
-			var atxt = (muro.stream.type == 'foto') ? 'a' : 'e';
-			atxt = 'Haz un comentario sobre est' + atxt + ' ' + muro.stream.type + '...';
+			const letter = (muro.stream.type === 'foto') ? 'a' : 'e';
+			const text = `Haz un comentario sobre est${letter} ${muro.stream.type}...`;
 			//
-			if(aid != 'status') {
-				$('.btnStatus').hide();
-				$('.attaDesc').show();
-				//
-				$('#attaDesc').attr('title', atxt).val(atxt);
-			} else {
-				$('.btnStatus').show();
-				$('.attaDesc').hide();
-				$('.frameForm').css('border-bottom', '1px solid #E9E9E9');
+			let status = (nameAction !== 'status');
+			$('.btnStatus')[status ? 'hide' : 'show']();
+			$('.attaDesc')[status ? 'show' : 'hide']();
+			if(status) {
+				$('#attaDesc').attr('title', text).val(text);
 			}
 			//
 			$('span.uiComposer .nub, span.uiComposer span').hide();
@@ -149,26 +136,26 @@ window.muro = {
 			$(obj).hide().parent().find('span, i').show();
 			// 
 			$('#attaContent > div').hide();
-			$('#' + aid + 'Frame').show(); 
+			$(`#${nameAction}Frame`).show(); 
 			// 
 			return false;
 		},
 		// ADJUNTAR ARCHIVO EXTERNO : FOTO, ENLACE, VIDEO DE YOUTBE
-		adjuntar: function(){
+		adjuntar: () => {
 			// SI ESTA OCUPADO NO HACEMOS NADA
-			if(muro.stream.status == 1) return false;
+			if(muro.stream.status === 1) return false;
 			else muro.stream.status = 1;
 			// LOADER
 			muro.stream.loader(true);
 			// FUNCION
-			var inpt = $('input[name=i' + muro.stream.type + ']');
+			const inpt = $(`input[name=i${muro.stream.type}]`);
 			inpt.attr('disabled', 'true');
-			var valid = muro.stream.validar(inpt);
-			if(valid == true){
+			const valid = muro.stream.validar(inpt);
+			if(valid) {
 				// ADJUNTAMOS...
 				muro.stream.ajaxCheck(inpt.val(), inpt);
 			} else {
-				mydialog.alert('Error al publicar', valid);
+				dialog.alert('Error al publicar', valid);
 				// LOADER / DISABLED / STATUS
 				muro.stream.loader(false);
 				inpt.attr('disabled', '');
@@ -176,84 +163,92 @@ window.muro = {
 			}
 		},
 		// VERIFICAR ARCHIVO
-		ajaxCheck: function(url, inpt){
-			$('#loading').fadeIn(250); 
-			$.ajax({
-				type: 'POST',
-				url: route.url + '/muro-stream.php?do=check&type=' + muro.stream.type,
-				data: 'url=' + encodeURIComponent(url),
-				success: function(h){
-					switch(h.charAt(0)){
-						case '0': //Error
-							mydialog.alert('Error al publicar', h.substring(3));
-							inpt.attr('disabled', '');
-							break;
-						case '1': //OK
-							muro.stream.adjunto = inpt.val();
-							$('#' + muro.stream.type + 'Frame').html(h.substring(3));
-							break;
-					}
-					$('#loading').fadeOut(350); 
-				},
-				complete: function (){
-					// LOADER/ STATUS
-					muro.stream.loader(false);
-					muro.stream.status = 0;
-					$('#loading').fadeOut(350); 
+		ajaxCheck: (url, inpt) => {
+			$('#loading').fadeIn(250);
+			url = encodeURIComponent(url);
+			$.post(`${route.url}/muro-stream.php?do=check&type=${muro.stream.type}`, { url })
+			.done(response => {
+				const { status, message } = $.parseResponse(response);
+				if(status === 0) {
+					dialog.alert('Error al publicar', message);
+					inpt.attr('disabled', '');
+				} else if(status === 1) {
+					muro.stream.adjunto = inpt.val();
+					$(`#${muro.stream.type}Frame`).html(message);
 				}
+				$('#loading').fadeOut(350); 
+			})
+			.always(() => {
+				// LOADER/ STATUS
+				muro.stream.loader(false);
+				muro.stream.status = 0;
+				$('#loading').fadeOut(350); 
 			});
 		},
 		// VALIDAR LAS URL DE LOS ARCHIVOS ADJUNTOS
-		validar: function(inpt){
-			var val = inpt.val();
-			var regex = /^(ht|f)tps?:\/\/\w+([\.\-\w]+)?\.([a-z]{2,3}|info|mobi|aero|asia|name)(:\d{2,5})?(\/)?((\/).+)?$/i;
-			//
-			if(val == '' || val == inpt.attr('title') || regex.test(val) == false) return 'Debes ingresar una direcci&oacute;n URL v&aacute;lida.';
-			else {
-				switch(muro.stream.type){
-					case 'foto':
-						inpt.val(val.replace(' ', ''));
-						var ext = inpt.val().substr(-3);
-						if(ext != 'gif' && ext != 'png' && ext != 'jpg') return 'S&oacute;lo se permiten im&aacute;genes .gif, .png y .jpg';
-					break;
-					case 'video':
-						var video_id = val.split('watch?v=');
-						// NO ES VALIDO : DE MOMENTO
-						if(!video_id[1]) return 'Al parecer la url del video no es v&aacute;lida. Recuerda que solo puedes compartir videos de YouTube.';
+		validar: (inpt) => {
+			const rawValue = inpt.val().trim();
+			if (!rawValue || rawValue === inpt.attr('title')) {
+				return 'Debes ingresar una dirección URL válida.';
+			}
+			let url;
+			try {
+				url = new URL(rawValue);
+			} catch {
+				return 'Debes ingresar una dirección URL válida.';
+			}
+			if (!['http:', 'https:'].includes(url.protocol)) {
+				return 'Debes ingresar una dirección URL válida.';
+			}
+			switch (muro.stream.type) {
+				case 'foto': {
+					const allowedExt = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif'];
+					const ext = url.pathname.split('.').pop().toLowerCase();
+					if (!allowedExt.includes(ext)) {
+						return 'Sólo se permiten imágenes jpg, jpeg, png, gif, webp y avif.';
+					}
+					inpt.val(url.href); // normaliza
 					break;
 				}
-				//
-				return true;
+				case 'video': {
+					if (url.hostname !== 'www.youtube.com' && url.hostname !== 'youtube.com' && url.hostname !== 'youtu.be') {
+						return 'Sólo se permiten videos de YouTube.';
+					}
+					if ((url.hostname !== 'youtu.be' && !url.searchParams.get('v')) && url.hostname !== 'youtu.be') {
+						return 'La URL del video no es válida.';
+					}
+					break;
+				}
 			}
+			return true;
 		},
 		// COMPARTIR
-		compartir: function(){
+		compartir: () => {
 			// SI ESTA OCUPADO NO HACEMOS NADA
-			if(muro.stream.status == 1) return false;
+			if(muro.stream.status === 1) return false;
 			else muro.stream.status = 1;
 			// LOADER
 			muro.stream.loader(true);
 			// 
-			var error_length = 'Las publicaciones de estado y/o comentarios deben ser inferiores a 420 caracteres. Ya has ingresado ';
+			const error_length = 'Las publicaciones de estado y/o comentarios deben ser inferiores a 420 caracteres. Ya has ingresado %d caracteres';
 			// ARCHIVOS ADJUNTOS
-			if(muro.stream.type != 'status'){
-				if(muro.stream.adjunto != ''){
+			if(muro.stream.type !== 'status'){
+				if(muro.stream.adjunto !== ''){
 					var val = $('#attaDesc').val();
 					// VALIDAR
 					if(val.length > 420) {
-						mydialog.alert('Error al publicar', error_length + val.length + ' caracteres.');
+						dialog.alert('Error al publicar', error_length.replace('%d', val.length));
 						// LOADER/ STATUS
 						muro.stream.loader(false);
 						muro.stream.status = 0;
-					}
 					// ENVIAMOS PUBLICACION
-					else {
+					} else {
 						val = (val == $('#attaDesc').attr('title')) ? '' : val;
 						muro.stream.ajaxPost(val);
 					}
 					
 				} else {
-					mydialog.alert('Error al publicar', 'Ingresa la <b>URL</b> en el campo de texto y a continuaci&oacute;n da clic en <b>Adjuntar</b>.');
+					dialog.alert('Error al publicar', 'Ingresa la <b>URL</b> en el campo de texto y a continuaci&oacute;n da clic en <b>Adjuntar</b>.');
 					// LOADER/ STATUS
 					muro.stream.loader(false);
 					muro.stream.status = 0;
@@ -272,12 +267,12 @@ window.muro = {
 					muro.stream.status = 0; 
 					return false;
 				}
-				else if(val.length > 420) error = error_length + val.length + ' caracteres.';
+				else if(val.length > 420) error = error_length.replace('%d', val.length);
 				// ENVIAR PUBLICACION
 				if(error == false){
 					muro.stream.ajaxPost(val);
 				} else {
-					mydialog.alert('Error al publicar', error);
+					dialog.alert('Error al publicar', error);
 					// LOADER/ STATUS
 					muro.stream.loader(false);
 					muro.stream.status = 0;
@@ -292,9 +287,10 @@ window.muro = {
 				url: route.url + '/muro-stream.php?do=post&type=' + muro.stream.type,
 				data: 'adj=' + muro.stream.adjunto +'&data=' + encodeURIComponent(data) + '&pid=' + $('#info').attr('pid'),
 				success: function(h){
+					console.log(h)
 					switch(h.charAt(0)){
 						case '0': //Error
-							mydialog.alert('Error al publicar', h.substring(3));
+							dialog.alertt('Error al publicar', h.substring(3));
 							break;
 						case '1': //OK
 							// ESCONDEMOS SI ES EL PRIMER COMENTARIO
@@ -331,7 +327,7 @@ window.muro = {
 				success: function(h){
 					switch(h.charAt(0)){
 						case '0': //Error
-							mydialog.alert('Error al cargar', h.substring(3));
+							dialog.alertt('Error al cargar', h.substring(3));
 							break;
 						case '1': //OK
 							// CARGAMOS AL DOM
@@ -395,7 +391,7 @@ window.muro = {
 							
 				   }
 			   } else {
-				   mydialog.alert('Error:', h['text'].substring(3));
+				   dialog.alertt('Error:', h['text'].substring(3));
 			   }
 			   $('#loading').slideUp(350); 
 			},
@@ -417,7 +413,7 @@ window.muro = {
 			success: function(h){
 				switch(h.status){
 					case 0: //Error
-						mydialog.alert('Error', h['data']);
+						dialog.alertt('Error', h['data']);
 						break;
 					case 1: //OK
 						var html = '<ul id="show_likes">';
@@ -467,7 +463,7 @@ window.muro = {
 			success: function(h){
 				switch(h.charAt(0)){
 					case '0': //Error
-						mydialog.alert('Error:', h.substring(3));
+						dialog.alertt('Error:', h.substring(3));
 						break;
 					case '1': //OK
 						$('#cl_' + id).append($(h.substring(3)).fadeIn('slow'));
@@ -497,7 +493,7 @@ window.muro = {
 			success: function(h){
 				switch(h.charAt(0)){
 					case '0': //Error
-						mydialog.alert('Error:', h.substring(3));
+						dialog.alertt('Error:', h.substring(3));
 						break;
 					case '1': //OK
 						$('#cl_' + id).html(h.substring(3));
@@ -551,7 +547,7 @@ window.muro = {
 			success: function(h){
 				switch(h.charAt(0)){
 					case '0': //Error
-						mydialog.alert('Error:', h.substring(3));
+						dialog.alertt('Error:', h.substring(3));
 						break;
 					case '1': //OK
 						mydialog.close();

@@ -1,4 +1,4 @@
-{include file='sections/main_header.tpl'}
+{include "main_header.tpl"}
 <div id="borradores">
 	<div class="clearfix">
 
@@ -25,4 +25,4 @@
    </div>
 </div>
 <div style="clear:both"></div>            
-{include file='sections/main_footer.tpl'}
+{include "main_footer.tpl"}

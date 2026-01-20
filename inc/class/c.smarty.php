@@ -95,14 +95,13 @@ class tsSmarty extends \Smarty\Smarty {
 		if ($loadFilter) $this->loadFilter('output', 'trimwhitespace');
 	}
 
-	private function resolvePage(string $page): string {
+	private function resolvePage(string $page, bool $useExtension): string {
 		$file = match ($page) {
 			'registro', 'login' => 'base.tpl',
 			'admin', 'moderacion' => 'main.tpl',
-			'saliendo' => 'views/html/saliendo.html',
-			default => "t.$page.tpl"
+			'saliendo' => 'themes/html/saliendo.html',
+			default => ($useExtension ? "t.$page.tpl" : "$page.tpl")
 		};
-		
 		return $this->templateExists($file) ? $file : $this->templateError;
 	}
 
@@ -111,8 +110,11 @@ class tsSmarty extends \Smarty\Smarty {
 	 */
 	private function mapDirectories(): array {
 		$directories = [
-			'root'	=> TS_ROOT,
-			'auth'	=> TS_THEMES . 'auth',
+			'root'		 => TS_ROOT,
+			'auth'		 => TS_VIEWS . 'auth',
+			'api'			 => TS_VIEWS . 'api',
+			'error'		 => TS_VIEWS . 'error',
+			'components' => TS_VIEWS . 'components',
 		];
 		return $directories;
 	}
@@ -128,8 +130,7 @@ class tsSmarty extends \Smarty\Smarty {
 			'sections'    => "$templates/sections/",
 			'modules'     => "$templates/modules/",
 			'pagina'      => "$templates/modules/{$this->page}/",
-			'global'      => "$templates/modules/global/",
-			'php_files'   => "$templates/t.php_files/"
+			'global'      => "$templates/modules/global/"
 		], $this->mapDirectories());
 
 		$this->addTemplateDir($map);
@@ -138,13 +139,13 @@ class tsSmarty extends \Smarty\Smarty {
 	/**
 	 * Renderiza una plantilla.
 	 */
-	public function load(string $page = ''): void {
+	public function load(string $page = '', bool $useExtension = true): void {
 		$this->loadAllTemplates();
+
 		try {
-			$template = $this->resolvePage($page);
+			$template = $this->resolvePage($page, $useExtension);
 			$this->display($template);
 		} catch (Exception $e) {
-
 			$mensaje = preg_replace_callback(
 				"/'([^']+)'/",
 				fn ($message) => "'<strong>{$message[1]}</strong>'",

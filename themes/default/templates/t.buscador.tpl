@@ -1,4 +1,4 @@
-{include file='sections/main_header.tpl'}
+{include "main_header.tpl"}
         {literal}
         <script type="text/javascript">
         var buscador = {
@@ -208,4 +208,4 @@
         </div>
         {/if}
         <div style="clear:both;"></div>                
-{include file='sections/main_footer.tpl'}
+{include "main_footer.tpl"}

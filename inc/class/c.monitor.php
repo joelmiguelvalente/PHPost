@@ -14,11 +14,13 @@ if (!defined('TS_HEADER')) {
 
 require_once dirname(__DIR__, 1) . '/utils/Avatar.php';
 require_once dirname(__DIR__, 1) . '/utils/Paginator.php';
+require_once dirname(__DIR__, 1) . '/helpers/UrlHelper.php';
 
 class tsMonitor {
 	
 	protected tsCore $Core;
 	protected tsUser $User;
+	protected UrlHelper $UrlHelper;
 
 	/**
 	 * @name notificaciones 
@@ -56,6 +58,7 @@ class tsMonitor {
 	public function __construct(tsCore $Core, tsUser $User) {
 		$this->Core = $Core;
 		$this->User = $User;
+		$this->UrlHelper = new UrlHelper($Core);
 		// VISITANTE?
 		if($this->User->is_member === 0) return false;
 		// NOTIFICACIONES
@@ -409,23 +412,13 @@ class tsMonitor {
 		];
 	}
 
-	private function buildPostUrl(array $data, string $anchor): string {
-		$title = $this->Core->setSEO($data['post_title']);
-		return "{$this->Core->settings['url']}/posts/{$data['c_seo']}/{$data['post_id']}/{$title}.html{$anchor}";
-	}
-
-	private function buildFotoUrl(array $data, string $anchor): string {
-		$title = $this->Core->setSEO($data['f_title']);
-		return "{$this->Core->settings['url']}/fotos/{$data['user_name']}/{$data['foto_id']}/{$title}.html{$anchor}";
-	}
-
 	private function makeUrlOracion(string $type, array|string $data, string $anchor = ''): string {
 		$base = rtrim($this->Core->settings['url'], '/');
 		$anchor = $anchor ? "/{$anchor}" : '';
 
 		return match ($type) {
-			'post' => $this->buildPostUrl($data, $anchor),
-			'foto' => $this->buildFotoUrl($data, $anchor),
+			'post' => $this->UrlHelper->buildPostUrl($data, $anchor),
+			'foto' => $this->UrlHelper->buildFotoUrl($data, $anchor),
 			'perfil' => "{$base}/@{$data}{$anchor}",
 			default => $base,
 		};
@@ -766,7 +759,7 @@ class tsMonitor {
 	 */
 	private function allowNotifi(int $type, int $userId) {
 		# CONSULTAMOS
-		$data = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', "SELECT c_monitor FROM u_portal WHERE userId = $userId LIMIT 1"));
+		$data = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', "SELECT c_monitor FROM u_portal WHERE user_id = $userId LIMIT 1"));
 		# PROSESAMOS
 		$filtro = 'f'.$type;
 		$filtros = explode(',', $data['c_monitor']);

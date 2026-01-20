@@ -1,29 +1,4 @@
-{include file='sections/main_header.tpl'}
-            <style>
-            /* {literal} */
-            .reg-login {
-            	margin-top: 15px;
-            }
-            	.registro {
-            		float: left;
-            		width: 300px;
-            	}
-            	.login-panel {
-            		float: left;
-            		padding-left: 25px;
-            	}
-            	
-            	.login-panel label {
-            		font-weight: bold;
-            		display: block;
-            		margin: 5px 0;
-            	}
-            	
-            	.login-panel .mBtn {
-            		margin-top: 10px;
-            	}
-                /*{/literal}*/
-            </style>
+{include "main_header.tpl"}
 <div class="post-deleted post-privado clearbeta">
 	<div class="content-splash">
 		<h3>{if $tsType == 'post'}Este post es privado, s&oacute;lo los usuarios registrados de {$tsConfig.titulo} pueden acceder.{else}Registrate en {$tsConfig.titulo}{/if}</h3>
@@ -57,4 +32,4 @@
 		</div>
 	</div>
 </div>
-{include file='sections/main_footer.tpl'}
+{include "main_footer.tpl"}

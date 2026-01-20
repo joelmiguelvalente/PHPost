@@ -307,3 +307,28 @@ document.onkeydown = function(e){
    key = (e==null)?event.keyCode:e.which;
    if(key == 27) mydialog.close();
 };
+
+function initLazyLoading() {
+   const observer = new IntersectionObserver((entries, self) => {
+      entries.forEach((entry) => {
+         if (!entry.isIntersecting) return;
+
+         const target = entry.target;
+         const attr = target.localName === 'source' ? 'srcset' : 'src';
+         const value = target.getAttribute(`data-${attr}`);
+
+         if (value) {
+            target[attr] = value;
+            target.removeAttribute(`data-${attr}`);
+         }
+
+         self.unobserve(target);
+      });
+   }, { rootMargin: '50px' });
+
+   document.querySelectorAll('picture').forEach(picture => {
+      observer.observe(picture.querySelector('img'));
+      picture.querySelectorAll('source').forEach(s => observer.observe(s));
+   });
+}
+initLazyLoading()

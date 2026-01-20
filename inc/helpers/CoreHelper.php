@@ -14,40 +14,62 @@ if (!defined('TS_HEADER')) {
 
 final class CoreHelper {
 
+	private function isSafeHttpUrl(string $url): bool {
+	   $decoded = urldecode(trim($url));
+	   if (!filter_var($decoded, FILTER_VALIDATE_URL)) {
+	      return false;
+	   }
+	   $parts = parse_url($decoded);
+	   if (!isset($parts['scheme'], $parts['host'])) {
+	      return false;
+	   }
+	   if (!in_array($parts['scheme'], ['http', 'https'], true)) {
+	      return false;
+	   }
+	   // Resolver IP
+	   $ip = gethostbyname($parts['host']);
+	   // Bloquear IPs privadas / locales
+	   if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false) {
+	      return false;
+	   }
+	   return true;
+	}
+
 	public function getUrlContent(string $tsUrl): ?string {
-		// Usamos cURL si está disponible (más seguro y configurable)
-		if (function_exists('curl_init')) {
-			// User-Agent del cliente (fallback a uno genérico si no existe)
-			$userAgent = $_SERVER['HTTP_USER_AGENT'] ?? 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)';
-			$ch = curl_init();
-			curl_setopt_array($ch, [
-				CURLOPT_URL            => $tsUrl,
-				CURLOPT_USERAGENT      => $userAgent,
-				CURLOPT_TIMEOUT        => 30,
-				CURLOPT_FOLLOWLOCATION => true,  // Permite redirecciones
-				CURLOPT_RETURNTRANSFER => true,
-				CURLOPT_SSL_VERIFYPEER => true,  // Seguridad habilitada
-				CURLOPT_SSL_VERIFYHOST => 2,
-				CURLOPT_CONNECTTIMEOUT => 10,
-			]);
-			$result = curl_exec($ch);
-			// Si ocurrió algún error, devolver null
-			if ($result === false) {
-				curl_close($ch);
-				return null;
-			}
-			curl_close($ch);
-			return $result;
-		}
-		// Fallback sin cURL (menos seguro, pero útil en hosting muy limitado)
-		$context = stream_context_create([
-			'http' => [
-				'timeout' => 30,
-				'header'  => "User-Agent: Mozilla/5.0\r\n"
-			]
-		]);
-		$result = @file_get_contents($tsUrl, false, $context);
-		return $result !== false ? $result : null;
+	   $url = urldecode(trim($tsUrl));
+	   if (!$this->isSafeHttpUrl($url)) {
+	      return null;
+	   }
+	   if (function_exists('curl_init')) {
+	      $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)';
+
+	      $ch = curl_init();
+	      curl_setopt_array($ch, [
+	         CURLOPT_URL            => $url,
+	         CURLOPT_USERAGENT      => $userAgent,
+	         CURLOPT_TIMEOUT        => 15,
+	         CURLOPT_CONNECTTIMEOUT => 5,
+	         CURLOPT_FOLLOWLOCATION => true,
+	         CURLOPT_RETURNTRANSFER => true,
+	         CURLOPT_SSL_VERIFYPEER => true,
+	         CURLOPT_SSL_VERIFYHOST => 2,
+	         CURLOPT_MAXREDIRS      => 3,
+	      ]);
+
+	      $result = curl_exec($ch);
+	      curl_close($ch);
+
+	      return $result !== false ? $result : null;
+	    }
+
+	    $context = stream_context_create([
+	     	'http' => [
+	     	   'timeout' => 15,
+	     	   'header'  => "User-Agent: Mozilla/5.0\r\n"
+	     	]
+	   ]);
+	   $result = @file_get_contents($url, false, $context);
+	   return $result !== false ? $result : null;
 	}
 	
 }

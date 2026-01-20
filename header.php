@@ -19,6 +19,7 @@ defined('TS_HEADER') OR define('TS_HEADER', TRUE);
 //DEFINICION DE CONSTANTES
 define('TS_ROOT', __DIR__);
 
+define('TS_VIEWS',  TS_ROOT . '/views/');
 define('TS_THEMES',	TS_ROOT . '/themes/');
 define('TS_INCLUDES',TS_ROOT . '/inc/');
 define('TS_STORAGE', TS_INCLUDES . 'storage/');
@@ -50,7 +51,9 @@ ini_set('error_log',      Config::app('paths.logs') . '/log-' . date('dmy') . '.
 set_time_limit(300);
 
 // Funciones
+require_once TS_UTILS.'IP.php';
 require_once TS_UTILS.'Paginator.php';
+$IP = new IP;
 $Paginator = new Paginator;
 
 require_once TS_EXTRA.'functions.php';
@@ -91,7 +94,7 @@ $tsUser = new tsUser();
 $tsMonitor = new tsMonitor($tsCore, $tsUser);
 
 // Actividad
-$tsActividad = new tsActividad();
+$tsActividad = new tsActividad($tsCore, $tsUser);
 
 // Mensajes
 $tsMP = new tsMensajes();
@@ -130,7 +133,7 @@ $smarty->assign('tsMPs', $tsMP->mensajes);
  * Si hay alguna IP bloqueada por el Moderador/Administrador,
  * ejecutamos esta función, en caso contrario no hará nada
 */
-$IPBAN = (isset($_SERVER["X_FORWARDED_FOR"])) ? $_SERVER['X_FORWARDED_FOR'] : $_SERVER['REMOTE_ADDR'];
+$IPBAN = $IP->executeIP();
 if(!filter_var($IPBAN, FILTER_VALIDATE_IP)) exit('Su ip no se pudo validar.');
 if(db_exec('num_rows', db_exec([__FILE__, __LINE__], 'query', "SELECT id FROM w_blacklist WHERE type = 1 && value = '{$IPBAN}' LIMIT 1"))) die('Tu IP fue bloqueada por el administrador/moderador.');
 

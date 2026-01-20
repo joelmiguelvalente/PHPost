@@ -99,13 +99,13 @@ if($tsContinue) {
 				} else {
 					$story['data'][1] = $story;
 					$smarty->assign("tsMuro", $story);
-					$smarty->assign("tsType","story");
+					$smarty->assign("tsType", "story");
 				}
 			} elseif((int)$tsCore->settings['c_allow_portal'] === 0 && (int)$tsInfo['uid'] === (int)$tsUser->uid) {
 				$smarty->assign("tsMuro", $tsMuro->getNews());
 				$smarty->assign("tsType", "news");
 			}else{
-				$smarty->assign("tsMuro", $tsMuro->getWall($tsInfo['user_id']));
+				$smarty->assign("tsMuro", $tsMuro->getWall((int)$tsInfo['user_id']));
 				$smarty->assign("tsType", "wall");
 			}
 		}

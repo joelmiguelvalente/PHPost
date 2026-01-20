@@ -118,7 +118,7 @@ class tsUser {
 		$this->is_banned = $this->info['user_baneado'];
 		// Avatar
 		$Avatar = new Avatar;
-		$this->avatar = $Avatar->get((int)$this->uid, $this->nick);
+		$this->avatar = $Avatar->get((int)$this->uid);
 		$time = time();
 		// ULTIMA ACCION
 		db_exec([__FILE__, __LINE__], 'query', "UPDATE u_miembros SET user_lastactive = $time WHERE user_id = {$this->uid}");

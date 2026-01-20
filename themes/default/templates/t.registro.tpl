@@ -1,4 +1,4 @@
-{include file='sections/main_header.tpl'}
+{include "main_header.tpl"}
 
 <div id="error"></div>
 <div class="registro--main">
@@ -70,4 +70,4 @@
 
 </div>
 
-{include file='sections/main_footer.tpl'}
+{include "main_footer.tpl"}

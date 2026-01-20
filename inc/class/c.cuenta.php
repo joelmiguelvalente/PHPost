@@ -12,7 +12,6 @@ if (!defined('TS_HEADER')) {
 	exit('No se permite el acceso directo al script');
 }
 
-require_once dirname(__DIR__, 1) . '/utils/Avatar.php';
 require_once dirname(__DIR__, 1) . '/utils/IP.php';
 require_once dirname(__DIR__, 1) . '/utils/PasswordHandler.php';
 
@@ -21,7 +20,6 @@ class tsCuenta {
 	protected tsCore $Core;
 	protected tsUser $User;
 	protected PasswordHandler $PasswordHandler;
-	protected Avatar $Avatar;
 
 	# Redes sociales disponibles
 	public array $redes = [
@@ -34,11 +32,9 @@ class tsCuenta {
 
 	public function __construct(tsCore $Core, tsUser $User) {
 	   $PasswordHandler = new PasswordHandler;
-		$Avatar = new Avatar;
 		$this->Core = $Core;
 		$this->User = $User;
 		$this->PasswordHandler = $PasswordHandler;
-		$this->Avatar = $Avatar;
 	}
 
 	/**
@@ -144,9 +140,6 @@ class tsCuenta {
 	*/
 	private function loadVisits(int $userId): array {
 		$visitas = result_array(db_exec([__FILE__, __LINE__], 'query', "SELECT v.*, u.user_id, u.user_name FROM w_visitas AS v LEFT JOIN u_miembros AS u ON v.user = u.user_id WHERE v.for = $userId AND v.type = 1 AND user > 0 ORDER BY v.date DESC LIMIT 8"));
-		foreach($visitas as $uid => $user) {
-			$visitas[$uid]['user_avatar'] = $this->Avatar->use((int)$user['user_id']);
-		}
 		//
 		$data['visitas'] = $visitas;
 		$data['visitas_total'] = db_exec('fetch_row', db_exec([__FILE__, __LINE__], 'query', "SELECT COUNT(u.user_id) AS a FROM w_visitas AS v LEFT JOIN u_miembros AS u ON v.user = u.user_id WHERE v.for = $userId AND v.type = 1"))[0];
@@ -164,7 +157,6 @@ class tsCuenta {
 		$data = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', "SELECT u.user_id, u.user_name, u.user_registro, u.user_lastactive, u.user_activo, u.user_baneado, p.user_sexo, p.user_pais, p.p_nombre, p.p_avatar, p.p_mensaje, p.p_sitio, p.p_socials, p.p_privacidad, p.p_mensajes_privados, p.p_publicar_muro, p.p_muro_visitas FROM u_miembros AS u, u_perfil AS p WHERE u.user_id = $userId AND p.user_id = $userId"));
 		//
 		$data = $this->sanitizeProfileData($data);
-		$data['user_avatar'] = $this->Avatar->use((int)$data['user_id']);
 		if(!empty($data['p_socials'])) {
 			$data['p_socials'] = json_decode($data['p_socials'], true);
 			foreach ($this->redes as $name => $valor) $data['p_socials'][$name];
@@ -216,9 +208,6 @@ class tsCuenta {
 		// SEGUIDORES
 		$query = db_exec([__FILE__, __LINE__], 'query', "SELECT f.follow_id, u.user_id, u.user_name FROM u_follows AS f LEFT JOIN u_miembros AS u ON $sql = $userId AND f.f_type = 1 AND u.user_activo = 1 AND u.user_baneado = 0 ORDER BY f.f_date DESC LIMIT $max");
 		$result = result_array($query);
-		foreach($result as $uid => $data) {
-			$result[$uid]['user_avatar'] = $this->Avatar->get((int)$data['user_id'], $data['user_name']);
-		}
 		$data['segs']['data'] = $result;
 		$data['segs']['total'] = count($result ?? 0);
 	}

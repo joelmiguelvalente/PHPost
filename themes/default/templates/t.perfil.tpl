@@ -1,5 +1,5 @@
-{include file='sections/main_header.tpl'}
-	{include file='modules/m.perfil_headinfo.tpl'}
+{include "main_header.tpl"}
+	{include "m.perfil_headinfo.tpl"}
 	<div class="perfil-main clearfix {$tsGeneral.stats.user_rango.1}">
 		<div class="perfil-content general">
 			<div id="info" pid="{$tsInfo.uid}"></div>
@@ -25,4 +25,4 @@
 			{include "m.perfil_sidebar.tpl"}
 		</div>
 	</div>
-{include file='sections/main_footer.tpl'}
+{include "main_footer.tpl"}

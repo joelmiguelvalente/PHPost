@@ -63,15 +63,15 @@ const route = {
             </div>
             <div id="banner">
                {if $tsPage == 'posts' && $tsPost.post_id}
-                  {include file='m.global_search.tpl'}
+                  {include "m.global_search.tpl"}
                {else}
-                  {include file='m.global_ads_468.tpl'}
+                  {include "m.global_ads_468.tpl"}
                {/if}
             </div>
          </div>
          <div id="contenido_principal">
-            {include file='head_menu.tpl'}
-            {include file='head_submenu.tpl'}
-            {include file='head_noticias.tpl'}
+            {include "head_menu.tpl"}
+            {include "head_submenu.tpl"}
+            {include "head_noticias.tpl"}
             <section id="cuerpocontainer">
             <!--Cuperpo-->
