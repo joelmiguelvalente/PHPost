@@ -53,23 +53,23 @@ final class ConfigDatabase extends AbstractConfig
 			/**
 			 * Hostname o IP del servidor de base de datos
 			 */
-			'hostname' => 'localhost',
+			'hostname' => 'dbhost',
 
 			/**
 			 * Usuario con permisos sobre la base de datos
 			 */
-			'username' => 'root',
+			'username' => 'dbuser',
 
 			/**
 			 * Contraseña del usuario de base de datos
 			 * IMPORTANTE: no versionar credenciales reales
 			 */
-			'password' => '',
+			'password' => 'dbpass',
 
 			/**
 			 * Nombre de la base de datos a utilizar
 			 */
-			'database' => 'phpost',
+			'database' => 'dbname',
 
 			/**
 			 * Charset por defecto de la conexión
