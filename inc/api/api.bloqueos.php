@@ -1,52 +1,46 @@
-<?php if ( ! defined('TS_HEADER')) exit('No se permite el acceso directo al script');
+<?php
+
 /**
- * Controlador AJAX
- *
- * @name    ajax.bloqueos.php
- * @author  PHPost Team
-*/
-/**********************************\
+ * @name ajax.bloqueos.php
+ * @author PHPost Team
+ * @copyright 2026
+ */
 
-*	(VARIABLES POR DEFAULT)		*
+declare(strict_types=1);
 
-\*********************************/
+if (!defined('TS_HEADER')) {
+	exit('No se permite el acceso directo al script');
+}
 
-	// NIVELES DE ACCESO Y PLANTILLAS DE CADA ACCIÓN
-	$files = array(
-		'bloqueos-cambiar' => array('n' => 2, 'p' => ''),
-	);
+const ACTIONS = [
+   'bloqueos-cambiar' => ['nivel' => 2, 'template' => '', 'ajax' => false]
+];
 
-/**********************************\
+if (!array_key_exists($action, ACTIONS)) {
+   http_response_code(403);
+   exit('Acción inválida');
+}
 
-* (VARIABLES LOCALES ESTE ARCHIVO)	*
+$config = ACTIONS[$action];
 
-\*********************************/
+$tsLevel = $config['nivel'];
+$tsAjax  = (int) $config['ajax'];
+$tsPage  = sprintf('p.bloqueos.%s', $config['template']);
 
-	// REDEFINIR VARIABLES
-	$tsPage = 'p.bloqueos.'.$files[$action]['p'];
-	$tsLevel = $files[$action]['n'];
-	$tsAjax = empty($files[$action]['p']) ? 1 : 0;
+// DEPENDE EL NIVEL
+$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
+if(!$tsLevelMsg) { 
+	echo '0: '.$tsLevelMsg; 
+	die();
+}
 
-/**********************************\
+// CLASE
+require_once dirname(__DIR__, 1) . "/class/c.cuenta.php";
+$tsCuenta = new tsCuenta($tsCore, $tsUser);
 
-*	(INSTRUCCIONES DE CODIGO)		*
-
-\*********************************/
-	
-	// DEPENDE EL NIVEL
-	$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
-	if($tsLevelMsg != 1) { echo '0: '.$tsLevelMsg; die();}
-    // CLASE
-	include("../class/c.cuenta.php");
-	$tsCuenta = new tsCuenta();
-    //
-    //echo $tsUser->getUserName($_GET['user']);
-	// CODIGO
-	switch($action){
-		case 'bloqueos-cambiar':
-			//<---
-            echo $tsCuenta->bloqueosCambiar();
-			//--->
-		break;
-	}
-?>
+// CODIGO
+switch($action) {
+	case 'bloqueos-cambiar':
+		echo $tsCuenta->cambiarBloqueo();
+	break;
+}

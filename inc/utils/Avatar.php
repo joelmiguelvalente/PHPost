@@ -1,10 +1,9 @@
 <?php
 
 /**
- * @package    PHPost
- * @author     Miguel92
- * @copyright  2026
- * @version    2.1.0
+ * @name Avatar.php
+ * @author PHPost Team
+ * @copyright 2026
  */
 
 declare(strict_types=1);
@@ -13,30 +12,16 @@ if (!defined('TS_HEADER')) {
    exit('No se permite el acceso directo al script');
 }
 
+require_once __DIR__ . '/AvatarConfig.php';
+
 final class Avatar {
 
-   /**
-    * Variantes semánticas y sus tamaños reales
-    */
-   private const VARIANTS = [
-      'avatar' => 200,
-      'thumb'  => 60,
-   ];
-
-   /**
-    * Formatos generados
-    */
-   private const FORMATS = ['webp', 'avif', 'png'];
-
-   private tsCore $core;
-   private string $storageBase;
+   private $core;
    private string $publicBase;
 
-   public function __construct(bool $install = false, string $baseUrl = '') {
+   public function __construct(string $baseUrl = '', bool $install = false) {
       global $tsCore;
-
-      if(!$install) $this->core        = $tsCore;
-      $this->storageBase = TS_STORAGE . 'avatar/';
+      $this->core = $install ? '' : $tsCore;
       $this->publicBase  = $install ? $baseUrl : $this->core->route('storage:avatar') . '/';
    }
 
@@ -44,7 +29,7 @@ final class Avatar {
     * Garantiza que todas las variantes del avatar existan.
     * Se usa en el registro o bootstrap del usuario.
     */
-   public function ensure(int $uid, string $username, string|int $color): void {
+   public function ensure(int $uid, string $username, int $color = 000): void {
       if ($this->hasAllVariants($uid)) {
          return;
       }
@@ -67,9 +52,9 @@ final class Avatar {
     * Verifica si existen todas las variantes y formatos.
     */
    private function hasAllVariants(int $uid): bool {
-      foreach (self::VARIANTS as $variant => $size) {
-         foreach (self::FORMATS as $format) {
-            $file = $this->storageBase . "user_{$uid}/" . $this->variantFilename($variant, $format);
+      foreach (AvatarConfig::VARIANTS as $variant => $size) {
+         foreach (AvatarConfig::FORMATS as $format) {
+            $file = AvatarConfig::baseDir($uid, $this->variantFilename($variant, $format));
             if (!is_file($file)) {
                return false;
             }
@@ -81,8 +66,8 @@ final class Avatar {
    /**
     * Crea todas las variantes del avatar.
     */
-   private function create(int $uid, string $username, string|int $color): void {
-      $userDir = $this->storageBase . 'user_' . $uid . '/';
+   private function create(int $uid, string $username, int $color = 000): void {
+      $userDir = AvatarConfig::baseDir($uid);
       if (!is_dir($userDir) && !mkdir($userDir, 0755, true)) {
          return;
       }
@@ -90,9 +75,9 @@ final class Avatar {
       if (!$baseImage) {
          return;
       }
-      foreach (self::VARIANTS as $variant => $size) {
+      foreach (AvatarConfig::VARIANTS as $variant => $size) {
          $resized = $this->resize($baseImage, $size, $size);
-         foreach (self::FORMATS as $format) {
+         foreach (AvatarConfig::FORMATS as $format) {
             $filename = $this->variantFilename($variant, $format);
             $this->save($resized, $userDir . $filename, $format);
          }
@@ -101,7 +86,7 @@ final class Avatar {
       imagedestroy($baseImage);
    }
 
-   private function normalizeHexColor(string|int $color): string {
+   private function normalizeHexColor(int $color): string {
       $color = ltrim((string)$color, '#');
       if (preg_match('/^[0-9a-fA-F]{6}$/', $color)) {
          return strtolower($color);
@@ -175,7 +160,7 @@ final class Avatar {
     * Construye el nombre de archivo según la variante.
     */
    private function variantFilename(string $variant, string $format): string {
-      if (!array_key_exists($variant, self::VARIANTS)) {
+      if (!array_key_exists($variant, AvatarConfig::VARIANTS)) {
          throw new InvalidArgumentException(
             "Variante de avatar inválida: {$variant}"
          );
@@ -188,11 +173,10 @@ final class Avatar {
     */
    private function buildPath(int $uid, string $variant, string $format): array {
       $filename = $this->variantFilename($variant, $format);
-      $relative = "user_{$uid}/{$filename}";
 
       return [
-         'fs'  => $this->storageBase . $relative,
-         'url' => $this->publicBase . $relative,
+         'fs'  => AvatarConfig::baseDir($uid, $filename),
+         'url' => $this->publicBase . "user_{$uid}/{$filename}",
       ];
    }
 }

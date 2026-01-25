@@ -81,7 +81,7 @@ const dialog = {
       });
    },
    loadingView() {
-      const html = `<div class="dialog-loading"><span class="spinner"></span><p>Cargando...</p></div>`;
+      const html = `<div class="dialog-loading"><span class="loading-spinner"></span><p>Cargando...</p></div>`;
       $('.dialog').append(html);
    },
    init(args = {}) {
@@ -114,14 +114,34 @@ const dialog = {
          }
       });
    },
-   loading(title = 'Procesando') {
+   loading(body = 'Procesando', title = 'Espere...') {
       this.close();
       this.init({
          title,
+         body,
          loading: true,
          buttonClose: false,
          maskClose: false
       });
+   },
+   reintentar(reintentar) {
+      setTimeout(function(){
+         dialog.close();
+         dialog.init({
+            title: 'Error',
+            body: 'Error al intentar procesar lo solicitado',
+            buttons: {
+               confirm: {
+                  text: 'Reintentar',
+                  action: () => reintentar
+               },
+               cancel: {
+                  text: 'Cancelar',
+                  action: 'close'
+               }
+            }
+         });
+      }, 200);
    }
 };
 // complemento de dialog
@@ -195,118 +215,6 @@ $(() => {
 
 
 });
-
-/* MyDialog */
-var mydialog = {
-   is_show: false,
-   class_aux: '',
-   mask_close: true,
-   close_button: false,
-   show: class_aux => {
-      if(this.is_show) return;
-      else this.is_show = true;
-      // Plantilla
-      $('#mydialog').html('<div id="dialog"><div id="title"></div><div id="cuerpo"><div id="procesando"><div id="mensaje"></div></div><div id="modalBody"></div><div id="buttons"></div></div></div>');
-      // Clase auxiliar
-      if(class_aux==true) $('#mydialog').addClass(this.class_aux);
-      else if(this.class_aux != '') {
-         $('#mydialog').removeClass(this.class_aux);
-         this.class_aux = '';
-      }
-      // Mascara
-      if(this.mask_close) $('#mask').on('click', () =>  mydialog.close());
-      else $('#mask').off('click');
-      // Estilos adicionales para la mascara
-      $('#mask').css({
-         'width': $(document).width(),
-         'height': $(document).height(),
-         'display': 'block'
-      });
-      // Botón cerrar
-      if(this.close_button) {
-         $('#mydialog #dialog').append('<img class="close_dialog" src="'+ global_data.img +'images/close.gif" onclick="mydialog.close()" />');
-      } else $('#mydialog #dialog .close_dialog').remove();
-      // Dependiendo de la versión del navegador
-      //status = (jQuery.browser.msie && jQuery.browser.version < 7) ? 'absolute' : 'fixed';
-      $('#mydialog #dialog').css('position', 'absolute');
-      $('#mydialog #dialog').fadeIn('fast');
-   },
-   close: function(){
-      //Vuelve todos los parametros por default
-      this.class_aux = '';
-      this.mask_close = true;
-      this.close_button = false;
-      this.is_show = false;
-      $('#mask').css('display', 'none');
-      $('#mydialog #dialog').fadeOut('fast', () => $(this).remove());
-      this.procesando_fin();
-   },
-   center: function(){
-      if($('#mydialog #dialog').height() > $(window).height()-60) {
-         $('#mydialog #dialog').css({'position':'absolute', 'top':20});
-      } else {
-         $('#mydialog #dialog').css('top', $(window).height()/2-$('#mydialog #dialog').height()/2);
-      }
-      $('#mydialog #dialog').css('left', $(window).width()/2-$('#mydialog #dialog').width()/2);
-   },
-   title: title => $('#mydialog #title').html(title),
-   body: function(body, width, height){
-      $('#mydialog #modalBody').html(body).css({minWidth: '400px'});
-   },
-   buttons: function(display_all, btn1_display, btn1_val, btn1_action, btn1_enabled, btn1_focus, btn2_display, btn2_val, btn2_action, btn2_enabled, btn2_focus){
-      if(!display_all){
-         $('#mydialog #buttons').css('display', 'none').html('');
-         return;
-      }
-      if(btn1_action=='close') btn1_action='mydialog.close()';
-      if(btn2_action=='close' || !btn2_val) btn2_action='mydialog.close()';
-      if(!btn2_val){
-         btn2_val = 'Cancelar';
-         btn2_enabled = true;
-      }
-      var html = '';
-      if(btn1_display)
-         html += '<input type="button" class="mBtn btnOk'+(btn1_enabled?'':' disabled')+'" style="display:'+(btn1_display?'inline-block':'none')+'"'+(btn1_display?' value="'+btn1_val+'"':'')+(btn1_display?' onclick="'+btn1_action+'"':'')+(btn1_enabled?'':' disabled')+' />';
-      if(btn2_display)
-         html += ' <input type="button" class="mBtn btnCancel'+(btn1_enabled?'':' disabled')+'" style="display:'+(btn2_display?'inline-block':'none')+'"'+(btn2_display?' value="'+btn2_val+'"':'')+(btn2_display?' onclick="'+btn2_action+'"':'')+(btn2_enabled?'':' disabled')+' />';
-      $('#mydialog #buttons').html(html).css('display', 'inline-block');
-      if(btn1_focus) $('#mydialog #buttons .mBtn.btnOk').focus();
-      else if(btn2_focus) $('#mydialog #buttons .mBtn.btnCancel').focus();
-   },
-   alert: function(title, body, reload){
-      this.show();
-      this.title(title);
-      this.body(body);
-      this.buttons(true, true, 'Aceptar', 'mydialog.close();' + (reload ? 'location.reload();' : 'close'), true, true, false);
-      this.center();
-   },
-   error_500: function(fun_reintentar){
-      setTimeout(function(){
-         mydialog.procesando_fin();
-         mydialog.show();
-         mydialog.title('Error');
-         mydialog.body('Error al intentar procesar lo solicitado');
-         mydialog.buttons(true, true, 'Reintentar', 'mydialog.close();'+fun_reintentar, true, true, true, 'Cancelar', 'close', true, false);
-         mydialog.center();
-      }, 200);
-   },
-   procesando_inicio: function(value, title){
-      if(!this.is_show){
-         this.show();
-         this.title(title);
-         this.body('');
-         this.buttons(false, false);
-         this.center();
-      }
-      $('#mydialog #procesando #mensaje').html('<img src="'+global_data.img+'images/loading.gif" />');
-      $('#mydialog #procesando').fadeIn('fast');
-   },
-   procesando_fin: () => $('#mydialog #procesando').fadeOut('fast')
-};
-document.onkeydown = function(e){
-   key = (e==null)?event.keyCode:e.which;
-   if(key == 27) mydialog.close();
-};
 
 function initLazyLoading() {
    const observer = new IntersectionObserver((entries, self) => {

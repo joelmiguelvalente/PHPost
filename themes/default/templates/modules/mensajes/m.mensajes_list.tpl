@@ -18,8 +18,8 @@
 							</a>
 						</td>
 						<td class="plm">
-							<a href="#" class="qtip read" title="Marcar como le&iacute;do" onclick="mensaje.marcar('{$mp.mp_id}:{$mp.mp_type}', 0, 1, this); return false;" {if $mp.mp_read_to == 1}style="display:none"{/if}><i class="read"></i></a>
-							<a href="#" class="qtip unread" title="Marcar como no le&iacute;do" onclick="mensaje.marcar('{$mp.mp_id}:{$mp.mp_type}', 1, 1, this); return false;" {if $mp.mp_read_to == 0}style="display:none"{/if}><i class="unread"></i></a>
+							<a href="#" class="qtip read" title="Marcar como le&iacute;do" onclick="mensaje.marcar('{$mp.mp_id}','{$mp.mp_type}', 0, 1, this); return false;" {if $mp.mp_read_to == 1}style="display:none"{/if}><i class="read"></i></a>
+							<a href="#" class="qtip unread" title="Marcar como no le&iacute;do" onclick="mensaje.marcar('{$mp.mp_id}','{$mp.mp_type}', 1, 1, this); return false;" {if $mp.mp_read_to == 0}style="display:none"{/if}><i class="unread"></i></a>
 						</td>
 						<td class="pls">
 							<a href="#" class="qtip" title="Eliminar" onclick="mensaje.eliminar('{$mp.mp_id}:{$mp.mp_type}',1); return false;"><i class="delete"></i></a>

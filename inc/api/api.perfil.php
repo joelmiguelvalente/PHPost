@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name ajax.login.php
+ * @name ajax.perfil.php
  * @author PHPost Team
  * @copyright 2026
  */
@@ -41,7 +41,7 @@ if(!$tsLevelMsg) {
 }
 
 // CLASS
-require_once dirname(__DIR__, 2) . "/class/c.cuenta.php";
+require_once dirname(__DIR__, 1) . "/class/c.cuenta.php";
 $tsCuenta = new tsCuenta($tsCore, $tsUser);
 
 // USER ID
@@ -55,7 +55,7 @@ $smarty->assign("tsUsername", $username);
 // CODIGO
 switch($action){
 	case 'perfil-wall':
-		require_once dirname(__DIR__, 2) . "/class/c.muro.php";
+		require_once dirname(__DIR__, 1) . "/class/c.muro.php";
 		$tsMuro = new tsMuro($tsCore, $tsUser);
 		// GENERAL
 		$tsGeneral = $tsCuenta->loadGeneral($user_id);
@@ -93,8 +93,8 @@ switch($action){
 	break;
 	case 'perfil-info':
 		//<---
-		require_once dirname(__DIR__, 2) . '/extras/datos.php';
-		$tsPaises = require_once dirname(__DIR__, 2) . "/extras/Paises.php";
+		require_once dirname(__DIR__, 1) . '/extras/datos.php';
+		$tsPaises = require_once dirname(__DIR__, 1) . "/extras/Paises.php";
 		// PERFIL INFO
 		$tsPerfil = $tsCuenta->loadPerfil((int)$user_id);
 		$smarty->assign("tsPerfil", $tsPerfil);

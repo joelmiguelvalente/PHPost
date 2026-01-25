@@ -1,91 +1,72 @@
-<?php if ( ! defined('TS_HEADER')) exit('No se permite el acceso directo al script');
+<?php
+
 /**
- * Controlador AJAX
- *
- * @name    ajax.afiliado.php
- * @author  PHPost Team
-*/
-/**********************************\
+ * @name ajax.afiliado.php
+ * @author PHPost Team
+ * @copyright 2026
+ */
 
-*	(VARIABLES POR DEFAULT)		*
+declare(strict_types=1);
 
-\*********************************/
+if (!defined('TS_HEADER')) {
+	exit('No se permite el acceso directo al script');
+}
 
-	// NIVELES DE ACCESO Y PLANTILLAS DE CADA ACCIÓN
-	$files = array(
-		'afiliado-nuevo' => array('n' => 0, 'p' => ''),
-		'afiliado-borrar' => array('n' => 0, 'p' => ''),
-		'afiliado-setaction' => array('n' => 0, 'p' => ''),
-        'afiliado-url' => array('n' => 0, 'p' => ''),
-        'afiliado-detalles' => array('n' => 0, 'p' => 'detalles'),
-		'afiliado-editar' => array('n' => 0, 'p' => ''),
-	);
+const ACTIONS = [
+   'afiliado-nuevo' => ['nivel' => 0, 'template' => '', 'ajax' => false],
+   'afiliado-borrar' => ['nivel' => 4, 'template' => '', 'ajax' => false],
+   'afiliado-setaction' => ['nivel' => 0, 'template' => '', 'ajax' => false],
+   'afiliado-url' => ['nivel' => 0, 'template' => '', 'ajax' => false],
+   'afiliado-detalles' => ['nivel' => 0, 'template' => 'detalles', 'ajax' => true],
+   'afiliado-editar' => ['nivel' => 4, 'template' => '', 'ajax' => false],
+   'afiliado-form' => ['nivel' => 0, 'template' => 'form', 'ajax' => true]
+];
 
-/**********************************\
+if (!array_key_exists($action, ACTIONS)) {
+   http_response_code(403);
+   exit('Acción inválida');
+}
 
-* (VARIABLES LOCALES ESTE ARCHIVO)	*
+$config = ACTIONS[$action];
 
-\*********************************/
+$tsLevel = $config['nivel'];
+$tsAjax  = (int) $config['ajax'];
+$tsPage  = sprintf('p.afiliado.%s', $config['template']);
 
-	// REDEFINIR VARIABLES
-	$tsPage = 'p.afiliado.'.$files[$action]['p'];
-	$tsLevel = $files[$action]['n'];
-	$tsAjax = empty($files[$action]['p']) ? 1 : 0;
+// DEPENDE EL NIVEL
+$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
+if(!$tsLevelMsg) { 
+	echo '0: '.$tsLevelMsg; 
+	die();
+}
 
-/**********************************\
+// CLASE
+require_once dirname(__DIR__, 1) . "/class/c.afiliado.php";
+$tsAfiliado = new tsAfiliado($tsCore, $tsUser);
 
-*	(INSTRUCCIONES DE CODIGO)		*
-
-\*********************************/
-	
-	// DEPENDE EL NIVEL
-	$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
-	if($tsLevelMsg != 1) { echo '0: '.$tsLevelMsg['mensaje']; die();}
-    // CLASS
-    include("../class/c.afiliado.php");
-    $tsAfiliado = new tsAfiliado();
-    //
-	// CODIGO
-	switch($action){
-		case 'afiliado-nuevo':
-			//<---
-            echo $tsAfiliado->newAfiliado();
-			//--->
-		break;
-		case 'afiliado-borrar':
-			//<---
-			$aid = $_POST['afid'];
-            echo $tsAfiliado->DeleteAfiliado($aid);
-			//--->
-		break;
-		case 'afiliado-editar':
-			//<---
-			$a_id = $_POST['a_id'];
-			$a_name = $_POST['a_name'];
-			$a_url = $_POST['a_url'];
-			$a_banner = $_POST['a_banner'];
-			$a_descripcion = $_POST['a_descripcion'];
-			
-            echo $tsAfiliado->EditarAfiliado($a_id, $a_name, $a_url, $a_banner, $a_descripcion);
-			//--->
-		break;
-		case 'afiliado-setactive':
-			//<---
-            echo $tsAfiliado->SetActionAfiliado();
-			//--->
-		break;
-		case 'afiliado-url':
-			//<---
-            $tsAfiliado->urlOut();
-			//--->
-		break;
-		case 'afiliado-detalles':
-			//<---
-            $smarty->assign("tsAf",$tsAfiliado->getAfiliado());
-			//--->
-		break;
-        default:
-            die('0: Este archivo no existe.');
-        break;
-	}
-?>
+switch($action) {
+	case 'afiliado-form':
+		// Para que no corte la ejecución
+	break;
+	case 'afiliado-nuevo':
+		echo $tsAfiliado->newAfiliado();
+	break;
+	case 'afiliado-borrar':
+		echo $tsAfiliado->DeleteAfiliado();
+	break;
+	case 'afiliado-editar':
+		echo $tsAfiliado->EditarAfiliado();
+	break;
+	case 'afiliado-setactive':
+		echo $tsAfiliado->SetActionAfiliado();
+	break;
+	case 'afiliado-url':
+		$tsAfiliado->urlOut();
+	break;
+	case 'afiliado-detalles':
+		$smarty->assign("tsAf", $tsAfiliado->getAfiliado());
+	break;
+	default:
+		die('0: Este archivo no existe.');
+	break;
+}

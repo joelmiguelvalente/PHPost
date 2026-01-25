@@ -12,7 +12,7 @@ $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `f_comentarios` (
   `c_date` INT NOT NULL DEFAULT 0,
   `c_update` INT NOT NULL DEFAULT 0,
   `c_body` TEXT NULL,
-  `c_ip` VARBINARY(45) DEFAULT NULL,
+  `c_ip` VARBINARY(16) DEFAULT NULL,
   INDEX (c_foto_id),
   INDEX (c_user)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
@@ -39,7 +39,7 @@ $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `f_fotos` (
   `f_status` TINYINT NOT NULL DEFAULT 0,
   `f_last` INT NOT NULL DEFAULT 0,
   `f_hits` BIGINT NOT NULL DEFAULT 0,
-  `f_ip` VARBINARY(45) DEFAULT NULL,
+  `f_ip` VARBINARY(16) DEFAULT NULL,
   INDEX (f_user),
   INDEX (f_album),
   INDEX (f_date),
@@ -86,7 +86,7 @@ $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `p_borradores` (
   `b_status` TINYINT NOT NULL DEFAULT 0,
   `b_causa` varchar(128) NOT NULL DEFAULT '',
   `b_fuentes` TEXT NULL,
-  `b_ip` VARBINARY(45) DEFAULT NULL,
+  `b_ip` VARBINARY(16) DEFAULT NULL,
   FULLTEXT INDEX ft_index (b_tags),
   FULLTEXT INDEX ft_title (b_title),
   INDEX idx_category (b_category),
@@ -148,7 +148,7 @@ $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `p_comentarios` (
   `c_status` INT NOT NULL DEFAULT 0,
   `c_answer` INT NOT NULL DEFAULT 0,
   `c_answer_cid` INT NOT NULL DEFAULT 0,
-  `c_ip` VARBINARY(45) DEFAULT NULL,
+  `c_ip` VARBINARY(16) DEFAULT NULL,
   INDEX idx_post (c_post_id),
   INDEX idx_user (c_user)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
@@ -188,7 +188,7 @@ $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `p_posts` (
   `post_update` INT NOT NULL DEFAULT 0,
   `post_block_comments` TINYINT NOT NULL DEFAULT 0,
   `post_visitantes` TINYINT NOT NULL DEFAULT 0,
-  `post_ip` VARBINARY(45) DEFAULT NULL,
+  `post_ip` VARBINARY(16) DEFAULT NULL,
   FULLTEXT INDEX ft_index (post_tags),
   FULLTEXT INDEX ft_post_title (post_title),
   INDEX idx_category (post_category),
@@ -280,7 +280,7 @@ $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `u_miembros` (
   `user_cache` INT NOT NULL DEFAULT 0,
   `user_comentarios` BIGINT DEFAULT 0,
   `user_email` VARCHAR(255) UNIQUE NOT NULL,
-  `user_last_ip` VARBINARY(45) DEFAULT NULL,
+  `user_last_ip` VARBINARY(16) DEFAULT NULL,
   `user_lastactive` INT NOT NULL DEFAULT 0,
   `user_lastlogin` INT NOT NULL DEFAULT 0,
   `user_lastpost` INT NOT NULL DEFAULT 0,
@@ -323,7 +323,7 @@ $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `u_nicks` (
   `user_email` VARCHAR(255) UNIQUE NOT NULL,
   `estado` TINYINT NOT NULL DEFAULT 0,
   `hash` VARCHAR(200) NOT NULL DEFAULT '',
-  `ip` VARBINARY(45) DEFAULT NULL,
+  `ip` VARBINARY(16) DEFAULT NULL,
   `time` INT NOT NULL DEFAULT 0,
   INDEX idx_user_id (user_id),
   INDEX idx_estado (estado)
@@ -351,7 +351,7 @@ $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `u_muro` (
   `p_body` TEXT DEFAULT NULL,
   `p_comments` INT DEFAULT 0,
   `p_date` INT NOT NULL DEFAULT 0,
-  `p_ip` VARBINARY(45) DEFAULT NULL,
+  `p_ip` VARBINARY(16) DEFAULT NULL,
   `p_likes` INT DEFAULT 0,
   `p_nick` VARCHAR(24) NOT NULL DEFAULT '',
   `p_type` TINYINT DEFAULT 0,
@@ -385,7 +385,7 @@ $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `u_muro_comentarios` (
   `c_date` INT NOT NULL DEFAULT 0,
   `c_body` TEXT,
   `c_likes` INT DEFAULT 0,
-  `c_ip` VARBINARY(45) DEFAULT NULL,
+  `c_ip` VARBINARY(16) DEFAULT NULL,
   INDEX idx_pub_id (pub_id),
   INDEX idx_c_user (c_user)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
@@ -453,7 +453,7 @@ $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `u_respuestas` (
   `mp_id` INT NOT NULL,
   `mr_from` INT NOT NULL,
   `mr_body` TEXT DEFAULT NULL,
-  `mr_ip` VARBINARY(45) DEFAULT NULL,
+  `mr_ip` VARBINARY(16) DEFAULT NULL,
   `mr_date` INT NOT NULL DEFAULT 0,
   INDEX idx_mp_id (mp_id),
   INDEX idx_mr_from (mr_from)
@@ -462,7 +462,7 @@ $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `u_respuestas` (
 $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `u_sessions` (
   `session_id` CHAR(32) PRIMARY KEY DEFAULT '',
   `session_user_id` INT UNSIGNED NOT NULL DEFAULT 0,
-  `session_ip` VARBINARY(45) DEFAULT NULL,
+  `session_ip` VARBINARY(16) DEFAULT NULL,
   `session_token` CHAR(100) NOT NULL DEFAULT '',
   `session_time` INT NOT NULL DEFAULT 0,
   `session_autologin` TINYINT NOT NULL DEFAULT 0,
@@ -477,7 +477,7 @@ $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `u_suspension` (
   `susp_date` INT NOT NULL DEFAULT 0,
   `susp_termina` INT NOT NULL DEFAULT 0,
   `susp_mod` INT DEFAULT 0,
-  `susp_ip` VARBINARY(45) DEFAULT NULL,
+  `susp_ip` VARBINARY(16) DEFAULT NULL,
   INDEX idx_user (user_id),
   INDEX idx_mod (susp_mod)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
@@ -492,7 +492,7 @@ $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `w_afiliados` (
   `a_hits_in` INT UNSIGNED DEFAULT 0,
   `a_hits_out` INT UNSIGNED DEFAULT 0,
   `a_date` INT NOT NULL DEFAULT 0,
-  `a_active` TINYINT DEFAULT 0,
+  `a_active` TINYINT DEFAULT 1,
   INDEX idx_active (a_active),
   INDEX idx_code (a_sid)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
@@ -597,7 +597,7 @@ $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `w_contacts` (
   `time` INT NOT NULL DEFAULT 0,
   `type` TINYINT NOT NULL DEFAULT 0,
   `hash` CHAR(128) NOT NULL DEFAULT '',
-  `ip` VARBINARY(45) DEFAULT NULL
+  `ip` VARBINARY(16) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
 
 $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `w_activate` (
@@ -608,7 +608,7 @@ $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `w_activate` (
   `expire_at` INT NOT NULL DEFAULT 0,
   `type` ENUM('activation','reset') DEFAULT 'activation',
   `used` TINYINT NOT NULL DEFAULT 0,
-  `ip` VARBINARY(45) DEFAULT NULL
+  `ip` VARBINARY(16) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
 
 $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `w_medallas` (
@@ -634,7 +634,7 @@ $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `w_medallas_assign` (
   `medal_id` INT NOT NULL,
   `medal_for` INT NOT NULL,
   `medal_date` INT NOT NULL DEFAULT 0,
-  `medal_ip` VARBINARY(45) DEFAULT NULL,
+  `medal_ip` VARBINARY(16) DEFAULT NULL,
   UNIQUE KEY unique_award (medal_id, medal_for)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
 
@@ -646,7 +646,7 @@ $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `w_historial` (
   `mod` INT DEFAULT NULL,
   `reason` TEXT NULL,
   `date` INT NOT NULL DEFAULT 0,
-  `mod_ip` VARBINARY(45) DEFAULT NULL
+  `mod_ip` VARBINARY(16) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
 
 $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `w_noticias` (
@@ -716,7 +716,7 @@ $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `w_visitas` (
   `for` INT NOT NULL,
   `type` TINYINT NOT NULL DEFAULT 0,
   `date` INT NOT NULL DEFAULT 0,
-  `ip` VARBINARY(45) DEFAULT NULL,
+  `ip` VARBINARY(16) DEFAULT NULL,
   INDEX (`for`, `type`, `user`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
 

@@ -1,25 +1,30 @@
 <?php
 
+/**
+ * @name c.upload.php
+ * @author PHPost Team
+ * @copyright 2026
+ */
+
 declare(strict_types=1);
 
 if (!defined('TS_HEADER')) {
 	exit('No se permite el acceso directo al script');
 }
 
-final class tsUpload
-{
-	private const MAX_SIZE = 2_097_152; // 2MB
-	private const ALLOWED_TYPES = [IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_GIF];
+require_once dirname(__DIR__, 1) . '/utils/AvatarConfig.php';
 
-	private const MAX_DIMENSION = 1200;
+final class tsUpload {
+
+	private const MAX_UPLOAD_SIZE = 6 * 1024 * 1024; // 6MB
+	private const MIN_UPLOAD_SIZE = 2 * 1024 * 1024; // 2MB
+	private const ALLOWED_TYPES = [IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_GIF];
+	private const MAX_DIMENSION = 3000;
 
 	/* ==========================================================
 	 *  PUBLIC API
 	 * ======================================================== */
 
-	/**
-	 * Sube una imagen temporal (archivo o URL)
-	 */
 	public function uploadTempImage(?array $file, ?string $url = null): array
 	{
 		if ($file) {
@@ -34,7 +39,8 @@ final class tsUpload
 	}
 
 	/**
-	 * Crea el avatar final WebP 160x160
+	 * Mantiene el nombre original, pero ahora genera
+	 * todas las variantes finales
 	 */
 	public function cropAvatarWebp(int $userId): array
 	{
@@ -51,25 +57,15 @@ final class tsUpload
 			return ['error' => 'Formato de imagen no soportado'];
 		}
 
-		$avatar = $this->createAvatarCanvas(160);
+		// Canvas base 200x200 (máxima)
+		$base = $this->createAvatarCanvas(200);
 
-		imagecopyresampled(
-			$avatar,
-			$src,
-			0,
-			0,
-			$crop['x'],
-			$crop['y'],
-			160,
-			160,
-			$crop['w'],
-			$crop['h']
-		);
+		imagecopyresampled($base, $src, 0, 0, $crop['x'], $crop['y'], 200, 200, $crop['w'], $crop['h']);
 
-		$this->storeAvatar($avatar, $userId);
+		$this->storeAvatarVariants($base, $userId);
 
 		imagedestroy($src);
-		imagedestroy($avatar);
+		imagedestroy($base);
 		@unlink($source);
 
 		return ['error' => 'success'];
@@ -85,8 +81,10 @@ final class tsUpload
 			return ['error' => 'Archivo inválido'];
 		}
 
-		if ($file['size'] > self::MAX_SIZE) {
-			return ['error' => 'El archivo supera el tamaño permitido'];
+
+		if ($file['size'] > self::MAX_UPLOAD_SIZE || $file['size'] < self::MIN_UPLOAD_SIZE) {
+			$txt = ($file['size'] > self::MAX_UPLOAD_SIZE) ? 'supera el' : 'es inferior del';
+			return ['error' => "El archivo $txt peso(mb) permitido"];
 		}
 
 		$type = exif_imagetype($file['tmp_name']);
@@ -144,18 +142,13 @@ final class tsUpload
 		];
 	}
 
-	private function resizeImage($src, int $max): object
+	private function resizeImage($src, int $size)
 	{
-		$w = imagesx($src);
-		$h = imagesy($src);
+		$dst = imagecreatetruecolor($size, $size);
+		imagealphablending($dst, false);
+		imagesavealpha($dst, true);
 
-		$scale = min($max / $w, $max / $h);
-		$nw = (int)($w * $scale);
-		$nh = (int)($h * $scale);
-
-		$dst = imagecreatetruecolor($nw, $nh);
-		imagecopyresampled($dst, $src, 0, 0, 0, 0, $nw, $nh, $w, $h);
-		imagedestroy($src);
+		imagecopyresampled($dst, $src, 0, 0, 0, 0, $size, $size, imagesx($src), imagesy($src));
 
 		return $dst;
 	}
@@ -182,14 +175,45 @@ final class tsUpload
 		return $img;
 	}
 
-	private function storeAvatar($avatar, int $userId): void
+	/* ==========================================================
+	 *  AVATAR STORAGE (compatible con Avatar.php)
+	 * ======================================================== */
+
+	private function storeAvatarVariants($base, int $userId): void
 	{
-		$dir = TS_STORAGE . 'avatar/';
+		$dir = AvatarConfig::baseDir($userId);
+
 		if (!is_dir($dir)) {
 			mkdir($dir, 0755, true);
 		}
 
-		imagewebp($avatar, "{$dir}avatar_{$userId}.webp", 90);
+		foreach (AvatarConfig::SIZES as $size) {
+
+			$img = ($size === 200)
+				? $base
+				: $this->resizeImage($base, $size);
+
+			$prefix = ($size === 200) ? 'avatar' : 'thumb_avatar';
+
+			foreach (AvatarConfig::FORMATS as $format) {
+
+				if (!AvatarConfig::supportsFormat($format)) {
+					continue;
+				}
+
+				$path = "{$dir}{$prefix}.{$format}";
+
+				match ($format) {
+					'webp' => imagewebp($img, $path, AvatarConfig::QUALITY['webp']),
+					'avif' => imageavif($img, $path, AvatarConfig::QUALITY['avif']),
+					'png'  => imagepng($img, $path, AvatarConfig::QUALITY['png']),
+				};
+			}
+
+			if ($img !== $base) {
+				imagedestroy($img);
+			}
+		}
 	}
 
 	private function sanitizeCropData(array $data): array

@@ -1,3 +1,17 @@
 /exec
-/inc/storage/*
+
+# Storage completo
+inc/storage/
+
+# Themes: ignorar todos menos "default"
+themes/*
+!themes/default/
+
+# =========================================
+# Archivos y extensiones no necesarias
+# =========================================
+*.txt
+*.py
 *.lock
+sitemap.xml
+inc/config/Config.Database.php

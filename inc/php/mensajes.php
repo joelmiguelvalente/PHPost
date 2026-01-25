@@ -1,107 +1,82 @@
-<?php 
+<?php
+
 /**
- * Controlador
- *
- * @name    mensajes.php
- * @author  PHPost Team
-*/
+ * @name mensajes.php
+ * @author PHPost Team
+ * @copyright 2026
+ */
 
-/**********************************\
+declare(strict_types=1);
 
-*	(VARIABLES POR DEFAULT)		*
+/**
+ * Inicializamos variable
+ * 
+ * $tsPage  	= Plantilla para mostrar con este archivo.
+ * $tsLevel 	= Nivel de acceso a esta pagina (ver faqs).
+ * $tsAjax  	= La respuesta sera por ajax si/no.
+ * $tsContinue	= Continuar con la ejecución
+ */
 
-\*********************************/
+$tsPage  = "mensajes";
+$tsLevel = 2; 
+$tsAjax  = (!isset($_GET['ajax']) && empty($_GET['ajax']));
+$tsContinue = true;
 
-	$tsPage = "mensajes";	// tsPage.tpl -> PLANTILLA PARA MOSTRAR CON ESTE ARCHIVO.
-
-	$tsLevel = 2;		// NIVEL DE ACCESO A ESTA PAGINA. => VER FAQs
-
-	$tsAjax = empty($_GET['ajax']) ? 0 : 1; // LA RESPUESTA SERA AJAX?
+require_once dirname(__DIR__, 2) . "/header.php";
+$tsTitle = "{$tsCore->settings['titulo']} - {$tsCore->settings['slogan']}";
 	
-	$tsContinue = true;	// CONTINUAR EL SCRIPT
-	
-/*++++++++ = ++++++++*/
-
-	include "../../header.php"; // INCLUIR EL HEADER
-
-	$tsTitle = $tsCore->settings['titulo'].' - '.$tsCore->settings['slogan']; 	// TITULO DE LA PAGINA ACTUAL
-
-/*++++++++ = ++++++++*/
-
-	// VERIFICAMOS EL NIVEL DE ACCESO ANTES CONFIGURADO
-	$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
-	if($tsLevelMsg != 1){	
-		$tsPage = 'aviso';
-		$tsAjax = 0;
-		$smarty->assign("tsAviso",$tsLevelMsg);
-		//
-		$tsContinue = false;
-	}
+// VERIFICAMOS EL NIVEL DE ACCESO ANTES CONFIGURADO
+$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
+if(!$tsLevelMsg){	
+	$tsPage = 'aviso';
+	$tsAjax = 0;
+	$smarty->assign("tsAviso",$tsLevelMsg);
 	//
-	if($tsContinue){
+	$tsContinue = false;
+}
 
-/**********************************\
+$unread = !isset($_GET['qt']);
+if($tsContinue){
 
-* (VARIABLES LOCALES ESTE ARCHIVO)	*
+	$action = htmlspecialchars(trim($_GET['action'] ?? ''));
 
-\*********************************/
-
-	$action = htmlspecialchars($_GET['action']);
-	$unread = empty($_GET['qt']) ? false : true;
-
-/**********************************\
-
-*	(INSTRUCCIONES DE CODIGO)		*
-
-\*********************************/
-
-    switch($action){
-        case '':
-            $smarty->assign("tsMensajes",$tsMP->getMensajes(2, $unread));
-        break;
-        case 'enviados':
-            $smarty->assign("tsMensajes",$tsMP->getMensajes(3));
-        break;
-        case 'respondidos':
-            $smarty->assign("tsMensajes",$tsMP->getMensajes(4));
-        break;
+	switch($action){
+		case '':
+			$smarty->assign("tsMensajes",$tsMP->getMensajes(2, $unread));
+		break;
+		case 'enviados':
+			$smarty->assign("tsMensajes",$tsMP->getMensajes(3));
+		break;
+		case 'respondidos':
+			$smarty->assign("tsMensajes",$tsMP->getMensajes(4));
+		break;
 		case 'search':
-            $smarty->assign("tsMensajes",$tsMP->getMensajes(5));
-        break;
-        case 'leer':
-            $smarty->assign("tsMensajes",$tsMP->readMensaje());
-        break;
-        case 'avisos':
-            // ESTO ES COSA DEL MONITOR PERO LO PUSE EN MENSAJES PORQUE LOS AVISOS SON ESO, MENSAJES :)
-            if(empty($_GET['aid']) && empty($_GET['did'])){
-                $smarty->assign("tsMensajes",$tsMonitor->getAvisos());
-            } elseif($_GET['aid']) {
-                $smarty->assign("tsMensaje",$tsMonitor->readAviso($_GET['aid']));
-            } elseif($_GET['did']){
-                $borrado = $tsMonitor->delAviso($_GET['did']);
-                if($borrado == true) $tsCore->redirectTo($tsCore->settings['url'].'/mensajes/avisos/');
-            }
-        break;
-    }
-    # VARIABLE
-    $smarty->assign("tsQT", $_GET['qt']);
-    
-
-/**********************************\
-
-* (AGREGAR DATOS GENERADOS | SMARTY) *
-
-\*********************************/
-	//
+			$smarty->assign("tsMensajes",$tsMP->getMensajes(5));
+		break;
+		case 'leer':
+			$smarty->assign("tsMensajes",$tsMP->readMensaje());
+		break;
+		case 'avisos':
+			$aId = (int)($_GET['aid'] ?? 0);
+			$dId = (int)($_GET['did'] ?? 0);
+			if($aId === 0 && $dId === 0) {
+				$smarty->assign("tsMensajes", $tsMonitor->getAvisos());
+			} elseif($aId !== 0 && $dId === 0) {
+				$smarty->assign("tsMensaje", $tsMonitor->readAviso($aId));
+			} elseif($aId === 0 && $dId !== 0) {
+				if($tsMonitor->delAviso($dId)) {
+					$tsCore->redirectTo($tsCore->settings['url'].'/mensajes/avisos/');
+				}
+			}
+		break;
+	}
+	# VARIABLE
+	$smarty->assign("tsQT", $unread);
 	$smarty->assign("tsAction",$action);
 	
-	}
+}
 
-if(empty($tsAjax)) {	// SI LA PETICION SE HIZO POR AJAX DETENER EL SCRIPT Y NO MOSTRAR PLANTILLA, SI NO ENTONCES MOSTRARLA.
-
-	$smarty->assign("tsTitle",$tsTitle);	// AGREGAR EL TITULO DE LA PAGINA ACTUAL
-
-	/*++++++++ = ++++++++*/
-	include("../../footer.php");
-	/*++++++++ = ++++++++*/
+if($tsAjax) {
+	$smarty->assign("tsTitle", $tsTitle);
+   require_once dirname(__DIR__, 2) . "/footer.php";
 }

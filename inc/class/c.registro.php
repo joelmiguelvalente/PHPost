@@ -23,8 +23,8 @@ class tsRegistro {
 	protected tsUser $User;
 
 	public function __construct(tsCore $Core, tsUser $User) {
-		$this->Core = $tsCore;
-		$this->User = $tsUser;
+		$this->Core = $Core;
+		$this->User = $User;
 	}
 
 	/**
@@ -163,12 +163,8 @@ class tsRegistro {
 		if(!db_exec([__FILE__, __LINE__], 'query', "INSERT INTO w_activate (user_id, user_email, code_hash, expire_at, type, used, ip) VALUES ($uid, '{$tsData['user_email']}', '$pinHash', $time, 'activation', 0, $ip)")) {
 			return '0: Ocurri&oacute; un error, int&eacute;ntelo de nuevo.';
 		}
-					
-		$tsEmail = new tsEmail('activar', 'registro');
-		$to = $tsData['user_email'];
-		$subject = 'Active su cuenta';
-		$title = $this->Core->settings['titulo'];
 
+		$title = $this->Core->settings['titulo'];
 		$body = <<<ACTIVE
 		<div style="background:#0f7dc1;padding:10px;font-family:Arial, Helvetica,sans-serif;color:#000">
 			<h1 style="color:#FFFFFF; font-weight:bold; font-size:30px;">$title</h1>
@@ -197,7 +193,7 @@ class tsRegistro {
 		ACTIVE;
 		// <--
 		$email = new tsEmail($tsCore);
-		$email->sendSignup($to, $bodyHtml) OR die('0: Hubo un error al intentar procesar lo solicitado');
+		$email->sendSignup($tsData['user_email'], 'activate', $bodyHtml) OR die('0: Hubo un error al intentar procesar lo solicitado');
 		return "2: Te hemos enviado un correo a <b>$to</b> con los &uacute;ltimos pasos para finalizar con el registro.<br><br>Si en los pr&oacute;ximos minutos no lo encuentras en tu bandeja de entrada, por favor, revisa tu carpeta de correo no deseado, es posible que se haya filtrado.<br><br>&iexcl;Muchas gracias!";	
 	}
 
@@ -246,7 +242,7 @@ class tsRegistro {
       db_exec([__FILE__, __LINE__], "query", "INSERT INTO u_miembros_sets (user_id) VALUES($uid)");
       
       # Generamos automaticamente un avatar
-      (new Avatar)->create((int)$uid, $tsData['user_nick']);
+      (new Avatar)->ensure((int)$uid, $tsData['user_nick'], 171717);
 
 		# MENSAJE PARA DAR LA BIENVENIDA BIENVENIDA
 		$this->sendMessageWelcome($uid, $tsData);

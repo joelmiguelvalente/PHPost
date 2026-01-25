@@ -54,7 +54,7 @@
 				</li>
 				<li class="share-big">
 					<span class="share-t-count">{$tsPost.post_shared}</span>
-					<a href="{if !$tsUser->is_member}{$tsConfig.url}/registro/{else}javascript:notifica.sharePost({$tsPost.post_id}){/if}" class="share-t"></a>
+					<a href="{if !$tsUser->is_member}{$tsConfig.url}/registro/{else}javascript:notifica.handleRecomendar({$tsPost.post_id}, 'post'){/if}" class="share-t"></a>
 				</li>
 				<li class="txt-movi">Compartir en:</li>
 			</ul>

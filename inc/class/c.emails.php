@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name c.registro.php
+ * @name c.emails.php
  * @author PHPost Team
  * @copyright 2026
  */
@@ -14,15 +14,15 @@ if (!defined('TS_HEADER')) {
 
 final class tsEmail {
 
-	private tsCore $core;
+	private tsCore $Core;
 
 	private string $to;
 	private string $subject;
 	private string $body;
 	private string $headers;
 
-	public function __construct(tsCore $core) {
-		$this->core = $core;
+	public function __construct(tsCore $Core) {
+		$this->Core = $Core;
 	}
 
 	/* =========================
@@ -62,8 +62,8 @@ final class tsEmail {
 	 * ATAJOS
 	 * ========================= */
 
-	public function sendSignup(string $to, string $body): bool {
-		return $this->to($to)->subject('signup')->body($body)->send();
+	public function sendSignup(string $to, string $subject, string $body): bool {
+		return $this->to($to)->subject($subject)->body($body)->send();
 	}
 
 	/* =========================
@@ -72,7 +72,20 @@ final class tsEmail {
 
 	private function buildSubject(string $type): string {
 		$subject = match ($type) {
-			'signup' => 'Por favor completa tu registro',
+			'signup'            => 'Por favor completa tu registro.',
+			'activate'          => 'Active su cuenta.',
+			'welcome'           => 'Bienvenido a nuestra comunidad.',
+			'password_recovery' => 'Instrucciones para recuperar tu contraseña.',
+			'email_change'      => 'Confirma el cambio de tu dirección de correo.',
+			'twofactor_setup'   => 'Configura tu verificación en dos pasos.',
+			'security_alert'    => 'Hemos detectado un intento de acceso a tu cuenta.',
+			'support_reply'     => 'Tienes una respuesta de soporte.',
+			'payment_success'   => 'Tu pago se ha procesado correctamente.',
+			'payment_failed'    => 'Hubo un problema con tu pago.',
+			'newsletter'        => 'Últimas novedades y actualizaciones.',
+			'admin_notice'      => 'Tienes un aviso importante del administrador.',
+			'ban_notice'        => 'Tu cuenta ha sido suspendida.',
+			'system_update'     => 'Actualización importante del sistema.',
 			default  => 'Notificación'
 		};
 
@@ -82,8 +95,8 @@ final class tsEmail {
 	private function buildHeaders(): string {
 		$sender = sprintf(
 			'%s <no-reply@%s>',
-			$this->core->settings['titulo'],
-			$this->core->settings['domain']
+			$this->Core->settings['titulo'],
+			$this->Core->route('domain')
 		);
 
 		return implode("\r\n", [
@@ -98,16 +111,16 @@ final class tsEmail {
 	}
 
 	private function wrapTemplate(string $body): string {
-		$html = file_get_contents(TS_EXTRA . 'emails/basic.php');
+		$html = file_get_contents(TS_EXTRA . '/emails/basic.php');
 
 		return str_replace(
 			['{WEBSITE}', '{CONTENTBODY}', '{LOGOWEB}', '{TERMS}', '{PRIV}'],
 			[
-				$this->core->settings['titulo'],
+				$this->Core->settings['titulo'],
 				$body,
-				$this->core->route('tema:images') . '/phpostmin.gif',
-				$this->core->route('url') . '/pages/terminos-y-condiciones/',
-				$this->core->route('url') . '/pages/privacidad/'
+				$this->Core->route('tema:images') . '/phpostmin.gif',
+				$this->Core->route('url') . '/pages/terminos-y-condiciones/',
+				$this->Core->route('url') . '/pages/privacidad/'
 			],
 			$html
 		);

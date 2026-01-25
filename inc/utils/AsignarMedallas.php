@@ -1,11 +1,10 @@
 <?php
 
 /**
- * @package    PHPost
- * @author     Miguel92
- * @copyright  2026
- * @version    2.0.0
-*/
+ * @name AsignarMedallas.php
+ * @author PHPost Team
+ * @copyright 2026
+ */
 
 declare(strict_types=1);
 

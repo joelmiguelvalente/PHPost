@@ -40,15 +40,15 @@ if(!$tsLevelMsg) {
 }
 
 if(in_array($action, ['posts-genbus', 'posts-preview'])) {
-	require_once dirname(__DIR__, 2) . "/class/c.agregar.php";
+	require_once dirname(__DIR__, 1) . "/class/c.agregar.php";
 	$tsAgregar = new tsAgregar($tsCore, $tsUser);
 }
 if($action === 'posts-last-comentarios') {
-	require_once dirname(__DIR__, 2) . "/class/c.comentarios.php";
+	require_once dirname(__DIR__, 1) . "/class/c.comentarios.php";
 	$tsComentarios = new tsComentarios($tsCore, $tsUser);
 }
 
-require_once dirname(__DIR__, 2) . "/class/c.posts.php";
+require_once dirname(__DIR__, 1) . "/class/c.posts.php";
 $tsPosts = new tsPosts($tsCore, $tsUser);
 
 // CODIGO

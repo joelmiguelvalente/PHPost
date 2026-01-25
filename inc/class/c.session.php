@@ -34,9 +34,6 @@ class tsSession {
 	/** @var int Timestamp actual */
 	public int $time_now;
 
-	/** @var mixed Conexión DB (legacy) */
-	public $db;
-
 	/** @var int Tiempo máximo de vida de la sesión */
 	private int $sess_expiration = 7200;
 
@@ -58,31 +55,33 @@ class tsSession {
 	/** @var string Dominio de la cookie */
 	private string $cookie_domain = '';
 
+	protected tsCore $Core;
+
 	/**
 	 * Constructor
 	 */
-	public function __construct() {
-		global $tsCore;
+	public function __construct(tsCore $Core) {
+		$this->Core = $Core;
 
 		// Timestamp actual
 		$this->time_now = time();
 
 		// Resolver dominio base para cookies
-		$hostData = parse_url($tsCore->route('url'));
+		$hostData = parse_url($Core->route('url'));
 		$host = strtolower(str_replace('www.', '', $hostData['host'] ?? ''));
 
 		$this->cookie_domain = ($host === 'localhost' || empty($host)) ? '' : '.' . $host;
 		$this->cookie_name   = $this->cookie_prefix . substr(md5($host), 0, 6);
 
 		// IP del usuario
-		$this->ip_address = (string)$tsCore->getIP();
+		$this->ip_address = (string)$Core->getIP();
 
 		// Configuración: validar IP
-		$this->sess_match_ip = !empty($tsCore->settings['c_allow_sess_ip']);
+		$this->sess_match_ip = !empty($Core->settings['c_allow_sess_ip']);
 
 		// Configuración: intervalo de actividad
-		if (!empty($tsCore->settings['c_last_active'])) {
-			$this->sess_time_online = (int)$tsCore->settings['c_last_active'] * 60;
+		if (!empty($Core->settings['c_last_active'])) {
+			$this->sess_time_online = (int)$Core->settings['c_last_active'] * 60;
 		}
 	}
 
@@ -96,34 +95,27 @@ class tsSession {
 		if (empty($_COOKIE[$cookieKey])) {
 			return false;
 		}
-
 		$this->ID = (string)$_COOKIE[$cookieKey];
-
 		// Validación básica del ID
 		if (strlen($this->ID) !== 32) {
 			return false;
 		}
 
 		// Obtener sesión desde DB
-		$query = db_exec([__FILE__, __LINE__], 'query', 'SELECT * FROM u_sessions WHERE session_id = \'' . $this->ID . '\'');
-
-		$session = db_exec('fetch_assoc', $query);
+		$session = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', 'SELECT * FROM u_sessions WHERE session_id = \'' . $this->ID . '\''));
 
 		// No existe en DB
-		if (empty($session['session_id'])) {
+		if (isset($session['session_id']) && $session['session_id'] === '') {
 			$this->destroy();
 			return false;
 		}
 
 		// Sesión expirada (si no es autologin)
-		if (
-			($session['session_time'] + $this->sess_expiration) < $this->time_now
-			&& empty($session['session_autologin'])
-		) {
+		$session_time = (int)($session['session_time'] ?? 0);
+		if (($session_time + $this->sess_expiration) < $this->time_now && empty($session['session_autologin'])) {
 			$this->destroy();
 			return false;
 		}
-
 		// Cambio de IP
 		if ($this->sess_match_ip && $session['session_ip'] !== $this->ip_address) {
 			$this->destroy();
@@ -157,17 +149,14 @@ class tsSession {
 	 * @param bool $autologin
 	 * @param bool $force_update
 	 */
-	public function update($user_id = 0, $autologin = false, $force_update = false): void {
+	public function update(int $user_id = 0, bool $autologin = false, bool $force_update = false): bool {
 		if (empty($this->userdata)) {
-			return;
+			return false;
 		}
 
 		// Evitar updates innecesarios
-		if (
-			($this->userdata['session_time'] + $this->sess_time_online) >= $this->time_now
-			&& !$force_update
-		) {
-			return;
+		if (($this->userdata['session_time'] + $this->sess_time_online) >= $this->time_now && !$force_update) {
+			return false;
 		}
 
 		// Preparar datos
@@ -177,26 +166,18 @@ class tsSession {
 
 		$autologin = $autologin ? 1 : 0;
 		$this->userdata['session_autologin'] = $autologin;
-
+		
 		// Actualizar DB
-		db_exec([__FILE__, __LINE__], 'query',
-			"UPDATE u_sessions SET
-				session_user_id = '{$this->userdata['session_user_id']}',
-				session_ip = '{$this->userdata['session_ip']}',
-				session_time = '{$this->userdata['session_time']}',
-				session_autologin = $autologin
-			 WHERE session_id = '{$this->ID}'"
-		);
+		db_exec([__FILE__, __LINE__], 'query', "UPDATE u_sessions SET session_user_id = '{$this->userdata['session_user_id']}', session_ip = '{$this->userdata['session_ip']}', session_time = '{$this->userdata['session_time']}', session_autologin = $autologin WHERE session_id = '{$this->ID}'");
 
 		// Limpieza ocasional
 		$this->sess_gc();
 
 		// Expiración cookie
-		$expiration = !empty($this->userdata['session_autologin'])
-			? 31500000 // ~1 año
-			: $this->sess_expiration;
+		$expiration = !empty($this->userdata['session_autologin']) ? 31500000 : $this->sess_expiration;
 
 		$this->set_cookie('sid', $this->ID, $expiration);
+		return true;
 	}
 
 	/**

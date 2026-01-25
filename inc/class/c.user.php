@@ -19,8 +19,8 @@ require_once __DIR__ . '/c.session.php';
 
 class tsUser {
 
+	private ?tsSession $session = null;
 	protected tsCore $Core;
-	protected tsSession $session;
 
 	public $permisos = [];
 	public $info = [];
@@ -36,7 +36,7 @@ class tsUser {
 		global $tsCore;
 		$this->Core = $tsCore;
 		/* CARGAR SESSION */
-		$this->session = new tsSession();
+		$this->session = new tsSession($tsCore);
 		$this->setSession();
 		# Esta logueado, actualiza puntos por día
 		if($this->is_member) $this->actualizarPuntos();
@@ -47,8 +47,11 @@ class tsUser {
 		setSession()
 	*/
 	private function setSession(): void {
+		if ($this->session === null) {
+      	throw new RuntimeException('Session no inicializada');
+    	}
 		// Si no existe una sessión la creamos
-		if ( ! $this->session->read()) $this->session->create();
+		if (!$this->session->read()) $this->session->create();
 		// si existe la actualizamos...
 		else {
 			// Actualizamos sesión
@@ -130,7 +133,7 @@ class tsUser {
 			db_exec([__FILE__, __LINE__], 'query', "UPDATE u_miembros SET user_last_ip = '{$this->session->ip_address}' WHERE user_id = {$this->uid}");
 	  	}
 	  	// Borrar variable session
-	  	unset($this->session);
+	  	#unset($this->session);
 	}
 
 	private function DarMedalla(int $uid): void {
@@ -176,14 +179,16 @@ class tsUser {
 			return '3: Debes activar tu cuenta';
 		}
 		// Actualizamos la session
-		$this->session->update($data['user_id'], $remember, TRUE);
-		// Cargamos la información del usuario
-		$this->loadUser(true);
-		// COMPROBAMOS SI TENEMOS QUE ASIGNAR MEDALLAS
-		# $this->DarMedalla((int)$data['user_id']);                
-		/* REDERIGIR */
-		if($redirectTo !== NULL) $this->Core->redirectTo($redirectTo);
-		else return '1: Bien, estas ingresando...';		
+		if($this->session->update((int)$data['user_id'], $remember, TRUE)) {
+			// Cargamos la información del usuario
+			$this->loadUser(true);
+			// COMPROBAMOS SI TENEMOS QUE ASIGNAR MEDALLAS
+			# $this->DarMedalla((int)$data['user_id']);                
+			/* REDERIGIR */
+			if($redirectTo !== NULL) $this->Core->redirectTo($redirectTo);
+			else return '1: Bien, estas ingresando...';
+		}
+		return '0: Hubo un error al crear su sesion.';
 	}
 
 	/**
@@ -195,9 +200,10 @@ class tsUser {
 	 */
 	public function logoutUser(int $user_id = 0, string $redirectTo = ''): mixed {
 		/* BORRAR SESSION */
-		$this->session = new tsSession();
+		$this->session = new tsSession($this->Core);
 		$this->session->read();
 		$this->session->destroy();
+		$this->session = null;
 		/* LIMPIAR VARIABLES */
 		$this->info = '';
 		$this->is_member = 0;

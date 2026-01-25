@@ -2,17 +2,20 @@
  * @param object | recibimos un objecto como parámetro
 */
 function admin_send_post(objeto) {
-	// URL -> DATA -> RESPONSE -> CALLBACK
-	var xhr = $.post(`${route.url}/${objeto.pagina}.php`, objeto.parametros, response => response)
+	const { pagina, parametros } = objeto;
+	const xhr = $.post(`${route.url}/${pagina}.php`, parametros, response => response)
 	if(typeof objeto.done !== 'undefined') xhr.done(() => objeto.done)
 	return xhr
 }
+
 function modal_rapido(modal) {
-   mydialog.show();
-   mydialog.title(modal.titulo);
-   mydialog.body(modal.contenido);
-   mydialog.buttons(true, true, 'S&iacute;', modal.accion, true, false, true, 'No', 'close', true, true);
-   mydialog.center();
+	const { titulo: title, contenido: body, accion: action } = modal;
+	dialog.init({ title, body,
+      buttons: {
+         confirm: { text: 'S&iacute;', action: () => action },
+         cancel: { text: 'No',  action: 'close' }
+      }
+   });
 }
 /** 
  * Nueva organización
@@ -20,14 +23,14 @@ function modal_rapido(modal) {
 var admin = {
 	// Noticias
 	news: {
-		accion: async nid => {
+		async accion(nid) {
 			$('#loading').fadeIn(250);
-			var rsp = await admin_send_post({
+			const rsp = await admin_send_post({
 				pagina: 'admin-noticias-setInActive', 
 				parametros: 'nid=' + nid
 			})
 			if(rsp.charAt(0) === '0') mydialog.alert('Error', rsp.substring(3))
-			var change = (rsp.charAt(0) === '1') ? ['green', 'Activa'] : ['purple', 'Inactiva'];
+			let change = (rsp.charAt(0) === '1') ? ['green', 'Activa'] : ['purple', 'Inactiva'];
 			$('#status_noticia_' + nid).html('<font color="'+change[0]+'">'+change[1]+'</font>');
 			$('#loading').fadeOut(350)
 	  	}, 

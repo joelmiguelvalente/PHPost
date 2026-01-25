@@ -186,7 +186,7 @@ class tsAgregar {
 		// REGISTRAR MI ACTIVIDAD
 		$tsActividad->setActividad(1, (int)$postID);
 		// SUBIR DE RANGO?
-		$this->subirRango((int)$this->User->uid);
+		//$this->subirRango((int)$this->User->uid);
 		//
 		return (int)$postID;
   	}

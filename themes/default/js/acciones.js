@@ -1,837 +1,553 @@
-
-/* Box login */
-function open_login_box(action){
-	if($('#login_box').css('display') == 'block' && action!='open')
-		close_login_box();
-	else $('#login_box').fadeIn('fast');
-}
-function close_login_box(){
-	$('.opciones_usuario').removeClass('here');
-	$('#login_box').slideUp('fast');
-}
-
-function ir_a_categoria(cat){
-	if(cat!='root' && cat!='linea')
-		if(cat==-1) document.location.href= route.url + '/';
-        else if(cat==-2) document.location.href= route.url + '/posts/';
-		else document.location.href= route.url + '/posts/' + cat + '/';
-}
-
-/* Editor */
-function print_editor() {
-   //Editor de respuesta de mensajes
-   if($('#respuesta').length && !$('.wysibb-texarea').length){
-      var wbbOpt = { buttons: "smilebox,|,bold,italic,underline,strike,sup,sub,|,img,video,link,|,removeFormat" }
-      $('#respuesta').removeAttr('onblur onfocus class style title').css('height', '80').html('').wysibb(wbbOpt);
-   }
-}
-/* FIN - Editor */
-
-function gget(data, sin_amp){
-	var r = data+'=';
-	if(!sin_amp) r = '&'+r;
-	switch(data){
-		case 'key':
-			if(global_data.user_key !== '') return r + global_data.user_key;
-		break;
-		case 'postid':
-			if(global_data.postid !== '') return r + global_data.postid;
-		break;
-		case 'fotoid':
-			if(global_data.fotoid !== '') return r + global_data.fotoid;
-		break;
-		case 'temaid':
-			if(global_data.temaid !== '') return r + global_data.temaid;
-		break;
+function irACategoria(cat) {
+	if (cat === 'root' || cat === 'linea') return;
+	const baseUrl = route.url.replace(/\/$/, '');
+	let path;
+	switch (cat) {
+		case -1:
+			path = '/';
+			break;
+		case -2:
+			path = '/posts/';
+			break;
+		default:
+			path = `/posts/${encodeURIComponent(cat)}/`;
 	}
-	return '';
+	window.location.href = baseUrl + path;
 }
-function keypress_intro(e){
-  tecla=(document.all)?e.keyCode:e.which;
-  return (tecla==13);
-}
-function onfocus_input(o){
-	if($(o).val()==$(o).attr('title')){
-		$(o).val('');
-		$(o).removeClass('onblur_effect');
-	}
-}
-function onblur_input(o){
-	if($(o).val()==$(o).attr('title') || $(o).val()==''){
-		$(o).val($(o).attr('title'));
-		$(o).addClass('onblur_effect');
-	}
-}
-var form_ff = 0;
-//Cargo el formulario
-function registro_load_form(data){
-	mydialog.class_aux = 'registro';
-	mydialog.mask_close = false;
-	mydialog.close_button = true;
-	mydialog.show(true);
-	mydialog.title('Registro');
-	mydialog.center();
-   $('#loading').fadeIn(250);
-	$.ajax({
-		type: 'POST',
-		url: route.url + '/registro-form.php?ts=false',
-		data: data,
-		success: function(h){
-			switch(h.charAt(0)){
-				case '0': //Error
-					mydialog.procesando_fin();
-					mydialog.alert('Error', h.substring(3));
-				break;
-				case '1': //OK. Ya es miembro
-					mydialog.body(h.substring(3), 305);
-				break;
-			}
-         $('#loading').fadeOut(350);
-			mydialog.center();
-		},
-		error: function(){
-			mydialog.procesando_fin();
-			mydialog.error_500("registro.load_form("+data+")");
-         $('#loading').fadeOut(350);
-		}
-	});
-}
+
+const GGET_KEY_MAP = Object.freeze({
+	key: 'user_key',
+	postid: 'postid',
+	fotoid: 'fotoid',
+	temaid: 'temaid'
+});
+const queryParam = (key, withoutAmp = false) => {
+	const realKey = GGET_KEY_MAP[key];
+	if (!realKey) return '';
+
+	const value = global_data?.[realKey];
+	if (value == null || value === '') return '';
+
+	const prefix = withoutAmp ? '' : '&';
+	return `${prefix}${key}=${encodeURIComponent(value)}`;
+};
+
 /**
  * Funcion para bloquear usuarios
 */
-function bloquear(user, bloqueado, lugar, aceptar){
-	if(!aceptar && bloqueado){
-		mydialog.show();
-		mydialog.title('Bloquear usuario');
-		mydialog.body('&iquest;Realmente deseas bloquear a este usuario?');
-		mydialog.buttons(true, true, 'SI', "bloquear('"+user+"', true, '"+lugar+"', true)", true, false, true, 'NO', 'close', true, true);
-		mydialog.center();
+const configBloqueo = {
+	perfil: {
+		selector: '#bloquear_cambiar',
+		remove: 'bloquearU desbloquearU',
+		add: bloqueado => bloqueado ? 'desbloquearU' : 'bloquearU',
+		withClasses: true
+	},
+	mis_bloqueados: {
+		selector: bloqueado => `.bloquear_usuario_${user}`,
+		remove: 'bloqueadosU desbloqueadosU',
+		add: bloqueado => bloqueado ? 'desbloqueadosU' : 'bloqueadosU',
+		withClasses: true
+	},
+	mensajes: {
+		selector: '#bloquear_cambiar',
+		withClasses: false
+	}
+};
+const actualizarUIBloqueo = (user, bloqueado, lugar) => {
+	if (configBloqueo[lugar]) {
+		const cfg = BLOQUEO_UI[lugar];
+		const $el = $(typeof cfg.selector === 'function' ? cfg.selector(user) : cfg.selector);
+		$el.text(bloqueado ? 'Desbloquear' : 'Bloquear');
+		if (cfg.classes) {
+			$el.removeClass(cfg.remove).addClass(cfg.add(bloqueado));
+		}
+		$el.off('click.bloqueo').on('click.bloqueo', e => {
+			e.preventDefault();
+			bloquear(user, !bloqueado, lugar);
+		});
+	}
+	if (lugar === 'respuestas' || lugar === 'comentarios') {
+		$(`.bloquear_${user}`).toggle(!bloqueado);
+		$(`.desbloquear_${user}`).toggle(bloqueado);
+	}
+}
+
+const bloquear = (user, bloqueado, lugar, aceptar) => {
+	if(!aceptar && bloqueado) {
+		dialog.init({
+			title: 'Bloquear usuario',
+			body: '&iquest;Realmente deseas bloquear a este usuario?',
+			buttons: {
+				confirm: {
+					text: 'Si, bloquear',
+					action: () => bloquear(`'${user}'`, true, `'${lugar}'`, true)
+				},
+				cancel: {
+					text: 'No, cerrar'
+				}
+			}
+		});
 		return;
 	}
-	if(bloqueado) mydialog.procesando_inicio('Procesando...', 'Bloquear usuario');
-   $('#loading').fadeIn(250);
-	$.ajax({
-		type: 'POST',
-		url: route.url + '/bloqueos-cambiar.php',
-		data: 'user='+user+(bloqueado ? '&bloquear=1' : '')+gget('key'),
-		success: function(h){
-			mydialog.alert('Bloquear Usuarios', h.substring(3));
-         //
-         if(h.charAt(0) == 1) {
-    			switch(lugar){
-    				case 'perfil':
-    					if(bloqueado) $('#bloquear_cambiar').html('Desbloquear').removeClass('bloquearU').addClass('desbloquearU').attr('href', "javascript:bloquear('"+user+"', false, '"+lugar+"')");
-    					else $('#bloquear_cambiar').html('Bloquear').removeClass('desbloquearU').addClass('bloquearU').attr('href', "javascript:bloquear('"+user+"', true, '"+lugar+"')");
-    				break;
-    				case 'respuestas':
-    				case 'comentarios':
-    					if (bloqueado) {
-    						$('li.desbloquear_'+user).show();
-    						$('li.bloquear_'+user).hide();
-    					} else {
-    						$('li.bloquear_'+user).show();
-    						$('li.desbloquear_'+user).hide();
-    					}
-    				break;
-    				case 'mis_bloqueados':
-    					if(bloqueado) $('.bloquear_usuario_'+user).attr('title', 'Desbloquear Usuario').removeClass('bloqueadosU').addClass('desbloqueadosU').html('Desbloquear').attr('href', "javascript:bloquear('"+user+"', false, '"+lugar+"')");
-    					else $('.bloquear_usuario_'+user).attr('title', 'Bloquear Usuario').removeClass('desbloqueadosU').addClass('bloqueadosU').html('Bloquear').attr('href', "javascript:bloquear('"+user+"', true, '"+lugar+"')");
-    				break;
-               case 'mensajes':
-    					if(bloqueado) $('#bloquear_cambiar').html('Desbloquear').attr('href', "javascript:bloquear('"+user+"', false, '"+lugar+"')");
-    					else $('#bloquear_cambiar').html('Bloquear').attr('href', "javascript:bloquear('"+user+"', true, '"+lugar+"')");
-               break;
-    			}
-         }
-         $('#loading').fadeOut(350);
-		},
-		error: function(){
-			mydialog.error_500("bloquear('"+user+"', '"+bloqueado+"', '"+lugar+"', true)");
-         $('#loading').fadeOut(350);
-		},
-		complete: function(){
-			mydialog.procesando_fin();
-         $('#loading').fadeOut(350);
-		}
+	if(bloqueado) {
+		dialog.loading('Procesando...');
+	}
+	const params = new URLSearchParams({
+		user,
+		...queryParam('key') && { user_key: queryParam('key') },
+		...(bloqueado && { bloquear: 1 })
 	});
+	$.post(`${route.url}/bloqueos-cambiar.php`, params.toString()).done(response => {
+		const { status, message } = $.parseResponse(response);
+		dialog.alert('Bloquear Usuarios', message);
+		if (status === 1) {
+			actualizarUIBloqueo(user, bloqueado, lugar);
+		}
+	})
+	.fail(() => {
+		dialog.reintentar(`bloquear("${user}", ${bloqueado}, "${lugar}", true)`);
+	})
+	.always(() => dialog.close);
 }
-$(document).ready(() => {
-	$('body').on('click', e => { 
-	   if ($('#mon_list').css('display') != 'none' && $(e.target).closest('#mon_list').length == 0 && $(e.target).closest('a[name=Monitor]').length == 0) notifica.last();
-      if ($('#mp_list').css('display') != 'none' && $(e.target).closest('#mp_list').length == 0 && $(e.target).closest('a[name=Mensajes]').length == 0) mensaje.last(); 
-   });
-	print_editor();
-});
+
+const media = {
+	popup(response, short) {
+		const total = parseInt(response, 10) || 0;
+		const $alert = $(`#alerta_${short}`);
+		const current = parseInt($alert.find('span').text(), 10) || 0;
+		if (total <= 0) {
+			$alert.remove();
+			return;
+		}
+		if (total === current) return;
+		let label = '', clase = '';
+		if(short === 'mps') {
+			label = (total === 1) ? ' mensaje' : ' mensajes';
+			clase = 'mensajes';
+		} else {
+			label = (total === 1) ? ' notificación' : ' notificaciones';
+			clase = 'monitor';
+		}
+		let $container = $alert;
+		if (!$container.length) {
+			$container = $(`
+				<div class="alertas" id="alerta_${short}"><a title=""><span></span></a></div>
+			`).appendTo(`.userInfoLogin .${clase}`);
+		}
+		$container.find('a').attr('title', total + label).find('span').text(total);
+		$container.stop(true).animate({ top: '-=5px' }, 100).animate({ top: '+=5px' }, 100);
+	},
+	show(last, name, short) {
+		const $ref = $(`a[name=${name}]`);
+		const $list = $(`#${short}_list`);
+		// Limpiar alert previo si existe
+		$(`#alerta_${short}`).remove();
+		// Marcar monitor activo y quitar spinner
+		$ref.parent('li').addClass(name.toLowerCase() + '-notificaciones');
+		$ref.children('span').removeClass('spinner');
+		if (!last) return;
+		// Mostrar lista y rellenar contenido
+		$list.show().children('ul').html(last);
+	},
+	close(name, short) {
+		const $list = $(`#${short}_list`);
+		const $ref = $(`a[name=${name}]`);
+		$list.hide();
+		$ref.parent('li').removeClass(`${name.toLowerCase()}-notificaciones`);
+	}
+}
+
 /* Notificaciones */
-var notifica = {
+const notifica = {
 	cache: {},
-	retry: Array(),
-	userMenuPopup: function (obj) {
-		var id = $(obj).attr('userid');
-		var cache_id = 'following_'+id, list = $(obj).children('ul');
-		$(list).children('li.check').slideUp();
-		if (this.cache[cache_id] == 1) {
-			$(list).children('li.follow').slideUp();
-			$(list).children('li.unfollow').slideDown();
+	retry: [],
+	handleNumber(block, parse, additional = '') {
+		let parsear = parseInt(parse);
+		let value = number_format(parsear);
+		if(additional !== '') {
+			value += ` ${additional}`;
 		}
-		else {
-			$(list).children('li.unfollow').slideUp();
-			$(list).children('li.follow').slideDown();
+		$(block).html(this.handleNumber(value));
+	},
+	handleResponse(response, onSuccess, onError = null) {
+		const parts = response.split('-');
+		const result = {
+			ok: parts[0] === '0',
+			raw: parts,
+			id: parts[1] ?? null,
+			value: parts[2] ?? null,
+			message: parts[3] ?? null
+		};
+		if (result.ok) {
+			onSuccess(result);
+		} else {
+			if (onError) {
+				onError(result);
+			} else if (result.message) {
+				dialog.alert('Notificaciones', result.message);
+			}
 		}
 	},
-    userInMencionHandle: function(r){
-		var x = r.split('-');
-		if (x.length == 3 && x[0] == 0) {
-            var fid = x[1];
-			$('a.mf_' + fid +', a.mf_' + fid).each(function(){
-                $(this).toggle();
-            });
-			$('.mft_' + fid).html(number_format(parseInt(x[2])));
-            vcard_cache['mf' + fid] = '';
-		}
-		else if (x.length == 4) mydialog.alert('Notificaciones', x[3]);  
-    },
-	userMenuHandle: function (r) {
-		var x = r.split('-');
-		if (x.length == 3 && x[0] == 0) {
-			var cache_id = 'following_'+x[1];
-			notifica.cache[cache_id] = parseInt(x[0]);
+	userMenuHandle(response) {
+		this.handleResponse(response, res => {
+			const cache_id = 'following_' + res.id;
+			this.cache[cache_id] = 0;
 			$('div.avatar-box').children('ul').hide();
-		}
-		else if (x.length == 4) mydialog.alert('Notificaciones', x[4]);
+		});
 	},
-	userInPostHandle: function (r) {
-		var x = r.split('-');
-		if (x.length == 3 && x[0] == 0) {
-			$('a.follow_user_post, a.unfollow_user_post').toggle();
-			$('div.metadata-usuario > span.nData.user_follow_count').html(number_format(parseInt(x[2])));
-			notifica.userMenuHandle(r);
-		}
-		else if (x.length == 4) mydialog.alert('Notificaciones', x[3]);
+	userInPostHandle(response) {
+		this.handleResponse(response, res => {
+			$('.follow_user_post, .unfollow_user_post').toggle();
+			this.handleNumber('.metadata-usuario > .nData.user_follow_count', res.value);
+			this.userMenuHandle(response);
+		});
 	},
-	userInMonitorHandle: function (r, obj) {
-		var x = r.split('-');
-		if (x.length == 3 && x[0] == 0) $(obj).fadeOut(function(){ $(obj).remove(); });
-		else if (x.length == 4) mydialog.alert('Notificaciones', x[3]);	
+	userInMonitorHandle(response, obj) {
+		this.handleResponse(response, () => $(obj).fadeOut(() => $(obj).remove()));	
 	},
-	inPostHandle: function (r) {
-		var x = r.split('-');
-		if (x.length == 3 && x[0] == 0) {
+	inPostHandle(response) {
+		this.handleResponse(response, res => {
 			$('a.follow_post, a.unfollow_post').parent('li').toggle();
-			$('ul.post-estadisticas > li > span.icons.monitor').html(number_format(parseInt(x[2])));
+			this.handleNumber('.post-estadisticas .icons.monitor', res.value);
+		});
+	},
+	inComunidadHandle(response) {
+		this.handleResponse(response, res => {
+			$('.follow_comunidad, .unfollow_comunidad').toggle();
+			this.handleNumber('.comunidad_seguidores', res.value, 'Seguidores');
+		});
+	},
+	temaInComunidadHandle(response) {
+		this.handleResponse(response, res => {
+			$('.followBox > .follow_tema, .unfollow_tema').toggle();
+			this.handleNumber('.tema_notifica_count', res.value, 'Seguidores');
+		});
+	},
+	ruserInAdminHandle(response) {
+		this.handleResponse(response, res => $('.ruser' + res.id).toggle());
+	},
+	listInAdminHandle(response) {
+		this.handleResponse(response, res => {
+			const $items = $('.list' + res.id);
+			$items.toggle();
+			$items.first().closest('li').children('div:first').fadeTo(0, $items.first().is(':hidden') ? 0.5 : 1);
+		});	
+	},
+	spamHandle(response) {
+		const parts = response.split('-');
+		if (parts.length === 2) {
+			dialog.alert('Notificaciones', parts[1]);
+		} else {
+			dialog.close();
 		}
-		else if (x.length == 4) mydialog.alert('Notificaciones', x[3]);
 	},
-	inComunidadHandle: function (r) {
-		var x = r.split('-');
-		if (x.length == 3 && x[0] == 0) {
-			$('a.follow_comunidad, a.unfollow_comunidad').toggle();
-			$('li.comunidad_seguidores').html(number_format(parseInt(x[2]))+' Seguidores');
+	ajax(params, callback, target = null) {
+		const $target = target ? $(target) : null;
+		if ($target?.hasClass('spinner')) return;
+		const request = { params, callback, target };
+		this.retry = request;
+		const isCount = params.includes('action=count');
+		if ($target) {
+			$target.addClass('spinner');
 		}
-		else if (x.length == 4) mydialog.alert('Notificaciones', x[3]);
+		$('#loading').fadeIn(250);
+		$.post(`${route.url}/notificaciones-ajax.php`, params.join('&') + queryParam('key'), response => {
+			if ($target) {
+				$target.removeClass('spinner');
+			}
+			callback(response, target);
+		}).fail(() => {
+			if (!isCount) {
+				dialog.reintentar(`notifica.ajax(${JSON.stringify(this.retry.params)})`);
+			}
+		}).always(() => dialog.close);
 	},
-	temaInComunidadHandle: function (r) {
-		var x = r.split('-');
-		if (x.length == 3 && x[0] == 0) {
-			$('div.followBox > a.follow_tema, a.unfollow_tema').toggle();
-			$('span.tema_notifica_count').html(number_format(parseInt(x[2]))+' Seguidores');
-		}
-		else if (x.length == 4) mydialog.alert('Notificaciones', x[3]);
+	follow(type, id, cb, obj) {
+		this.ajax(['action=follow', `type=${type}`, `obj=${id}`], cb, obj);
 	},
-	ruserInAdminHandle: function (r) {
-		var x = r.split('-');
-		if (x.length == 3 && x[0] == 0) $('.ruser'+x[1]).toggle();
-		else if (x.length == 4) mydialog.alert('Notificaciones', x[3]);	
+	unfollow(type, id, cb, obj) {
+		this.ajax(['action=unfollow', `type=${type}`, `obj=${id}`], cb, obj);
 	},
-	listInAdminHandle: function (r) {
-		var x = r.split('-');
-		if (x.length == 3 && x[0] == 0) {
-			$('.list'+x[1]).toggle();
-			$('.list'+x[1]+':first').parent('div').parent('li').children('div:first').fadeTo(0, $('.list'+x[1]+':first').css('display') == 'none' ? 0.5 : 1);
-		}
-		else if (x.length == 4) mydialog.alert('Notificaciones', x[3]);	
+	spam(id, cb, param) {
+		this.ajax(['action=spam', `${param}=${id}`], cb);
 	},
-	spamPostHandle: function (r) {
-		var x = r.split('-');
-		if (x.length == 2) mydialog.alert('Notificaciones', x[1]);
-		else mydialog.close();
-	},
-	spamTemaHandle: function (r) {
-		var x = r.split('-');
-		if (x.length == 2) mydialog.alert('Notificaciones', x[1]);
-		else mydialog.close();
-	},
-	ajax: function (param, cb, obj) {
-		if ($(obj).hasClass('spinner')) return;
-		notifica.retry.push(param);
-		notifica.retry.push(cb);
-		var error = param[0]!='action=count';
-		$(obj).addClass('spinner');
-        $('#loading').fadeIn(250);
-		$.ajax({
-			url: route.url + '/notificaciones-ajax.php', 
-			type: 'post', 
-			data: param.join('&') + gget('key'),
-			success: function (r) {
-				$(obj).removeClass('spinner');
-				cb(r, obj);
-            $('#loading').fadeOut(350);
-			},
-			error: function () {
-				if (error) mydialog.error_500('notifica.ajax(notifica.retry[0], notifica.retry[1])');
-            $('#loading').fadeOut(350);                
+	handleRecomendar(id, type) {
+		dialog.init({
+			title: 'Recomendar',
+			boody: `¿Quieres recomendar este ${type} a tus seguidores?`,
+			buttons: {
+				confirm: {
+					text: 'Recomendar',
+					action: () => notifica.spam(id, notifica.spamHandle, `${type}id`)
+				}
 			}
 		});
 	},
-	follow: function (type, id, cb, obj) {
-		this.ajax(Array('action=follow', 'type='+type, 'obj='+id), cb, obj);
-	},
-	unfollow: function (type, id, cb, obj) {
-		this.ajax(Array('action=unfollow', 'type='+type, 'obj='+id), cb, obj);
-	},
-	spam: function (id, cb) {
-		this.ajax(Array('action=spam', 'postid='+id), cb);
-	},
-	c_spam: function (id, cb) {
-		this.ajax(Array('action=c_spam', 'temaid='+id), cb);
-	},
-	sharePost: function (id) {
-		mydialog.show();
-		mydialog.title('Recomendar');
-		mydialog.body('¿Quieres recomendar este post a tus seguidores?');
-		mydialog.buttons(true, true, 'Recomendar', 'notifica.spam('+id+', notifica.spamPostHandle)', true, true, true, 'Cancelar', 'close', true, false);
-		mydialog.center();
-	},
-	shareTema: function (id) {
-		mydialog.show();
-		mydialog.title('Recomendar');
-		mydialog.body('¿Quieres recomendar este tema a tus seguidores?');
-		mydialog.buttons(true, true, 'Recomendar', 'notifica.c_spam('+id+', notifica.spamTemaHandle)', true, true, true, 'Cancelar', 'close', true, false);
-		mydialog.center();
-	},
-	last: function () {
-		var c = parseInt($('#alerta_mon > a > span').html());
-        mensaje.close();
-		if ($('#mon_list').css('display') != 'none') {
-			$('#mon_list').fadeOut();
-			$('a[name=Monitor]').parent('li').removeClass('monitor-notificaciones');
+	last() {
+		const $list = $('#mon_list');
+		const $monitor = $('a[name=Monitor]');
+		const count = parseInt($('#alerta_mon > a > span').text(), 10) || 0;
+		mensaje.close();
+		// Si está visible → cerrar
+		if ($list.is(':visible')) {
+			$list.fadeOut();
+			$monitor.parent('li').removeClass('monitor-notificaciones');
+			return;
+		}
+		const hasCache = this.cache.last !== undefined;
+		// Mostrar panel
+		$monitor.children('span').addClass('spinner');
+		$monitor.parent('li').addClass('monitor-notificaciones');
+		$list.slideDown();
+		// Pedir datos si hace falta
+		if (!hasCache || count > 0) {
+			this.ajax(['action=last'], response => {
+				this.cache.last = response;
+				this.show();
+			});
 		} else {
-			if (($('#mon_list').css('display') == 'none' && c > 0) || typeof notifica.cache.last == 'undefined') {
-				$('a[name=Monitor]').children('span').addClass('spinner');
-				$('a[name=Monitor]').parent('li').addClass('monitor-notificaciones');
-				$('#mon_list').slideDown();
-				notifica.ajax(Array('action=last'), function (r) {
-					notifica.cache['last'] = r;
-					notifica.show();
-				});
-			} else notifica.show();
+			this.show();
 		}
 	},
-	check: function () {
-		notifica.ajax(Array('action=count'), notifica.popup);
+	check() {
+		this.ajax(['action=count'], notifica.popup);
 	},
-	popup: function (r) {
-		var c = parseInt($('#alerta_mon > a > span').html());
-		if (r != c && r > 0) {
-			if (r != 1) var not_total = ' notificaciones'; else var not_total = ' notificaci&oacute;n';
-			if (!$('#alerta_mon').length) $('div.userInfoLogin > ul > li.monitor').append('<div class="alertas" id="alerta_mon"><a title="' + r + not_total + '"><span></span></a></div>');
-			$('#alerta_mon > a > span').html(r);
-			$('#alerta_mon').animate({ top: '-=5px' }, 100, null, function(){ $('#alerta_mon').animate({ top: '+=5px' }, 100) });
-		} else if (r == 0) $('#alerta_mon').remove();
+	popup(response) {
+		media.popup(response, 'mon');
 	},
-	show: function () {
-		if (typeof notifica.cache.last != 'undefined') {
-			$('#alerta_mon').remove();
-			$('a[name=Monitor]').parent('li').addClass('monitor-notificaciones');
-			$('a[name=Monitor]').children('span').removeClass('spinner');
-			$('#mon_list').show().children('ul').html(notifica.cache.last);
-		}
+	show() {
+		media.show(notifica.cache.last, 'Monitor', 'mon');
 	},
-	filter: function (x, obj) {
-		$.ajax({
-			url: route.url + '/notificaciones-filtro.php', 
-			type: 'post', 
-			data: 'fid=' + x
-		});
-      var v = $(obj).prop('checked') ? 1 : 0; 	   
+	filter(x, obj) {
+		let fid = [];
+		let inputs = $('.check-filter input');
+		inputs.map((pos, input) => {
+			if($(input).prop('checked')) fid.push(input.id)
+		})
+		$.post(`${route.url}/notificaciones-filtro.php`, { fid })
+		.fail(() => console.error('Error al filtrar notificaciones'));  
 	},
-   close: function(){
-		$('#mon_list').hide();
-		$('a[name=Monitor]').parent('li').removeClass('monitor-notificaciones');   
-   }
-}
-/* Mensajes */
-var mensaje = {
-   cache: {},
-   vars: Array(),
-   // CREAR HTML
-   form: function (){
-      var html = '';
-      if(this.vars['error']) html += '<div class="emptyData">' + this.vars['error'] + '</div><br style="clear:both">'
-      html += '<div class="m-col1">Para:</div>'
-      html += '<div class="m-col2"><input type="text" value="' + this.vars['to'] + '" maxlength="16" tabindex="0" size="20" id="msg_to" name="msg_to"/> <span style="font-size: 10px;">(Ingrese el nombre de usuario)</span></div><br style="clear:both" />'
-      html += '<div class="m-col1">Asunto:</div>'
-      html += '<div class="m-col2"><input type="text" value="' + this.vars['sub'] + '" maxlength="100" tabindex="0" size="50" id="msg_subject" name="msg_subject"/></div><br /><br style="clear:both"/>'
-      html += '<div class="m-col1">Mensaje:</div>'
-      html += '<div class="m-col2"><textarea tabindex="0" rows="10" id="msg_body" name="msg_body" style="height:100px; width:350px">' + this.vars['msg'] + '</textarea></div><br style="clear:both"/>'
-      return html;                          
-   },
-   // FUNCIONES AUX
-   checkform: function (h){
-      if(parseInt(h) == 0)
-         mensaje.enviar(1);
-      else if(parseInt(h) == 1) {
-         mensaje.nuevo(mensaje.vars['to'], mensaje.vars['sub'], mensaje.vars['msg'], 'No es posible enviarse mensajes a s&iacute; mismo.');
-      } else if(parseInt(h) == 2) {
-         mensaje.nuevo(mensaje.vars['to'], mensaje.vars['sub'], mensaje.vars['msg'], 'Este usuario no existe. Por favor, verif&iacute;calo.');
-      }    
-   },
-   alert: function(h){
-      mydialog.procesando_fin();
-      mydialog.alert('Aviso','<div class="emptyData">' + h + '</div>');  
-   },
-   mostrar: function(show, obj){
-      //
-      $('.GBTabset a').removeClass('here');
-      //
-      if(show == 'all'){
-         $('#mensajes div').show();
-         $(obj).addClass('here');
-      } else if(show == 'unread'){
-         $('#mensajes div.GBThreadRow').hide();
-         $('#mensajes table.unread').parent().show();
-         $(obj).addClass('here');
-      }
-   },
-   select: function(act){
-     	var inputs = $('#mensajes .GBThreadRow :input');
-     	inputs.each(function() {
-     		if(act == 'all'){
-         	$(this).attr({checked: 'checked'});
-        	} else if(act == 'read'){
-            if($(this).attr('class') != 'inread'){
-               $(this).attr({checked: 'checked'});
-            } else $(this).attr({checked: ''});
-        	} else if(act == 'unread'){
-            if($(this).attr('class') == 'inread'){
-               $(this).attr({checked: 'checked'});
-            } else $(this).attr({checked: ''});                
-        	} else if(act == 'none'){
-         	$(this).attr({checked: ''});
-        	}
-     	});
-   },
-   modificar: function(act){
-      var inputs = $('#mensajes .GBThreadRow :input');
-      var ids = new Array();
-      var i = 0;
-      //
-      inputs.each(function(){
-         var este = $(this).prop('checked');
-         //
-         if(este != false){
-            // AGREGAR EL ID
-            ids[i] = $(this).val();
-            i++;
-            // PARA LOS ESTILOS
-            var cid = $(this).val().split(':');
-            // MARCAR LEIDO
-            if(act == 'read'){
-               $('#' + cid[0]).removeClass('unread');
-               $(this).removeClass('inread');
-            // MARCAR NO LEIDO
-            } else if(act == 'unread'){
-               $('#' + cid[0]).addClass('unread');
-               $(this).addClass('inread');
-            // ELIMINAR
-            } else if(act == 'delete') $('#' + cid[0]).parent().remove();
-         }
-      });
-      // ENVIAR CAMBIOS
-      if(ids.length > 0){
-         var params = ids.join(',');
-         mensaje.ajax('editar','ids=' + params + '&act=' + act, function(r){});   
-      }
-   },
-   eliminar: function(id,type){
-      mensaje.ajax('editar','ids=' + id + '&act=delete',function(r){
-         if(type == 1) {
-            var cid = id.split(':');
-            $('#mp_' + cid[0]).remove();
-         } else if(type == 2) {
-             location.href = route.url + '/mensajes/';
-         }
-      });
-   },
-   marcar: function(id, a, type, obj){
-      var act = (a == 0) ? 'read' : 'unread';
-      var show = (act == 'read') ? 'unread' : 'read';
-      //
-      mensaje.ajax('editar','ids=' + id + '&act=' + act,function(r){
-         // CAMBIAR ENTRE LEIDO Y NO LEIDO
-         if(type == 1){
-            var cid = id.split(':');
-            if(act == 'read')
-            $('#mp_' + cid[0]).removeClass('unread');
-            else 
-            $('#mp_' + cid[0]).addClass('unread');
-            //
-            $(obj).parent().find('a').hide();
-            $(obj).parent().find('.' + show).show();
-         } else {
-            location.href = route.url + '/mensajes/';
-         }
-      });
-   },
-   // POST
-   ajax: function(action, params, fn){
-      $('#loading').fadeIn(250);
-      $.ajax({
-   		type: 'POST',
-   		url: route.url + '/mensajes-' + action + '.php',
-   		data: params,
-   		success: function(h){
-            fn(h);
-            $('#loading').fadeOut(350);                
-   		}
-   	});
-   },
-   // PREPARAR EL ENVIO
-	nuevo: function (para, asunto, body, error){
-      // GUARDAR
-      this.vars['to'] = para;
-      this.vars['sub'] = asunto;
-      this.vars['msg'] = body;
-      this.vars['error'] = error;
-      //
-      mydialog.procesando_fin();
-		mydialog.show(true);
-		mydialog.title('Nuevo mensaje');
-		mydialog.body(this.form());
-		mydialog.buttons(true, true, 'Enviar', '$(\'.wysibb-texarea\').sync(); mensaje.enviar(0)', true, true, true, 'Cancelar', 'close', true, false);
-      $('#msg_body').wysibb({ 
-      	resize_maxheight: 170, 
-      	buttons: "smilebox,|,bold,italic,underline,strike,sup,sub,|,img,video,link,|,removeFormat" 
-      });
-      mydialog.center();
-	},
-   // ENVIAR...
-   enviar: function (enviar){
-      // DATOS
-      this.vars['to'] = $('#msg_to').val();
-      this.vars['sub'] = encodeURIComponent($('#msg_subject').val()); 
-      this.vars['msg'] = encodeURIComponent($('#msg_body').bbcode()); 
-      // COMPROBAR
-      if(enviar == 0){ // VERIFICAR...
-         if(this.vars['to'] == '')
-            mensaje.nuevo(mensaje.vars['to'], mensaje.vars['sub'], mensaje.vars['msg'], 'Por favor, especific&aacute; el destinatario.');
-         if(this.vars['msg'] == '')
-            mensaje.nuevo(mensaje.vars['to'], mensaje.vars['sub'], mensaje.vars['msg'], 'El mensaje esta vac&iacute;o.');
-         //
-         mydialog.procesando_inicio('Verificando...', 'Nuevo Mensaje');
-         this.ajax('validar', 'para=' + this.vars['to'], mensaje.checkform);
-      } else if(enviar == 1){
-         mydialog.procesando_inicio('Enviando...', 'Nuevo Mensaje');
-         // ENVIAR
-         this.ajax('enviar', 'para=' + mensaje.vars['to'] + '&asunto=' + mensaje.vars['sub'] + '&mensaje=' + mensaje.vars['msg'], mensaje.alert);
-      }
-   },
-   // RESPONDER
-   responder: function(mp_id){
-      this.vars['mp_id'] = $('#mp_id').val();
-      this.vars['mp_body'] = encodeURIComponent($('#respuesta').bbcode()); // Fix: 06/05/2018 - 1.3
-      if(this.vars['mp_body'] == '') {
-         $('#respuesta').focus();
-         return;
-      }
-      //
-      this.ajax('respuesta','id=' + this.vars['mp_id'] + '&body=' + this.vars['mp_body'], function(h){
-         $('#respuesta').val(''); // LIMPIAMOS
-         $('.wysibb-body').html('');
-         switch(h.charAt(0)){
-            case '0':
-               mydialog.alert("Error", h.substring(3));
-            break;
-            case '1':
-					$('#historial').append($(h.substring(3)).fadeIn('slow'));
-            break;
-         }
-         $('#respuesta').focus();
-      });
-   },
-	last: function () {
-		var c = parseInt($('#alerta_mps > a > span').html());
-      notifica.close();
-        //
-		if ($('#mp_list').css('display') != 'none') {
-			$('#mp_list').hide();
-			$('a[name=Mensajes]').parent('li').removeClass('monitor-notificaciones');
-		} else {
-			if (($('#mp_list').css('display') == 'none' && c > 0) || typeof mensaje.cache.last == 'undefined') {
-				$('a[name=Mensajes]').children('span').addClass('spinner');
-				$('a[name=Mensajes]').parent('li').addClass('monitor-notificaciones');
-				$('#mp_list').show();
-				mensaje.ajax('lista', '', function (r) {
-					mensaje.cache['last'] = r;
-					mensaje.show();
-				});
-			} else mensaje.show();
-		}
-	},
-	popup: function (mps) {
-		var c = parseInt($('#alerta_mps > a > span').html());
-		if (mps != c && mps > 0) {
-            if (mps != 1) var mps_total = ' mensajes'; else var mps_total = ' mensaje';
-			if (!$('#alerta_mps').length) $('div.userInfoLogin > ul > li.mensajes').append('<div class="alertas" id="alerta_mps"><a title="' + mps + mps_total + '"><span></span></a></div>');
-			$('#alerta_mps > a > span').html(mps);
-			$('#alerta_mps').animate({ top: '-=5px' }, 100, null, function(){ $('#alerta_mps').animate({ top: '+=5px' }, 100) });
-		} else if (mps == 0) $('#alerta_mps').remove();
-	},
-	show: function () {
-		if (typeof mensaje.cache.last != 'undefined') {
-			$('#alerta_mps').remove();
-			$('a[name=Mensajes]').parent('li').addClass('monitor-notificaciones');
-			$('a[name=Mensajes]').children('span').removeClass('spinner');
-			$('#mp_list').show().children('ul').html(mensaje.cache.last);
-		}
-	},
-   close: function(){
-      $('#mp_list').slideUp();
-      $('a[name=Mensajes]').parent('li').removeClass('monitor-notificaciones');
-   }
-}
-/* Denuncias */
-var denuncia = {
-   nueva: function(type, obj_id, obj_title, obj_user){
-      // PLANTILLA
-      var params = ['obj_id=' + obj_id, 'obj_title=' + obj_title, 'obj_user=' + obj_user].join('&')
-		$('#loading').fadeIn(250); 
-      $.post(route.url + '/denuncia-' + type + '.php', params, h => {
-         denuncia.set_dialog(h, obj_id, type);
-         $('#loading').fadeOut(350);
-		});
-   },
-   set_dialog: function(html, obj_id, type){
-      // MYDIALOG
-      mydialog.mask_close = false;
-      mydialog.close_button = true;		                                        
-		mydialog.show();
-      mydialog.title('Denunciar ' + type);
-		mydialog.body(html);
-		mydialog.buttons(true, true, 'Enviar', "denuncia.enviar(" + obj_id + ", '" + type + "')", true, true, true, 'Cancelar', 'close', true, false);
-		mydialog.center();
-   },
-   enviar: function(obj_id, type){
-      var params = [
-      	'obj_id=' + obj_id, 
-      	'razon=' + $('select[name=razon]').val(), 
-      	'extras=' + $('textarea[name=extras]').val()
-      ].join('&');
-      //
-      $('#loading').fadeIn(250);                         
-		$.post(route.url + '/denuncia-' + type + '.php', params, h => {
-         mydialog.alert((h.charAt(0) === '0' ? "Error" : "Bien"),'<div class="emptyData">' + h.substring(3) +  '</div>');
-         $('#loading').fadeOut(350);
-		});
-   }
-}
-
-const plantilla = `<div style="padding:0 35px;" id="AFormInputs">
-	<div class="form-line">
-		<label for="r_email">Correo electr&oacute;nico:</label>
-		<input type="text" tabindex="1" name="r_email" id="r_email" maxlength="35"/>
-	</div>
-</div>`
-
-function remind_resend(gew, type) {
-	// Cerramos el modal para abrir otro
-	close_login_box();
-	if( !gew ) {
-		var js = "javascript:$1(true, '"+type+"')";
-		switch (type) {
-			case 'password':
-				title = 'Recuperar Contrase&ntilde;a'
-				js = js.replace('$1', 'remind_password')
-			break;
-			case 'validation':
-				title = 'Reenviar validaci&oacute;n'
-				js = js.replace('$1', 'resend_validation')
-			break;
-		}
-		mydialog.show(true);
-		mydialog.title(title);
-		mydialog.body(plantilla);
-		mydialog.buttons(true, true, 'Continuar', js, true, true, true, 'Cancelar', 'close', true, false);		
-		mydialog.center();
-	} else {
-		page = type === 'password' ? 'pass' : 'validation'
-		$.post(route.url + '/recover-'+page+'.php', 'r_email=' + $('#r_email').val(), 
-			a => mydialog.alert((a.charAt(0) == '0' ? 'Opps!' : 'Hecho'), a.substring(3), false)
-		);
-		mydialog.center();
+	close() {
+		media.close('Monitor', 'mon');
 	}
 }
-remind_password = gew => remind_resend(gew, 'password')
-resend_validation = gew => remind_resend(gew, 'validation')
 
-	
-
-/* AFILIACION */
-var afiliado = {
-    vars: Array(),
-    nuevo: function(){
-        // CARGAMOS Y BORRAMOS
-        var form = '';
-        form += '<div class="emptyData" style="margin-bottom:10px" id="AFStatus"><span>Ingresa los datos de tu web para afiliarte.</span></div>'
-        form += '<div style="padding:0 35px;" id="AFormInputs">'
-        form += '<div class="form-line">'
-        form += '<label for="atitle">T&iacute;tulo</label>'
-        form += '<input type="text" tabindex="1" name="atitle" id="atitle" maxlength="35"/>'
-  		form += '</div>'
-        form += '<div class="form-line">'
-        form += '<label for="aurl">Direcci&oacute;n</label>'
-        form += '<input type="text" tabindex="2" name="aurl" id="aurl" value="http://"/>'
-  		form += '</div>'
-        form += '<div class="form-line">'
-        form += '<label for="aimg">Banner <small>(216x42px)</small></label>'
-        form += '<input type="text" tabindex="3" name="aimg" id="aimg" value="http://"/>'
-  		form += '</div>'
-        form += '<div class="form-line">'
-        form += '<label for="atxt">Descripci&oacute;n</label>'
-        form += '<textarea tabindex="4" rows="10" name="atxt" id="atxt" style="height:60px; width:295px"></textarea>'
-  		form += '</div>'
-        form += '<div class="form-line">'
-        form += '<label for="aID">RefID <a href="#" onclick="$(this).parent().parent().find('
-        form += "'span').css({display: 'block'}); return false"
-        form += '"><img src="' + global_data.img + '/images/icons/help.png"/></a></label><span style="display:none; margin-bottom:5px">Si utilizas <a href="http://www.tscript.in/"><b>T!Script</b></a> y ya nos enlazaste, ingresa el ID generado en tu panel de adminsitraci&oacute;n.</span>'
-        form += '<input type="text" tabindex="5" name="aID" id="aID" value="" style="width:100px!important"/>'
-  		form += '</div>'
-        form += '</div>'
-        //
-        mydialog.class_aux = 'registro';
-        mydialog.mask_close = false;
-        mydialog.close_button = true;
-		mydialog.show(true);
-		mydialog.title('Nueva Afiliaci&oacute;n');
-		mydialog.body(form);
-		mydialog.buttons(true, true, 'Enviar', 'afiliado.enviar(0)', true, true, true, 'Cancelar', 'close', true, false);
-		mydialog.center();
-    },
-
-    enviar: function(){
-        var inputs = $('#AFormInputs :input');
-        var status = true;
-        var params = '';
-        //
-        inputs.each(function(){
-            var val = $(this).val();
-            // EL CAMPO AID NO ES NECESARIO
-            if($(this).attr('name') == 'aID') val = '0'; 
-            // COMPROBAMOS CAMPOS VACIOS
-          /*  if((val == '') && status == true) {
-                var campo = $(this).parent().find('label');
-                $('#AFStatus > span').fadeOut().text('No has completado el campo ' + campo.text()).fadeIn();
-                status = false;
-            } else*/ if(status == true){
-                // JUNTAMOS LOS DATOS
-                params += $(this).attr('name') + '=' + val + '&';
-            }
+/* Mensajes */
+const mensaje = {
+	save: {},
+	cache: {},
+	vars: [],
+	// CREAR HTML
+	form() {
+		const { to, sub, msg, error } = this.save;
+		let html = '';
+		if(error) {
+			html += `<div class="emptyData">${error}</div>`;
+		}
+		html += `<div style="display:grid;grid-template-columns:80px 1fr;gap:.5rem">
+			<div class="m-col1">Para:</div>
+			<div class="m-col2">
+				<input type="text" value="${to ?? ''}" maxlength="16" id="msg_to" name="msg_to" style="width:95%;"/> 
+				<span style="font-size: 10px;">(Ingrese el nombre de usuario)</span>
+			</div>
+			<div class="m-col1">Asunto:</div>
+			<div class="m-col2">
+				<input type="text" value="${sub ?? ''}" maxlength="100" id="msg_subject" name="msg_subject" style="width:95%;"/>
+			</div>
+			<div class="m-col1">Mensaje:</div>
+			<div class="m-col2">
+				<textarea rows="10" id="msg_body" name="msg_body" style="height:100px; width:95%;">${msg ?? ''}</textarea>
+			</div>
+		</div>`
+		return html;                          
+	},
+	// FUNCIONES AUX
+	checkform(response) {
+		const parse = parseInt(response);
+		if(parse === 0) {
+			mensaje.enviar(1);
+		} else if(parse === 1 || parse === 2) {
+			const msg = parse === 1 ? 'No es posible enviarse mensajes a s&iacute; mismo.' : 'Este usuario no existe. Por favor, verif&iacute;calo.';
+			mensaje.nuevo(mensaje.vars['to'], mensaje.vars['sub'], mensaje.vars['msg'], msg);
+		}   
+	},
+	alert(response) {
+		dialog.alert('Aviso', response);  
+	},
+	eliminar(id, type) {
+		mensaje.ajax('editar', 'ids=' + id + '&act=delete', function(){
+			if(type === 2) {
+				location.href = route.url + '/mensajes/';
+			}
+			const cid = id.split(':');
+			$('#mp_' + cid[0]).remove(); 
 		});
-        //
-        if(status == true){
-            mydialog.procesando_inicio('Enviando...', 'Nueva Afiliaci&oacute;n');
-            afiliado.enviando(params);
-        }
-    },
-    enviando: function(params){
-    	//
-        $('#loading').fadeIn(250); 
-    	$.ajax({
-    		type: 'POST',
-    		url: route.url + '/afiliado-nuevo.php',
-    		data: params,
-    		success: function(h){
-    		  mydialog.procesando_fin();
-    		  switch(h.charAt(0)){
-    		      case '0':
-                $('#AFStatus > span').fadeOut().text('La URL es incorrecta').fadeIn();
-                   // mydialog.buttons(true, true, 'Aceptar', 'mydialog.close()', true, true);
-                  break;
-                  case '1':
-                    mydialog.body(h.substring(3));
-                    mydialog.buttons(true, true, 'Aceptar', 'mydialog.close()', true, true);
-                  break;
-                     case '2':
-                $('#AFStatus > span').fadeOut().text('Faltan datos').fadeIn();
-                   // mydialog.buttons(true, true, 'Aceptar', 'mydialog.close()', true, true);
-                  break;
-    		  }
-              mydialog.center();
-              $('#loading').fadeOut(350); 
-    		}
-    	});
-    },
-    detalles: function(aid){
-        $('#loading').fadeIn(250); 
-    	$.ajax({
-    		type: 'POST',
-    		url: route.url + '/afiliado-detalles.php',
-    		data: 'ref=' + aid,
-    		success: function(h){
-    		    mydialog.class_aux = '';
-        		mydialog.show(true);
-        		mydialog.title('Detalles');
-        		mydialog.body(h);
-                mydialog.buttons(true, true, 'Aceptar', 'mydialog.close()', true, true);
-                mydialog.center();
-                $('#loading').fadeOut(350); 
-                
-    		}
-    	});   
-    }
+	},
+	marcar(mid, type, active, mark, obj) {
+		const action = (active === 0) ? 'read' : 'unread';
+		const show = (active === 0) ? 'unread' : 'read';
+		// originalmente era asi mid:type, pero lo separe!
+		const ids = `${mid}:${type}`;
+		mensaje.ajax('editar', `ids=${ids}&act=${action}`, function() {
+			if(mark !== 1) {
+				location.href = route.url + '/mensajes/';
+			}
+			// CAMBIAR ENTRE LEIDO Y NO LEIDO
+			const cid = id.split(':');
+			$('#mp_' + mid)[(action === 'read' ? 'removeClass' : 'addClass')]('unread');
+			//
+			$(obj).parent().find('a').hide();
+			$(obj).parent().find('.' + show).show();
+		
+		});
+	},
+	// POST
+	ajax(action, params, fn) {
+		$('#loading').fadeIn(250);
+		$.post(`${route.url}/mensajes-${action}.php`, params, response => {
+			fn(response);
+			$('#loading').fadeOut(350);
+		});
+	},
+	// PREPARAR EL ENVIO
+	nuevo(to, sub, msg, error = '') {
+		Object.assign(this.save, { to, sub, msg, error });
+		dialog.init({
+			title: 'Nuevo mensaje',
+			body: this.form(),
+			buttons: {
+				confirm: { text: 'Enviar', action: () => mensaje.enviar(0) },
+				cancel: { text: 'Cancelar', action: 'close' }
+			}
+		});
+	},
+	// ENVIAR...
+	enviar(enviar) {
+		// DATOS
+		Object.assign(this.save, {
+			to: $('#msg_to').val(),
+			sub: $('#msg_subject').val(),
+			msg: $('#msg_body').val()
+		});
+		// COMPROBAR
+		if(enviar === 0) {
+			if(!this.save.to || !this.save.msg) {
+				return this.nuevo(this.save.to, this.save.sub, this.save.msg, (!this.save.to ? 'Especifique destinatario.' : 'El mensaje está vacío.'));
+			}
+			dialog.loading('Verificando...');
+			this.ajax('validar', `para=${this.save.to}`, this.checkform);
+		} else {
+			dialog.loading('Enviando...');
+			this.ajax('enviar', `para=${this.save.to}&asunto=${encodeURIComponent(this.save.sub)}&mensaje=${encodeURIComponent(this.save.msg)}`, this.alert);
+		}
+	},
+	// RESPONDER
+	responder(mp_id) {
+		this.vars['mp_id'] = $('#mp_id').val();
+		this.vars['mp_body'] = encodeURIComponent($('#respuesta').bbcode());
+		if(this.vars['mp_body'] === '') {
+			$('#respuesta').focus();
+			return;
+		}
+		//
+		this.ajax('respuesta', `id=${this.vars['mp_id']}&body=${this.vars['mp_body']}`, response => {
+			const { status, message } = $.parseResponse(response);
+			$('#respuesta').val('');
+			if(status === 0) dialog.alert("Error", message);
+			if(status === 1) $('#historial').append($(message).fadeIn('slow'));
+			$('#respuesta').focus();
+		});
+	},
+	last() {
+		const $list = $('#mp_list');
+		const $mensage = $('a[name=Mensajes]');
+		const count = parseInt($('#alerta_mps > a > span').text(), 10) || 0;
+		notifica.close();
+		// Si está visible → cerrar
+		if ($list.is(':visible')) {
+			$list.fadeOut();
+			$mensage.parent('li').removeClass('monitor-notificaciones');
+			return;
+		}
+		const hasCache = this.cache.last !== undefined;
+		// Mostrar panel
+		$mensage.children('span').addClass('spinner');
+		$mensage.parent('li').addClass('monitor-notificaciones');
+		$list.slideDown();
+		// Pedir datos si hace falta
+		if (!hasCache || count > 0) {
+			this.ajax('lista', '', response => {
+				this.cache.last = response;
+				this.show();
+			});
+		} else {
+			this.show();
+		}
+	},
+	popup(response) {
+		media.popup(response, 'mps');
+	},
+	show() {
+		media.show(mensaje.cache.last, 'Mensajes', 'mp');
+	},
+	close() {
+		media.close('Mensajes', 'mp');
+	}
 }
-
 
 /* IMAGENES */
-var imagenes = {
-   total: 0,
-   move: '-250px',
-   presentacion: function(){
-      $('#imContent').animate({top: '0px'}, 1000, 'easeOutQuad', function(){
-         $('#imContent').css({top: imagenes.move})
-         for(var i = imagenes.total; i >= 0; i--) $('#img_' + i).html($('#img_' + (i - 1)).html());
-         //
-         $('#img_0').html($('#img_' + imagenes.total).html());
-         // INFINITO :D
-         setTimeout("imagenes.presentacion()",5000);
-      });
-   }
-}
+const imagenes = {
+	total: 0,
+	offset: -250,
+	delay: 5000,
+	$container: $('#imContent'),
+	presentacion() {
+		this.$container.animate({ top: '0px' }, 1000, 'easeOutQuad', () => {
+			this.$container.css({ top: `${this.offset}px` });
+			for (let i = this.total; i > 0; i--) {
+				$(`#img_${i}`).html($(`#img_${i - 1}`).html());
+			}
+			$(`#img_0`).html($(`#img_${this.total}`).html());
+			setTimeout(() => this.presentacion(), this.delay);
+		});
+	}
+};
 
 // NEWS
-var news = {
-   total: 0,
-   count: 1,
-   slider: function(){
-      if(news.total > 1){
-         if(news.count < news.total) news.count++;
-         else news.count = 1;
-         //
-         $('#top_news > li').hide();
-         $('#new_' + news.count).fadeIn();
-         // INFINITO :D
-         setTimeout("news.slider()",7000);
-      }
-   }       
-}
+const news = {
+	total: 0,
+	current: 1,
+	delay: 7000,
+	$items: $('#top_news > li'),
+	slider() {
+		if (this.total <= 1) return;
+		this.current = this.current < this.total ? this.current + 1 : 1;
+		this.$items.hide();
+		$(`#new_${this.current}`).fadeIn();
+		setTimeout(() => this.slider(), this.delay);
+	}
+};
 
-// READY
-$(document).ready(function(){
-   /* NOTICIAS */
-   news.total = $('#top_news > li').length;
-   news.slider();
-   /* IMAGENES */
-   imagenes.presentacion();
-   notifica.popup(global_data.notifica);
-   mensaje.popup(global_data.mensaje);
+const closeIfClickOutside = ({ panel, trigger, onClose }, $target) => {
+	if (panel.is(':visible') && !$target.closest(panel).length && !$target.closest(trigger).length) {
+		onClose();
+	}
+};
+
+$(document).ready(() => {
+	$('body').off('click.uiClose').on('click.uiClose', e => {
+		const $target = $(e.target);
+		// Notificaciones
+		closeIfClickOutside({ panel: $('#mon_list'), trigger: 'a[name=Monitor]', onClose: () => notifica.last() }, $target);
+		// Mensajes
+		closeIfClickOutside({ panel: $('#mp_list'), trigger: 'a[name=Mensajes]', onClose: () => mensaje.last() }, $target);
+	});
+
+	/* NOTICIAS */
+	news.total = $('#top_news > li').length;
+	news.slider();
+	/* IMAGENES */
+	imagenes.presentacion();
+	notifica.popup(global_data.notifica);
+	mensaje.popup(global_data.mensaje);
 });

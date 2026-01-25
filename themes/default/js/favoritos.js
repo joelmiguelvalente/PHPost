@@ -135,7 +135,7 @@ var favoritos = {
 		$.ajax({
 			type: 'POST',
 			url: route.url + '/favoritos-borrar.php',
-			data: 'fav_id=' + fav_id + gget('key'),
+			data: 'fav_id=' + fav_id + queryParam('key'),
 			success: function(h){
 				switch(h.charAt(0)){
 					case '0': //Error
@@ -198,7 +198,7 @@ var favoritos = {
 		$.ajax({
 			type: 'POST',
 			url: route.url + '/favoritos-agregar.php',
-			data: 'postid=' + post_id + '&reactivar=' + fav_date + gget('key'),
+			data: 'postid=' + post_id + '&reactivar=' + fav_date + queryParam('key'),
 			success: function(h){
 				switch(h.charAt(0)){
 					case '0': //Error

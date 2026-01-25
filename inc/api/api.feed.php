@@ -35,8 +35,8 @@ if(!$tsLevelMsg) {
 	die();
 }
 
-require_once dirname(__DIR__, 2) . '/helpers/CoreHelper.php';
-require_once dirname(__DIR__, 2) . '/utils/Extras.php';
+require_once dirname(__DIR__, 1) . '/helpers/CoreHelper.php';
+require_once dirname(__DIR__, 1) . '/utils/Extras.php';
 $CoreHelper = new CoreHelper;
 $Extras = new Extras;
 

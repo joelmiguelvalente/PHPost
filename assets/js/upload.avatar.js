@@ -42,7 +42,7 @@ $changeAvatar.on('keyup', '.browse-url', function () {
 
 $changeAvatar.on('click', '.avatar-upload', async function () {
 	dialog.loading('Cargando...');// lo ejecuta bien
-
+	$('.avatar-loading').show();
 	try {
 		const data = new FormData();
 
@@ -61,7 +61,10 @@ $changeAvatar.on('click', '.avatar-upload', async function () {
 		});
 
 		const json = await rsp.json();
-		if (json.error) throw json.error;
+		if (json.error) {
+			throw json.error;
+			$('.avatar-loading').hide();
+		}
 
 		avatarState.key = json.key;
 		avatarState.ext = json.ext;
@@ -70,6 +73,7 @@ $changeAvatar.on('click', '.avatar-upload', async function () {
 
 	} catch (err) {
 		dialog.alert('Atención', err);
+		$('.avatar-loading').hide();
 	} finally {
 		//
 	}
@@ -104,6 +108,7 @@ function loadCropper(key, ext) {
 			aspectRatio: 1,
 			maxSize: { width: imageSize, height: imageSize },
 			onCropEnd: data => {
+				console.log(data)
 				avatarState.crop = data;
 			}
 		});
@@ -128,14 +133,22 @@ async function saveAvatarCrop() {
 			method: 'POST',
 			body: data
 		});
-
+		
 		const json = await rsp.json();
+		console.log(json)
 		if (json.error !== 'success') throw json.error;
 
-		mydialog.body('Avatar actualizado correctamente');
-		mydialog.buttons(false);
-
-		setTimeout(() => location.reload(), 1000);
+		dialog.init({
+	      buttonClose: true,
+	      title: 'Excelente',
+	      body: 'Avatar actualizado correctamente',
+	      buttons: {
+	         confirm: {
+	            text: 'Aceptar',
+	            action: () => location.reload()
+	         }
+	      }
+	   });
 
 	} catch (err) {
 		dialog.alert('Atención', err);

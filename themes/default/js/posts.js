@@ -1,7 +1,7 @@
 /* Eliminar Comentario */
 function borrar_com(comid, autor, postid, gew){
 	mydialog.close();
-   if(!postid) var postid = gget('postid');
+   if(!postid) var postid = queryParam('postid');
 	if(!gew) {
 		mydialog.show();
 		mydialog.title('Borrar Comentarios');
@@ -42,7 +42,7 @@ function ocultar_com(comid, autor, postid){
 	$.ajax({
 		type: 'POST',
 		url: route.url +'/comentario-ocultar.php',
-		data: 'comid=' + comid + '&autor=' + autor + '&post_id=' + postid + gget('postid'),
+		data: 'comid=' + comid + '&autor=' + autor + '&post_id=' + postid + queryParam('postid'),
 		success: function(h){
 			switch(h.charAt(0)){
 				case '0': //Error
@@ -124,7 +124,7 @@ function votar_post(puntos){
 	$.ajax({
 		type: 'POST',
 		url: route.url + '/posts-votar.php',
-		data: 'puntos=' + puntos + gget('postid'),
+		data: 'puntos=' + puntos + queryParam('postid'),
 		success: function(h){
 			show_votar_post(true);
 			$('.dar-puntos').slideUp();
@@ -150,7 +150,7 @@ function votar_post(puntos){
 var add_favoritos_agregado = false;
 function add_favoritos(){
 	if(add_favoritos_agregado) return;
-	if(!gget('key')){
+	if(!queryParam('key')){
 		mydialog.alert('Login', 'Tienes que estar logueado para realizar esta operaci&oacute;n');
 		return;
 	}
@@ -267,7 +267,7 @@ var comentario = {
     	$.ajax({
     		type: 'POST',
     		url: route.url + '/comentario-agregar.php',
-    		data: 'comentario=' + encodeURIComponent(text) + '&postid=' + gget('postid') + '&mostrar_resp=' + mostrar_resp + '&auser=' + auser,
+    		data: 'comentario=' + encodeURIComponent(text) + '&postid=' + queryParam('postid') + '&mostrar_resp=' + mostrar_resp + '&auser=' + auser,
     		success: function(h){
     			switch(h.charAt(0)){
     				case '0': //Error
@@ -355,7 +355,7 @@ var comentario = {
     	$.ajax({
     		type: 'POST',
     		url: route.url + '/comentario-votar.php',
-    		data: 'voto=' + voto + '&cid=' + cid + '&postid=' + gget('postid'),
+    		data: 'voto=' + voto + '&cid=' + cid + '&postid=' + queryParam('postid'),
     		success: function(h){
     			switch(h.charAt(0)){
     				case '0': //Error
@@ -389,7 +389,7 @@ var comentario = {
       switch(step){
          case 'show':
             var bbcode = htmlspecialchars_decode($('#citar_comm_'+id).html(), 'ENT_NOQUOTES');
-            var html = '<textarea id="edit-comment-' + id + '" class="textarea-edit autogrow" title="Escribir un comentario..." onfocus="onfocus_input(this)" onblur="onblur_input(this)">' + bbcode + '</textarea><br/><input type="button" class="mBtn btnGreen btnEdit" onclick="comentario.preview(\'' + id + '\', \'edit\')" value="Continuar &raquo;"/> <strong id="edit-error-' + id + '"></strong>';
+            var html = '<textarea id="edit-comment-' + id + '" class="textarea-edit autogrow" placeholder="Escribir un comentario...">' + bbcode + '</textarea><br/><input type="button" class="mBtn btnGreen btnEdit" onclick="comentario.preview(\'' + id + '\', \'edit\')" value="Continuar &raquo;"/> <strong id="edit-error-' + id + '"></strong>';
             $('#comment-body-' + id).html(html);
             $('#edit-comment-' + id).css('max-height', '300px');
          break;

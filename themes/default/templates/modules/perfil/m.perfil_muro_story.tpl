@@ -89,7 +89,7 @@
 							<input type="text" title="Escribe un comentario...." name="hack" value="Escribe un comentario..." pid="{$p.pub_id}" />
 							<div class="formulario" style="display:none">
 								<img src="{$tsRoutes.storage.avatar}/avatar_{$tsUser->uid}.webp" width="32" height="32"/>
-								<textarea class="comentar" title="Escribe un comentario..." id="cf_{$p.pub_id}" pid="{$p.pub_id}" name="add_wall_comment" onfocus="onfocus_input(this)" onblur="onblur_input(this)"></textarea>
+								<textarea class="comentar" placeholder="Escribe un comentario..." id="cf_{$p.pub_id}" pid="{$p.pub_id}" name="add_wall_comment"></textarea>
 								<div class="clearBoth"></div>
 							</div>
 						</div>

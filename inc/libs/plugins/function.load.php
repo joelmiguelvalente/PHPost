@@ -10,7 +10,7 @@ function smarty_function_load($params, Smarty\Template $template) {
    }
 
 	$checkFile = function (string $filename, string $type) use ($routes) {
-      $basePath = TS_THEMES . TS_TEMA;
+      $basePath = TS_THEMES . '/' . TS_TEMA;
       $assetPath = TS_ASSETS;
       $file     = "$filename.$type";
       if (file_exists("$basePath/$file")) { // Base

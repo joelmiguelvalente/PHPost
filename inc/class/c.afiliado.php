@@ -1,180 +1,179 @@
-<?php if ( ! defined('TS_HEADER')) exit('No se permite el acceso directo al script');
+<?php
+
 /**
- * Modelo para el control de los afiliados
- *
- * @name    c.afiliado.php
- * @author  PHPost Team
+ * @name c.afiliado.php
+ * @author PHPost Team
+ * @copyright 2026
  */
+
+declare(strict_types=1);
+
+if (!defined('TS_HEADER')) {
+	exit('No se permite el acceso directo al script');
+}
+
 class tsAfiliado {
-    
-    protected tsCore $Core;
-    protected tsUser $User;
+	
+	protected tsCore $Core;
+	protected tsUser $User;
 
-    public function __construct(tsCore $Core, tsUser $User) {
-        $this->Core = $Core;
-        $this->User = $User;
-    }
+	public function __construct(tsCore $Core, tsUser $User) {
+		$this->Core = $Core;
+		$this->User = $User;
+	}
 
-	/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*\
-								AFILIADOS
-	/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-	/*
-		getAfiliadosHome()
+	/**
+	 * @access public
+	 * @param string
+	 * @return array
 	*/
-    function getAfiliados($type = 'home'){
-        
-        //
-        if($type == 'home')
-		$query = db_exec([__FILE__, __LINE__], 'query', 'SELECT aid,a_titulo,a_url,a_banner,a_descripcion FROM w_afiliados WHERE a_active = \'1\' ORDER BY RAND() LIMIT 5');
-        elseif($type == 'admin')
-        $query = db_exec([__FILE__, __LINE__], 'query', 'SELECT aid,a_titulo,a_url,a_banner,a_descripcion,a_sid,a_hits_in,a_hits_out,a_date,a_active FROM w_afiliados');   
-        //
-        $data = result_array($query);
-        
-        //
-        return $data;
-    }
-    /*
-        getAfiliado()
-    */
-    function getAfiliado($type = NULL){
-        global $tsCore;
-        //
-        if(!$type){
-		$query = db_exec([__FILE__, __LINE__], 'query', 'SELECT aid,a_titulo,a_url,a_banner,a_descripcion FROM w_afiliados WHERE aid = \''.(int)$_POST['ref'].'\' ');
-		}elseif($type = 'admin'){
-		$query = db_exec([__FILE__, __LINE__], 'query', 'SELECT aid,a_titulo,a_url,a_banner,a_descripcion FROM w_afiliados WHERE aid = \''.(int)$_GET['aid'].'\' ');
+	public function getAfiliados(string $type = 'home'): array {
+		$query = "SELECT aid, a_titulo, a_url, a_banner, a_descripcion";
+		if($type === 'admin') $query .= ", a_sid, a_hits_in, a_hits_out, a_date, a_active";
+		$query .= " FROM w_afiliados";
+		if($type === 'home') $query .= " WHERE a_active = 1 ORDER BY RAND() LIMIT 5";
+		return result_array(db_exec([__FILE__, __LINE__], 'query', $query));
+	}
+
+	/**
+	 * @access public
+	 * @param string
+	 * @return array
+	*/
+	public function getAfiliado(string $type = ''): array {
+		$aid = ($type === 'admin') ? (int)($_GET['aid'] ?? 0) : (int)($_POST['ref'] ?? 0);
+		$query = "SELECT aid, a_titulo, a_url, a_banner, a_descripcion FROM w_afiliados WHERE aid = $aid";
+		return db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', $query));
+	}
+
+	/**
+	 * @access public
+	 * @return array
+	*/
+	public function newAfiliado(): string {
+		global $tsMonitor;
+		$dataIn = [];
+		$time = time();
+		foreach($_POST as $key => $value) {
+			$value = htmlspecialchars(trim($value ?? ''));
+			$dataIn[$key] = $this->Core->setSecure($this->Core->parseBadWords($value));
 		}
-		$data = db_exec('fetch_assoc', $query);
-		
-        //
-        return $data;
-    }
+		$checked = $dataIn; // Evitamos modificar el array principal
+		unset($checked['sid']); // Solo borramos el item de la copia del array
+		if(in_array('', $checked, true)) {
+		  return '2: Faltan datos';
+		}
+		if(!filter_var($dataIn['url'], FILTER_VALIDATE_URL)) { 
+			return '0: Url incorrecta'; 
+		}
+		//
+		if(db_exec([__FILE__, __LINE__], 'query', "INSERT INTO w_afiliados (a_titulo, a_url, a_banner, a_descripcion, a_sid, a_date) VALUES ('{$dataIn['titulo']}', '{$dataIn['url']}', '{$dataIn['banner']}', '{$dataIn['descripcion']}', '{$dataIn['sid']}', {$time})")) {
+			$afid = (int)db_exec('insert_id');
+		  	// AVISO
+			$aviso = "<center>
+				<a href=\"{$dataIn['url']}\">
+					<img alt=\"banner del sitio {$dataIn['titulo']}\" src=\"{$dataIn['banner']}\" title=\"{$dataIn['titulo']}\"/>
+				</a>
+			</center>
+			<br />
+			<span>{$dataIn['titulo']} quiere ser su afiliado, dir&iacute;jase a la administraci&oacute;n para aceptar o cancelarla.</span>";
+			$tsMonitor->setAviso(1,'Nueva afiliaci&oacute;n', (string)$aviso, 0);
+			//
+			$titleSite  = $this->Core->settings['titulo'];
+			$urlSiteRef = $this->Core->settings['url'].'/?ref='.$afid;
+			$bannerSite = $this->Core->settings['banner'];
+			//
+			return "1: <div class=\"emptyData\">Tu afiliaci&oacute;n ha sido agregada!</div><br>
+			<div>Se le ha notificado al administrador tu afiliaci&oacute;n para que la apruebe, mientras tanto copia el siguiente c&oacute;digo, ser&aacute; con el cual nos debes enlazar.<br><br>
+				<div class=\"form-line\">
+					<label for=\"atitle\">C&oacute;digo HTML</label>
+					<textarea tabindex=\"4\" rows=\"10\" style=\"height:60px;width:100%\" onclick=\"select(this)\"><a href=\"$urlSiteRef\" target=\"_blank\" title=\"$titleSite\"><img src=\"$bannerSite\" alt=\"banner del sitio $titleSite\"></a></textarea>
+				</div>
+			</div>";
+		}
+	}
 	
-    /*
-        newAfiliado()
-    */
-    function newAfiliado(){
-        global $tsCore, $tsMonitor;
-        //
-        $dataIn['titulo'] =htmlspecialchars($tsCore->parseBadWords($_POST['atitle']));
-        $dataIn['url'] = htmlspecialchars($tsCore->parseBadWords($_POST['aurl']));
-        $dataIn['banner'] = htmlspecialchars($tsCore->parseBadWords($_POST['aimg']));
-        $dataIn['desc'] = htmlspecialchars($tsCore->parseBadWords($_POST['atxt']));
-        $dataIn['sid'] = htmlspecialchars($_POST['aID']);
-        if(!$dataIn['titulo'] || !$dataIn['url'] || $dataIn['url'] == 'http://' || !$dataIn['banner'] || $dataIn['banner'] == 'http://' || !$dataIn['desc']){
-          die('2: Faltan datos');
-        }
-        if(!filter_var(''.$_REQUEST['aurl'].'', FILTER_VALIDATE_URL)){ die('0: Url incorrecta'); }
-        //
-		if(db_exec([__FILE__, __LINE__], 'query', 'INSERT INTO `w_afiliados` (a_titulo, a_url, a_banner, a_descripcion, a_sid, a_date) VALUES (\''.$tsCore->setSecure($dataIn['titulo']).'\', \''.$tsCore->setSecure($dataIn['url']).'\', \''.$tsCore->setSecure($dataIn['banner']).'\', \''.$tsCore->setSecure($dataIn['desc']).'\', \''.intval($dataIn['sid']).'\',\''.time().'\')')) {
-		$afid = db_exec('insert_id');
-		  // AVISO
-            $aviso = '<center><a href="'.$dataIn['url'].'"><img src="'.$dataIn['banner'].'" title="'.$dataIn['titulo'].'"/></a></center> <br /><br /> '.$dataIn['titulo'].' quiere ser su afiliado, dir&iacute;jase a la administraci&oacute;n para aceptar o cancelarla.';
-            $tsMonitor->setAviso(1,'Nueva afiliaci&oacute;n', $aviso, 0);
-            //
-            $entit = $tsCore->settings['titulo'];
-            $enurl = $tsCore->settings['url'].'/?ref='.$afid;
-            $enimg = $tsCore->settings['banner'];
-            //
-            $return = '1: <div class="emptyData">Tu afiliaci&oacute;n ha sido agregada!</div><br>';
-            $return .= '<div style="padding:0 35px;">Se le ha notificado al administrador tu afiliaci&oacute;n para que la apruebe, mientras tanto copia el siguiente c&oacute;digo, ser&aacute; con el cual nos debes enlazar.<br><br>';
-            $return .= '<div class="form-line">';
-            $return .= '<label for="atitle">C&oacute;digo HTML</label>';
-            $return .= '<textarea tabindex="4" rows="10" style="height:60px; width:295px" onclick"select(this)">';
-            $return .= '<a href="'.$enurl.'" target="_blank" title="'.$entit.'"><img src="'.$enimg.'"></a>';
-            $return .= '</textarea>';
-      		$return .= '</div>';
-            $return .= '</div>';
-        }
-        //
-        return $return;
-        
-    }
-	
-	function EditarAfiliado(){
-        global $tsCore;
-        //
-		$afiliado = intval($_GET['aid']);
-		$titulo = $tsCore->parseBadWords($_POST['af_title']);
-		$url = $tsCore->parseBadWords($_POST['af_url']);
-		$banner = $tsCore->parseBadWords($_POST['af_banner']);
-		$descripcion = $tsCore->parseBadWords($_POST['af_desc']);
-       
-	   if(!$afiliado || !$titulo || !$url || !$banner || !$descripcion){
-          return '0: Faltan datos';
-        }
-        if(!filter_var($url, FILTER_VALIDATE_URL)){ return '0: Url incorrecta'; }
-        //
-		if(db_exec([__FILE__, __LINE__], 'query', 'UPDATE w_afiliados SET a_titulo = \''.$tsCore->setSecure($titulo).'\', a_url = \''.$tsCore->setSecure($url).'\', a_banner = \''.$tsCore->setSecure($banner).'\', a_descripcion = \''.$tsCore->setSecure($descripcion).'\' WHERE aid= \''.(int)$afiliado.'\'')) {
+	/**
+	 * @access public
+	 * @return string
+	*/
+	public function EditarAfiliado(): string {
+		$afiliado = (int)($_GET['aid'] ?? 0);
+		$newData = [
+			'titulo' => $this->Core->parseBadWords($_POST['af_title']),
+			'url' => $this->Core->parseBadWords($_POST['af_url']),
+			'banner' => $this->Core->parseBadWords($_POST['af_banner']),
+			'descripcion' => $this->Core->parseBadWords($_POST['af_desc'])
+		];  
+	   if(!$afiliado || !$newData['titulo'] || !$newData['url'] || !$newData['banner'] || !$newData['descripcion']){
+		  return '0: Faltan datos';
+		}
+		if(!filter_var($newData['url'], FILTER_VALIDATE_URL)){ return '0: Url incorrecta'; }
+		//
+		$afs = $this->Core->buildSqlSet($newData , 'a_');
+		if(!db_exec([__FILE__, __LINE__], 'query', "UPDATE w_afiliados SET $afs WHERE aid= '$afiliado'")) {
+			return '0: Ocurri&oacute; un error';
+		}
 		return '1: Guardado';
-        }else{
-		return '0: Ocurri&oacute; un error';
+	}
+	
+	/**
+	 * @access public
+	 * @return string
+	*/
+	public function DeleteAfiliado(): string {
+		$aid = (int)($_POST['afid'] ?? 0);
+		if($this->User->is_admod !== 1) {
+			return '0: Tu, no puedes hacer eso';
+		} 
+		if(!db_exec([__FILE__, __LINE__], 'query', "DELETE FROM w_afiliados WHERE aid = $aid")) {
+			return '0: No se pudo eliminar el afiliado.';
 		}
-        //
-        
-        
-    }
+		return '1: Afiliado eliminado.';
+	}
 	
-	function DeleteAfiliado($aid){
-        global $tsUser;
-        //
-		if($tsUser->is_admod == 1) {
-		if(db_exec([__FILE__, __LINE__], 'query', 'DELETE FROM w_afiliados WHERE aid = \''.(int)$aid.'\''));
-		return '1: Afiliado eliminado';
-		}else return '0: T%iacute;o, no puedes hacer eso';
-    }
+	/**
+	 * @access public
+	 * @return string
+	*/
+	public function SetActionAfiliado(): string {
+		$afiliado = (int)($_POST['aid'] ?? 0);
+		$data = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', "SELECT a_active FROM w_afiliados WHERE aid = $afiliado"));
+		//
+		$active = ($data['a_active'] === 1) ? 0 : 1;
+		if(!db_exec([__FILE__, __LINE__], 'query', "UPDATE w_afiliados SET a_active = $active WHERE aid = $afiliado")) {
+			return '0: Ocurri&oacute, un error';
+		}
+		return ($data['a_active'] === 1) ? '2: Afiliado deshabilitado' : '1: Afiliado habilitado.';
+	}
 	
-	function SetActionAfiliado(){
-        global $tsUser;
-		
-		$afiliado = intval($_POST['aid']);
-        $query = db_exec([__FILE__, __LINE__], 'query', 'SELECT a_active FROM w_afiliados WHERE aid = \''.(int)$afiliado.'\'');
-        $data = db_exec('fetch_assoc', $query);
-        
-		
-        if($data['a_active'] == 1){
-		    if(db_exec([__FILE__, __LINE__], 'query', 'UPDATE w_afiliados SET a_active = \'0\' WHERE aid = \''.(int)$afiliado.'\'')) {
-			   return '2: Afiliado deshabilitado';
-			   }else return '0: Ocurri&oacute, un error';
-        } else{
-		    if(db_exec([__FILE__, __LINE__], 'query', 'UPDATE w_afiliados SET a_active = \'1\' WHERE aid = \''.(int)$afiliado.'\'')) {
-			   return '1: Afiliado habilitado.';
-        } else return 'Ocurri&oacute; un error';
-			}
-}	
-
-
-	/*
-        urlOut()
-    */
-    function urlOut(){
-        global $tsCore;
-        //
-		$query = db_exec([__FILE__, __LINE__], 'query', 'SELECT a_url,a_sid FROM w_afiliados WHERE aid = \''.intval($_GET['ref']).'\' LIMIT 1');
-        $data = db_exec('fetch_assoc', $query);
-        
-        //
-        if(isset($data['a_url'])){
-			db_exec([__FILE__, __LINE__], 'query', 'UPDATE `w_afiliados` SET a_hits_out = a_hits_out + 1 WHERE aid = \''.intval($_GET['ref']).'\'');
-            // Y REDIRECCIONAMOS
-            $enref = empty($data['a_sid']) ? '/' : '/?ref='.$data['a_sid']; // REFERIDO
-            $enurl = $data['a_url'].$enref;
-            // REDIRECCIONAMOS
-            $tsCore->redirectTo($enurl);
-            exit();
-        } else $tsCore->redirectTo($tsCore->settings['url']);
-    }
-    /*
-        urlIn()
-    */
-    function urlInRef(){
-        global $tsCore;
-        //
-        $ref = (int)$_GET['ref'];
-		
-        if($ref > 0) db_exec([__FILE__, __LINE__], 'query', 'UPDATE `w_afiliados` SET a_hits_in = a_hits_in + 1 WHERE  aid = \''.intval($_GET['ref']).'\'');
-        // 
-        $tsCore->redirectTo($tsCore->settings['url']);
-    }
+	/**
+	 * @access public
+	 * @return void
+	*/
+	public function urlOut(): void {
+		$afiliado = (int)($_GET['ref'] ?? 0);
+		$data = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', "SELECT a_url, a_sid FROM w_afiliados WHERE aid = $afiliado LIMIT 1"));
+		if(!isset($data['a_url']) || $data['a_url'] === '') {
+			$this->Core->redirectTo($this->Core->settings['url']);
+			exit();
+		}
+		db_exec([__FILE__, __LINE__], 'query', "UPDATE w_afiliados SET a_hits_out = a_hits_out + 1 WHERE aid = $afiliado");
+		// Y REDIRECCIONAMOS
+		$this->Core->redirectTo(
+			"{$data['a_url']}/" . ($data['a_sid'] === '' ? '' : "?ref={$data['a_sid']}")
+		);
+		exit();
+	}
+	
+	/**
+	 * @access public
+	 * @return void
+	*/
+	public function urlInRef(): void {
+		$afiliado = (int)($_GET['ref'] ?? 0);
+		if($ref > 0) db_exec([__FILE__, __LINE__], 'query', "UPDATE `w_afiliados` SET a_hits_in = a_hits_in + 1 WHERE aid = $afiliado");
+		$this->Core->redirectTo($this->Core->settings['url']);
+		exit();
+	}
 }

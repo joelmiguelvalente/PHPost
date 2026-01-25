@@ -49,7 +49,7 @@ class tsCuenta {
 		//
 		$perfilInfo = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', "SELECT p.*, u.user_registro, u.user_lastactive FROM u_perfil AS p LEFT JOIN u_miembros AS u ON p.user_id = u.user_id WHERE p.user_id = $userId LIMIT 1"));
 		// FECHA DE NACIMIENTO
-		$fecha = "{$perfilInfo['user_dia']}-{$perfilInfo['user_mes']}-{$perfilInfo['user_ano']}";
+		$fecha = empty($perfilInfo['user_dia']) ? date('d-m-Y') : sprintf('%02d-%02d-%04d', $perfilInfo['user_dia'], $perfilInfo['user_mes'], $perfilInfo['user_ano']);
 		$perfilInfo['nacimiento'] = date("Y-m-d", strtotime($fecha));
 		// CAMBIOS
 		$perfilInfo = $this->unData($perfilInfo);
@@ -512,8 +512,7 @@ class tsCuenta {
 	/*
 		loadBloqueos()
 	*/
-	function loadBloqueos(){
-		global $tsUser;
+	function loadBloqueos() {
 		//
 		$query = db_exec([__FILE__, __LINE__], 'query', 'SELECT b.*, u.user_name FROM u_miembros AS u LEFT JOIN u_bloqueos AS b ON u.user_id = b.b_auser WHERE b.b_user = \''.(int)$this->User->uid.'\'');
 		$data = result_array($query);

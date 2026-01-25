@@ -5621,10 +5621,6 @@ display:inline;
 	width: 270px!important;
 }
 
-.post-privado .form-line {
-margin-bottom: 10px;
-}
-
 .post-privado #RegistroForm .pasoDos input {
 	padding: 0px;	
 	width:auto!important;
@@ -7223,11 +7219,7 @@ padding:14px 10px 12px 40px;
 .help.loading span { background-position: right -135px; }
 
 .help.ok span em { background-position: left -45px; }
-.help.ok span { background-position: right -45px;; }
-
-.form-line {
-	position: relative;
-}
+.help.ok span { background-position: right -45px; }
 
 #clima_loading { display: none; background: url(images/loading_white.gif); width: 16px; height: 16px; float: right }
 

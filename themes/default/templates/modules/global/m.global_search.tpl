@@ -4,7 +4,7 @@
                     	</div>
                         <div style="clear:both">
                             <img src="{$tsRoutes.tema.images}/mini_InputSleft_2.gif" class="mini_leftIbuscador"/>
-                            <input type="text" id="ibuscadorq" name="q" onkeypress="ibuscador_intro(event)" onfocus="onfocus_input(this)" onblur="onblur_input(this)" value="Buscar" title="Buscar" class="mini_ibuscador onblur_effect">
+                            <input type="text" id="ibuscadorq" name="q" onkeypress="ibuscador_intro(event)"  value="" placeholder="Buscar" class="mini_ibuscador onblur_effect">
                     	    <input vspace="2" hspace="10" type="submit" align="top" value="" alt="Buscar" title="Buscar" class="mini_bbuscador"/>
                         </div>
                         <input type="hidden" name="e" value="web" />

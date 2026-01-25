@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name ajax.login.php
+ * @name index.php
  * @author PHPost Team
  * @copyright 2026
  */

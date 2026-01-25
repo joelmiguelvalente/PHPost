@@ -126,7 +126,7 @@
 				<form method="post" action="" name="firmar">
 					<label for="mensaje" style="font-size:12px"><b>Mensaje</b></label>
 					<div class="error"></div>
-					<textarea name="mensaje" id="mensaje" rows="2" class="onblur_effect autorow" style="width:504px;margin:5px 0; min-height:36px; max-height:160px" title="Escribe un mensaje." onblur="onblur_input(this)" onfocus="onfocus_input(this)">Escribe un mensaje.</textarea>
+					<textarea name="mensaje" id="mensaje" rows="2" class="onblur_effect autorow" style="width:504px;margin:5px 0; min-height:36px; max-height:160px" placeholder="Escribe un mensaje.">Escribe un mensaje.</textarea>
 					<input type="hidden" name="auser_post" value="{$tsFoto.f_user}" />
 					<input type="button" id="btnComment" class="mBtn btnOk" value="Comentar" onclick="fotos.comentar()" />
 				</form>

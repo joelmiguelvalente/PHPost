@@ -13,9 +13,12 @@ if (!defined('TS_HEADER')) {
 	exit('No se permite el acceso directo al script');
 }
 
-require_once TS_SMARTY . 'autoload.php';
+require_once dirname(__DIR__, 1) . '/libs/smarty/autoload.php';
+require_once dirname(__DIR__, 1) . '/libs/extensiones/SmartyExtensiones.php';
 
 class tsSmarty extends \Smarty\Smarty {
+
+	private string $cache;
 
 	private string $theme;
 
@@ -34,13 +37,9 @@ class tsSmarty extends \Smarty\Smarty {
 		// Habilita la comprobación de compilación para un rendimiento óptimo
 		$this->setCompileCheck(TRUE);
 
-		// Establece el directorio de compilación de plantillas
-		$this->setCompileDir(TS_CACHE . TS_TEMA);
-
 		// Agrega directorio de plugins Smarty
 		$this->loadPlugins();
 
-		require_once TS_LIBS . 'extensiones/SmartyExtensiones.php';
 		$this->addExtension(new SmartyExtensiones());
 
 		// Suprime advertencias de variables indefinidas o nulas
@@ -49,7 +48,7 @@ class tsSmarty extends \Smarty\Smarty {
 
 	public function setTheme(string $theme): void {
 		$this->theme = $theme;
-		$this->setCompileDir(TS_CACHE . $theme);
+		$this->setCompileDir(dirname(__DIR__, 1) . '/storage/cache/' . $theme);
 	}
 
 	public function setPage(string $page): void {
@@ -69,8 +68,8 @@ class tsSmarty extends \Smarty\Smarty {
 	private function loadPlugins(): void {
 		// Definir los directorios de plugins
 		$pluginDirs = [
-			'function' => TS_PLUGINS . 'function.*.php',
-			'modifier' => TS_PLUGINS . 'modifier.*.php'
+			'function' => dirname(__DIR__, 1) . '/libs/plugins/function.*.php',
+			'modifier' => dirname(__DIR__, 1) . '/libs/plugins/modifier.*.php'
 		];
 		// Iterar sobre las categorías de plugins
 		foreach ($pluginDirs as $type => $pattern) {
@@ -111,10 +110,10 @@ class tsSmarty extends \Smarty\Smarty {
 	private function mapDirectories(): array {
 		$directories = [
 			'root'		 => TS_ROOT,
-			'auth'		 => TS_VIEWS . 'auth',
-			'api'			 => TS_VIEWS . 'api',
-			'error'		 => TS_VIEWS . 'error',
-			'components' => TS_VIEWS . 'components',
+			'auth'		 => TS_VIEWS . '/auth',
+			'api'			 => TS_VIEWS . '/api',
+			'error'		 => TS_VIEWS . '/error',
+			'components' => TS_VIEWS . '/components',
 		];
 		return $directories;
 	}
@@ -123,9 +122,9 @@ class tsSmarty extends \Smarty\Smarty {
 	 * Carga todos los directorios utilizados por el tema.
 	 */
 	private function loadAllTemplates(): void {
-		$templates = TS_THEMES . "{$this->theme}/templates";
+		$templates = TS_THEMES . "/{$this->theme}/templates";
 		$map = array_merge([
-			'tema'        => TS_THEMES . $this->theme,
+			'tema'        => TS_THEMES . "/{$this->theme}",
 			'templates'   => $templates,
 			'sections'    => "$templates/sections/",
 			'modules'     => "$templates/modules/",

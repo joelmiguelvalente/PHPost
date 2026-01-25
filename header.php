@@ -1,11 +1,11 @@
-<?php 
+<?php
 
 /**
- * @package     PHPost
- * @author      Miguel92
- * @copyright   2026
- * @version     2.0.0
+ * @name header.php
+ * @author PHPost Team
+ * @copyright 2026
  */
+
 declare(strict_types=1);
 
 /*
@@ -16,29 +16,10 @@ declare(strict_types=1);
 
 defined('TS_HEADER') OR define('TS_HEADER', TRUE);
 
-//DEFINICION DE CONSTANTES
-define('TS_ROOT', __DIR__);
-
-define('TS_VIEWS',  TS_ROOT . '/views/');
-define('TS_THEMES',	TS_ROOT . '/themes/');
-define('TS_INCLUDES',TS_ROOT . '/inc/');
-define('TS_STORAGE', TS_INCLUDES . 'storage/');
-define('TS_CLASS', 	TS_INCLUDES . 'class/');
-define('TS_LIBS', 	TS_INCLUDES . 'libs/');
-define('TS_CONFIG', 	TS_INCLUDES . 'config/');
-define('TS_UTILS', 	TS_INCLUDES . 'utils/');
-define('TS_EXTRA', 	TS_INCLUDES . 'extras/');
-define('TS_ASSETS', 	TS_ROOT . '/assets/');
-define('TS_SMARTY', 	TS_LIBS . 'smarty/');
-define('TS_PLUGINS', TS_LIBS . 'plugins/');
-define('TS_CACHE', 	TS_STORAGE . 'cache/');
-
-set_include_path(get_include_path() . PATH_SEPARATOR . realpath('./'));
-
-// Sesión
-if(!isset($_SESSION)) session_start();
-
-require_once TS_CONFIG . 'Config.php';
+const BASEPATH = __DIR__;
+require_once BASEPATH . '/inc/config/Config.Paths.php';
+require_once TS_CONFIG . '/Config.php';
+require_once TS_CONFIG . '/Config.Session.php';
 
 // Reporte de errores
 error_reporting((Config::app('app.debug_all') ? E_ALL : (Config::app('app.debug') ? (E_ALL & ~E_WARNING & ~E_NOTICE & ~E_DEPRECATED) : 0)));
@@ -51,30 +32,31 @@ ini_set('error_log',      Config::app('paths.logs') . '/log-' . date('dmy') . '.
 set_time_limit(300);
 
 // Funciones
-require_once TS_UTILS.'IP.php';
-require_once TS_UTILS.'Paginator.php';
+require_once TS_UTILS . '/IP.php';
+require_once TS_UTILS . '/Paginator.php';
+
 $IP = new IP;
 $Paginator = new Paginator;
 
-require_once TS_EXTRA.'functions.php';
+require_once TS_EXTRA . '/functions.php';
 
 // Nucleo
-require_once TS_CLASS.'c.core.php';
+require_once TS_CLASS . '/c.core.php';
 	
 // Controlador de usuarios
-require_once TS_CLASS.'c.user.php';
+require_once TS_CLASS . '/c.user.php';
 
 // Monitor de usuario
-require_once TS_CLASS.'c.monitor.php';
+require_once TS_CLASS . '/c.monitor.php';
 	
 // Actividad de usuario
-require_once TS_CLASS.'c.actividad.php';
+require_once TS_CLASS . '/c.actividad.php';
 
 // Mensajes de usuario
-require_once TS_CLASS.'c.mensajes.php';
+require_once TS_CLASS . '/c.mensajes.php';
 
 // Crean requests
-require_once TS_EXTRA.'QueryString.php';
+require_once TS_EXTRA . '/QueryString.php';
 
 /*
  * -------------------------------------------------------------------
@@ -97,13 +79,13 @@ $tsMonitor = new tsMonitor($tsCore, $tsUser);
 $tsActividad = new tsActividad($tsCore, $tsUser);
 
 // Mensajes
-$tsMP = new tsMensajes();
+$tsMP = new tsMensajes($tsCore, $tsUser);
 
 // Definimos el template a utilizar
 define('TS_TEMA', $tsCore->settings['tema']['t_path'] ?? 'default');
 
 // Smarty
-require_once TS_CLASS . 'c.smarty.php';
+require_once TS_CLASS . '/c.smarty.php';
 $smarty = new tsSmarty();
 $smarty->output(false);
 

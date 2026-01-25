@@ -1,76 +1,60 @@
-<?php if ( ! defined('TS_HEADER')) exit('No se permite el acceso directo al script');
+<?php
+
 /**
- * Controlador AJAX
- *
- * @name    ajax.mensajes.php
- * @author  PHPost Team
-*/
-/**********************************\
+ * @name ajax.mensajes.php
+ * @author PHPost Team
+ * @copyright 2026
+ */
 
-*	(VARIABLES POR DEFAULT)		*
+declare(strict_types=1);
 
-\*********************************/
+if (!defined('TS_HEADER')) {
+	exit('No se permite el acceso directo al script');
+}
 
-	// NIVELES DE ACCESO Y PLANTILLAS DE CADA ACCIÓN
-	$files = array(
-		'mensajes-validar' => array('n' => 2, 'p' => ''),
-        'mensajes-enviar' => array('n' => 2, 'p' => ''),
-        'mensajes-respuesta' => array('n' => 2, 'p' => 'resp'),
-        'mensajes-lista' => array('n' => 2, 'p' => 'lista'),
-        'mensajes-editar' => array('n' => 2, 'p' => ''),
-	);
+const ACTIONS = [
+   'mensajes-validar' => ['nivel' => 2, 'template' => '', 'ajax' => false],
+   'mensajes-enviar' => ['nivel' => 2, 'template' => '', 'ajax' => false],
+   'mensajes-respuesta' => ['nivel' => 2, 'template' => 'resp', 'ajax' => true],
+   'mensajes-lista' => ['nivel' => 2, 'template' => 'lista', 'ajax' => true],
+   'mensajes-editar' => ['nivel' => 2, 'template' => '', 'ajax' => false]
+];
 
-/**********************************\
+if (!array_key_exists($action, ACTIONS)) {
+   http_response_code(403);
+   exit('Acción inválida');
+}
 
-* (VARIABLES LOCALES ESTE ARCHIVO)	*
+$config = ACTIONS[$action];
 
-\*********************************/
+$tsLevel = $config['nivel'];
+$tsAjax  = (int) $config['ajax'];
+$tsPage  = sprintf('p.mensajes.%s', $config['template']);
 
-	// REDEFINIR VARIABLES
-	$tsPage = 'p.mensajes.'.$files[$action]['p'];
-	$tsLevel = $files[$action]['n'];
-	$tsAjax = empty($files[$action]['p']) ? 1 : 0;
+// DEPENDE EL NIVEL
+$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
+if(!$tsLevelMsg) { 
+	echo '0: '.$tsLevelMsg; 
+	die();
+}
 
-/**********************************\
+// CODIGO
+switch($action){
+	case 'mensajes-validar':
+		echo $tsMP->getValid();
+	break;
+	case 'mensajes-enviar':
+		echo $tsMP->newMensaje();
+	break;
+	case 'mensajes-respuesta':
+		$smarty->assign("mp",$tsMP->newRespuesta());
+	break;
+	case 'mensajes-lista':
+		$smarty->assign("tsMensajes",$tsMP->getMensajes(1, false, 'monitor'));
+	break;
+	case 'mensajes-editar':
+		echo $tsMP->editMensajes();
+	break;
+}
 
-*	(INSTRUCCIONES DE CODIGO)		*
-
-\*********************************/
-	
-	// DEPENDE EL NIVEL
-	$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
-	if($tsLevelMsg != 1) { echo '0: '.$tsLevelMsg['mensaje']; die();}
-	// CODIGO
-	switch($action){
-		case 'mensajes-validar':
-			// <!--
-            echo $tsMP->getValid();
-            // -->
-		break;
-        case 'mensajes-enviar':
-			// <!--
-            echo $tsMP->newMensaje();
-            // -->
-		break;
-        case 'mensajes-respuesta':
-			// <!--
-            $smarty->assign("mp",$tsMP->newRespuesta());
-            // -->
-		break;
-        case 'mensajes-lista':
-			// <!--
-            $smarty->assign("tsMensajes",$tsMP->getMensajes(1, false, 'monitor')); // Edit: 21/02/2014
-            // -->
-		break;
-        case 'mensajes-editar':
-			// <!--
-            echo $tsMP->editMensajes();
-            // -->
-		break;
-	}
-    
-    /*
-        HACK
-    */
-    $_GET['ts'] = true;
-?>
+$_GET['ts'] = true;

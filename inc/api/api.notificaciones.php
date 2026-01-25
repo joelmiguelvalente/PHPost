@@ -1,79 +1,65 @@
-<?php if ( ! defined('TS_HEADER')) exit('No se permite el acceso directo al script');
+<?php
+
 /**
- * Controlador AJAX
- *
- * @name    ajax.notificaciones.php
- * @author  PHPost Team
-*/
-/**********************************\
+ * @name ajax.notificacion.php
+ * @author PHPost Team
+ * @copyright 2026
+ */
 
-*	(VARIABLES POR DEFAULT)		*
+declare(strict_types=1);
 
-\*********************************/
+if (!defined('TS_HEADER')) {
+	exit('No se permite el acceso directo al script');
+}
 
-	// NIVELES DE ACCESO Y PLANTILLAS DE CADA ACCIÓN
-	$files = array(
-		'notificaciones-ajax' => array('n' => 2, 'p' => 'ajax'),
-        'notificaciones-filtro' => array('n' => 2, 'p' => ''),
-	);
+const ACTIONS = [
+   'notificaciones-ajax' => ['nivel' => 2, 'template' => 'ajax', 'ajax' => true],
+   'notificaciones-filtro' => ['nivel' => 2, 'template' => '', 'ajax' => false]
+];
 
-/**********************************\
+if (!array_key_exists($action, ACTIONS)) {
+   http_response_code(403);
+   exit('Acción inválida');
+}
 
-* (VARIABLES LOCALES ESTE ARCHIVO)	*
+$config = ACTIONS[$action];
 
-\*********************************/
+$tsLevel = $config['nivel'];
+$tsAjax  = (int) $config['ajax'];
+$tsPage  = sprintf('p.notificaciones.%s', $config['template']);
 
-	// REDEFINIR VARIABLES
-	$tsPage = 'p.notificaciones.'.$files[$action]['p'];
-	$tsLevel = $files[$action]['n'];
-	$tsAjax = empty($files[$action]['p']) ? 1 : 0;
-	//
-	$how = $_POST['action'];
+// DEPENDE EL NIVEL
+$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
+if(!$tsLevelMsg) { 
+	echo '0: '.$tsLevelMsg; 
+	die();
+}
+$how = trim($_POST['action'] ?? '');
 
-/**********************************\
+switch($action){
+	case 'notificaciones-ajax':
+		#$tsAjax = 1; // AJAX
+		switch($how){
+			case 'last':
+				#$tsAjax = 0; // AJAX
+				$notificaciones = $tsMonitor->getNotificaciones();
+				$smarty->assign("tsData",$notificaciones['data']);
+			break;
+			case 'follow':
+				echo $tsMonitor->setFollow();
+			break;
+			case 'unfollow':
+				echo $tsMonitor->setUnFollow();
+			break;
+			case 'spam':
+				echo $tsMonitor->setSpam();
+			break;
+		}
+	break;
+	case 'notificaciones-filtro':
+		echo $tsMonitor->setFiltro();
+	break;
+}
 
-*	(INSTRUCCIONES DE CODIGO)		*
-
-\*********************************/
-	
-	// DEPENDE EL NIVEL
-	$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
-	if($tsLevelMsg != 1) { echo '0: '.$tsLevelMsg; die();}
-	// CODIGO
-	
-	switch($action){
-		case 'notificaciones-ajax':
-			$tsAjax = 1; // AJAX
-			switch($how){
-				case 'last':
-					// <--
-					$tsAjax = 0; // AJAX
-					$notificaciones = $tsMonitor->getNotificaciones();
-					$smarty->assign("tsData",$notificaciones['data']);
-					// -->
-				break;
-				case 'follow':
-					// <--
-						echo $tsMonitor->setFollow();
-					// -->
-				break;
-				case 'unfollow':
-					// <--
-						echo $tsMonitor->setUnFollow();
-					// -->
-				break;
-				case 'spam':
-					// <--
-						echo $tsMonitor->setSpam();
-					// -->
-				break;
-			}
-		break;
-        case 'notificaciones-filtro':
-            echo $tsMonitor->setFiltro();
-        break;
-	}
-	
-	// HACK xD
-	$_GET['ts'] = true;
-?>
+// HACK xD
+$_GET['ts'] = true;

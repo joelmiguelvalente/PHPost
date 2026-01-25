@@ -19,7 +19,12 @@ require_once dirname(__DIR__, 1) . '/inc/utils/Extras.php';
 require_once __DIR__ . '/connection.php';
 $Extras = new Extras;
 
+ini_set('display_errors', '1');
+ini_set('display_startup_errors', '1');
+ini_set('log_errors', '1');
+ini_set('error_log', dirname(__DIR__, 1) . '/inc/storage/logs/install-error.log');
 error_reporting(E_ALL);
+
 session_start();
 
 // variables globales
@@ -244,7 +249,7 @@ switch ($step) {
 				if ($user['user_password'] !== $user['user_confirm']) {
 					$message = 'Las contrase&ntilde;as no coinciden.';
 					$next = false;
-				} 
+				}
 				require_once dirname(__DIR__, 1) . '/inc/utils/PasswordHandler.php';
 				$Password = new PasswordHandler;
 				// GENERAR KEY
@@ -280,11 +285,10 @@ switch ($step) {
 					$Connection->update('w_stats', $data, 'stats_no = ?', [1]);
 					define('TS_STORAGE', dirname(__DIR__, 1) . '/inc/storage/');
 					require_once dirname(__DIR__, 1) . '/inc/utils/Avatar.php';
-					$Avatar = new Avatar(true, $url . '/inc/storage/avatar/');
-					$Avatar->ensure((int)$user_id, $user['user_name']);
-					#$avatar = "https://ui-avatars.com/api/?name={$user['user_name']}&background=D6030B&color=fff&size=200&font-size=0.50&bold=false&length=2&format=webp";
-					
-					//copy($avatar, dirname(__DIR__, 1) . "/inc/storage/avatar/avatar_{$user_id}.webp");
+					$tsCore = new stdClass();
+					$Avatar = new Avatar("{$url}inc/storage/avatar/", true);
+					$Avatar->ensure(1, $user['user_name']);
+
 					// DAMOS BIENVENIDA POR CORREO
 					mail($user['user_email'], 'Su comunidad ya puede ser usada', '<html><head><title>Su nueva comunidad Link Sharing est&aacute; lista!</title></head><body><p>Estas son sus credenciales de acceso:</p><p>Usuario: ' . $user['user_name'] . '</p><p>Contrase&ntilde;a: ' . $user['user_password'] . '</p><br />Gracias por usar <a href="http://www.phpost.net"><b>PHPost Risus</b></a> para compartir enlaces :)</body></html>', 'Content-type: text/html; charset=iso-8859-15');
 					//

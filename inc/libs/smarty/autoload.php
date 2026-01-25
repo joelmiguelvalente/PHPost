@@ -1,6 +1,6 @@
 <?php 
 
-require_once TS_SMARTY . "functions.php";
+require_once __DIR__ . "/functions.php";
 
 spl_autoload_register(function ($class) {
 	$prefix = 'Smarty\\';
@@ -9,7 +9,7 @@ spl_autoload_register(function ($class) {
 		return;
 	}
 	$relative_class = substr($class, $len);
-	$file = TS_SMARTY . str_replace('\\', '/', $relative_class) . '.php';
+	$file = __DIR__ . '/' . str_replace('\\', '/', $relative_class) . '.php';
 	if (file_exists($file)) {
 		require_once($file);
 	}

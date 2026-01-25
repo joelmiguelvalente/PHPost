@@ -78,9 +78,9 @@ class tsActividad {
       # BUSCAMOS ACTIVIDADES				
 		$data = result_array(db_exec([__FILE__, __LINE__], 'query', "SELECT `ac_id` FROM `u_actividad` WHERE user_id = {$this->User->uid} ORDER BY ac_date DESC")); 
       //
-      $ntotal = count($data ?? 0);
+      $ntotal = count($data ?? 1);
       // ID DE ULTIMA NOTIFICACION
-      $delid = $data[(int)$ntotal-1]['ac_id'];
+      $delid = $data[(int)$ntotal-1]['ac_id'] ?? null;
 		// ELIMINAR ACTIVIDADES?
 		if($ntotal >= (int)$this->Core->settings['c_max_acts']) {
          db_exec([__FILE__, __LINE__], 'query', 'DELETE FROM u_actividad WHERE ac_id = ' . $delid);

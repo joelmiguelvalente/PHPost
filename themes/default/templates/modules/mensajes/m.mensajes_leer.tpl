@@ -25,7 +25,7 @@
 	{if $tsUser->is_admod || ($tsMensajes.msg.mp_del_to == 0 && $tsMensajes.msg.mp_del_from == 0 && $tsMensajes.ext.can_read == 1)}
 		<div class="mpForm">
 			<div class="form">
-				<textarea id="respuesta" onfocus="onfocus_input(this)" onblur="onblur_input(this)" title="Escribe una respuesta..." class="autogrow onblur_effect">Escribe una respuesta...</textarea>
+				<textarea id="respuesta" placeholder="Escribe una respuesta..." class="autogrow onblur_effect">Escribe una respuesta...</textarea>
 				<input type="hidden" id="mp_id" value="{$tsMensajes.msg.mp_id}" />
 				<a class="btn_g resp" onclick="mensaje.responder(); return false;">Responder</a>
 			</div>
@@ -37,7 +37,7 @@
 <div class="mpOptions">
 	<div class="info"><h2>Acciones</h2></div>
 	<ul class="actions-list">
-		<li><a href="#" onclick="mensaje.marcar('{$tsMensajes.msg.mp_id}:{$tsMensajes.msg.mp_type}', 1, 2, this); return false;">Marcar como no le&iacute;do</a></li>
+		<li><a href="#" onclick="mensaje.marcar('{$tsMensajes.msg.mp_id}', '{$tsMensajes.msg.mp_type}', 1, 2, this); return false;">Marcar como no le&iacute;do</a></li>
 		<li class="div"></li>
 		<li><a href="#" onclick="mensaje.eliminar('{$tsMensajes.msg.mp_id}:{$tsMensajes.msg.mp_type}',2); return false;">Eliminar</a></li>
 		<li><a href="#" onclick="denuncia.nueva('mensaje',{$tsMensajes.msg.mp_id}, '', ''); return false;">Marcar como correo no deseado...</a></li>

@@ -8,7 +8,7 @@
 <div class="answerTxt">
 	<div class="Container">
 		<div class="error"></div>
-		<textarea id="body_comm" class="onblur_effect autogrow" tabindex="1" title="Escribir un comentario..." style="resize:none;" onfocus="onfocus_input(this)" onblur="onblur_input(this)">Escribir un comentario...</textarea>
+		<textarea id="body_comm" class="onblur_effect autogrow" tabindex="1" placeholder="Escribir un comentario..." style="resize:none;">Escribir un comentario...</textarea>
 		<div class="buttons" style="text-align:left">
 			<div class="floatL">
 				<input type="hidden" id="auser_post" value="{$tsPost.post_user}" />

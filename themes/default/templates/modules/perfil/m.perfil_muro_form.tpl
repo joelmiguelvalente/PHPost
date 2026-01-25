@@ -39,23 +39,23 @@
 	<div class="attaFrame">
 		<div id="attaContent">
 			<div id="statusFrame" style="padding:1px 5px; display:block">
-				<textarea class="status autogrow" id="wall" onfocus="onfocus_input(this)" onblur="onblur_input(this)" title="{if $tsInfo.uid == $tsUser->uid}&iquest;Qu&eacute; est&aacute;s pensando?{else}Escribe algo....{/if}"></textarea>
+				<textarea class="status autogrow" id="wall" placeholder="{if $tsInfo.uid == $tsUser->uid}&iquest;Qu&eacute; est&aacute;s pensando?{else}Escribe algo....{/if}"></textarea>
 			</div>
 			<div id="fotoFrame">
-				<input type="text" class="itext" name="ifoto" value="{$tsRoutes.tema.images}/ejemplo.jpg" title="{$tsRoutes.tema.images}/ejemplo.jpg" onfocus="onfocus_input(this)" onblur="onblur_input(this)"/>
+				<input type="text" class="itext" name="ifoto" placeholder="{$tsRoutes.tema.images}/ejemplo.jpg" onfocus="onfocus_input(this)" onblur="onblur_input(this)"/>
 				<a href="#" class="btn_g adj" onclick="muro.stream.adjuntar(); return false;">Adjuntar</a>
 			</div>
 			<div id="enlaceFrame">
-				<input type="text" class="itext" name="ienlace" value="{$tsConfig.url}/blog/ejemplo.html" title="{$tsConfig.url}/blog/ejemplo.html" onfocus="onfocus_input(this)" onblur="onblur_input(this)"/>
+				<input type="text" class="itext" name="ienlace" placeholder="{$tsConfig.url}/blog/ejemplo.html" onfocus="onfocus_input(this)" onblur="onblur_input(this)"/>
 				<a href="#" class="btn_g adj" onclick="muro.stream.adjuntar(); return false;">Adjuntar</a>
 			</div>
 			<div id="videoFrame">
-				<input type="text" class="itext" name="ivideo" value="http://www.youtube.com/watch?v=f_30BAGNqqA" title="http://www.youtube.com/watch?v=f_30BAGNqqA" onfocus="onfocus_input(this)" onblur="onblur_input(this)"/>
+				<input type="text" class="itext" name="ivideo" placeholder="http://www.youtube.com/watch?v=f_30BAGNqqA"/>
 				<a href="#" class="btn_g adj" onclick="muro.stream.adjuntar(); return false;">Adjuntar</a>
 			</div>
 		</div>
 		<div class="attaDesc">
-			<div class="wrap"><textarea class="status autogrow" id="attaDesc" onfocus="onfocus_input(this)" onblur="onblur_input(this)" title="Haz un comentario sobre esta foto..."></textarea></div>
+			<div class="wrap"><textarea class="status autogrow" id="attaDesc" placeholder="Haz un comentario sobre esta foto..."></textarea></div>
 			<input type="button" class="mBtn btnOk shareBtn" value="Compartir" onclick="muro.stream.compartir();" />
 			<div class="clearBoth"></div>
 		</div>

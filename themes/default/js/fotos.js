@@ -85,7 +85,7 @@ var fotos = {
        	$.ajax({
     		type: 'POST',
     		url: route.url + '/comentario-agregar.php?ts=true&do=fotos',
-    		data: 'comentario=' + encodeURIComponent(text) + '&fotoid=' + gget('fotoid') + '&auser=' + auser,
+    		data: 'comentario=' + encodeURIComponent(text) + '&fotoid=' + queryParam('fotoid') + '&auser=' + auser,
     		success: function(h){
     			switch(h.charAt(0)){
     				case '0': //Error
@@ -121,7 +121,7 @@ var fotos = {
     	$.ajax({
     		type: 'POST',
     		url: route.url + '/comentario-votar.php?do=fotos',
-    		data: 'voto=' + voto + '&fotoid=' + gget('fotoid'),
+    		data: 'voto=' + voto + '&fotoid=' + queryParam('fotoid'),
     		success: function(h){
     			switch(h.charAt(0)){
     				case '0': //Error
