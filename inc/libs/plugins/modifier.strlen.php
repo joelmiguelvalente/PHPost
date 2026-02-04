@@ -1,16 +1,20 @@
 <?php
+
 /**
+ * Smarty modifier plugin
+ *
  * Type:     modifier
  * Name:     strlen
- * Date:     En 07, 2021
- * Purpose:  Contar caracteres
+ * Purpose:  Devuelve la longitud de un string en UTF-8.
  * Example:  {$string|strlen}
+ *
  * @author   Miguel92
- * @version 1.0
- * @param int
- * @return string
- * @return int
-*/
-function smarty_modifier_strlen($string){
-  return strlen($string);
+ * @version  2.0
+ *
+ * @param    string $string Texto de entrada
+ * @return   int Cantidad de caracteres
+ */
+
+function smarty_modifier_strlen(string $string): int {
+   return mb_strlen($string, 'UTF-8');
 }

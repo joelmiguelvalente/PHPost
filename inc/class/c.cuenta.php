@@ -12,14 +12,16 @@ if (!defined('TS_HEADER')) {
 	exit('No se permite el acceso directo al script');
 }
 
-require_once dirname(__DIR__, 1) . '/utils/IP.php';
-require_once dirname(__DIR__, 1) . '/utils/PasswordHandler.php';
+require_once TS_UTILS . '/IP.php';
+require_once TS_UTILS . '/PasswordHandler.php';
+require_once TS_HELPERS . '/UserHelper.php';
 
 class tsCuenta {
 
 	protected tsCore $Core;
 	protected tsUser $User;
 	protected PasswordHandler $PasswordHandler;
+	protected UserHelper $UserHelper;
 
 	# Redes sociales disponibles
 	public array $redes = [
@@ -35,6 +37,7 @@ class tsCuenta {
 		$this->Core = $Core;
 		$this->User = $User;
 		$this->PasswordHandler = $PasswordHandler;
+		$this->UserHelper = new UserHelper($this->Core);
 	}
 
 	/**
@@ -171,7 +174,7 @@ class tsCuenta {
 		
 		require_once __DIR__ . '/c.visitas.php';
 		$Visitas = new tsVisitas($this->Core, $this->User);
-		$visitado = $Visitas->setVisitaCuenta($userId);
+		$visitado = $Visitas->updateViews((int)$userId);
 		
 		// REAL STATS
 		$data['stats'] = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', "SELECT u.user_id, u.user_rango, u.user_puntos, u.user_posts, u.user_comentarios, u.user_seguidores, u.user_cache, r.r_name, r.r_color FROM u_miembros AS u LEFT JOIN u_rangos AS r ON  u.user_rango = r.rango_id WHERE u.user_id = $userId"));
@@ -196,7 +199,7 @@ class tsCuenta {
 		$data['stats']['user_fotos'] = $query4[0];
 		
 		// BLOQUEADO
-		$data['block'] = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', "SELECT * FROM `u_bloqueos` WHERE b_user = {$this->User->uid} AND b_auser = $userId LIMIT 1"));
+		$data['block'] = $this->UserHelper->isBlocked($this->User->uid, (int)$userId);
 		//
 		return $data;
 	}

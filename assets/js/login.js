@@ -57,6 +57,7 @@ function iniciarSesion() {
 	setButtonLoading(true);
 
 	$.post(`${route.url}/login-user.php`, $.param(params), response => {
+		console.log(response)
 		const { status, message } = $.parseResponse(response);
 		if (status === 1) {
 			setTimeout(() => location.reload(), 2000);

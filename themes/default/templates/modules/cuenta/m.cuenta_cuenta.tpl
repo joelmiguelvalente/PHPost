@@ -39,7 +39,7 @@
 								</fieldset>
 								<div class="field">
 									<label>Nacimiento:</label>
-									<input type="date" name="nacimiento" class="cuenta-save-1" min="{$birthMin}" max="{$birthMax}" value="{if $tsPerfil.user_ano}{$tsPerfil.user_ano|string_format:'%04d'}-{$tsPerfil.user_mes|string_format:'%02d'}-{$tsPerfil.user_dia|string_format:'%02d'}{else}{$smarty.now|date_format:'%Y-%m-%d'}{/if}">
+									<input type="date" name="nacimiento" class="cuenta-save-1" min="{$birthMin}" max="{$birthMax}" value="{if $tsPerfil.user_ano}{$tsPerfil.user_ano|string_format:'%04d'}-{$tsPerfil.user_mes|string_format:'%02d'}-{$tsPerfil.user_dia|string_format:'%02d'}{else}{$smarty.now|date_format:'Y-m-d'}{/if}">
 								</div>
 								{if $tsConfig.c_allow_firma}
 								<div class="field">

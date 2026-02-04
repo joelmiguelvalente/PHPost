@@ -1,134 +1,110 @@
-<?php if ( ! defined('TS_HEADER')) exit('No se permite el acceso directo al script');
+<?php
+
 /**
- * Controlador AJAX
- *
- * @name    ajax.admin.php
- * @author  PHPost Team
-*/
-/**********************************\
+ * @name ajax.admin.php
+ * @author PHPost Team
+ * @copyright 2026
+ */
 
-*	(VARIABLES POR DEFAULT)		*
+declare(strict_types=1);
 
-\*********************************/
+if (!defined('TS_HEADER')) {
+	exit('No se permite el acceso directo al script');
+}
 
-	// NIVELES DE ACCESO Y PLANTILLAS DE CADA ACCIÓN
-	$files = array(
-		'admin-medalla-borrar' => array('n' => 4, 'p' => ''),
-		'admin-medalla-asignar' => array('n' => 4, 'p' => ''),
-		'admin-foto-borrar' => array('n' => 4, 'p' => ''),
-		'admin-foto-setOpenClosed' => array('n' => 4, 'p' => ''),
-		'admin-foto-setShowHide' => array('n' => 4, 'p' => ''),
-		'admin-medallas-borrar-asignacion' => array('n' => 4, 'p' => ''),
-		'admin-users-setInActivo' => array('n' => 4, 'p' => ''),
-		'admin-users-sessions' => array('n' => 4, 'p' => ''),
-		'admin-noticias-setInActive' => array('n' => 4, 'p' => ''),
-		'admin-sesiones-borrar' => array('n' => 4, 'p' => ''),
-		'admin-nicks-change' => array('n' => 4, 'p' => ''),
-      'admin-blacklist-delete' => array('n' => 4, 'p' => ''),
-      'admin-badwords-delete' => array('n' => 4, 'p' => ''),
-		'admin-ordenar-categorias' => array('n' => 4, 'p' => ''),
-	);
+const ACTIONS = [
+	'admin-medalla-borrar' => ['nivel' => 4, 'template' => '', 'ajax' => false],
+	'admin-medalla-asignar-form' => ['nivel' => 4, 'template' => 'asignar-form', 'ajax' => true],
+	'admin-medalla-asignar' => ['nivel' => 4, 'template' => '', 'ajax' => false],
+	'admin-foto-borrar' => ['nivel' => 4, 'template' => '', 'ajax' => false],
+	'admin-foto-setOpenClosed' => ['nivel' => 4, 'template' => '', 'ajax' => false],
+	'admin-foto-setShowHide' => ['nivel' => 4, 'template' => '', 'ajax' => false],
+	'admin-medallas-borrar-asignacion' => ['nivel' => 4, 'template' => '', 'ajax' => false],
+	'admin-users-setInActivo' => ['nivel' => 4, 'template' => '', 'ajax' => false],
+	'admin-users-sessions' => ['nivel' => 4, 'template' => '', 'ajax' => false],
+	'admin-noticias-setInActive' => ['nivel' => 4, 'template' => '', 'ajax' => false],
+	'admin-sesiones-borrar' => ['nivel' => 4, 'template' => '', 'ajax' => false],
+	'admin-nicks-change' => ['nivel' => 4, 'template' => '', 'ajax' => false],
+   'admin-blacklist-delete' => ['nivel' => 4, 'template' => '', 'ajax' => false],
+   'admin-badwords-delete' => ['nivel' => 4, 'template' => '', 'ajax' => false],
+	'admin-ordenar-categorias' => ['nivel' => 4, 'template' => '', 'ajax' => false]
+];
 
-/**********************************\
+if (!array_key_exists($action, ACTIONS)) {
+   http_response_code(403);
+   exit('Acción inválida');
+}
 
-* (VARIABLES LOCALES ESTE ARCHIVO)	*
+$config = ACTIONS[$action];
 
-\*********************************/
+$tsLevel = $config['nivel'];
+$tsAjax  = (int) $config['ajax'];
+$tsPage  = sprintf('p.admin.%s', $config['template']);
 
-	// REDEFINIR VARIABLES
-	$tsPage = 'p.admin.'.$files[$action]['p'];
-	$tsLevel = $files[$action]['n'];
-	$tsAjax = empty($files[$action]['p']) ? 1 : 0;
+// DEPENDE EL NIVEL
+$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
 
-/**********************************\
+if(!$tsLevelMsg) { 
+	echo '0: '.$tsLevelMsg; 
+	die();
+}
 
-*	(INSTRUCCIONES DE CODIGO)		*
+// CLASES
+require_once TS_CLASS . "/c.admin.php";
+require_once TS_CLASS . "/c.medals.php";
 
-\*********************************/
-	
-	// DEPENDE EL NIVEL
-	$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
-	if($tsLevelMsg != 1) { echo '0: '.$tsLevelMsg['mensaje']; die();}
-   // CLASES
-   include("../class/c.medals.php");
-   $tsMedal = new tsMedal();
-
-	include("../class/c.admin.php");
-   $tsAdmin = new tsAdmin();
-
-	// CODIGO
-	switch($action){
-		case 'admin-medalla-borrar':
-			//<---
-            echo $tsMedal->DelMedalla();
-			//--->
-		break;
-		case 'admin-medalla-asignar':
-			//<---
-            echo $tsMedal->AsignarMedalla();
-			//--->
-		break;
-		case 'admin-medallas-borrar-asignacion':
-			//<---
-            echo $tsMedal->delAssign();
-			//--->
-		break;
-		case 'admin-foto-borrar':
-			//<---
-            echo $tsAdmin->DelFoto();
-			//--->
-		break;
-		case 'admin-foto-setOpenClosed':
-			//<---
-            echo $tsAdmin->setOpenClosedFoto();
-			//--->
-		break;
-		case 'admin-foto-setShowHide':
-			//<---
-            echo $tsAdmin->setShowHideFoto();
-			//--->
-		break;
-		case 'admin-users-InActivo':
-			//<---
-            echo $tsAdmin->setUserInActivo();
-			//--->
-		break;
-		case 'admin-users-sessions':
-			//<---
-            echo $tsAdmin->delSession();
-			//--->
-		break;
-		case 'admin-noticias-setInActive':
-			//<---
-            echo $tsAdmin->setNoticiaInActive();
-			//--->
-		break;
-		case 'admin-sesiones-borrar':
-			//<---
-            echo $tsAdmin->delSession();
-			//--->
-		break;
-		case 'admin-nicks-change':
-			//<---
-            echo $tsAdmin->ChangeNick_o_no();
-			//--->
-		break;
-        case 'admin-blacklist-delete':
-			//<---
-            echo $tsAdmin->deleteBlock();
-			//--->
-		break;
-        case 'admin-badwords-delete':
-			//<---
-            echo $tsAdmin->deleteBadWord();
-			//--->
-		break;
-		case 'admin-ordenar-categorias':
-			//<---
-		      echo $tsAdmin->saveOrden();
-			//--->
-		break;
-      default:
-         die('0: Este archivo no existe.');
-      break;
-	}
+$tsAdmin = new tsAdmin($tsCore, $tsUser);
+$tsMedal = new tsMedal($tsCore, $tsUser);
+// CODIGO
+switch($action) {
+	case 'admin-medalla-asignar-form':
+		# Simulando data
+	break;
+	case 'admin-medalla-borrar':
+      echo $tsMedal->DelMedalla();
+	break;
+	case 'admin-medalla-asignar':
+      echo $tsMedal->AsignarMedalla();
+	break;
+	case 'admin-medallas-borrar-asignacion':
+      echo $tsMedal->delAssign();
+	break;
+	case 'admin-foto-borrar':
+      echo $tsAdmin->DelFoto();
+	break;
+	case 'admin-foto-setOpenClosed':
+      echo $tsAdmin->setOpenClosedFoto();
+	break;
+	case 'admin-foto-setShowHide':
+      echo $tsAdmin->setShowHideFoto();
+	break;
+	case 'admin-users-InActivo':
+      echo $tsAdmin->setUserInActivo();
+	break;
+	case 'admin-users-sessions':
+      echo $tsAdmin->delSession();
+	break;
+	case 'admin-noticias-setInActive':
+   	require_once TS_CLASS . "/c.noticias.php";
+		$tsNoticias = new tsNoticias($tsCore, $tsUser);
+      echo $tsNoticias->setNoticiaInActive();
+	break;
+	case 'admin-sesiones-borrar':
+      echo $tsAdmin->delSession();
+	break;
+	case 'admin-nicks-change':
+      echo $tsAdmin->ChangeNick_o_no();
+	break;
+     case 'admin-blacklist-delete':
+      echo $tsAdmin->deleteBlock();
+	break;
+     case 'admin-badwords-delete':
+      echo $tsAdmin->deleteBadWord();
+	break;
+	case 'admin-ordenar-categorias':
+	   echo $tsAdmin->saveOrden();
+	break;
+   default:
+      echo '0: Este archivo no existe.';
+   break;
+}

@@ -36,10 +36,11 @@ final class ConfigApplication extends AbstractConfig
 			'app' => [
 				'name'      => 'PHPost Risus',
 				'slogan'	   => 'Inteligencia recargada 2026',
-				'version'   => '2.3.026',
+				'version'   => '2.3.' . date('d'),
 				'env'       => $APP_ENV,
 				'debug'     => $APP_ENV === 'development',
 				'debug_all' => true,
+				'logs_show' => true,
 				'server'    => 'https://discord.gg/StWZtrt2DE',
 			],
 
@@ -52,6 +53,22 @@ final class ConfigApplication extends AbstractConfig
 				'timezone' => 'America/Argentina/Buenos_Aires',
 				'locale'   => 'es_AR',
 				'charset'  => 'UTF-8',
+			],
+
+			/**
+			 * --------------------------------------------------------
+			 * Logs
+			 * --------------------------------------------------------
+			 */
+			'logging' => [
+			   'default_channel' => 'app',
+			   'channels' => [
+			      'app'   => 'app',
+			      'auth'  => 'auth',
+			      'admin' => 'admin',
+			      'api'   => 'api',
+			      'php'   => 'php',
+			   ],
 			],
 
 			/**
@@ -100,10 +117,10 @@ final class ConfigApplication extends AbstractConfig
 			 */
 			'paths' => [
 				//'base_url'    => 'http://localhost/phpost',
-				'avatar'      => dirname(__DIR__, 1) . '/storage/avatar',
-				'cache'       => dirname(__DIR__, 1) . '/storage/cache',
-				'logs'        => dirname(__DIR__, 1) . '/storage/logs',
-				'uploads'     => dirname(__DIR__, 1) . '/storage/uploads',
+				'avatar'      => TS_STORAGE . '/avatar',
+				'cache'       => TS_STORAGE . '/cache',
+				'logs'        => TS_STORAGE . '/logs',
+				'uploads'     => TS_STORAGE . '/uploads',
 			],
 		];
    }

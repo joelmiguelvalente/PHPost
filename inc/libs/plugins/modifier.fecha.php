@@ -1,101 +1,84 @@
 <?php
-/**
- * Smarty plugin
- * @package Smarty
- * @subpackage plugins
- */
-
 
 /**
- * Smarty cat modifier plugin
+ * Smarty modifier
  *
- * Type:     modifier<br>
- * Name:     fecha<br>
- * Date:     Feb 24, 2010
- * Purpose:  catenate a value to a variable
- * Input:    string to catenate
- * Example:  {$var|fecha}
- * @link http://smarty.php.net/manual/en/language.modifier.cat.php cat
- *          (Smarty online manual)
- * @author   Ivan Molina Pavana
- * @version 1.0
- * @param string
- * @return string
+ * Type:     modifier
+ * Name:     fecha
+ * Date:     Ene 26, 2026
+ *
+ * Formatea una fecha Unix timestamp en distintos formatos legibles.
+ * Evita el uso de strftime() y es compatible con PHP 8.1+.
+ *
+ * Ejemplos:
+ *   {$fecha|fecha}                -> formato por defecto (relativo)
+ *   {$fecha|fecha:'long'}         -> 20 de abril de 2024
+ *   {$fecha|fecha:'short'}        -> 20/04/2024
+ *   {$fecha|fecha:'iso'}          -> 2024-04-20
+ *   {$fecha|fecha:'time'}         -> 14:32
+ *   {$fecha|fecha:'php:d-m-Y'}    -> formato PHP personalizado
+ *
+ * @author   Miguel92
+ * @version  2.0
+ *
+ * @param    int    $timestamp  Unix timestamp
+ * @param    string $format     Alias de formato o formato PHP (php:...)
+ *
+ * @return   string
  */
 
-function smarty_modifier_fecha($fecha, $format = false){
-	$meses = [
-		1 => 'enero',
-		2 => 'febrero',
-		3 => 'marzo',
-		4 => 'abril',
-		5 => 'mayo',
-		6 => 'junio',
-		7 => 'julio',
-		8 => 'agosto',
-		9 => 'septiembre',
-		10 => 'octubre',
-		11 => 'noviembre',
-		12 => 'diciembre'
-	];
-	$_dias = array('Domingo','Lunes','Martes','Miercoles','Jueves','Viernes','Sabado');
-	// FORMATO?
-	if($format != false){
-		// VARS
-		$dia = date("d",$fecha);
-		$mes = date("m",$fecha);
-		$mes_int = date("n",$fecha);
-      $ano_anterior = date("Y", strtotime("-1 year", $fecha));
-		$ano = (date("Y", $fecha) === date('Y')) ? '' : $ano_anterior;
-		// PARSE
-		switch($format){
-			// 20 de Abril de 2024
-			case 'd_Ms_a':
-				$e_ano = date("Y",time());
-				$ano = ($e_ano == $ano) ? '' : (empty($ano) ? '' : " de $ano");
-				$return = "El $dia de {$meses[$mes_int]}$ano";
-			break;
-		}
-		// REGRESAMOS
-		return $return;
-	} else {
-		$ahora = time();
-		$tiempo = $ahora - $fecha;
 
-		$horaminutos = date("H:i", $fecha);
-		// Calculate the number of days, taking into account leap years
-		$dias = round($tiempo / 86400) - (int)(($tiempo % 86400) / 86400) * (gmdate('L', $fecha) ? 1 : 0);
-		// HOY
-		if ($dias <= 0) {
-		   // HACE MENOS DE 1 HORA
-		   if (round($tiempo / 3600) <= 0) {
-		      // HACE MENOS DE 1 MINUTO
-		      if (round($tiempo / 60) <= 0) {
-		         if ($tiempo <= 60) $hace = "Hace unos segundos";
-		         // HACE X MINUTOS
-		      } else {
-		         $can = round($tiempo / 60);
-		         $hace = "Hace $can minuto" . ($can <= 1 ? '' : 's');
-		      }
-		      // HACE X HORAS
-		   } else {
-		      $can = round($tiempo / 3600);
-		      $hace = "Hace $can hora" . ($can <= 1 ? "" : "s");
-		   }
-		   // MENOS DE 7 DIAS
-		} elseif ($dias <= 7) {
-		   // AYER
-		   if ($dias < 2) {
-		      $hace = 'Ayer a las ' . $horaminutos;
-		      // HACE MENOS DE 5 DIAS
-		   } else {
-		      $hace = 'El ' . $_dias[date("w", $fecha)] . ' a las ' . $horaminutos;
-		   }
-		   // HACE MAS DE UNA SEMANA
-		} else {
-		   $hace = "El " . date("d", $fecha) . " de " . $meses[date("n", $fecha)] . " a las $horaminutos";
-		}
+function smarty_modifier_fecha(int $timestamp, string $format = 'default'): string {
+   $date = (new DateTimeImmutable())->setTimestamp($timestamp);
+   $now  = new DateTimeImmutable();
 
-		return $hace;
-	}
+   $months = [
+      1 => 'enero', 2 => 'febrero', 3 => 'marzo',
+      4 => 'abril', 5 => 'mayo', 6 => 'junio',
+      7 => 'julio', 8 => 'agosto', 9 => 'septiembre',
+      10 => 'octubre', 11 => 'noviembre', 12 => 'diciembre'
+   ];
+
+   $formats = [
+      // Alias semánticos
+      'default' => function () use ($date, $now, $months) {
+         $diff = $now->getTimestamp() - $date->getTimestamp();
+         $time = $date->format('H:i');
+
+         if ($diff < 3600) {
+            $m = max(1, intdiv($diff, 60));
+            return "Hace $m minuto" . ($m === 1 ? '' : 's');
+         }
+         if ($diff < 86400) {
+            $h = intdiv($diff, 3600);
+            return "Hace $h hora" . ($h === 1 ? '' : 's');
+         }
+         if ($diff < 172800) {
+            return "Ayer a las $time";
+         }
+         if ($diff < 604800) {
+            $days = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+            return 'El ' . $days[(int)$date->format('w')] . ' a las ' . $time;
+         }
+         return 'El ' . $date->format('d') . ' de ' . $months[(int)$date->format('n')] . ' a las ' . $time;
+      },
+      // 20 de abril de 2024
+      'long' => fn () => $date->format('d') . ' de ' . $months[(int)$date->format('n')] . ' de ' . $date->format('Y'),
+      // 20/04/2024
+      'short' => fn () => $date->format('d/m/Y'),
+      // 2024-04-20
+      'iso' => fn () => $date->format('Y-m-d'),
+      // 20 abril
+      'day_month' => fn () => $date->format('d') . ' ' . $months[(int)$date->format('n')],
+      // Hora sola
+      'time' => fn () => $date->format('H:i'),
+      // Fecha completa
+      'full_datetime' => fn () => $date->format('d/m/Y H:i:s'),
+   ];
+
+   if (!isset($formats[$format])) {
+      throw new InvalidArgumentException("Formato de fecha no soportado: $format");
+   }
+
+   return $formats[$format]();
 }

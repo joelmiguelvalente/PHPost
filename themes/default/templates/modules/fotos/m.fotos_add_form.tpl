@@ -1,4 +1,4 @@
-				{if ($tsAction == 'agregar' && ($tsUser->permisos.gopf || $tsUser->is_admod)) || ($tsAction == 'editar' && ($tsUser->permisos.moedfo || $tsUser->is_admod))} 
+				{if ($tsAction == 'agregar' && ($tsUser->can('gopf') || $tsUser->is_admod)) || ($tsAction == 'editar' && ($tsUser->can('moedfo') || $tsUser->is_admod))} 
                 <div id="centroDerecha" style="width: 630px; float: left;">
                 	<div class="">
                         <h2 style="font-size: 15px;">{if $tsAction == 'agregar'}Agregar nueva{else}Editar{/if} foto</h2>

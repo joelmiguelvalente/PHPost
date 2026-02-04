@@ -12,7 +12,7 @@ if (!defined('TS_HEADER')) {
 	exit('No se permite el acceso directo al script');
 }
 require_once __DIR__ . '/CoreHelper.php';
-require_once dirname(__DIR__, 1) . '/utils/IP.php';
+require_once TS_UTILS . '/IP.php';
 
 final class MuroHelper {
 

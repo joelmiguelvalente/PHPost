@@ -50,18 +50,18 @@ if($tsContinue) {
 		]);
 	} else {
 		//
-		require_once dirname(__DIR__, 1) . "/utils/Extras.php";
+		require_once dirname(__DIR__, 1) . "/helpers/UserHelper.php";
 		require_once dirname(__DIR__, 1) . "/class/c.cuenta.php";
 		require_once dirname(__DIR__, 1) . "/class/c.muro.php";
 		$tsPaises = require_once dirname(__DIR__, 1) . "/extras/Paises.php";
 
 		$tsCuenta = new tsCuenta($tsCore, $tsUser);
-		$Extras = new Extras();
+		$UserHelper = new UserHelper($tsCore);
 
 		$tsInfo = $tsCuenta->loadHeadInfo((int)$usuario['user_id']);
 		$tsInfo['uid'] = (int)$usuario['user_id'];
 		// IS ONLINE?
-		$tsInfo['status'] = $Extras->isOnline($tsInfo, (int)$tsCore->settings['c_last_active']);
+		$tsInfo['status'] = $UserHelper->getStatusCode((int)$tsInfo['user_lastactive'], (int)$tsInfo['user_baneado']);
 		// GENERAL
 		$tsGeneral = $tsCuenta->loadGeneral($tsInfo['uid']);
 		$tsInfo['nick'] = $tsInfo['user_name'];

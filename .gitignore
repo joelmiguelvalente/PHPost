@@ -1,7 +1,7 @@
 /exec
 
 # Storage completo
-inc/storage/
+/storage/
 
 # Themes: ignorar todos menos "default"
 themes/*
@@ -12,6 +12,9 @@ themes/*
 # =========================================
 *.txt
 *.py
+*.zip
 *.lock
+*.local
+*.local.php
 sitemap.xml
 inc/config/Config.Database.php

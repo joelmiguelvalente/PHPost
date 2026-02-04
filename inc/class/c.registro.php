@@ -13,9 +13,9 @@ if (!defined('TS_HEADER')) {
 }
 
 require_once __DIR__ . '/c.emails.php';
-require_once dirname(__DIR__, 1) . '/utils/Avatar.php';
-require_once dirname(__DIR__, 1) . '/utils/PasswordHandler.php';
-require_once dirname(__DIR__, 1) . '/utils/reCaptcha.php';
+require_once TS_UTILS . '/Avatar.php';
+require_once TS_UTILS . '/PasswordHandler.php';
+require_once TS_UTILS . '/reCaptcha.php';
 
 class tsRegistro {
 

@@ -273,28 +273,28 @@ $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `u_mensajes` (
 
 $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `u_miembros` (
   `user_id` INT AUTO_INCREMENT PRIMARY KEY,
-  `user_activo` TINYINT NOT NULL DEFAULT 0,
-  `user_amigos` BIGINT NOT NULL DEFAULT 0,
+  `user_name` VARCHAR(50) UNIQUE NOT NULL,
+  `user_email` VARCHAR(255) UNIQUE NOT NULL,
+  `user_password` VARCHAR(255) NOT NULL,
+  `user_rango` INT DEFAULT 3,
   `user_bad_hits` INT DEFAULT 0,
-  `user_baneado` TINYINT NOT NULL DEFAULT 0,
   `user_cache` INT NOT NULL DEFAULT 0,
   `user_comentarios` BIGINT DEFAULT 0,
-  `user_email` VARCHAR(255) UNIQUE NOT NULL,
+  `user_posts` BIGINT DEFAULT 0,
+  `user_puntos` BIGINT DEFAULT 0,
   `user_last_ip` VARBINARY(45) DEFAULT NULL,
   `user_lastactive` INT NOT NULL DEFAULT 0,
   `user_lastlogin` INT NOT NULL DEFAULT 0,
   `user_lastpost` INT NOT NULL DEFAULT 0,
   `user_name_changes` TINYINT UNSIGNED NOT NULL DEFAULT 3,
-  `user_name` VARCHAR(50) UNIQUE NOT NULL,
   `user_nextpuntos` INT NOT NULL DEFAULT 0,
-  `user_password` VARCHAR(255) NOT NULL,
-  `user_posts` BIGINT DEFAULT 0,
-  `user_puntos` BIGINT DEFAULT 0,
   `user_puntosxdar` INT DEFAULT 0,
-  `user_rango` INT DEFAULT 3,
-  `user_registro` INT NOT NULL DEFAULT 0,
   `user_seguidores` BIGINT NOT NULL DEFAULT 0,
   `user_seguidos` BIGINT NOT NULL DEFAULT 0,
+  `user_amigos` BIGINT NOT NULL DEFAULT 0,
+  `user_registro` INT NOT NULL DEFAULT 0,
+  `user_activo` TINYINT NOT NULL DEFAULT 0,
+  `user_baneado` TINYINT NOT NULL DEFAULT 0,
   INDEX idx_name (user_name),
   INDEX idx_email (user_email),
   INDEX idx_activo (user_activo),
@@ -314,6 +314,25 @@ $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `u_miembros_sets` (
   `user_vip` TINYINT NOT NULL DEFAULT 0,
   `user_verificado` TINYINT NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
+
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `u_lockout` (
+  user_id INT PRIMARY KEY,
+  locked_until DATETIME NULL,
+  INDEX (locked_until)
+) ENGINE=InnoDB ;";
+
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `u_login_attempts` (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NULL,
+  identifier VARCHAR(190) NOT NULL,
+  ip VARBINARY(45) NOT NULL,
+  user_agent VARCHAR(255),
+  success TINYINT(1) NOT NULL,
+  created_at DATETIME NOT NULL,
+  INDEX (user_id, created_at),
+  INDEX (identifier, created_at),
+  INDEX (ip, created_at)
+) ENGINE=InnoDB ;";
 
 $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `u_nicks` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
@@ -430,7 +449,7 @@ $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `u_portal` (
 
 $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `u_rangos` (
   `rango_id` INT PRIMARY KEY AUTO_INCREMENT,
-  `r_allows` VARCHAR(1000) NOT NULL DEFAULT '',
+  `r_allows` JSON NOT NULL,
   `r_cant` INT NOT NULL DEFAULT 0,
   `r_color` CHAR(12) NOT NULL DEFAULT '171717',
   `r_image` VARCHAR(32) NOT NULL DEFAULT 'new.png',
@@ -440,13 +459,13 @@ $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `u_rangos` (
 
 $phpost_sql[] = "
 INSERT INTO `u_rangos` (`rango_id`, `r_name`, `r_color`, `r_image`, `r_cant`, `r_allows`, `r_type`) VALUES
-(1, 'Administrador', 'D6030B', 'rosette.png', 0, 'a:4:{s:4:\"suad\";s:2:\"on\";s:4:\"goaf\";s:1:\"5\";s:5:\"gopfp\";s:2:\"20\";s:5:\"gopfd\";s:2:\"50\";}', 0),
-(2, 'Moderador', 'ff9900', 'shield.png', 0, 'a:4:{s:4:\"sumo\";s:2:\"on\";s:4:\"goaf\";s:2:\"15\";s:5:\"gopfp\";s:2:\"18\";s:5:\"gopfd\";s:2:\"30\";}', 0),
-(3, 'Novato', '171717', 'new.png', 0, 'a:12:{s:4:\"godp\";s:2:\"on\";s:4:\"gopp\";s:2:\"on\";s:5:\"gopcp\";s:2:\"on\";s:5:\"govpp\";s:2:\"on\";s:5:\"govpn\";s:2:\"on\";s:5:\"goepc\";s:2:\"on\";s:5:\"godpc\";s:2:\"on\";s:4:\"gopf\";s:2:\"on\";s:5:\"gopcf\";s:2:\"on\";s:4:\"goaf\";s:2:\"20\";s:5:\"gopfp\";s:1:\"5\";s:5:\"gopfd\";s:1:\"5\";}', 0),
-(4, 'New Full User', '0198E7', 'star_bronze_3.png', 50, 'a:12:{s:4:\"godp\";s:2:\"on\";s:4:\"gopp\";s:2:\"on\";s:5:\"gopcp\";s:2:\"on\";s:5:\"govpp\";s:2:\"on\";s:5:\"govpn\";s:2:\"on\";s:5:\"goepc\";s:2:\"on\";s:5:\"godpc\";s:2:\"on\";s:4:\"gopf\";s:2:\"on\";s:5:\"gopcf\";s:2:\"on\";s:4:\"goaf\";s:2:\"20\";s:5:\"gopfp\";s:2:\"10\";s:5:\"gopfd\";s:2:\"10\";}', 1),
-(5, 'Full User', '00ccff', 'star_silver_3.png', 70, 'a:12:{s:4:\"godp\";s:2:\"on\";s:4:\"gopp\";s:2:\"on\";s:5:\"gopcp\";s:2:\"on\";s:5:\"govpp\";s:2:\"on\";s:5:\"govpn\";s:2:\"on\";s:5:\"goepc\";s:2:\"on\";s:5:\"godpc\";s:2:\"on\";s:4:\"gopf\";s:2:\"on\";s:5:\"gopcf\";s:2:\"on\";s:4:\"goaf\";s:2:\"20\";s:5:\"gopfp\";s:2:\"12\";s:5:\"gopfd\";s:2:\"20\";}', 1),
-(6, 'Great User', '01A021', 'star_gold_3.png', 0, 'a:12:{s:4:\"godp\";s:2:\"on\";s:4:\"gopp\";s:2:\"on\";s:5:\"gopcp\";s:2:\"on\";s:5:\"govpp\";s:2:\"on\";s:5:\"govpn\";s:2:\"on\";s:5:\"goepc\";s:2:\"on\";s:5:\"godpc\";s:2:\"on\";s:4:\"gopf\";s:2:\"on\";s:5:\"gopcf\";s:2:\"on\";s:4:\"goaf\";s:2:\"20\";s:5:\"gopfp\";s:2:\"11\";s:5:\"gopfd\";s:2:\"15\";}', 0),
-(7, 'Gold User', 'cc6600', 'asterisk_yellow.png', 120, 'a:12:{s:4:\"godp\";s:2:\"on\";s:4:\"gopp\";s:2:\"on\";s:5:\"gopcp\";s:2:\"on\";s:5:\"govpp\";s:2:\"on\";s:5:\"govpn\";s:2:\"on\";s:5:\"goepc\";s:2:\"on\";s:5:\"godpc\";s:2:\"on\";s:4:\"gopf\";s:2:\"on\";s:5:\"gopcf\";s:2:\"on\";s:4:\"goaf\";s:2:\"20\";s:5:\"gopfp\";s:2:\"12\";s:5:\"gopfd\";s:2:\"25\";}', 1);";
+(1, '{\"goaf\":5,\"godp\":false,\"gopf\":false,\"gopp\":false,\"mocc\":false,\"mocp\":false,\"modu\":false,\"moef\":false,\"moep\":false,\"moop\":false,\"morf\":false,\"morp\":false,\"most\":false,\"mosu\":false,\"moub\":false,\"suad\":true,\"sumo\":false,\"godpc\":false,\"goepc\":false,\"gopcf\":false,\"gopcp\":false,\"gopfd\":50,\"gopfp\":20,\"govpn\":false,\"govpp\":false,\"moacp\":false,\"moadf\":false,\"moadm\":false,\"mocdf\":false,\"mocdm\":false,\"mocdp\":false,\"mocdu\":false,\"moecf\":false,\"moecm\":false,\"moecp\":false,\"moepm\":false,\"movub\":false,\"moayca\":false,\"mocepc\":false,\"moedfo\":false,\"moedpo\":false,\"movcud\":false,\"movcus\":false,\"moaydcp\":false,\"moedcopo\":false}', 0, 'D6030B', 'rosette.png', 'Administrador', 0),
+(2, '{\"goaf\":15,\"godp\":false,\"gopf\":false,\"gopp\":false,\"mocc\":false,\"mocp\":false,\"modu\":false,\"moef\":false,\"moep\":false,\"moop\":false,\"morf\":false,\"morp\":false,\"most\":false,\"mosu\":false,\"moub\":false,\"suad\":false,\"sumo\":true,\"godpc\":false,\"goepc\":false,\"gopcf\":false,\"gopcp\":false,\"gopfd\":30,\"gopfp\":18,\"govpn\":false,\"govpp\":false,\"moacp\":false,\"moadf\":false,\"moadm\":false,\"mocdf\":false,\"mocdm\":false,\"mocdp\":false,\"mocdu\":false,\"moecf\":false,\"moecm\":false,\"moecp\":false,\"moepm\":false,\"movub\":false,\"moayca\":false,\"mocepc\":false,\"moedfo\":false,\"moedpo\":false,\"movcud\":false,\"movcus\":false,\"moaydcp\":false,\"moedcopo\":false}', 0, 'ff9900', 'shield.png', 'Moderador', 0),
+(3, '{\"goaf\":20,\"godp\":true,\"gopf\":true,\"gopp\":true,\"mocc\":false,\"mocp\":false,\"modu\":false,\"moef\":false,\"moep\":false,\"moop\":false,\"morf\":false,\"morp\":false,\"most\":false,\"mosu\":false,\"moub\":false,\"suad\":false,\"sumo\":false,\"godpc\":true,\"goepc\":true,\"gopcf\":true,\"gopcp\":true,\"gopfd\":5,\"gopfp\":5,\"govpn\":true,\"govpp\":true,\"moacp\":false,\"moadf\":false,\"moadm\":false,\"mocdf\":false,\"mocdm\":false,\"mocdp\":false,\"mocdu\":false,\"moecf\":false,\"moecm\":false,\"moecp\":false,\"moepm\":false,\"movub\":false,\"moayca\":false,\"mocepc\":false,\"moedfo\":false,\"moedpo\":false,\"movcud\":false,\"movcus\":false,\"moaydcp\":false,\"moedcopo\":false}', 0, '171717', 'new.png', 'Novato', 0),
+(4, '{\"goaf\":20,\"godp\":true,\"gopf\":true,\"gopp\":true,\"mocc\":false,\"mocp\":false,\"modu\":false,\"moef\":false,\"moep\":false,\"moop\":false,\"morf\":false,\"morp\":false,\"most\":false,\"mosu\":false,\"moub\":false,\"suad\":false,\"sumo\":false,\"godpc\":true,\"goepc\":true,\"gopcf\":true,\"gopcp\":true,\"gopfd\":10,\"gopfp\":10,\"govpn\":true,\"govpp\":true,\"moacp\":false,\"moadf\":false,\"moadm\":false,\"mocdf\":false,\"mocdm\":false,\"mocdp\":false,\"mocdu\":false,\"moecf\":false,\"moecm\":false,\"moecp\":false,\"moepm\":false,\"movub\":false,\"moayca\":false,\"mocepc\":false,\"moedfo\":false,\"moedpo\":false,\"movcud\":false,\"movcus\":false,\"moaydcp\":false,\"moedcopo\":false}', 50, '0198E7', 'star_bronze_3.png', 'New Full User', 1),
+(5, '{\"goaf\":20,\"godp\":true,\"gopf\":true,\"gopp\":true,\"mocc\":false,\"mocp\":false,\"modu\":false,\"moef\":false,\"moep\":false,\"moop\":false,\"morf\":false,\"morp\":false,\"most\":false,\"mosu\":false,\"moub\":false,\"suad\":false,\"sumo\":false,\"godpc\":true,\"goepc\":true,\"gopcf\":true,\"gopcp\":true,\"gopfd\":20,\"gopfp\":12,\"govpn\":true,\"govpp\":true,\"moacp\":false,\"moadf\":false,\"moadm\":false,\"mocdf\":false,\"mocdm\":false,\"mocdp\":false,\"mocdu\":false,\"moecf\":false,\"moecm\":false,\"moecp\":false,\"moepm\":false,\"movub\":false,\"moayca\":false,\"mocepc\":false,\"moedfo\":false,\"moedpo\":false,\"movcud\":false,\"movcus\":false,\"moaydcp\":false,\"moedcopo\":false}', 70, '00ccff', 'star_silver_3.png', 'Full User', 1),
+(6, '{\"goaf\":20,\"godp\":true,\"gopf\":true,\"gopp\":true,\"mocc\":false,\"mocp\":false,\"modu\":false,\"moef\":false,\"moep\":false,\"moop\":false,\"morf\":false,\"morp\":false,\"most\":false,\"mosu\":false,\"moub\":false,\"suad\":false,\"sumo\":false,\"godpc\":true,\"goepc\":true,\"gopcf\":true,\"gopcp\":true,\"gopfd\":15,\"gopfp\":11,\"govpn\":true,\"govpp\":true,\"moacp\":false,\"moadf\":false,\"moadm\":false,\"mocdf\":false,\"mocdm\":false,\"mocdp\":false,\"mocdu\":false,\"moecf\":false,\"moecm\":false,\"moecp\":false,\"moepm\":false,\"movub\":false,\"moayca\":false,\"mocepc\":false,\"moedfo\":false,\"moedpo\":false,\"movcud\":false,\"movcus\":false,\"moaydcp\":false,\"moedcopo\":false}', 0, '01A021', 'star_gold_3.png', 'Great User', 0),
+(7, '{\"goaf\":20,\"godp\":true,\"gopf\":true,\"gopp\":true,\"mocc\":false,\"mocp\":false,\"modu\":false,\"moef\":false,\"moep\":false,\"moop\":false,\"morf\":false,\"morp\":false,\"most\":false,\"mosu\":false,\"moub\":false,\"suad\":false,\"sumo\":false,\"godpc\":true,\"goepc\":true,\"gopcf\":true,\"gopcp\":true,\"gopfd\":25,\"gopfp\":12,\"govpn\":true,\"govpp\":true,\"moacp\":false,\"moadf\":false,\"moadm\":false,\"mocdf\":false,\"mocdm\":false,\"mocdp\":false,\"mocdu\":false,\"moecf\":false,\"moecm\":false,\"moecp\":false,\"moepm\":false,\"movub\":false,\"moayca\":false,\"mocepc\":false,\"moedfo\":false,\"moedpo\":false,\"movcud\":false,\"movcus\":false,\"moaydcp\":false,\"moedcopo\":false}', 120, 'cc6600', 'asterisk_yellow.png', 'Gold User', 1);";
 
 $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `u_respuestas` (
   `mr_id` INT AUTO_INCREMENT PRIMARY KEY,

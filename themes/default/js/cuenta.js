@@ -42,7 +42,7 @@ const cuenta = {
 			$.get(`${route.url}/registro-geo.php?pais_code=${pais}`, response => {
 				const { status, message } = $.parseResponse(response);
 				if(status === 1) {
-					estado.append(message).removeAttr('disabled').val('').focus();
+					estado.val('').append(message).removeAttr('disabled').focus();
 				}
 				$('#loading').fadeOut(250);
 			});

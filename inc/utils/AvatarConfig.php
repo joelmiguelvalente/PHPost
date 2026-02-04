@@ -32,31 +32,25 @@ final class AvatarConfig {
       'thumb'  => 60,
    ];
 
-	public static function baseDir(int $userId, string $filename = ''): string
-	{
-		return TS_STORAGE . "avatar/user_{$userId}/{$filename}";
+	public static function baseDir(int $userId, string $filename = ''): string {
+		return TS_STORAGE . "/avatar/user_{$userId}/{$filename}";
 	}
 
-	public static function filename(int $size, string $format): string
-	{
+	public static function filename(int $size, string $format): string {
 		if (!in_array($size, self::SIZES, true)) {
 			throw new InvalidArgumentException('Tamaño de avatar inválido');
 		}
-
 		if (!in_array($format, self::FORMATS, true)) {
 			throw new InvalidArgumentException('Formato de avatar inválido');
 		}
-
 		return "avatar_{$size}.{$format}";
 	}
 
-	public static function fullPath(int $userId, int $size, string $format): string
-	{
+	public static function fullPath(int $userId, int $size, string $format): string {
 		return self::baseDir($userId) . self::filename($size, $format);
 	}
 
-	public static function supportsFormat(string $format): bool
-	{
+	public static function supportsFormat(string $format): bool {
 		return match ($format) {
 			'avif' => function_exists('imageavif'),
 			'webp' => function_exists('imagewebp'),

@@ -28,18 +28,18 @@
 		</div>
 		<span class="spacer"></span>
 		<div id="imagen">
-			{if $tsFoto.f_user == $tsUser->uid || $tsUser->is_admod || $tsUser->permisos.moef || $tsUser->permisos.moedfo}
+			{if $tsFoto.f_user == $tsUser->uid || $tsUser->is_admod || $tsUser->can('moef') || $tsUser->can('moedfo')}
 				<div class="tools">
-				{if $tsFoto.f_status != 2 && ($tsUser->is_admod || $tsUser->permisos.moef || $tsFoto.f_user == $tsUser->uid)}<a href="#" onclick="{if $tsUser->uid == $tsFoto.f_user}fotos.borrar({$tsFoto.foto_id}, 'foto'); {else}mod.fotos.borrar({$tsFoto.foto_id}, 'foto');  {/if}return false;">
+				{if $tsFoto.f_status != 2 && ($tsUser->is_admod || $tsUser->can('moef') || $tsFoto.f_user == $tsUser->uid)}<a href="#" onclick="{if $tsUser->uid == $tsFoto.f_user}fotos.borrar({$tsFoto.foto_id}, 'foto'); {else}mod.fotos.borrar({$tsFoto.foto_id}, 'foto');  {/if}return false;">
 				  <img alt="Borrar" src="{$tsRoutes.tema.images}/borrar.png"/> Borrar</a>{/if}
-				{if $tsUser->is_admod || $tsUser->permisos.moedfo || $tsFoto.f_user == $tsUser->uid}<a href="#" onclick="location.href='{$tsConfig.url}/fotos/editar.php?id={$tsFoto.foto_id}'; return false">
+				{if $tsUser->is_admod || $tsUser->can('moedfo') || $tsFoto.f_user == $tsUser->uid}<a href="#" onclick="location.href='{$tsConfig.url}/fotos/editar.php?id={$tsFoto.foto_id}'; return false">
 				  <img alt="Editar" src="{$tsRoutes.tema.images}/editar.png"/> Editar</a>{/if}
 				</div>
 			{/if}
 			<img class="img" src="{$tsFoto.f_url}" />
 		</div>
 		<h2 class="floatL">{$tsFoto.f_title}</h2>
-		<span class="floatR"><b>{$tsFoto.f_date|date_format:"%d/%m/%Y"}</b></span>
+		<span class="floatR"><b>{$tsFoto.f_date|date_format:"d/m/Y"}</b></span>
 		<div class="clearBoth"></div>
 		<p style="word-wrap: break-word;">{$tsFoto.f_description|nl2br}</p>
 		<span class="spacer"></span>
@@ -93,14 +93,14 @@
 							</a>
 							<div class="firma">
 								<div class="options">
-									{if $tsFoto.f_user == $tsUser->info.user_id || $tsUser->is_admod || $tsUser->permisos.moecf}
+									{if $tsFoto.f_user == $tsUser->info.user_id || $tsUser->is_admod || $tsUser->can('moecf')}
 									<a href="#" onclick="fotos.borrar({$c.cid}, 'com'); return false" class="floatR" style="margin:8px 5px">
 									  <img title="Borrar Comentario" alt="borrar" src="{$tsRoutes.tema.images}/borrar.png"/>
 									</a>
 									{/if}
 								</div>
 								
-								<div class="info"><a href="{$tsConfig.url}/fotos/{$c.user_name}">{$c.user_name}</a> <span>@ {$c.c_date|date_format:"%d/%m/%Y"} {if $tsUser->is_admod}(<span style="color:red;">IP:</span> <a href="{$tsConfig.url}/moderacion/buscador/1/1/{$c.c_ip}" class="geoip" target="_blank">{$c.c_ip}</a>){/if} dijo:</span></div>
+								<div class="info"><a href="{$tsConfig.url}/fotos/{$c.user_name}">{$c.user_name}</a> <span>@ {$c.c_date|date_format:"d/m/Y"} {if $tsUser->is_admod}(<span style="color:red;">IP:</span> <a href="{$tsConfig.url}/moderacion/buscador/1/1/{$c.c_ip}" class="geoip" target="_blank">{$c.c_ip}</a>){/if} dijo:</span></div>
 								{if !$c.user_activo}<div>Escondido por pertener a una cuenta desactivada
 								<a href="#" onclick="$('#hdn_{$c.cid}').slideDown(); $(this).parent().slideUp(); return false;">Click para verlo</a>.</div>
 								<div id="hdn_{$c.cid}" style="display:none">{/if} 
@@ -110,11 +110,11 @@
 							<div class="clearBoth"></div>
 						</div>
 					{/foreach}
-				{elseif $tsFoto.f_closed == 0 && ($tsUser->is_admod || $tsUser->permisos.gopcf)}
+				{elseif $tsFoto.f_closed == 0 && ($tsUser->is_admod || $tsUser->can('gopcf'))}
 				<div class="noComments">Esta foto no tiene comentarios, Se el primero!.</div>
 				{/if}
 			</div>
-			{if $tsUser->is_admod == 0 && $tsUser->permisos.gopcf == false}
+			{if $tsUser->is_admod == 0 && $tsUser->can('gopcf') == false}
 			<div class="noComments">No tienes permiso para comentar.</div>
 			{elseif $tsFoto.f_closed == 1}
 			<div class="noComments">La foto se encuentra cerrada y no se permiten comentarios.</div>

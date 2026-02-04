@@ -1,90 +1,68 @@
-<?php 
+<?php
+
 /**
- * Controlador
- *
- * @name    top.php
- * @author  PHPost Team
+ * @name tops.php
+ * @author PHPost Team
+ * @copyright 2026
+ */
+
+declare(strict_types=1);
+
+/**
+ * Inicializamos variable
+ * 
+ * $tsPage  = Plantilla para mostrar con este archivo.
+ * $tsLevel = Nivel de acceso a esta pagina (ver faqs).
+ * $tsAjax  = La respuesta sera por ajax si/no.
+ */
+
+$tsPage  = "tops";
+$tsLevel = 0; 
+$tsAjax  = (!isset($_GET['ajax']) && empty($_GET['ajax']));
+
+require_once dirname(__DIR__, 2) . "/header.php";
+$tsTitle = "{$tsCore->settings['titulo']} - {$tsCore->settings['slogan']}";
+
+/**
+ * En caso de problemas la variable cambia
 */
-/**********************************\
+$tsContinue = true;  // CONTINUAR EL SCRIPT
 
-*	(VARIABLES POR DEFAULT)		*
+/**
+ * Verificamos el nivel de acceso
+*/
+$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
+if (!$tsLevelMsg) {
+   $tsPage = 'aviso';
+   $tsAjax = 0;
+   $smarty->assign("tsAviso", $tsLevelMsg);
+   $tsContinue = false;
+}
 
-\*********************************/
-
-	$tsPage = "tops";	// tsPage.tpl -> PLANTILLA PARA MOSTRAR CON ESTE ARCHIVO.
-
-	$tsLevel = 0;		// NIVEL DE ACCESO A ESTA PAGINA. => VER FAQs
-
-	$tsAjax = empty($_GET['ajax']) ? 0 : 1; // LA RESPUESTA SERA AJAX?
-	
-	$tsContinue = true;	// CONTINUAR EL SCRIPT
-	
-/*++++++++ = ++++++++*/
-
-	include "../../header.php"; // INCLUIR EL HEADER
-
-	$tsTitle = $tsCore->settings['titulo'].' - '.$tsCore->settings['slogan']; 	// TITULO DE LA PAGINA ACTUAL
-
-/*++++++++ = ++++++++*/
-
-	// VERIFICAMOS EL NIVEL DE ACCESO ANTES CONFIGURADO
-	$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
-	if($tsLevelMsg != 1){	
-		$tsPage = 'aviso';
-		$tsAjax = 0;
-		$smarty->assign("tsAviso",$tsLevelMsg);
-		//
-		$tsContinue = false;
-	}
-	//
-	if($tsContinue){
-
-/**********************************\
-
-* (VARIABLES LOCALES ESTE ARCHIVO)	*
-
-\*********************************/
+if($tsContinue) {
 
 	// CLASE TOPS
-	include("../class/c.tops.php");
-	$tsTops = new tsTops();
+	require_once dirname(__DIR__, 1) . "/class/c.tops.php";
+	$tsTops = new tsTops($tsCore);
 	//
-	$fecha = empty($_GET['fecha']) || $_GET['fecha'] > 5 || !ctype_digit($_GET['fecha']) ? 5 : (int)$_GET['fecha'];
+	$fecha = (int)($_GET['fecha'] ?? 0);
+	$cat = (int)($_GET['cat'] ?? 0);
+	$action = (string)($_GET['action'] ?? 'posts');
 	$smarty->assign("tsFecha",$fecha);
-	$cat = empty($_GET['cat']) ? 0 : (int)$_GET['cat'];
 	$smarty->assign("tsCat",$cat);
-	//
-	$action = empty($_GET['action']) ? 'posts' : (string)$_GET['action'];
 	$smarty->assign("tsAction",$action);
-	
 
-/**********************************\
-
-*	(INSTRUCCIONES DE CODIGO)		*
-
-\*********************************/
-
-		switch($action){
-			case 'posts':
-				$smarty->assign("tsTops",$tsTops->getTopPosts($fecha, $cat));
-			break;
-            case 'usuarios':
-                $smarty->assign("tsTops",$tsTops->getTopUsers($fecha, $cat));
-            break;
-		}
-
-/**********************************\
-
-* (AGREGAR DATOS GENERADOS | SMARTY) *
-
-\*********************************/
+	switch($action){
+		case 'posts':
+			$smarty->assign("tsTops", $tsTops->getTopPosts($fecha, $cat));
+		break;
+		case 'usuarios':
+			$smarty->assign("tsTops", $tsTops->getTopUsers($fecha, $cat));
+		break;
 	}
+}
 
-if(empty($tsAjax)) {	// SI LA PETICION SE HIZO POR AJAX DETENER EL SCRIPT Y NO MOSTRAR PLANTILLA, SI NO ENTONCES MOSTRARLA.
-
-	$smarty->assign("tsTitle",$tsTitle);	// AGREGAR EL TITULO DE LA PAGINA ACTUAL
-
-	/*++++++++ = ++++++++*/
-	include("../../footer.php");
-	/*++++++++ = ++++++++*/
+if($tsAjax) {
+	$smarty->assign("tsTitle", $tsTitle);
+   require_once dirname(__DIR__, 2) . "/footer.php";
 }

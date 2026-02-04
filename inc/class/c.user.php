@@ -12,17 +12,20 @@ if (!defined('TS_HEADER')) {
 	exit('No se permite el acceso directo al script');
 }
 
-require_once dirname(__DIR__, 1) . '/utils/AsignarMedallas.php';
-require_once dirname(__DIR__, 1) . '/utils/Avatar.php';
-require_once dirname(__DIR__, 1) . '/utils/PasswordHandler.php';
+require_once TS_UTILS . '/AsignarMedallas.php';
+require_once TS_UTILS . '/Avatar.php';
+require_once TS_UTILS . '/IP.php';
+require_once TS_UTILS . '/PasswordHandler.php';
+require_once TS_UTILS . '/Permissions.php';
 require_once __DIR__ . '/c.session.php';
 
 class tsUser {
 
 	private ?tsSession $session = null;
 	protected tsCore $Core;
+	protected IP $IP;
 
-	public $permisos = [];
+	public $permisos;
 	public $info = [];
 	public $is_member = 0;		// EL USUARIO ESTA LOGUEADO?
 	public $is_admod = 0;
@@ -35,6 +38,7 @@ class tsUser {
 	public function __construct() {
 		global $tsCore;
 		$this->Core = $tsCore;
+		$this->IP = new IP;
 		/* CARGAR SESSION */
 		$this->session = new tsSession($tsCore);
 		$this->setSession();
@@ -86,6 +90,22 @@ class tsUser {
 		return false;
 	}
 
+	private function getPermissions(): void {
+		// PERMISOS SEGUN RANGO
+		$this->info['rango'] = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', 'SELECT r_name, r_color, r_image, r_allows FROM u_rangos WHERE rango_id = '.$this->info['user_id'].' LIMIT 1'));
+		$rango = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', "SELECT r_allows FROM u_rangos WHERE rango_id = {$this->info['user_rango']} LIMIT 1"));
+		$raw = $rango['r_allows'] ?? '';
+		$stored = json_decode($raw, true);
+		$this->permisos = array_merge(Permissions::DEFINITIONS, is_array($stored) ? $stored : []);
+		/* ES MIEMBRO */
+		$this->is_member = 1;
+		$this->is_admod = match (true) {
+	   	$this->permisos['suad'] => 1, // admin
+	   	$this->permisos['sumo'] => 2, // moderador
+	   	default => 0,
+		};
+	}
+
 	/**
 	 * @name loadUser
 	 * @access public
@@ -100,28 +120,13 @@ class tsUser {
 		// Existe el usuario?
 		if(!isset($this->info['user_id'])) return false;
 		// PERMISOS SEGUN RANGO
-		$this->info['rango'] = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', 'SELECT r_name, r_color, r_image, r_allows FROM u_rangos WHERE rango_id = '.$this->info['user_id'].' LIMIT 1'));
-		// PERMISOS SEGUN RANGO
-		$rango = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', 'SELECT r_allows FROM u_rangos WHERE rango_id = \''.$this->info['user_rango'].'\' LIMIT 1'));
-		$this->permisos = @unserialize($rango['r_allows']);
-		foreach(['moat', 'sumo', 'suad', 'gopp', 'gorpap', 'most'] as $perm) {
-			if(!isset($this->permisos[$perm])) $this->permisos[$perm] = false;
-		}
-		/* ES MIEMBRO */
-		$this->is_member = 1;
-		$this->is_admod = match(true) {
-			!$this->permisos['sumo'] && $this->permisos['suad'] => 1,
-			$this->permisos['sumo'] && !$this->permisos['suad'] => 2,
-			$this->permisos['sumo'] || $this->permisos['suad'] => 1,
-			default => 0
-		};
+		$this->getPermissions();
 		// NOMBRE
 		$this->nick = $this->info['user_name'];
-		$this->uid = $this->info['user_id'];
+		$this->uid = (int)$this->info['user_id'];
 		$this->is_banned = $this->info['user_baneado'];
 		// Avatar
-		$Avatar = new Avatar;
-		$this->avatar = $Avatar->get((int)$this->uid);
+		$this->avatar = (new Avatar)->get((int)$this->uid);
 		$time = time();
 		// ULTIMA ACCION
 		db_exec([__FILE__, __LINE__], 'query', "UPDATE u_miembros SET user_lastactive = $time WHERE user_id = {$this->uid}");
@@ -134,6 +139,14 @@ class tsUser {
 	  	}
 	  	// Borrar variable session
 	  	#unset($this->session);
+	}
+
+	public function can(string $perm): bool {
+	   return !empty($this->permisos[$perm]);
+	}
+
+	public function perm(string $perm, int $default = 0): int {
+	   return (int) ($this->permisos[$perm] ?? $default);
 	}
 
 	private function DarMedalla(int $uid): void {
@@ -156,39 +169,85 @@ class tsUser {
 		->ejecutar();
 	}
 
+	private function isLocked(int $userId): bool {
+	   $userId = (int)$userId;
+	   $row = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', "SELECT locked_until FROM u_lockout WHERE user_id = $userId"));
+   	if (!$row || empty($row['locked_until'])) {
+   	   return false;
+   	}
+   	return strtotime($row['locked_until']) > time();
+	}
+
+	private function logLoginAttempt(?int $userId, string $identifier, bool $success): void {
+		$userId = $userId !== null ? (int)$userId : 'NULL';
+	   $identifier = $this->Core->setSecure($identifier);
+	   $ip         = $this->Core->setSecure($this->IP->executeIP());
+	   $agent      = $this->Core->setSecure((string)($_SERVER['HTTP_USER_AGENT'] ?? ''));
+	   $success = $success ? 1 : 0;
+
+	   db_exec([__FILE__, __LINE__], 'query', "INSERT INTO u_login_attempts (user_id, identifier, ip, user_agent, success, created_at) VALUES ($userId, '$identifier', INET6_ATON('$ip'), '$agent', $success, NOW())");
+	}
+
+	private function evaluateLockout(int $userId): void {
+	   $row = db_exec('fetch_row', db_exec([__FILE__, __LINE__], 'query', "SELECT COUNT(*) FROM u_login_attempts WHERE user_id = $userId AND success = 0 AND created_at > NOW() - INTERVAL 10 MINUTE"));
+	   $fails = (int)$row[0];
+    	if ($fails >= 5) {
+    	   db_exec([__FILE__, __LINE__], 'query', "INSERT INTO u_lockout (user_id, locked_until) VALUES ($userId, NOW() + INTERVAL 30 MINUTE) ON DUPLICATE KEY UPDATE locked_until = VALUES(locked_until)");
+    	}
+	}
+
+	private function clearLockout(int $userId): void {
+	   db_exec([__FILE__, __LINE__], 'query', "DELETE FROM u_lockout WHERE user_id = $userId");
+	}
+
+	private function getRemainingLockMinutes(int $userId): int {
+	   $row = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', "SELECT locked_until FROM u_lockout WHERE user_id = $userId LIMIT 1"));
+	   if (!$row || empty($row['locked_until'])) {
+	      return 0;
+	   }
+	   $remaining = strtotime($row['locked_until']) - time();
+	   return max(1, (int) ceil($remaining / 60));
+	}
+
 	/**
 	 * @name loginUser
 	 * @access public
 	 * @return string
 	 */
 	public function loginUser(): string {
-		[$username, $password, $remember, $redirectTo] = array_pad(func_get_args(), 4, null);
-		# Filtramos si es nombre o email
-		$filter = (filter_var($username, FILTER_VALIDATE_EMAIL)) ? 'email' : 'name';
-		# Consultamos
-		$data = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', "SELECT user_id, user_name, user_password, user_activo, user_baneado FROM u_miembros WHERE user_$filter = '$username' LIMIT 1"));
-		# Comprobamos que el usuario exista
-		if(empty($data)) return '0: El usuario no existe.';
-		# Comprobamos la contraseña
-		$PasswordHandler = new PasswordHandler;
-		if($PasswordHandler->verify($password, $data["user_password"]) === false) {
-			return '2: Tu contrase&ntilde;a es incorrecta.';
-		}
-		# Comprobamos que el usuario este activo
-		if((int)$data['user_activo'] === 0) {
-			return '3: Debes activar tu cuenta';
-		}
-		// Actualizamos la session
-		if($this->session->update((int)$data['user_id'], $remember, TRUE)) {
-			// Cargamos la información del usuario
-			$this->loadUser(true);
-			// COMPROBAMOS SI TENEMOS QUE ASIGNAR MEDALLAS
-			# $this->DarMedalla((int)$data['user_id']);                
-			/* REDERIGIR */
-			if($redirectTo !== NULL) $this->Core->redirectTo($redirectTo);
-			else return '1: Bien, estas ingresando...';
-		}
-		return '0: Hubo un error al crear su sesion.';
+	   [$username, $password, $remember, $redirectTo] = array_pad(func_get_args(), 4, null);
+	   $identifier = mb_strtolower(trim((string)$username));
+    	$safeIdentifier = $this->Core->setSecure($identifier);
+    	$filter = filter_var($identifier, FILTER_VALIDATE_EMAIL) ? 'email' : 'name';
+    	$user = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', "SELECT user_id, user_name, user_password, user_activo FROM u_miembros WHERE LOWER(user_$filter) = '$safeIdentifier' LIMIT 1"));
+    	# Verificamos bloqueo ANTES de validar contraseña
+		if ($this->isLocked((int)$user['user_id'])) {
+		   $minutes = $this->getRemainingLockMinutes((int)$user['user_id']);
+		   return "4: Demasiados intentos fallidos. Vuelve a intentar en {$minutes} minutos.";
+		} else $this->clearLockout((int)$user['user_id']);
+	   // Verificar contraseña (sin revelar estado)
+	   $success = $user && (new PasswordHandler)->verify($password, $user['user_password']);
+	   // Registrar intento SIEMPRE
+	   $this->logLoginAttempt((int)$user['user_id'] ?? null, $identifier, $success);
+	   // Si falló → evaluar bloqueo
+	   if (!$success && $user) {
+	      $this->evaluateLockout((int)$user['user_id']);
+	      return '0: Credenciales inválidas.';
+	   }
+	   // Usuario inactivo (solo después de credenciales válidas)
+	   if ((int)$user['user_activo'] === 0) {
+	      return '3: Debes activar tu cuenta.';
+	   }
+	   // Login exitoso
+	   #$this->clearLockout((int)$user['user_id']);
+	   if ($this->session->update((int)$user['user_id'], $remember, true)) {
+	      $this->loadUser(true);
+	      if ($redirectTo !== null) {
+	         $this->Core->redirectTo($redirectTo);
+	      }
+	      return '1: Bien, estás ingresando...';
+	   }
+	   return '0: Error al crear la sesión.';
 	}
 
 	/**

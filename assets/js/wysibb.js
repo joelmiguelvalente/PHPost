@@ -792,7 +792,7 @@ wbbdebug = false;
 				ob.en=true;
 				
 				//check for simplebbcode
-				if (ob.simplebbcode && $.isArray(ob.simplebbcode) && ob.simplebbcode.length==2) {
+				if (ob.simplebbcode && Array.isArray(ob.simplebbcode) && ob.simplebbcode.length==2) {
 					ob.bbcode = ob.html = ob.simplebbcode[0]+"{SELTEXT}"+ob.simplebbcode[1];
 					if (ob.transform) delete ob.transform;
 					if (ob.modal)  delete ob.modal;
@@ -879,7 +879,7 @@ wbbdebug = false;
 													rname = rname.replace(this.getValidationRGX(rname),"");
 												var p = this.relFilterByNode(el,rootSelector);
 												var regRepl = (attr!=r[a]) ? this.getRegexpReplace(attr,r[a]):false;
-												crules[rname.toLowerCase()]={sel:(p) ? $.trim(p):false,attr:item,rgx:regRepl}
+												crules[rname.toLowerCase()]={sel:(p) ? p.trim():false,attr:item,rgx:regRepl}
 											}
 										}
 									},this));
@@ -897,7 +897,7 @@ wbbdebug = false;
 														rname = rname.replace(this.getValidationRGX(rname),"");
 													var p = this.relFilterByNode(el,rootSelector);
 													var regRepl = (txt!=r[a]) ? this.getRegexpReplace(txt,r[a]):false;
-													var sel = (p) ? $.trim(p):false;
+													var sel = (p) ? p.trim():false;
 													if ($.inArray(sel,sl)>-1 || $(rel).parent().contents().length>1) {
 														//has dublicate and not one children, need wrap
 														var nel = $("<span>").html("{"+rname+"}");
@@ -1226,7 +1226,7 @@ wbbdebug = false;
 			$dropblock.append('<div class="nc">'+CURLANG.auto+'</div>');
 			var colorlist = (opt.colors) ? opt.colors.split(","):[]; 
 			for (var j=0; j<colorlist.length; j++) {
-				colorlist[j] = $.trim(colorlist[j]);
+				colorlist[j] = colorlist[j].trim();
 				if (colorlist[j]=="-") { 
 					//insert padding
 					$dropblock.append('<span class="pl"></span>');
@@ -1311,7 +1311,7 @@ wbbdebug = false;
 			var $sblock = $('<div class="wbb-list">').appendTo($btn);
 			var $sval = $btn.find("span.val");
 			
-			var olist = ($.isArray(opt.options)) ? opt.options:opt.options.split(",");
+			var olist = (Array.isArray(opt.options)) ? opt.options:opt.options.split(",");
 			var $selectbox = (this.isMobile) ? $("<select>").addClass("wbb-selectbox"):"";
 			for (var i=0; i<olist.length; i++) {
 				var oname = olist[i];
@@ -1404,7 +1404,7 @@ wbbdebug = false;
 				var $btnHTML = $(this.strf(opt.buttonHTML,opt)).addClass("btn-inner");
 				var $btn = $('<div class="wysibb-toolbar-btn wbb-smilebox wbb-'+bn+'">').appendTo(container).append($btnHTML).append(this.strf('<span class="btn-tooltip">{title}<ins/></span>',{title:opt.title}));  
 				var $sblock = $('<div class="wbb-list">').appendTo($btn);
-				if ($.isArray(this.options.smileList)) {
+				if (Array.isArray(this.options.smileList)) {
 					$.each(this.options.smileList,$.proxy(function(i,sm){
 						$('<span>').addClass("smile").appendTo($sblock).append($(this.strf(sm.img,this.options)).attr("title",sm.title));
 					},this));
@@ -1459,7 +1459,7 @@ wbbdebug = false;
 						var metasum=0;
 						var key = keys.pop();
 						$.each(keys,function(i,k) {
-							switch($.trim(k.toLowerCase())) {
+							switch(k.toLowerCase().trim()) {
 								case "ctrl": {metasum+=1;break;}
 								case "shift": {metasum+=4;break;}
 								case "alt": {metasum+=7;break;}
@@ -1567,7 +1567,7 @@ wbbdebug = false;
 					}
 				}else{
 					//custom command
-					if ($.isArray(opt.rootSelector)) {
+					if (Array.isArray(opt.rootSelector)) {
 						for (var i=0; i<opt.rootSelector.length; i++) {
 							var n = this.isContain(this.getSelectNode(),opt.rootSelector[i]);
 							if (n) {
@@ -2073,7 +2073,7 @@ wbbdebug = false;
 						var va = v.split(";");
 						$.each(va,function(i,f) {
 							if (f && f.length>0) {
-								filter+='['+item+'*="'+$.trim(f)+'"]';
+								filter+='['+item+'*="'+f.trim()+'"]';
 							}
 						});
 					}else{
@@ -2502,7 +2502,7 @@ wbbdebug = false;
 					//clear empty only for span,font
 					return false;
 				}
-				if (!$(this).hasClass("wbbtab") && $.trim($(this).html()).length==0) {
+				if (!$(this).hasClass("wbbtab") && $(this).html().trim().length==0) {
 					return true;
 				}else if ($(this).children().length>0) {
 					$(this).children().filter(emptyFilter).remove();

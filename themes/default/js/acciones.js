@@ -376,7 +376,7 @@ const mensaje = {
 	},
 	eliminar(id, type) {
 		mensaje.ajax('editar', 'ids=' + id + '&act=delete', function(){
-			if(type === 2) {
+			if(parseInt(type) === 2) {
 				location.href = route.url + '/mensajes/';
 			}
 			const cid = id.split(':');

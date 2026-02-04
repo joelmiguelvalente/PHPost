@@ -32,11 +32,11 @@ const route = {
 }
 </script>
 {load file=['jquery.min','jquery.plugins','acciones',$tsPage] type="js"}
-{if $tsUser->is_admod || $tsUser->permisos.moacp || $tsUser->permisos.most || $tsUser->permisos.moayca || $tsUser->permisos.mosu || $tsUser->permisos.modu || $tsUser->permisos.moep || $tsUser->permisos.moop || $tsUser->permisos.moedcopo || $tsUser->permisos.moaydcp || $tsUser->permisos.moecp}
-<script src="{$tsRoutes.assets.js}/moderacion.js?{$smarty.now}" defer></script>
+{if $tsUser->is_admod || $tsUser->can('moacp') || $tsUser->can('most') || $tsUser->can('moayca') || $tsUser->can('mosu') || $tsUser->can('modu') || $tsUser->can('moep') || $tsUser->can('moop') || $tsUser->can('moedcopo') || $tsUser->can('moaydcp') || $tsUser->can('moecp')}
+<script src="{$tsRoutes.assets.js}/moderacion.js" defer></script>
 {/if}
 {if $tsConfig.c_allow_live}
-<script src="{$tsRoutes.assets.js}/live.js?{$smarty.now}" defer></script>
+<script src="{$tsRoutes.assets.js}/live.js" defer></script>
 {/if}
 </head>
 <body>

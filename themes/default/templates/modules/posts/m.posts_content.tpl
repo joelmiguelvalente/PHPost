@@ -16,19 +16,19 @@
    </div>
    <div class="post-contenido">
    	{if !$tsUser->is_member}{include "m.global_ads_728.tpl"}{/if}
-   	{if $tsPost.post_user == $tsUser->uid && $tsUser->is_admod == 0 && $tsUser->permisos.most == false && $tsUser->permisos.moayca == false && $tsUser->permisos.moo == false && $tsUser->permisos.moep ==  false && $tsUser->permisos.moedpo == false}
+   	{if $tsPost.post_user == $tsUser->uid && $tsUser->is_admod == 0 && $tsUser->can('most') == false && $tsUser->can('moayca') == false && $tsUser->can('moo') == false && $tsUser->can('moep') ==  false && $tsUser->can('moedpo') == false}
    		<div class="floatR">
    			<a title="Borrar Post" onclick="borrar_post(); return false;" href="" class="btnActions"><img alt="Borrar" src="{$tsRoutes.tema.images}/borrar.png"/> Borrar</a>
    			<a title="Editar Post" onclick="location.href='{$tsConfig.url}/posts/editar/{$tsPost.post_id}'; return false" href="" class="btnActions"><img alt="Editar" src="{$tsRoutes.tema.images}/editar.png"/> Editar</a>
 	   	</div>
-	   {elseif ($tsUser->is_admod && $tsPost.post_status == 0) || $tsUser->permisos.most || $tsUser->permisos.moayca || $tsUser->permisos.moop || $tsUser->permisos.moep || $tsUser->permisos.moedpo}
+	   {elseif ($tsUser->is_admod && $tsPost.post_status == 0) || $tsUser->can('most') || $tsUser->can('moayca') || $tsUser->can('moop') || $tsUser->can('moep') || $tsUser->can('moedpo')}
 			<div class="mod-actions inline">
 				<strong>Moderar Post:</strong>
-				{if $tsUser->is_admod || $tsUser->permisos.most}<a href="#" onclick="mod.reboot({$tsPost.post_id}, 'posts', 'sticky', false); if($(this).text() == 'Poner Sticky') $(this).text('Quitar Sticky'); else $(this).text('Poner Sticky'); return false;" class="sticky">{if $tsPost.post_sticky == 1}Quitar{else}Poner{/if} Sticky</a>{/if}
-				{if $tsUser->is_admod || $tsUser->permisos.moayca}<a href="#" onclick="mod.reboot({$tsPost.post_id}, 'posts', 'openclosed', false); if($(this).text() == 'Cerrar Post') $(this).text('Abrir Post'); else $(this).text('Cerrar Post'); return false;" class="openclosed">{if $tsPost.post_block_comments == 1}Abrir{else}Cerrar{/if} Post</a>{/if}
-				{if $tsUser->is_admod || $tsUser->permisos.moop}<a id="desaprobar" href="#" onclick="$('#desapprove').slideToggle(); $(this).fadeOut().remove();" class="des_approve">Ocultar Post</a>{/if}
-				{if $tsUser->is_admod || $tsUser->permisos.moedpo || $tsAutor.user_id == $tsUser->uid}<a href="{$tsConfig.url}/posts/editar/{$tsPost.post_id}" class="edit">Editar</a>{/if}
-				{if $tsUser->is_admod || $tsUser->permisos.moep || $tsAutor.user_id == $tsUser->uid}<a href="#" onclick="{if $tsAutor.user_id != $tsUser->uid}mod.posts.borrar({$tsPost.post_id}, 'posts', null);{else}borrar_post();{/if} return false;" class="delete">Borrar</a>{/if}
+				{if $tsUser->is_admod || $tsUser->can('most')}<a href="#" onclick="mod.reboot({$tsPost.post_id}, 'posts', 'sticky', false); if($(this).text() == 'Poner Sticky') $(this).text('Quitar Sticky'); else $(this).text('Poner Sticky'); return false;" class="sticky">{if $tsPost.post_sticky == 1}Quitar{else}Poner{/if} Sticky</a>{/if}
+				{if $tsUser->is_admod || $tsUser->can('moayca')}<a href="#" onclick="mod.reboot({$tsPost.post_id}, 'posts', 'openclosed', false); if($(this).text() == 'Cerrar Post') $(this).text('Abrir Post'); else $(this).text('Cerrar Post'); return false;" class="openclosed">{if $tsPost.post_block_comments == 1}Abrir{else}Cerrar{/if} Post</a>{/if}
+				{if $tsUser->is_admod || $tsUser->can('moop')}<a id="desaprobar" href="#" onclick="$('#desapprove').slideToggle(); $(this).fadeOut().remove();" class="des_approve">Ocultar Post</a>{/if}
+				{if $tsUser->is_admod || $tsUser->can('moedpo') || $tsAutor.user_id == $tsUser->uid}<a href="{$tsConfig.url}/posts/editar/{$tsPost.post_id}" class="edit">Editar</a>{/if}
+				{if $tsUser->is_admod || $tsUser->can('moep') || $tsAutor.user_id == $tsUser->uid}<a href="#" onclick="{if $tsAutor.user_id != $tsUser->uid}mod.posts.borrar({$tsPost.post_id}, 'posts', null);{else}borrar_post();{/if} return false;" class="delete">Borrar</a>{/if}
 	   	</div>
 	   	<div id="desapprove" style="display:none;">
 	   		<span style="display: none;" class="errormsg"></span>

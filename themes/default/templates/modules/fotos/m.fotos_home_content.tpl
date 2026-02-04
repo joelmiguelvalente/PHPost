@@ -28,7 +28,7 @@
                                     
 									<a href="{$tsConfig.url}/fotos/{$f.user_name}/{$f.foto_id}/{$f.f_title|seo}.html">{$f.f_title}</a><br /> 
                             		
-									<span title="{$f.f_date|date_format:"%d.%m.%y a las %H:%M hs."}" class="time"><strong>{$f.f_date|date_format:"%d.%m.%Y"}</strong> - Por <a href="{$tsConfig.url}/perfil/{$f.user_name}">{$f.user_name}</a></span><hr />
+									<span title="{$f.f_date|date_format:"d.m.y a las H:M hs."}" class="time"><strong>{$f.f_date|date_format:"d.m.Y"}</strong> - Por <a href="{$tsConfig.url}/perfil/{$f.user_name}">{$f.user_name}</a></span><hr />
                                     
 									<span class="time">{$f.f_description|truncate:94}</span>
                                 

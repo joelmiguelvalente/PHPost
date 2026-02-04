@@ -12,7 +12,7 @@ if (!defined('TS_HEADER')) {
 	exit('No se permite el acceso directo al script');
 }
 
-require_once dirname(__DIR__, 1) . '/utils/AvatarConfig.php';
+require_once TS_UTILS . '/AvatarConfig.php';
 
 final class tsUpload {
 

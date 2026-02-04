@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name ajax.registro.php
+ * @name Meses.php
  * @author PHPost Team
  * @copyright 2026
  */

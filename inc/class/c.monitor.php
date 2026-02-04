@@ -12,9 +12,9 @@ if (!defined('TS_HEADER')) {
 	exit('No se permite el acceso directo al script');
 }
 
-require_once dirname(__DIR__, 1) . '/utils/Avatar.php';
-require_once dirname(__DIR__, 1) . '/utils/Paginator.php';
-require_once dirname(__DIR__, 1) . '/helpers/UrlHelper.php';
+require_once TS_UTILS . '/Avatar.php';
+require_once TS_UTILS . '/Paginator.php';
+require_once TS_HELPERS . '/UrlHelper.php';
 
 class tsMonitor {
 	

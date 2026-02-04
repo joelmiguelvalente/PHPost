@@ -44,11 +44,11 @@
 		<div class="paginadorCom"><!--HTML de las páginas--></div>
 	</div>{/if}
 
-	{if $tsPost.post_block_comments == 1 && ($tsUser->is_admod == 0 && $tsUser->permisos.mocepc == false)}
+	{if $tsPost.post_block_comments == 1 && ($tsUser->is_admod == 0 && $tsUser->can('mocepc') == false)}
 		<div id="no-comments">El post se encuentra cerrado y no se permiten comentarios.</div>
-	{elseif $tsUser->is_admod == 0 && $tsUser->permisos.gopcp == false}
+	{elseif $tsUser->is_admod == 0 && $tsUser->can('gopcp') == false}
 		<div id="no-comments">No tienes permisos para comentar.</div>
-	{elseif $tsUser->is_member && ($tsPost.post_block_comments != 1 || $tsPost.post_user == $tsUser->uid || $tsUser->is_admod || $tsUser->permisos.gopcp) && $tsPost.block == 0}
+	{elseif $tsUser->is_member && ($tsPost.post_block_comments != 1 || $tsPost.post_user == $tsUser->uid || $tsUser->is_admod || $tsUser->can('gopcp')) && $tsPost.block == 0}
 	<div class="miComentario">
 		{include "m.posts_comments_form.tpl"}
 	</div>

@@ -71,8 +71,9 @@ switch($action) {
 		echo $tsRegistro->checkUserEmail();
 	break;
 	case 'registro-geo':
-		$tsEstados = require dirname(__DIR__, 2) . '/extras/geodata.php';
+		$tsEstados = require TS_EXTRA . '/geodata.php';
 		$pais = trim($_GET['pais_code'] ?? '');
+		
 		if ($pais === '') {
 		   echo '0: El campo <b>pais_code</b> es requerido para esta operación';
 		   return;

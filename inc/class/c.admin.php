@@ -1,284 +1,102 @@
 <?php
 
-if (!defined('TS_HEADER')) exit('No se permite el acceso directo al script');
-
 /**
- * Modelo para la adminitración
- *
- * @name    c.admin.php
- * @author  PHPost Team
-*/
+ * @name c.admin.php
+ * @author PHPost Team
+ * @copyright 2026
+ */
+
+declare(strict_types=1);
+
+if (!defined('TS_HEADER')) {
+   exit('No se permite el acceso directo al script');
+}
+
+require_once TS_HELPERS . '/AdminHelper.php';
 
 class tsAdmin {
+   
+   protected tsCore $Core;
+   protected tsUser $User;
 
    # Cantidad de objeto a mostrar
-   private $max = 20;
+   CONST MAX_SHOW = 20;
 
-   # Extensiones para imagenes
-   private $extension = ["jpg", "png", "gif", "bmp", "svg"];
+   public AdminHelper $AdminHelper;
 
-   # Las opciones para los rangos (saveRango() y newRango())
-   private function optionsRange($post) {
-      return serialize([
-         'suad' => $post['superadmin'],
-         'sumo' => $post['supermod'],
-         'moacp' => $post['mod-accesopanel'],
-         'mocdu' => $post['mod-cancelardenunciasusuarios'],
-         'moadf' => $post['mod-aceptardenunciasfotos'],
-         'mocdf' => $post['mod-cancelardenunciasfotos'],
-         'mocdp' => $post['mod-cancelardenunciasposts'],
-         'moadm' => $post['mod-aceptardenunciasmensajes'],
-         'mocdm' => $post['mod-cancelardenunciasmensajes'],
-         'movub' => $post['mod-verusuariosbaneados'],
-         'moub' => $post['mod-usarbuscador'],
-         'morp' => $post['mod-reciclajeposts'],
-         'morf' => $post['mod-reficlajefotos'],
-         'mocp' => $post['mod-contenidoposts'],
-         'mocc' => $post['mod-contenidocomentarios'],
-         'most' => $post['mod-sticky'],
-         'moayca' => $post['mod-abrirycerrarajax'],
-         'movcud' => $post['mod-vercuentasdesactivadas'],
-         'movcus' => $post['mod-vercuentassuspendidas'],
-         'mosu' => $post['mod-suspenderusuarios'],
-         'modu' => $post['mod-desbanearusuarios'],
-         'moep' => $post['mod-eliminarposts'],
-         'moedpo' => $post['mod-editarposts'],
-         'moop' => $post['mod-ocultarposts'],
-         'mocepc' => $post['mod-comentarpostcerrado'],
-         'moedcopo' => $post['mod-editarcomposts'],
-         'moaydcp' => $post['mod-desyaprobarcomposts'],
-         'moecp' => $post['mod-eliminarcomposts'],
-         'moef' => $post['mod-eliminarfotos'],
-         'moedfo' => $post['mod-editarfotos'],
-         'moecf' => $post['mod-eliminarcomfotos'],
-         'moepm' => $post['mod-eliminarpubmuro'],
-         'moecm' => $post['mod-eliminarcommuro'],
-         'godp' => $post['global-darpuntos'],
-         'gopp' => $post['global-publicarposts'],
-         'gopcp' => $post['global-publicarcomposts'],
-         'govpp' => $post['global-votarposipost'],
-         'govpn' => $post['global-votarnegapost'],
-         'goepc' => $post['global-editarpropioscomentarios'],
-         'godpc' => $post['global-eliminarpropioscomentarios'],
-         'gopf' => $post['global-publicarfotos'],
-         'gopcf' => $post['global-publicarcomfotos'],
-         'gorpap' => $post['global-revisarposts'],
-         'govwm' => $post['global-vermantenimiento'],
-         'goaf' => $post['global-antiflood'],
-         'gopfp' => $post['global-pointsforposts'],
-         'gopfd' => $post['global-pointsforday']
-      ]);
+   public function __construct(tsCore $Core, tsUser $User) {
+      $this->Core = $Core;
+      $this->User = $User;
+      $this->AdminHelper = new AdminHelper;
    }
 
-   /** 
-    * Agregamos esta función ya que se repite 2 veces,
-    * extraemos las imagenes
-   */
-   public function getExtraIcons(string $folder = 'cat', int $size = 16) {
-      # Accedemos a la carpeta de icons
-      $carpeta = opendir( TS_FILES . "images/{$folder}" );
-      # Recorremos la carpeta
-      while ($archivo = readdir($carpeta)) {
-         # Obtenemos la extension
-         $ext = substr($archivo, -3);
-         # Es una imagen?
-         if (in_array($ext, $this->extension)) {
-            if ($size != 16) {
-               $im_size = substr($archivo, -6, 2);
-               if ($size == $im_size) $icons[] = substr($archivo, 0, -7);
-            } else $icons[] = $archivo;
-         }
-      }
-      # Retornamos las imagenes
-      return $icons;
-   }
    /**
     * Obtenemos a todos los administradores
    */
-   public function getAdmins() {
+   public function getAdmins(): array {
       return result_array(db_exec([__FILE__, __LINE__], 'query', 'SELECT `user_id`, `user_name` FROM `u_miembros` WHERE user_rango = 1 ORDER BY user_id'));
    }
    /**
     * Obtenemos fundación y acutalización
    */
-   public function getInst() {
-      return db_exec('fetch_row', db_exec([__FILE__, __LINE__], 'query', 'SELECT `stats_time_foundation`, `stats_time_upgrade` FROM `w_stats` WHERE stats_no = 1'));
+   public function getInst(): array {
+      $data = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', 'SELECT stats_time_foundation as foundation, stats_time_upgrade as upgrade FROM `w_stats` WHERE stats_no = 1'));
+      return $data;
    }
    /**
     * Obtenemos las versiones
    */
-   public function getVersions() {
-      # Versión de PHP
-      $data['php'] = PHP_VERSION;
-      # Versión MySQL
-      $data['mysql'] = db_exec('fetch_row', db_exec([__FILE__, __LINE__], 'query', 'SELECT VERSION()'));
-      # Versión del servidor
-      $data['server'] = $_SERVER['SERVER_SOFTWARE'];
-      # Versión de la librería GD (para trabajar con imagenes)
-      if (extension_loaded("gd") && function_exists("gd_info")) {
-         $temp = @gd_info();
-         $temp = $temp['GD Version'];
-      } else {
-         $temp = "GD no instalada. Busque php.ini ;extesion:gd o ;extension:php_gd2.dll y descomentela quitando el ; ";
-      }
-      # Retornamos las versiones
+   public function getVersions(): array {
+      $data = [];
+
+      // PHP
+      $data['php'] = [
+         'version' => PHP_VERSION,
+         'sapi' => PHP_SAPI,
+         'memory_limit' => ini_get('memory_limit'),
+         'timezone' => date_default_timezone_get(),
+      ];
+
+      // Database
+      $row = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', 'SELECT VERSION() AS v'));
+      $data['database'] = [
+         'engine' => 'mysql',
+         'version' => $row['v'] ?? null,
+      ];
+
+      // Server
+      $data['server'] = [
+         'software' => $_SERVER['SERVER_SOFTWARE'] ?? 'unknown',
+         'os' => PHP_OS_FAMILY,
+      ];
+
+      // Extensions
+      $data['extensions'] = [
+         'gd' => extension_loaded('gd') ? [
+            'enabled' => true,
+            'version' => gd_info()['GD Version'] ?? null,
+         ] : ['enabled' => false],
+         'mbstring' => extension_loaded('mbstring'),
+         'intl'     => extension_loaded('intl'),
+         'curl'     => extension_loaded('curl'),
+         'openssl'  => extension_loaded('openssl'),
+         'json'     => extension_loaded('json'),
+      ];
       return $data;
    }
+
    /**
-    * Guardamos la configuración desde la administración.
-    * para más información puedes visitar:
-    * @link https://phpost.es/showthread.php?tid=320
-    * @link https://www.phpost.net/foro/topic/32479-simplificar-la-funci%C3%B3n-saveconfig/
-    * @link https://phpost.es/showthread.php?tid=319 [providers]
+    * @access public
+    * @return bool
    */   
-   public function saveConfig() {
-      global $tsCore;
-      /**
-       * Unimos todos los parametros y 
-       * quitamos el $_POST["save"] con array_slice()
-       * @link https://www.php.net/manual/es/function.array-slice.php
-       * con el -1 se quita el $_POST["save"]
-      */
-      # Consultamos si existe, tenemos que poner el nombre
-      if(isset($_POST["providers"])):
-         # Lo que va a hacer es reemplazar el parametro por este nuevo
-         /**
-          * @link https://www.php.net/manual/es/function.json-encode.php
-         */
-         $_POST["providers"] = json_encode(explode(', ', $_POST["providers"]), JSON_FORCE_OBJECT);
-      endif;
-      //
-      $columnas = $tsCore->buildSqlSet( array_slice($_POST, 0, -1) );
-      if (db_exec([__FILE__, __LINE__], "query", "UPDATE w_configuracion SET {$columnas} WHERE phpost_id = 1")) return true;
-      else exit( show_error('Error al ejecutar la consulta de la l&iacute;nea '.__LINE__.' de '.__FILE__.'.', 'Base de datos') );
-   }
-   /**
-    * ------------------------------
-    * NOTICIAS
-    * getNoticias() :: Obtenemos todas las noticias 
-    * getNoticia() :: Obtengo la noticia por ID
-    * newNoticia() :: Creamos nueva noticia
-    * editNoticia() :: Editamos la noticia
-    * delNoticia() :: Eliminamos la noticia
-    * ------------------------------ 
-   */
-   public function getNoticias() {
-      $data = result_array(db_exec([__FILE__, __LINE__], 'query', 'SELECT u.user_id, u.user_name, n.* FROM w_noticias AS n LEFT JOIN u_miembros AS u ON n.not_autor = u.user_id  WHERE n.not_id > 0 ORDER BY n.not_id DESC'));
-      return $data;
-   }
-   public function getNoticia() {
-      global $tsCore;
-      # Obtenemos la ID de la noticia
-      $not_id = intval($_GET['nid']);
-      # Obtenemos la información
-      $data = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', 'SELECT `not_id`, `not_body`, `not_date`, `not_active` FROM w_noticias WHERE not_id = ' . $not_id . ' LIMIT 1'));
-      # Retornamos los datos
-      return $data;
-   }
-   public function newNoticia() {
-      global $tsCore, $tsUser;
-      # Obtenemos datos enviados por POST
-      $body = $tsCore->setSecure($tsCore->parseBadWords(substr($_POST['not_body'], 0, 190)));
-      $active = empty($_POST['not_active']) ? 0 : 1;
-      if (!empty($body)) {
-         if (db_exec([__FILE__, __LINE__], 'query', 'INSERT INTO `w_noticias` (`not_body`, `not_autor`, `not_date`, `not_active`) VALUES (\''.$body.'\', '.$tsUser->uid.', '.time().', '.$active .')')) return true;
+   public function saveConfig(): bool {
+      $columnas = $this->Core->buildSqlSet($_POST);
+      if (!db_exec([__FILE__, __LINE__], "query", "UPDATE w_configuracion SET {$columnas} WHERE phpost_id = 1")) {
+         return false;
       }
-      # Retornamos falso si no se creó
-      return false;
+      return true;
    }
-   public function editNoticia() {
-      global $tsCore, $tsUser;
-      # Obtenemos la ID de la noticia
-      $id = intval($_GET['nid']);
-      $body = $tsCore->setSecure($tsCore->parseBadWords(substr($_POST['not_body'], 0, 190)));
-      $active = empty($_POST['not_active']) ? 0 : 1;
-      if (!empty($body)) {
-         if (db_exec([__FILE__, __LINE__], 'query', 'UPDATE `w_noticias` SET `not_autor` = '.$tsUser->uid.', `not_body` = \''.$body.'\', not_active = '.$active.' WHERE not_id = ' . $id)) return true;
-      }
-   }
-   public function delNoticia() {
-      # Obtenemos la ID de la noticia
-      $not_id = intval($_GET['nid']);
-      if(!db_exec('num_rows', db_exec([__FILE__, __LINE__], 'query', 'SELECT `not_id` FROM `w_noticias` WHERE `not_id` = ' .$not_id . ' LIMIT 1'))) return 'El id ingresado no existe.';
-      db_exec([__FILE__, __LINE__], 'query', 'DELETE FROM `w_noticias` WHERE `not_id` = ' . $not_id);
-   }
-   /**
-    * ------------------------------
-    * TEMAS
-    * getTemas() :: Obtenemos todos los temas instalados
-    * getTema() :: Obtenemos el tema por ID
-    * saveTema() :: Guardamos el tema con nuevos valores
-    * changeTema() :: Cambiamos de tema 
-    * deleteTema() :: Eliminamos el tema
-    * newTema() :: Instalamos nuevo tema
-    * ------------------------------ 
-   */
-   public function getTemas() {
-      # Obtenemos la lista de temas
-      $data = result_array(db_exec([__FILE__, __LINE__], 'query', 'SELECT * FROM `w_temas` WHERE tid > 0'));
-      # Retornamos datos
-      return $data;
-   }
-   public function getTema() {
-      # Obtenemos el ID por GET
-      $tema_id = intval($_GET['tid']);
-      # Obtenemos la información
-      $data = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', 'SELECT * FROM `w_temas` WHERE tid = '.$tema_id.' LIMIT 1'));
-      # Retornamos los datos
-      return $data;
-   }
-   public function saveTema() {
-      global $tsCore;
-      # Obtenemos el ID por GET
-      $tema_id = intval($_GET['tid']);
-      # Creamos un arreglo para agregar
-      $t = $tsCore->buildSqlSet([
-         't_url' => $tsCore->setSecure($_POST['url']), 
-         't_path' => $tsCore->setSecure($_POST['path'])
-      ]);
-      # Actualizamos la tabla w_temas
-      return (db_exec([__FILE__, __LINE__], 'query', 'UPDATE `w_temas` SET '.$t.' WHERE tid = ' . $tema_id)) ? true : false;
-   }
-   public function changeTema() {
-      /**
-       * Al tener la configuración de Smarty 4, 
-       * ya no requiere de ir a caché para eliminar archivos
-      */
-      # Obtenemos los datos desde la funcion creada
-      $tema = intval($_GET["tid"]);
-      if($tema > 0) {
-         db_exec([__FILE__, __LINE__], "query", "UPDATE w_configuracion SET tema_id = {$tema} WHERE wid = 1");
-         return true;
-      } else return false;
-   }
-   public function deleteTema() {
-      # Obtenemos el tema que eliminaremos
-      $tema = $this->getTema()['tid'];
-      if (!empty($tema)) {
-         db_exec([__FILE__, __LINE__], 'query', 'DELETE FROM `w_temas` WHERE tid = ' . $tema);
-         return true;
-      } else return false;
-   }
-   public function newTema() {
-      global $tsCore, $smarty;
-      # Obtenemos el nombre de la carpeta a instalar por POST
-      $tema_path = $tsCore->setSecure($_POST['path']);
-      /**
-       * Obtenemos el archivo de instalación del tema
-       * esta es lo que se configuró en smarty.config.php
-      */
-      include $smarty->template_dir["themes"] . $tema_path . "/install.php";
-      # Instalando usando directamente el botón de "instalar tema"
-      $name = $tsCore->setSecure($tema['nombre']);
-      $path = $tsCore->setSecure($tema['path']);
-      $url = $tsCore->settings['url'] . '/themes/' . $path;
-      $copy = $tsCore->setSecure($tema['copy']);
-      //
-      if (empty($tema)) return 'Revisa que la carpeta del tema sea correcta.';
-      // NUEVO
-      if (db_exec([__FILE__, __LINE__], 'query', 'INSERT INTO `w_temas` (`t_name`, `t_url`, `t_path`, `t_copy`) VALUES (\''.$name.'\', \''.$url.'\', \''.$path.'\', \''.$copy.'\')')) return true;
-      else return 'Ocurri&oacute; un error durante la instalaci&oacute;n. Consulta el foro ofcial de PHPost.';
-   }
+   
    /**
     * ------------------------------
     * PUBLICIDADES
@@ -462,7 +280,7 @@ class tsAdmin {
          'r_image' => $tsCore->setSecure($_POST['r_img']),
          'r_cant' => intval(empty($_POST['global-cantidadrequerida']) ? 0 : $tsCore->setSecure($_POST['global-cantidadrequerida'])),
          'r_type' => $_POST['global-type'] > 4 ? 0 : $_POST['global-type'],
-         'r_allows' => self::optionsRange($_POST)
+         'r_allows' => $this->AdminHelper->optionsRange($_POST)
       ];
       //
       if (empty($r['r_name']))  return 'Debes ingresar el nombre del nuevo rango.';
@@ -481,7 +299,7 @@ class tsAdmin {
          'r_img' => $tsCore->setSecure($_POST['r_img']),
          'r_cant' => intval(empty($_POST['global-cantidadrequerida']) ? 0 : $tsCore->setSecure($_POST['global-cantidadrequerida'])),
          'r_type' => intval($_POST['global-type'] > 4 ? 0 : $_POST['global-type']),
-         'r_allows' => $tsCore->setSecure(self::optionsRange($_POST))
+         'r_allows' => $this->AdminHelper->optionsRange($_POST)
       ];
       //
       if (empty($r['r_name'])) return 'Debes ingresar el nombre del nuevo rango.';
@@ -950,40 +768,6 @@ class tsAdmin {
                 $_POST['fid'] . '\''))
             {
                 return '1: Foto deshabilitada.';
-            } else
-                return 'Ocurri&oacute; un error';
-        }
-    }
-
-
-    /****************** ADMINISTRACIÓN DE NOTICIAS ******************/
-
-    function setNoticiaInActive()
-    {
-        global $tsUser;
-
-        $noticia = $_POST['nid'];
-
-        $query = db_exec([__FILE__, __LINE__], 'query', 'SELECT not_active FROM w_noticias WHERE not_id = \'' . (int)
-            $noticia . '\'');
-        $data = db_exec('fetch_assoc', $query);
-
-
-        // COMPROBAMOS
-        if ($data['not_active'] == 1)
-        {
-            if (db_exec([__FILE__, __LINE__], 'query', 'UPDATE w_noticias SET not_active = \'0\' WHERE not_id = \'' . (int)
-                $noticia . '\''))
-            {
-                return '2: Noticia desactivada';
-            } else
-                return '0: Ocurri&oacute, un error';
-        } else
-        {
-            if (db_exec([__FILE__, __LINE__], 'query', 'UPDATE w_noticias SET not_active = \'1\' WHERE not_id = \'' . (int)
-                $noticia . '\''))
-            {
-                return '1: Noticia activada.';
             } else
                 return 'Ocurri&oacute; un error';
         }

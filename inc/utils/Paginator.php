@@ -91,7 +91,7 @@ class Paginator {
 	 *
 	 * @return string
 	 */
-	public function pageIndex(string $base_url, int &$start, int $max_value, int $num_per_page, bool $flexible_start = false) {
+	public function pageIndex(string $base_url, int $start, int $max_value, int $num_per_page, bool $flexible_start = false) {
 	   // Limpieza de la URL base
 	   $base_url = explode('&s=', $base_url, 2)[0];
 	   // Normalización del start

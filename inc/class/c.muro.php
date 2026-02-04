@@ -13,11 +13,11 @@ if (!defined('TS_HEADER')) {
 }
 
 require_once __DIR__ . '/c.cuenta.php';
-require_once dirname(__DIR__, 1) . '/helpers/CoreHelper.php';
-require_once dirname(__DIR__, 1) . '/helpers/UrlHelper.php';
-require_once dirname(__DIR__, 1) . '/helpers/MuroHelper.php';
-require_once dirname(__DIR__, 1) . '/utils/Avatar.php';
-require_once dirname(__DIR__, 1) . '/utils/IP.php';
+require_once TS_HELPERS . '/CoreHelper.php';
+require_once TS_HELPERS . '/UrlHelper.php';
+require_once TS_HELPERS . '/MuroHelper.php';
+require_once TS_UTILS . '/Avatar.php';
+require_once TS_UTILS . '/IP.php';
 
 class tsMuro {
 

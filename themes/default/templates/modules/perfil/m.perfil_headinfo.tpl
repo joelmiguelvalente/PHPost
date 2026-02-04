@@ -12,13 +12,13 @@
 				<h1 class="nick">{$tsInfo.nick}</h1>
 				<span class="realname">{$tsInfo.p_nombre}</span>
 				<span class="frase-personal">{$tsInfo.p_mensaje}</span>
-				<span class="bio">{if $tsInfo.p_nombre != ''}{$tsInfo.p_nombre} es {else}Es {/if}{if $tsInfo.user_sexo == 'male'}un hombre{elseif $tsInfo.user_sexo == 'female'}una mujer{else}una persona{/if}. Vive en <span id="info_pais">{$tsInfo.user_pais}</span> y se uni&oacute; a la familia de {$tsConfig.titulo} el {$tsInfo.user_registro|fecha:true}. {if $tsInfo.p_empresa}Trabaja en {$tsInfo.p_empresa}{/if}</span>
+				<span class="bio">{if $tsInfo.p_nombre != ''}{$tsInfo.p_nombre} es {else}Es {/if}{if $tsInfo.user_sexo == 'male'}un hombre{elseif $tsInfo.user_sexo == 'female'}una mujer{else}una persona{/if}. Vive en <span id="info_pais">{$tsInfo.user_pais}</span> y se uni&oacute; a la familia de {$tsConfig.titulo} el {$tsInfo.user_registro|fecha:'short'}. {if $tsInfo.p_empresa}Trabaja en {$tsInfo.p_empresa}{/if}</span>
 				
 				{if $tsUser->uid != $tsInfo.uid && $tsUser->is_member}
 					<div class="ex_opts">
 						<a href="javascript:bloquear({$tsInfo.uid}, {if $tsInfo.block.bid}false{else}true{/if}, 'perfil')" id="bloquear_cambiar">{if $tsInfo.block.bid}Desbloquear{else}Bloquear{/if}</a>
 						<a href="#" onclick="denuncia.nueva('usuario',{$tsInfo.uid}, '', '{$tsInfo.nick}'); return false">Denunciar</a>
-						{if ($tsUser->is_admod || $tsUser->permisos.mosu) && !$tsInfo.user_baneado}
+						{if ($tsUser->is_admod || $tsUser->can('mosu')) && !$tsInfo.user_baneado}
 							<a href="#" onclick="mod.users.action({$tsInfo.uid}, 'ban', true); return false;" style="background-color:#CE152E;">Suspender</a>
 						{/if}
 						{if !$tsInfo.user_activo || $tsInfo.user_baneado}

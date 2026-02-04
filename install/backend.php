@@ -22,14 +22,40 @@ $Extras = new Extras;
 ini_set('display_errors', '1');
 ini_set('display_startup_errors', '1');
 ini_set('log_errors', '1');
-ini_set('error_log', dirname(__DIR__, 1) . '/inc/storage/logs/install-error.log');
+ini_set('error_log', TS_STORAGE . '/logs/install-error.log');
 error_reporting(E_ALL);
 
 session_start();
 
+$stepsNames = [
+	'bienvenida',
+	'permisos',
+	'base_de_datos',
+	'datos_sitio',
+	'datos_phpmailer',
+	'datos_admin',
+	'finalizar'
+];
+
+$menu = [
+	'Bienvenida', 
+	'Permisos de escritura', 
+	'Base de datos', 
+	'Datos de la web', 
+	'Datos de PHPMailer', 
+	'Administrador', 
+	'Finalizar'
+];
+
+$localUse = file_exists(dirname(__DIR__, 1) . '/.local') ? '.local' : '';
+
 // variables globales
-$step = isset($_GET['step']) ? (int)$_GET['step'] : 0;
+$step = isset($_GET['step']) ? (string)($_GET['step'] ?? 'fallo') : '';
 $next = true; // CONTINUAR
+
+if(!in_array($step, $stepsNames, true)) {
+	throw new InvalidArgumentException('Nombre del paso inexistente.');
+}
 
 $tsTitle = "Instalación de " .  Config::app('app.name');
 // Intento de sistema de dirección automática
@@ -39,34 +65,54 @@ $local = dirname($_SERVER["REQUEST_URI"], 2);
 $url = $ssl . (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'localhost') . $local;
 $base = $url . "/install";
 
-function checkedStep(int $step = 0) {
+function checkedStep(string $step = ''): void {
 	if(!isset($_SESSION['license'])) {
 		header("Location: ./index?step=" . $step);
 	}
+}
+function isValidSmtpHost(string $host): bool {
+	if ($host === '') return false;
+	// IP válida
+	if (filter_var($host, FILTER_VALIDATE_IP)) return true;
+	// Hostname válido
+	return (bool) preg_match('/^(?=.{1,253}$)(?!-)([a-zA-Z0-9-]{1,63}\.)+[a-zA-Z]{2,63}$/', $host);
+}
+function isValidSmtpUser(string $user): bool {
+	if ($user === '') return false;
+	if (str_contains($user, '@')) {
+		return filter_var($user, FILTER_VALIDATE_EMAIL) !== false;
+	}
+	return preg_match('/^[a-zA-Z0-9._-]{2,64}$/', $user);
+}
+function isValidSmtpPass(string $pass): bool {
+	return strlen($pass) >= 6;
+}
+function isValidSmtpName(string $name): bool {
+	return $name !== '' && mb_strlen($name) <= 100;
 }
 
 switch ($step) {
 
 	// ACEPTAMOS LA LICENCIA
-	case 0:
+	case 'bienvenida':
 		$_SESSION['license'] = false;
 		$license = file_get_contents(dirname(__DIR__, 1) . '/LICENSE');
 		if($_SERVER['REQUEST_METHOD'] === 'POST' && $next) {
-			header("Location: ./index.php?step=1");
+			header("Location: ./index.php?step=permisos");
 			die;
 		}
 	break;
 
 	// OBTENER PERMISOS
-	case 1:
-		checkedStep();
+	case 'permisos':
+		checkedStep('bienvenida');
 		$permisos = [];
 
 		foreach(Config::app('paths') as $name => $route) {
 			if(!is_dir($route)) {
 				mkdir($route, 0777, true);
 			}
-			$permisos[$name]['route'] = str_replace(dirname(__DIR__, 1) . DIRECTORY_SEPARATOR, '../', $route);
+			$permisos[$name]['route'] = str_replace(TS_STORAGE, '../storage', $route);
 			$permisos[$name]['chmod'] = (int)substr(sprintf('%o', @fileperms($route)), -3);
 			$permisos[$name]['css'] = 'success';
 			$permisos[$name]['text'] = 'Permisos correctos';
@@ -78,10 +124,10 @@ switch ($step) {
 		}
 		
 		if($_SERVER['REQUEST_METHOD'] === 'POST' && $next) {
-			header("Location: ./index.php?step=2");
+			header("Location: ./index.php?step=base_de_datos");
 			die;
 		} elseif($_SERVER['REQUEST_METHOD'] === 'POST' && !$next) {
-			header("Location: ./index.php?step=1");
+			header("Location: ./index.php?step=permisos");
 			die;
 		}
 		$_SESSION['license'] = true;
@@ -89,9 +135,9 @@ switch ($step) {
 	break;
 
 	// COMPROBAR BASE DE DATOS
-	case 2:
+	case 'base_de_datos':
 		// No saltar la licencia
-		checkedStep();
+		checkedStep('bienvenida');
 
 		// Step
 		$next = false;
@@ -123,7 +169,7 @@ switch ($step) {
 					}
 				}
 				# Guardamos los datos de conexión
-				$fileconfig = dirname(__DIR__, 1) . '/inc/config/Config.Database.php';
+				$fileconfig = dirname(__DIR__, 1) . "/inc/config/Config.Database{$localUse}.php";
 				$config = str_replace(['dbhost', 'dbuser', 'dbpass', 'dbname'], $db, file_get_contents($fileconfig));
 				file_put_contents($fileconfig, $config);
 				# CARGAMOS LAS TABLAS
@@ -139,7 +185,7 @@ switch ($step) {
 					}
 				}
 				if (!in_array(0, $execute, true)) {
-					header("Location: ./index.php?step=3");
+					header("Location: ./index.php?step=datos_phpmailer");
 					exit;
 				}
 				$message = 'Lo sentimos, pero ocurrió un problema. Inténtalo nuevamente; borra las tablas que se hayan guardado en tu base de datos: ' . $error;
@@ -150,10 +196,62 @@ switch ($step) {
 		}
 	break;
 
-	// DATOS DEL SITIO
-	case 3:
+	// Datos para el PHPMailer
+	case 'datos_phpmailer':
 		// No saltar la licencia
-		checkedStep();
+		checkedStep('bienvenida');
+
+		// Por defecto
+		$phpmailer = [
+			'smtphost' => trim($_POST['smtphost'] ?? ''),
+			'smtpuser' => trim($_POST['smtpuser'] ?? ''),
+			'smtppass' => $_POST['smtppass'] ?? '',
+			'smtpname' => trim($_POST['smtpname'] ?? '')
+		];
+		if(isset($_POST['omitir'])) {
+			header("Location: ./index.php?step=datos_sitio");
+			die;
+		}
+
+		$errors = [];
+
+		if (!isValidSmtpHost($phpmailer['smtphost'])) {
+			$errors['smtphost'] = 'Servidor SMTP inválido.';
+		}
+
+		if (!isValidSmtpUser($phpmailer['smtpuser'])) {
+			$errors['smtpuser'] = 'Usuario SMTP inválido.';
+		}
+
+		if (!isValidSmtpPass($phpmailer['smtppass'])) {
+			$errors['smtppass'] = 'La contraseña SMTP es inválida.';
+		}
+
+		if (!isValidSmtpName($phpmailer['smtpname'])) {
+			$errors['smtpname'] = 'Nombre del remitente inválido.';
+		}
+
+		if ($errors) {
+			$message = join('<br>', $errors);
+			$next = false;
+			break;
+		}
+
+		if($next) {
+			# Guardamos los datos
+			$fileconfig = dirname(__DIR__, 1) . "/inc/config/Config.Mailer{$localUse}.php";
+			$config = str_replace(['smtphost', 'smtpuser', 'smtppass', 'smtpname'], $phpmailer, file_get_contents($fileconfig));
+			file_put_contents($fileconfig, $config);
+			header("Location: ./index.php?step=datos_sitio");
+			die;
+		}
+
+	break;
+
+	// DATOS DEL SITIO
+	case 'datos_sitio':
+		// No saltar la licencia
+		checkedStep('bienvenida');
 
 		// Por defecto
 		$site = [
@@ -208,7 +306,7 @@ switch ($step) {
 					]);
 				
 					if($Connection->update('w_configuracion', $data, 'phpost_id = ?', [1])) {
-						header("Location: ./index.php?step=4");
+						header("Location: ./index.php?step=datos_admin");
 						die;
 					}
 				}
@@ -219,9 +317,9 @@ switch ($step) {
 	break;
 
 	// ADMINISTRADOR
-	case 4:
+	case 'datos_admin':
 		// No saltar la licencia
-		checkedStep();
+		checkedStep('bienvenida');
 
 		// Por defecto
 		$user = [
@@ -290,18 +388,18 @@ switch ($step) {
 					$Avatar->ensure(1, $user['user_name']);
 
 					// DAMOS BIENVENIDA POR CORREO
-					mail($user['user_email'], 'Su comunidad ya puede ser usada', '<html><head><title>Su nueva comunidad Link Sharing est&aacute; lista!</title></head><body><p>Estas son sus credenciales de acceso:</p><p>Usuario: ' . $user['user_name'] . '</p><p>Contrase&ntilde;a: ' . $user['user_password'] . '</p><br />Gracias por usar <a href="http://www.phpost.net"><b>PHPost Risus</b></a> para compartir enlaces :)</body></html>', 'Content-type: text/html; charset=iso-8859-15');
+					mail($user['user_email'], 'Su comunidad ya puede ser usada', '<html><head><title>Su nueva comunidad Link Sharing est&aacute; lista!</title></head><body><p>Estas son sus credenciales de acceso:</p><p>Usuario: ' . $user['user_name'] . '</p><p>Contrase&ntilde;a: ' . $user['user_password'] . '</p><br />Gracias por usar <a href="https://github.com/joelmiguelvalente/PHPost"><b>PHPost Risus</b></a> para compartir enlaces :)</body></html>', 'Content-type: text/html; charset=iso-8859-15');
 					//
-					header('Location: index.php?step=5&uid=' . $user_id);
+					header('Location: index.php?step=finalizar&uid=' . $user_id);
 				}
 
 			}
 		}
 	break;
 
-	case 5:
+	case 'finalizar':
 		// No saltar la licencia
-		checkedStep();
+		checkedStep('bienvenida');
 
 		// DATOS DE CONEXION
 		$Connection = new InstallerDB(Config::db('hostname'), Config::db('username'), Config::db('password'), Config::db('database'));
@@ -319,4 +417,3 @@ switch ($step) {
 		}
 	break;
 }
-$menu = ['Bienvenida', 'Permisos de escritura', 'Base de datos', 'Datos de la web', 'Administrador', 'Finalizar'];

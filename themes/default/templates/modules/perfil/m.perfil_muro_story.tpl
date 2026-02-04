@@ -5,7 +5,7 @@
 		</a>
 		<div class="Story_Content">
 			<div class="Story_Head">
-				{if $p.p_user == $tsUser->uid || $p.p_user_pub == $tsUser->uid || $tsUser->is_admod || $tsUser->permisos.moepm}
+				{if $p.p_user == $tsUser->uid || $p.p_user_pub == $tsUser->uid || $tsUser->is_admod || $tsUser->can('moepm')}
 					<div class="Story_Hide">
 						<span onclick="muro.del_pub({$p.pub_id},1);" title="Eliminar la publicaci&oacute;n" class="qtip uiClose"></span>
 					</div>
@@ -16,7 +16,7 @@
 							{if $p.user_name == $tsUser->nick}{$tsUser->nick}{else}{$p.user_name}{/if}
 						</a>
 					</div>
-					<span>{$p.p_body|quot}</span>
+					<span>{$p.p_body|html_decode}</span>
 					{if $p.p_type != 1}
 						<div class="mvm clearfix">
 							{if $p.p_type == 2}
@@ -72,10 +72,10 @@
 							<li class="ufiItem" id="cmt_{$c.cid}">
 								<div class="clearfix">
 									<a href="{$tsConfig.url}/perfil/{$c.user_name}" class="autorPic"><img alt="{$c.user_name}" src="{$tsRoutes.storage.avatar}/avatar_{$c.user_id}.webp" width="32" height="32"/></a>
-									{if $p.p_user == $tsUser->uid || $c.c_user == $tsUser->uid  || $tsUser->is_admod || $tsUser->permisos.moecm}<span class="close"><a href="#" onclick="muro.del_pub({$c.cid}, 2); return false" class="uiClose" title="Eliminar"></a></span>{/if}
+									{if $p.p_user == $tsUser->uid || $c.c_user == $tsUser->uid  || $tsUser->is_admod || $tsUser->can('moecm')}<span class="close"><a href="#" onclick="muro.del_pub({$c.cid}, 2); return false" class="uiClose" title="Eliminar"></a></span>{/if}
 									<div class="mensaje">
 										<a href="{$tsConfig.url}/perfil/{$c.user_name}" class="autorName a_blue">{$c.user_name}</a>
-										<span>{$c.c_body|quot}</span>
+										<span>{$c.c_body|html_decode}</span>
 										<div class="cmInfo">{$c.c_date|fecha} &middot; <a onclick="muro.like_this({$c.cid}, 'com', this); return false;" class="a_blue">{$c.like}</a> <span class="cm_like"{if $c.c_likes == 0} style="display:none"{/if}>&middot; <i></i> <a onclick="muro.show_likes({$c.cid}, 'com'); return false;" id="lk_cm_{$c.cid}" class="a_blue">{$c.c_likes} persona{if $c.c_likes > 1}s{/if}</a></span>{if $tsUser->is_admod} &middot;<span class="cmInfo">{$c.c_ip}</span>{/if}</div>
 									</div>
 								</div>

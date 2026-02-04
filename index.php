@@ -30,5 +30,5 @@ if((int)$tsCore->settings['c_allow_portal'] && $tsUser->is_member && $doAction) 
 	require_once __DIR__ . '/inc/php/portal.php';
 } else {
 	// Home
-	require_once __DIR__ . '/inc/php/posts.php';
+	require_once __DIR__ . '/inc/php/home.php';
 }

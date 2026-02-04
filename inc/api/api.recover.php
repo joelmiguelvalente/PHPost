@@ -14,7 +14,7 @@ if(!$tsLevelMsg) {
 	die('0: '.$tsLevelMsg);
 }
 	
-require_once dirname(__DIR__, 1) . '/utils/IP.php';
+require_once TS_UTILS . '/IP.php';
 require_once dirname(__DIR__, 1) . '/class/c.emails.php';
 $IP = new IP;
 $tsEmail = new tsEmail($tsCore);

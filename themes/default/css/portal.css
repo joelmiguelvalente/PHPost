@@ -142,10 +142,10 @@
         margin-bottom: 5px;
     }
 /******/
-.favs {background-image: url(../images/icons/heart.png);}
-.visited {background-image: url(../images/icons/clock-select.png);}
-.fotos {background-image: url(../images/icons/photo.png);}
-.afs {background-image: url(../images/icons/block-share.png);}
-.news {background-image: url(../images/icons/newspaper.png);}
-.posts {background-image: url(../images/icons/posts.png);}
-.activity {background-image: url(../images/icons/megaphone.png);}
+.favs {background-image: url('../../assets/images/icons/heart.png');}
+.visited {background-image: url('../../assets/images/icons/clock-select.png');}
+.fotos {background-image: url('../../assets/images/icons/photo.png');}
+.afs {background-image: url('../../assets/images/icons/block-share.png');}
+.news {background-image: url('../../assets/images/icons/newspaper.png');}
+.posts {background-image: url('../../assets/images/icons/posts.png');}
+.activity {background-image: url('../../assets/images/icons/megaphone.png');}

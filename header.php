@@ -20,13 +20,7 @@ const BASEPATH = __DIR__;
 require_once BASEPATH . '/inc/config/Config.Paths.php';
 require_once TS_CONFIG . '/Config.php';
 require_once TS_CONFIG . '/Config.Session.php';
-
-// Reporte de errores
-error_reporting((Config::app('app.debug_all') ? E_ALL : (Config::app('app.debug') ? (E_ALL & ~E_WARNING & ~E_NOTICE & ~E_DEPRECATED) : 0)));
-
-ini_set('display_errors', Config::app('app.debug') ? '1' : '0');
-ini_set('log_errors',     '1');
-ini_set('error_log',      Config::app('paths.logs') . '/log-' . date('dmy') . '.log');
+require_once TS_CONFIG . '/Config.Errors.php';
 
 // Límite de ejecución
 set_time_limit(300);

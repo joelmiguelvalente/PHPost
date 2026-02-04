@@ -42,11 +42,11 @@
 				<textarea class="status autogrow" id="wall" placeholder="{if $tsInfo.uid == $tsUser->uid}&iquest;Qu&eacute; est&aacute;s pensando?{else}Escribe algo....{/if}"></textarea>
 			</div>
 			<div id="fotoFrame">
-				<input type="text" class="itext" name="ifoto" placeholder="{$tsRoutes.tema.images}/ejemplo.jpg" onfocus="onfocus_input(this)" onblur="onblur_input(this)"/>
+				<input type="text" class="itext" name="ifoto" placeholder="{$tsRoutes.tema.images}/ejemplo.jpg"/>
 				<a href="#" class="btn_g adj" onclick="muro.stream.adjuntar(); return false;">Adjuntar</a>
 			</div>
 			<div id="enlaceFrame">
-				<input type="text" class="itext" name="ienlace" placeholder="{$tsConfig.url}/blog/ejemplo.html" onfocus="onfocus_input(this)" onblur="onblur_input(this)"/>
+				<input type="text" class="itext" name="ienlace" placeholder="{$tsConfig.url}/blog/ejemplo.html"/>
 				<a href="#" class="btn_g adj" onclick="muro.stream.adjuntar(); return false;">Adjuntar</a>
 			</div>
 			<div id="videoFrame">

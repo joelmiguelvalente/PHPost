@@ -43,10 +43,10 @@ if($tsContinue) {
 	$tsCuenta = new tsCuenta($tsCore, $tsUser);
 
 	if(empty($action)) {
-		require_once dirname(__DIR__, 1) . "/extras/datos.php";
-		$tsMeses = require_once dirname(__DIR__, 1) . "/extras/Meses.php";
-		$tsPaises = require_once dirname(__DIR__, 1) . "/extras/Paises.php";
-		$tsEstados = require_once dirname(__DIR__, 1) . "/extras/geodata.php";
+		require_once TS_EXTRA . "/datos.php";
+		$tsMeses = require_once TS_EXTRA . "/Meses.php";
+		$tsPaises = require_once TS_EXTRA . "/Paises.php";
+		$tsEstados = require_once TS_EXTRA . "/geodata.php";
 
 		$minAge = (int)$tsCore->settings['c_allow_edad']; // ej. 16
 		$maxAge = 100;
@@ -69,10 +69,8 @@ if($tsContinue) {
 		// PERFIL INFO
       $tsPerfil = $tsCuenta->loadPerfil();
 		$smarty->assign("tsPerfil", $tsPerfil);
-		#var_dump($tsPerfil);
 		// PERFIL DATA
       $smarty->assign("tsPrivacidad", $tsPrivacidad);
-		#var_dump($tsPrivacidad);
 		// DATOS
 		$smarty->assign("tsPaises", 	$tsPaises);
 		$smarty->assign("tsEstados",	$tsEstados[$tsPerfil['user_pais']]);

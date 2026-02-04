@@ -1,4 +1,4 @@
-{if $tsUser->is_admod || $tsUser->permisos.gopp}
+{if $tsUser->is_admod || $tsUser->can('gopp')}
 	<div class="form-add-post">
 		<form action="{$tsConfig.url}/agregar.php{if $tsAction == 'editar'}?action=editar&pid={$tsPid}{/if}" method="post" name="newpost" id="newpost" autocomplete="off">
 			{if $tsDraft.bid}
@@ -85,7 +85,7 @@
 					</div>
 					{/if}
 
-					{if $tsUser->is_admod || $tsUser->permisos.most}
+					{if $tsUser->is_admod || $tsUser->can('most')}
 					<div class="option clearbeta">
 						<input type="checkbox" id="sticky" name="sticky" tabindex="9" {if $tsDraft.b_sticky}checked{/if}>
 						<label for="sticky">Sticky</label>
@@ -94,7 +94,7 @@
 					{/if}
 				</li>
 
-				{if ($tsUser->is_admod || $tsUser->permisos.moedpo) && $tsDraft.b_title && $tsDraft.b_user != $tsUser->uid}
+				{if ($tsUser->is_admod || $tsUser->can('moedpo')) && $tsDraft.b_title && $tsDraft.b_user != $tsUser->uid}
 				<li data-field="razon">
 					<label for="razon">Razón</label>
 					<span class="errormsg" hidden></span>

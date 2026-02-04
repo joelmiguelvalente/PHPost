@@ -8,108 +8,148 @@ function admin_send_post(objeto) {
 	return xhr
 }
 
+const api = (endpoint, param, fn) => $.post(`${route.url}/${endpoint}.php`, param, fn);
+
 function modal_rapido(modal) {
-	const { titulo: title, contenido: body, accion: action } = modal;
+	const { title, body, action, btnOk } = modal;
 	dialog.init({ title, body,
       buttons: {
-         confirm: { text: 'S&iacute;', action: () => action },
+         confirm: { text: (btnOk === '' ? 'S&iacute;' : btnOk), action: () => action },
          cancel: { text: 'No',  action: 'close' }
       }
    });
 }
+const noticias = nid => {
+	$('#loading').fadeIn(250);
+	api('admin-noticias-setInActive', { nid }, response => {
+		const { status, message } = $.parseResponse(response);
+		if(status === 0) {
+			dialog.alert('Error', message);
+			return;
+		}
+		if(status === 1 || status === 2) {
+			let color = (status === 1) ? 'green' : 'purple';
+			$(`#status_noticia_${nid} > span`).removeClass('bg-purple-100 text-purple-800 bg-green-100 text-green-800')
+			.addClass(`bg-${color}-100 text-${color}-800`)
+			.text((status === 1 ? 'Activa' : 'Inactiva'))
+		}
+		$('#loading').fadeOut(350)
+	})
+}
+
+const tema = {
+	usar(tid) {
+		api('/tema-usar', { tid }, response => {
+	      const { status, message } = $.parseResponse(response);
+	      dialog.alert((status === 0 ? 'Error' : 'Bien'), message, status === 1);
+			return;
+		})
+	},
+	nuevo(next = false) {
+		if(!next) {
+			dialog.init({ 
+        		title: 'Instalar nuevo theme',
+        		body: '<label for="path" class="font-medium text-gray-700 dark:text-gray-300">Nombre del theme</label><input type="text" id="path" name="path" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-surface px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Nombre del theme" />',
+		      buttons: {
+		         confirm: { text: 'Instalar', action: () => tema.nuevo(true) }
+		      }
+		   });
+        	return;
+      } else {
+	      const input = $('#path').val();
+	      if(input === '') {
+	      	dialog.alert('Error', 'No puede estar vacio');
+				return;
+	      }
+	      api('tema-nuevo', { path: input }, response => {
+	      	const { status, message } = $.parseResponse(response);
+	      	dialog.alert((status === 0 ? 'Error' : 'Bien'), message, status === 1);
+				return;
+	      });
+	   }
+	}
+}
+
+const medallas = {
+	borrar(mid, gew = 1) {
+		const title = 'Borrar medalla';
+		let status = (gew === 1);
+		if(status || gew === 2) {
+			let body = status ? '&#191;Quiere borrar esta medalla?' : 'Si borra la medalla, los usuarios que tengan esta medalla la perder&aacute;n, &#191;seguro que quiere continuar?';
+			dialog.init({ 
+        		title,
+        		body,
+		      buttons: {
+		         confirm: { text: 'S&iacute;', action: () => medallas.borrar(mid, (status ? 2 : 3)) }
+		      }
+		   });
+	   } else {
+	   	$('#loading').fadeIn(250);
+	   	api('admin-medalla-borrar', { medal_id: mid }, response => {
+	   		const { status, message } = $.parseResponse(response);
+	   		dialog.alert((status ? 'Hecho' : 'Opps!'), message);
+	   		if(status === 1) {
+	   			$('#medal_id_' + mid).fadeOut()
+	   		}
+	   	});
+		}
+	},
+   asignar(mid, gew) {
+   	if(!gew) {
+		   api('admin-medalla-asignar-form', {}, response => {
+	   		const { status, message } = $.parseResponse(response);
+	   		dialog.init({ 
+	        		title: 'Asignar medalla',
+	        		body: '<div id="AFormInputs">'+message+'</div>',
+			      buttons: {
+			         confirm: { text: 'Asignar', action: () => medallas.asignar(mid, true) }
+			      }
+		  		});
+		   });
+		} else {
+		   $('#loading').fadeIn(250);
+		   const params = {
+				mid: mid, 
+				m_usuario: $('#m_usuario').val(), 
+				pid: $('#m_post').val(), 
+				fid: $('#m_foto').val()
+		   };
+		   api('admin-medalla-asignar', params, response => {
+	   		const { status, message } = $.parseResponse(response);
+	   		dialog.alert((status ? 'Hecho' : 'Opps!'), message);
+	   		if(status === 1) {
+	   			$('#total_med_assig_' + mid).text(parseInt($('#total_med_assig_' + mid).text()) + 1);
+         		$('#loading').fadeOut(350);
+	   		}
+		   })
+		}
+   },
+	borrar_asignacion: async (aid, mid, gew) => {
+      if(!gew) {
+      	mydialog.show();
+      	mydialog.title('Borrar Asignacion');
+      	mydialog.body('&#191;Quiere continuar borrando esta asignaci&oacute;n?');
+      	mydialog.buttons(true, true, 'S&iacute;', 'admin.medallas.borrar_asignacion(' + aid + ',' + mid + ', true)', true, false, true, 'No', 'close', true, true);
+      	mydialog.center();
+      } else {
+      	$('#loading').fadeIn(250);
+			var a = await admin_send_post({
+				pagina: 'admin-medallas-borrar-asignacion', 
+				parametros: ['aid=' + aid, 'mid=' + mid].join('&'),
+				done: $('#assign_id_' + aid).fadeOut()
+			})
+			mydialog.alert((a.charAt(0) == '0' ? 'Opps!' : 'Hecho'), a.substring(3), false);
+        	mydialog.center();
+        
+        $('#loading').fadeOut(350);
+		}
+	},
+}
+
 /** 
  * Nueva organización
 */
-var admin = {
-	// Noticias
-	news: {
-		async accion(nid) {
-			$('#loading').fadeIn(250);
-			const rsp = await admin_send_post({
-				pagina: 'admin-noticias-setInActive', 
-				parametros: 'nid=' + nid
-			})
-			if(rsp.charAt(0) === '0') mydialog.alert('Error', rsp.substring(3))
-			let change = (rsp.charAt(0) === '1') ? ['green', 'Activa'] : ['purple', 'Inactiva'];
-			$('#status_noticia_' + nid).html('<font color="'+change[0]+'">'+change[1]+'</font>');
-			$('#loading').fadeOut(350)
-	  	}, 
-	},
-	// Medallas
-	medallas: {
-	   borrar: async (mid, gew) => {
-	   	mydialog.show();
-	   	mydialog.title('Borrar Medalla');
-	   	if(!gew) {
-	   		mydialog.body('&#191;Quiere borrar esta medalla?');
-	   		mydialog.buttons(true, true, 'S&iacute;', 'admin.medallas.borrar(' + mid + ', 2)', true, false, true, 'No', 'close', true, true);
-	   	} else if(gew == '2') {
-	   		mydialog.body('Si borra la medalla, los usuarios que tengan esta medalla la perder&aacute;n, &#191;seguro que quiere continuar?');
-	   		mydialog.buttons(true, true, 'S&iacute;', 'admin.medallas.borrar(' + mid + ', 3)', true, false, true, 'No', 'close', true, true);
-	   	} else {
-	   		$('#loading').fadeIn(250);
-				var a = await admin_send_post({
-					pagina: 'admin-medalla-borrar', 
-					parametros: 'medal_id=' + mid,
-					done: $('#medal_id_' + mid).fadeOut()
-				})
-				mydialog.alert((a.charAt(0) == '0' ? 'Opps!' : 'Hecho'), a.substring(3), false);
-				mydialog.center();
-		  		$('#loading').fadeOut(350);
-		  	}
-		  	mydialog.center();
-		},
-		borrar_asignacion: async (aid, mid, gew) => {
-         if(!gew) {
-         	mydialog.show();
-         	mydialog.title('Borrar Asignacion');
-         	mydialog.body('&#191;Quiere continuar borrando esta asignaci&oacute;n?');
-         	mydialog.buttons(true, true, 'S&iacute;', 'admin.medallas.borrar_asignacion(' + aid + ',' + mid + ', true)', true, false, true, 'No', 'close', true, true);
-         	mydialog.center();
-         } else {
-         	$('#loading').fadeIn(250);
-				var a = await admin_send_post({
-					pagina: 'admin-medallas-borrar-asignacion', 
-					parametros: ['aid=' + aid, 'mid=' + mid].join('&'),
-					done: $('#assign_id_' + aid).fadeOut()
-				})
-				mydialog.alert((a.charAt(0) == '0' ? 'Opps!' : 'Hecho'), a.substring(3), false);
-           	mydialog.center();
-           
-           $('#loading').fadeOut(350);
-			}
-		},
-   	asignar: async (mid, gew) => {
-   		if(!gew){
-   			campos = [['usuario', 'Al usuario (nombre)'],['post', 'Al post (id)'],['foto', 'A la foto (id)']]
-   			agregar = new Array();
-   			campos.forEach( campo => agregar.push(`<div class="form-line"><label for="m_${campo[0]}">${campo[1]}</label><input name="m_${campo[0]}" id="m_${campo[0]}"/></div>`))
-        		//
-				mydialog.show(true);
-				mydialog.title('Asignar medalla');
-				mydialog.body('<div id="AFormInputs">'+agregar.join('<br>')+'</div>');
-				mydialog.buttons(true, true, 'Asignar', 'admin.medallas.asignar(' + mid + ',true)', true, true, true, 'Cancelar', 'close', true, false);		
-				mydialog.center();
-			} else {
-			   $('#loading').fadeIn(250); 
-				var c = await admin_send_post({
-					pagina: 'admin-medalla-asignar', 
-					parametros: [
-						'mid=' + mid, 
-						'm_usuario=' + $('#m_usuario').val(), 
-						'pid=' + $('#m_post').val(), 
-						'fid=' + $('#m_foto').val()
-					].join('&')
-				})
-				mydialog.alert((c.charAt(0) == '0' ? 'Opps!' : 'Hecho'), '<div class="dialog_box">' + c.substring(3) + '</div>', false);
-				if(c.charAt(0) != '0') {
-					$('#total_med_assig_' + mid).text(parseInt($('#total_med_assig_' + mid).text()) + 1);
-            	$('#loading').fadeOut(350);
-				}
-				mydialog.center();
-			}
-   	}
-   },
+const admin = {
 	// Afiliados
 	afs: {
 	   borrar: async (aid, gew) => {

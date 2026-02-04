@@ -12,7 +12,7 @@ if (!defined('TS_HEADER')) {
 	exit('No se permite el acceso directo al script');
 }
 
-require_once dirname(__DIR__, 1) . '/utils/Extras.php';
+require_once TS_UTILS . '/Extras.php';
 require_once dirname(__DIR__, 1) . '/extras/bbcode.inc.php';
 
 class tsCore extends Extras {
@@ -37,7 +37,7 @@ class tsCore extends Extras {
 	public function buildRoutes(): array {
 		$baseUrl   = rtrim($this->settings['url'], '/');
 		$theme     = $this->settings['tema']['t_url'];
-		$storage   = "$baseUrl/inc/storage";
+		$storage   = "$baseUrl/storage";
 		$assets    = "$baseUrl/assets";
 
 		$routes = [
@@ -238,6 +238,18 @@ class tsCore extends Extras {
 	 */
 	public function redirectTo(string $tsDir = '/'): void {
 		$reloader = $tsDir === '/' ? $this->settings['url'] : $tsDir;
+		header("Location: $reloader");
+		exit();
+	}
+
+	/**
+	 * @access public
+	 * @name redirectTo
+	 * @param string
+	 * @return void
+	 */
+	public function redirectAdmin(string $action = '', string $param = 'save', string $aux = ''): void {
+		$reloader = "{$this->settings['url']}/admin/{$action}?{$param}=true{$aux}";
 		header("Location: $reloader");
 		exit();
 	}

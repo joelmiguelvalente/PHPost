@@ -12,13 +12,13 @@ if (!defined('TS_HEADER')) {
    exit('No se permite el acceso directo al script');
 }
 
-require_once dirname(__DIR__, 1) . '/helpers/UrlHelper.php';
+require_once TS_HELPERS . '/UrlHelper.php';
 
 class tsActividad {
    
-   protected UrlHelper $UrlHelper;
    protected tsCore $Core;
    protected tsUser $User;
+   protected UrlHelper $UrlHelper;
 
 	private array $actividad = [];
 

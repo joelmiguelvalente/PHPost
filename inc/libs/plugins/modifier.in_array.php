@@ -1,22 +1,27 @@
 <?php 
 
 /**
- * Smarty cat modifier plugin
+ * Smarty modifier: in_array
  *
- * Type:     modifier
- * Name:     kmg
- * Date:     Abril 25, 2014
- * Purpose:  Se utiliza para verificar si un valor dado existe en un array.
- * Example:  {if $value|in_array:$array}El valor existe.{else}El valor no existe.{/if}
- * @author   Miguel92
- * @version 1.0
- * @param int
+ * Verifica si un valor existe dentro de un array.
+ *
+ * Uso:
+ *   {if $value|in_array:$array}
+ *
+ * @param mixed $needle   Valor a buscar
+ * @param array $haystack Array donde buscar
+ *
  * @return bool
-*/
+ *
+ * @author Miguel92
+ * @version 2.0
+ */
 
-function smarty_modifier_in_array($array, $buscar) {
-	if (!is_array($array)) {
-		trigger_error('The second argument passed to the in_array modifier must be an array', E_USER_ERROR);
+function smarty_modifier_in_array(mixed $needle, array $haystack): bool {
+	if (!is_array($haystack)) {
+	   throw new InvalidArgumentException(
+	      'smarty_modifier_in_array: el segundo parámetro debe ser un array'
+	   );
 	}
-	return in_array($buscar, $array);
+   return in_array($needle, $haystack, true);
 }

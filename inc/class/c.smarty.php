@@ -1,10 +1,9 @@
 <?php
 
 /**
- * @package     ZCode
- * @author      Miguel92
- * @copyright   2024 - 2026
- * @version     4.0.0
+ * @name c.smarty.php
+ * @author PHPost Team
+ * @copyright 2026
  */
 
 declare(strict_types=1);
@@ -13,8 +12,8 @@ if (!defined('TS_HEADER')) {
 	exit('No se permite el acceso directo al script');
 }
 
-require_once dirname(__DIR__, 1) . '/libs/smarty/autoload.php';
-require_once dirname(__DIR__, 1) . '/libs/extensiones/SmartyExtensiones.php';
+require_once TS_LIBS . '/smarty/autoload.php';
+require_once TS_LIBS . '/extensiones/SmartyExtensiones.php';
 
 class tsSmarty extends \Smarty\Smarty {
 
@@ -48,7 +47,7 @@ class tsSmarty extends \Smarty\Smarty {
 
 	public function setTheme(string $theme): void {
 		$this->theme = $theme;
-		$this->setCompileDir(dirname(__DIR__, 1) . '/storage/cache/' . $theme);
+		$this->setCompileDir(TS_STORAGE . '/cache/' . $theme);
 	}
 
 	public function setPage(string $page): void {
@@ -68,8 +67,8 @@ class tsSmarty extends \Smarty\Smarty {
 	private function loadPlugins(): void {
 		// Definir los directorios de plugins
 		$pluginDirs = [
-			'function' => dirname(__DIR__, 1) . '/libs/plugins/function.*.php',
-			'modifier' => dirname(__DIR__, 1) . '/libs/plugins/modifier.*.php'
+			'function' => TS_LIBS . '/plugins/function.*.php',
+			'modifier' => TS_LIBS . '/plugins/modifier.*.php'
 		];
 		// Iterar sobre las categorías de plugins
 		foreach ($pluginDirs as $type => $pattern) {
@@ -104,6 +103,18 @@ class tsSmarty extends \Smarty\Smarty {
 		return $this->templateExists($file) ? $file : $this->templateError;
 	}
 
+	private function recursiveDirectories(string $path): array {
+		$iterator = new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS);
+		$iterator = new RecursiveIteratorIterator($iterator, RecursiveIteratorIterator::SELF_FIRST);
+		$iterators = [];
+		foreach ($iterator as $item) {
+		   if ($item->isDir()) {
+		      $iterators[$item->getFilename()] = $item->getPathname();
+		   }
+		}
+		return $iterators;
+	}
+
 	/**
 	 * Mapea rutas del sistema y módulos.
 	 */
@@ -114,6 +125,7 @@ class tsSmarty extends \Smarty\Smarty {
 			'api'			 => TS_VIEWS . '/api',
 			'error'		 => TS_VIEWS . '/error',
 			'components' => TS_VIEWS . '/components',
+			'dashboard'  => TS_VIEWS . '/dashboard',
 		];
 		return $directories;
 	}
@@ -125,13 +137,8 @@ class tsSmarty extends \Smarty\Smarty {
 		$templates = TS_THEMES . "/{$this->theme}/templates";
 		$map = array_merge([
 			'tema'        => TS_THEMES . "/{$this->theme}",
-			'templates'   => $templates,
-			'sections'    => "$templates/sections/",
-			'modules'     => "$templates/modules/",
-			'pagina'      => "$templates/modules/{$this->page}/",
-			'global'      => "$templates/modules/global/"
-		], $this->mapDirectories());
-
+			'templates'   => $templates
+		], $this->recursiveDirectories($templates), $this->mapDirectories());
 		$this->addTemplateDir($map);
 	}
 

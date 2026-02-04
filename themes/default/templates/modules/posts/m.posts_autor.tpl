@@ -46,18 +46,18 @@
 			<span style="color: #456c00" class="nData">{$tsAutor.user_comentarios}</span>
 			<span class="txtData">Comentarios</span>
 		</div>
-		{if $tsUser->is_admod || $tsUser->permisos.modu || $tsUser->permisos.mosu}
+		{if $tsUser->is_admod || $tsUser->can('modu') || $tsUser->can('mosu')}
 		<hr class="divider"/>
 		<div class="mod-actions">
 			<b>Herramientas</b>
 			<a href="{$tsConfig.url}/moderacion/buscador/1/1/{$tsPost.post_ip}" class="geoip" target="_blank">{$tsPost.post_ip}</a>
 			{if $tsUser->is_admod == 1}<a href="{$tsConfig.url}/admin/users?act=show&amp;uid={$tsAutor.user_id}" class="edituser">Editar Usuario</a>{/if}
 			{if $tsAutor.user_id != $tsUser->uid} <a href="#" onclick="mod.users.action({$tsAutor.user_id}, 'aviso', false); return false;" class="alert">Enviar Aviso</a>{/if}
-			{if $tsAutor.user_id != $tsUser->uid && $tsUser->is_admod || $tsUser->permisos.modu || $tsUser->permisos.mosu}
+			{if $tsAutor.user_id != $tsUser->uid && $tsUser->is_admod || $tsUser->can('modu') || $tsUser->can('mosu')}
 			{if $tsAutor.user_baneado}
-			{if $tsUser->is_admod || $tsUser->permisos.modu}<a href="#" onclick="mod.reboot({$tsAutor.user_id}, 'users', 'unban', false); $(this).remove(); return false;" class="unban">Desuspender Usuario</a>{/if}
+			{if $tsUser->is_admod || $tsUser->can('modu')}<a href="#" onclick="mod.reboot({$tsAutor.user_id}, 'users', 'unban', false); $(this).remove(); return false;" class="unban">Desuspender Usuario</a>{/if}
 			{else}
-			{if $tsUser->is_admod || $tsUser->permisos.mosu}<a href="#" onclick="mod.users.action({$tsAutor.user_id}, 'ban', false); $(this).remove(); return false;" class="ban">Suspender Usuario</a>{/if}
+			{if $tsUser->is_admod || $tsUser->can('mosu')}<a href="#" onclick="mod.users.action({$tsAutor.user_id}, 'ban', false); $(this).remove(); return false;" class="ban">Suspender Usuario</a>{/if}
 			{/if}
 			{/if}
 		</div>

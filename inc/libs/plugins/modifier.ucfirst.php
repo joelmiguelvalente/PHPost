@@ -1,21 +1,21 @@
 <?php 
+
 /**
- * Smarty plugin
- * @package Smarty
- * @subpackage plugins
- */
-/**
- * Smarty ucfirst modifier plugin
+ * Smarty modifier plugin
  *
- * Tipo:			modifier
- * Nombre:     ucfirst
- * Proposito:  Convierte todas las primeras letras de la palabra en mayúscula
- * Ejemplo:  	{$string|ucfirst}
- * @author   	Miguel92
- * @version 	1.0
- * @param 		string
- * @return 		string
-*/
-function smarty_modifier_ucfirst($string) {
-  return ucfirst($string);
+ * Type:     modifier
+ * Name:     ucfirst
+ * Purpose:  Convierte la primera letra del string a mayúscula (UTF-8 safe).
+ * Example:  {$string|ucfirst}
+ *
+ * @author   Miguel92
+ * @version  2.0
+ *
+ * @param    string $string Texto de entrada
+ * @return   string Texto con la primera letra en mayúscula
+ */
+
+function smarty_modifier_ucfirst(string $string): string {
+   $first = mb_strtoupper(mb_substr($string, 0, 1, 'UTF-8'), 'UTF-8');
+   return $first . mb_substr($string, 1, null, 'UTF-8');
 }

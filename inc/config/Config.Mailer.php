@@ -80,13 +80,8 @@ final class ConfigMailer extends AbstractConfig
 			 * 587 => TLS
 			 * 465 => SSL
 			 */
-			'SMTP_PORT' => 587,
-
-			/**
-			 * Charset por defecto para los correos
-			 * utf8mb4 soporta emojis y caracteres extendidos
-			 */
-			'SMTP_CHARSET' => 'utf8mb4',
+			'SMTP_PORT' => 587
 		];
+		parent::__construct();
 	}
 }

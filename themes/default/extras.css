@@ -75,10 +75,10 @@
 #tabbedhome a span{
     display:block;
     width: 14px;
-    background: url(images/icons/home.png) no-repeat center center;
+    background: url('../../assets/images/icons/home.png') no-repeat center center;
 }
 #tabbedhome.here a span{
-    background-image: url(images/icons/home_here.png);
+    background-image: url('../../assets/images/icons/home_here.png');
 }
 /*BoxMail*/
 #boxMail {

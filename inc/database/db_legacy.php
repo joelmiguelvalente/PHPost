@@ -49,7 +49,8 @@ function db_exec() {
 			'fetch_row'          => $db->fetchRow($data),
 			'free_result'        => $data->free(),
 			'insert_id'          => $db->insertId(),
-			'error'              => $db->error(),
+			'error'              => $db->lastError('error'),
+			'errno' 					=> $db->lastError('errno'),
 			default              => null,
 		};
 	} catch (Throwable $e) {
@@ -64,6 +65,7 @@ function db_exec() {
 		return false;
 	}
 }
+
 
 function result_array(mysqli_result $result): array {
 	$rows = [];

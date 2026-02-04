@@ -33,24 +33,4 @@ class Extras {
 		return strtolower($text);
 	}
 
-	/**
-	 * @access public
-	 * @param array
-	 * @param int
-	 * @return array
-	*/
-	public function isOnline(&$tsInfo, int $active): array {
-		$time = time();
-		// IS ONLINE?
-		$isOnline = (int)($time - ($active * 60));
-		$isInactive = (int)($isOnline * 2); // DOBLE DEL ONLINE
-		//
-		return match(true) {
-			(int)$tsInfo['user_lastactive'] > $isOnline => ['t' => 'Online', 'css' => 'online'],
-			(int)$tsInfo['user_lastactive'] > $isInactive => ['t' => 'Inactive', 'css' => 'inactive'],
-			(int)$tsInfo['user_baneado'] === 1 => ['t' => 'Suspendido', 'css' => 'banned'],
-			default => ['t' => 'Offline', 'css' => 'offline']
-		};
-	}
-
 }

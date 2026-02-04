@@ -12,7 +12,7 @@ if (!defined('TS_HEADER')) {
 	exit('No se permite el acceso directo al script');
 }
 
-require_once dirname(__DIR__, 1) . '/utils/Paginator.php';
+require_once TS_UTILS . '/Paginator.php';
 
 class tsHome {
 	

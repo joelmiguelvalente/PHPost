@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name cuenta.php
+ * @name agregar.php
  * @author PHPost Team
  * @copyright 2026
  */
@@ -39,6 +39,7 @@ if(!$tsLevelMsg){
 if($tsContinue) {
 
 	$action = trim($_GET['action'] ?? '');
+
 	if($action === 'editar' || isset($_POST['titulo'])) {
 		// CLASE
 		require_once dirname(__DIR__, 1) . "/class/c.agregar.php";
@@ -56,7 +57,7 @@ if($tsContinue) {
 		if(!empty($_POST['titulo'])) {
 			$postSave = $tsAgregar->savePost();
 			if($postSave) {
-				$tsPost = (int)$_GET['pid'];
+				$tsPost = (int)$_GET['id'];
 				$tsCat = (int)$_POST['categoria'];
 				$tsCat = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', "SELECT c.c_seo FROM p_categorias AS c WHERE c.cid = $tsCat LIMIT 1"));
 				//
@@ -86,8 +87,8 @@ if($tsContinue) {
 			} else $smarty->assign("tsDraft", $draft);
 		}
 		//
-		$smarty->assign("tsAction", $_GET['action']);
-		$smarty->assign("tsPid", $_GET['pid']);
+		$smarty->assign("tsAction", $action);
+		$smarty->assign("tsPid", $_GET['id']);
 		
 	} elseif(isset($_POST['titulo'])) {
 		$tsPost = $tsAgregar->newPost();

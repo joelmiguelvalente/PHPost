@@ -8,6 +8,7 @@
 
 declare(strict_types=1);
 //
+define('TS_STORAGE', dirname(__DIR__, 1) . '/storage');
 require_once __DIR__ . '/backend.php';
 ?>
 <!DOCTYPE html>
@@ -32,13 +33,6 @@ require_once __DIR__ . '/backend.php';
 			<h2>Programa de instalaci&oacute;n: <span><?= Config::app('app.name') ?></span></h2>
 		</header>
 		<div class="content">
-			<div class="col_left">
-				<ul class="menu">
-					<?php foreach($menu as $item => $link): ?>
-						<li class="item<?= ($step >= $item ? ' active' : '') ?>"><?= $link ?></li>
-					<?php endforeach; ?>
-				</ul>
-			</div>
 			<div class="col_right">
 				<?php if (!empty($message)): ?>
 					<div class="error"><?= $message ?></div>
@@ -46,14 +40,14 @@ require_once __DIR__ . '/backend.php';
 
 				<form method="POST" id="form">
 					<fieldset>
-						<?php if ($step === 0): ?>
+						<?php if ($step === 'bienvenida'): ?>
 		
 							<legend>Licencia</legend>
 							<p>Para utilizar <?= Config::app('app.name') ?> debes estar de acuerdo con nuestra licencia de uso.</p>
 							<textarea name="license" rows="20"><?= $license; ?></textarea>
-							<p><input type="submit" class="gbqfb" value="Acepto"/></p>
+							<p class="button-group"><input type="submit" class="gbqfb" value="Acepto"/></p>
 						
-						<?php elseif ($step === 1): ?>
+						<?php elseif ($step === 'permisos'): ?>
 
 							<legend>Permisos de escritura</legend>
 							<p>Los siguientes archivos y directorios requieren de permisos especiales, debes cambiarlos desde tu cliente FTP, los archivos deben tener permiso <strong>666</strong> y los direcorios <strong>777</strong></p>
@@ -64,9 +58,9 @@ require_once __DIR__ . '/backend.php';
 								</dl>
 							<?php endforeach; ?>
 								
-							<p><input type="submit" class="gbqfb" value="<?= ($next ? 'Continuar &raquo;' : 'Volver a verificar') ?>"/></p>
+							<p class="button-group"><input type="submit" class="gbqfb" value="<?= ($next ? 'Continuar &raquo;' : 'Volver a verificar') ?>"/></p>
 					
-						<?php elseif ($step === 2): ?>
+						<?php elseif ($step === 'base_de_datos'): ?>
 
 							<legend>Base de datos</legend>
 							<p>Ingresa tus datos de conexi&oacute;n a la base de datos.</p>
@@ -87,9 +81,34 @@ require_once __DIR__ . '/backend.php';
 								<dt><label for="database">Base de datos</label><span>Nombre de la base de datos para tu web.</span></dt>
 								<dd><input type="text" autocomplete="off" id="database" name="database" placeholder="mydatabase" value="<?= $db['database'] ?>" required/></span></dd>
 							</dl>
-							<p><input type="submit" class="gbqfb" value="Continuar &raquo;"/></p>
+							<p class="button-group"><input type="submit" class="gbqfb" value="Continuar &raquo;"/></p>
+					
+						<?php elseif ($step === 'datos_phpmailer'): ?>
+
+							<legend>Datos del PHPMailer<small>(opcional)</small></legend>
+						
+							<dl>
+								<dt><label for="smtphost">SMTP Host:</label></dt>
+								<dd><input type="text" autocomplete="off" id="smtphost" name="smtphost" placeholder="smtp.gmail.com" value="<?= $phpmailer['smtphost'] ?>" /></span></dd>
+							</dl>
+							<dl>
+								<dt><label for="smtpuser">SMPT User:</label></dt>
+								<dd><input type="text" autocomplete="off" id="smtpuser" name="smtpuser" placeholder="noreply@example.com" value="<?= $phpmailer['smtpuser'] ?>" /></span></dd>
+							</dl>
+							<dl>
+								<dt><label for="smtppass">SMTP Password:</label></dt>
+								<dd><input type="password" autocomplete="off" id="smtppass" name="smtppass" placeholder="Contraseña de conexion" value="<?= $phpmailer['smtppass'] ?>" /></span></dd>
+							</dl>
+							<dl>
+								<dt><label for="smtpname">SMTP Name:</label></dt>
+								<dd><input type="text" autocomplete="off" id="smtpname" name="smtpname" placeholder="Nombre de remitente" value="<?= $phpmailer['smtpname'] ?>" /></span></dd>
+							</dl>
+							<p class="button-group">
+								<input type="submit" name="omitir" class="gbqfb red" value="Omitir"/>
+								<input type="submit" class="gbqfb" value="Continuar &raquo;"/>
+							</p>
 			
-						<?php elseif($step === 3): ?>
+						<?php elseif($step === 'datos_sitio'): ?>
 							<legend>Datos del sitio</legend>
 							
 							<dl>
@@ -119,43 +138,42 @@ require_once __DIR__ . '/backend.php';
 								<dt><label for="skey">Clave secreta:</label></dt>
 								<dd><input type="text" id="skey" name="skey" value="<?= $site['skey'] ?>" placeholder="6LfFFiMdAAAAAFIP4oNFLQx5Fo1FyorTzNps8ChE" required/></dd>
 							</dl>
-							<p><input type="submit" class="gbqfb" value="Continuar &raquo;"/></p>
-					
-				
-					<?php elseif ($step === 4): ?>
-						<legend>Administrador</legend>
-						<p>Ingresa tus datos de usuario, m&aacute;s adelante debes editar tu cuenta para ingresar datos como, fecha de nacimiento, lugar de residencia, etc.</p>
+							<p class="button-group"><input type="submit" class="gbqfb" value="Continuar &raquo;"/></p>
 
-						<dl>
-							<dt><label for="username">Nombre de usuario:</label></dt>
-							<dd><input type="text" id="username" name="user_name" value="<?= $user['user_name'] ?>" placeholder="JohnDoe" required/></span></dd>
-						</dl>
-						<dl>
-							<dt><label for="userpassword">Contrase&ntilde;a:</label></dt>
-							<dd><input type="password" id="userpassword" name="user_password" value="<?= $user['user_password'] ?>" placeholder="@john1234" required/></span></dd>
-						</dl>
-						<dl>
-							<dt><label for="userconfirm">Confirmar contrase&ntilde;a:</label><span>Ingresa tu contrase&ntilde;a nuevamente.</span></dt>
-							<dd><input type="password" id="userconfirm" name="user_confirm" value="<?= $user['user_confirm'] ?>" placeholder="@john1234" required/></span></dd>
-						</dl>
-						<dl>
-							<dt><label for="useremail">Email:</label><span>Ingresa tu direcci&oacute;n de email.</span></dt>
-							<dd><input type="email" id="useremail" name="user_email" value="<?= $user['user_email'] ?>" placeholder="johndoe@gmail.com" required/></span></dd>
-						</dl>
-						<p><input type="submit" class="gbqfb" value="Continuar &raquo;"/></p>
-				
-					<?php elseif ($step == 5): ?>
-						<h2 class="s16">Bienvenido a PHPost Risus</h2>
-						<!-- ESTADISTICAS -->
-						<form action="http://download.phpost.net/feed/install.php" method="post" id="form">
-						<div class="error">Ingresa a tu FTP y borra la carpeta <strong><?php echo basename(getcwd()); ?></strong> antes de usar el script.</div>
-						
-							Gracias por instalar <strong>PHPost Risus</strong>, ya est&aacute; lista tu nueva comunidad <strong>Link Sharing System</strong>. S&oacute;lo inicia sesi&oacute;n con tus datos y comienza a disfrutar. Ahora no dejes de <a href="<?= Config::app('app.server') ?>" target="_blank"><u>visitarnos</u></a> para estar pendiente de futuras actualizaciones. Recuerda reportar cualquier bug que encuentres, de esta manera todos ganamos.<br /><br />
-						
-							<input type="hidden" name="key" value="<?php echo $key; ?>" />
+						<?php elseif ($step === 'datos_admin'): ?>
+							<legend>Administrador</legend>
+							<p>Ingresa tus datos de usuario, m&aacute;s adelante debes editar tu cuenta para ingresar datos como, fecha de nacimiento, lugar de residencia, etc.</p>
+
+							<dl>
+								<dt><label for="username">Nombre de usuario:</label></dt>
+								<dd><input type="text" id="username" name="user_name" value="<?= $user['user_name'] ?>" placeholder="JohnDoe" required/></span></dd>
+							</dl>
+							<dl>
+								<dt><label for="userpassword">Contrase&ntilde;a:</label></dt>
+								<dd><input type="password" id="userpassword" name="user_password" value="<?= $user['user_password'] ?>" placeholder="@john1234" required/></span></dd>
+							</dl>
+							<dl>
+								<dt><label for="userconfirm">Confirmar contrase&ntilde;a:</label><span>Ingresa tu contrase&ntilde;a nuevamente.</span></dt>
+								<dd><input type="password" id="userconfirm" name="user_confirm" value="<?= $user['user_confirm'] ?>" placeholder="@john1234" required/></span></dd>
+							</dl>
+							<dl>
+								<dt><label for="useremail">Email:</label><span>Ingresa tu direcci&oacute;n de email.</span></dt>
+								<dd><input type="email" id="useremail" name="user_email" value="<?= $user['user_email'] ?>" placeholder="johndoe@gmail.com" required/></span></dd>
+							</dl>
+							<p class="button-group"><input type="submit" class="gbqfb" value="Continuar &raquo;"/></p>
+
+						<?php elseif ($step === 'finalizar'): ?>
+							<h2 class="s16">Bienvenido a PHPost Risus</h2>
+							<!-- ESTADISTICAS -->
+							<div class="error">Ingresa a tu FTP y borra la carpeta <strong><?= basename(getcwd()); ?></strong> antes de usar el script.</div>
+							
+							<p>Gracias por instalar <strong>PHPost Risus</strong>, ya est&aacute; lista tu nueva comunidad <strong>Link Sharing System</strong>. S&oacute;lo inicia sesi&oacute;n con tus datos y comienza a disfrutar. Ahora no dejes de <a href="<?= Config::app('app.server') ?>" target="_blank"><u>visitarnos</u></a> para estar pendiente de futuras actualizaciones. Recuerda reportar cualquier bug que encuentres, de esta manera todos ganamos.</p><br /><br />
+							
+							<input type="hidden" name="key" value="<?= $key; ?>" />
 							<input type="submit" value="Finalizar" class="gbqfb" />
-					<?php endif; ?>
-				</div>
+						<?php endif; ?>
+					</fieldset>
+				</form>
 			</div>
 		</div>
 		<div id="footer">

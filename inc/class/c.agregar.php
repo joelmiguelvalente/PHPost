@@ -12,8 +12,9 @@ if (!defined('TS_HEADER')) {
 	exit('No se permite el acceso directo al script');
 }
 
-require_once dirname(__DIR__, 1) . '/utils/Extras.php';
-require_once dirname(__DIR__, 1) . '/utils/IP.php';
+require_once __DIR__ . '/c.moderacion.php';
+require_once TS_UTILS . '/Extras.php';
+require_once TS_UTILS . '/IP.php';
 
 class tsAgregar {
 	
@@ -22,15 +23,46 @@ class tsAgregar {
 	protected Extras $Extras;
 	protected IP $IP;
 
+	public int $postId;
+
 	public function __construct(tsCore $Core, tsUser $User) {
 		$this->Core = $Core;
 		$this->User = $User;
 		$this->Extras = new Extras;
 		$this->IP = new IP;
+		$this->postId = $this->getPostId();
 	}
 
-	private function seeMod(): bool {
+	/**
+	 * @access private
+	 * @return int
+	 */
+	private function getPostId(): int {
+		return filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT) ?? filter_input(INPUT_POST, 'postid', FILTER_VALIDATE_INT) ?? 0;
+	}
+
+	/**
+	 * @access private
+	 * @return bool
+	 */
+	private function canSeeInactiveUsers(): bool {
 		return ($this->User->is_admod && (int)$this->Core->settings['c_see_mod'] === 1);
+	}
+
+	/**
+	 * @access private
+	 * @return bool
+	 */
+	private function postApproved(): bool {
+		return (!$this->User->is_admod && ((int)$this->Core->settings['c_desapprove_post'] === 1 || $this->User->permisos['gorpap'] === true));
+	}
+
+	/**
+	 * @access private
+	 * @return string
+	 */
+	private function activeUserSqlCondition(): string {
+		return $this->canSeeInactiveUsers() ? '' : "AND u.user_activo = 1 AND u.user_baneado = 0";
 	}
 
 	/**
@@ -42,7 +74,7 @@ class tsAgregar {
 		if ($search === '') {
 			return '';
 		}
-		$where = $this->seeMod() ? '' : 'AND u.user_activo = 1 AND u.user_baneado = 0'; 
+		$where = $this->activeUserSqlCondition(); 
 		$data = result_array(db_exec([__FILE__, __LINE__], 'query', "SELECT p.post_id, p.post_title, c.c_seo FROM p_posts AS p LEFT JOIN u_miembros AS u ON u.user_id = p.post_user LEFT JOIN p_categorias AS c ON c.cid = p.post_category WHERE p.post_status = 0 $where AND MATCH(p.post_title) AGAINST('$search' IN BOOLEAN MODE) ORDER BY RAND() DESC LIMIT 5"));
 		
 		//
@@ -75,7 +107,7 @@ class tsAgregar {
 	/*
 		getPreview()
 	*/
-	function getPreview(): string {
+	public function getPreview(): string {
 		$cuerpo = $this->Core->setSecure($_POST['cuerpo'], true);
 		return $this->Core->parseBadWords($this->Core->parseBBCode($cuerpo), true);
 	}
@@ -168,13 +200,13 @@ class tsAgregar {
 		// INSERTAMOS
 		$time = time();
 		$postData['ip'] = $this->IP->executeIP();
-		$desapprove = (int)(!$this->User->is_admod && ((int)$this->Core->settings['c_desapprove_post'] === 1 || $this->User->permisos['gorpap'] === true) ? 3 : 0);
+		$desapprove = $this->postApproved() ? 3 : 0;
 		if(!db_exec([__FILE__, __LINE__], 'query', "INSERT INTO `p_posts` (post_user, post_category, post_title, post_body, post_date, post_tags, post_ip, post_private, post_block_comments, post_sponsored, post_sticky, post_smileys, post_visitantes, post_status, post_draft) VALUES ({$this->User->uid}, {$postData['category']}, '{$postData['title']}', '{$postData['body']}', {$postData['date']}, '{$postData['tags']}', '{$postData['ip']}', {$postData['private']}, {$postData['block_comments']}, {$postData['sponsored']}, {$postData['sticky']}, {$postData['smileys']}, {$postData['visitantes']}, {$desapprove}, 0)")) {
 			return show_error('Error al ejecutar la consulta de la l&iacute;nea '.__LINE__.' de '.__FILE__.'.', 'db');
 		}
 		$postID = (int)db_exec('insert_id');
 		// Si está oculto, lo creamos en el historial e.e
-		if(!$this->User->is_admod && ((int)$this->Core->settings['c_desapprove_post'] === 1 || $this->User->permisos['gorpap'] === true)) {
+		if($desapprove) {
 			db_exec([__FILE__, __LINE__], 'query', "INSERT INTO `w_historial` (`pofid`, `action`, `type`, `mod`, `reason`, `date`, `mod_ip`) VALUES ({$postID}, 3, 1, {$this->User->uid}, 'Revisi&oacute;n al publicar', $time, '{$postData['ip']}')");
 		}
 		// ESTADÍSTICAS
@@ -194,82 +226,58 @@ class tsAgregar {
 	/*
 		savePost()
 	*/
-	function savePost(){
+	public function savePost() {
+		$postId = $this->postId;
+		$data = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', "SELECT post_user, post_sponsored, post_sticky, post_status FROM p_posts WHERE post_id = $postId LIMIT 1"));
 		//
-		$post_id = (int)$_GET['pid'];
-		$query = db_exec([__FILE__, __LINE__], 'query', 'SELECT post_user, post_sponsored, post_sticky, post_status FROM p_posts WHERE post_id = \''.(int)$post_id.'\' LIMIT 1');
-		$data = db_exec('fetch_assoc', $query);
-		//
-		if($data['post_status'] != '0' && !$this->User->is_admod && !$this->User->permisos['moedpo']) {
+		if((int)$data['post_status'] !== 0 && !$this->User->is_admod && !$this->User->permisos['moedpo']) {
 			return 'El post no puede ser editado.';
 		}
-		//
-		$postData = array(
-			'title' => $this->Core->parseBadWords($_POST['titulo'], true),
-			'body' => $this->Core->setSecure($_POST['cuerpo'], true),
-			'tags' => $this->Core->parseBadWords($this->Core->setSecure($_POST['tags'], true)),
-			'category' => $_POST['categoria'],
-		);
-		// VACIOS
-		foreach($postData as $key => $val){
-			$val = trim(preg_replace('/[^ A-Za-z0-9]/', '', $val));
-			$val = str_replace(' ', '', $val);
-			if(empty($val)) return 0;
+		$postData = $this->collectPostData(false);
+		if (!$this->validatePostData($postData)) {
+			return 'Datos inválidos.';
 		}
-		// TAGS
-		$tags = $this->validTags($postData['tags']);
-		if(empty($tags)) return 'Tienes que ingresar por lo menos <b>4</b> tags.';
-		//
-		$postData['visitantes'] = empty($_POST['visitantes']) ? 0 : 1;
-		$postData['smileys'] = empty($_POST['smileys']) ? 0 : 1;			
-		$postData['private'] = empty($_POST['privado']) ? 0 : 1;
-		$postData['block_comments'] = empty($_POST['sin_comentarios']) ? 0 : 1;
-		// SOLO MODERADORES Y ADMINISTRADORES
-		if(empty($this->User->is_admod)  && $this->User->permisos['most'] == false) {
-			$postData['sponsored'] = $data['post_sponsored'];
-			$postData['sticky'] = $data['post_sticky'];   
-		} else {
-			$postData['sponsored'] = empty($_POST['patrocinado']) ? 0 : 1;
-			$postData['sticky'] = empty($_POST['sticky']) ? 0 : 1;
-		}
+		// Pueden ir vacios
+		$this->applyOptionalFlags($postData);
 		// ACTUALIZAMOS
-		if($this->User->uid == $data['post_user'] || !empty($this->User->is_admod) || !empty($this->User->permisos['moedpo'])){
-			if(db_exec([__FILE__, __LINE__], 'query', 'UPDATE p_posts SET post_title = \''.$postData['title'].'\', post_body = \''.$postData['body'].'\', post_tags = \''.$this->Core->setSecure($postData['tags']).'\', post_category = \''.(int)$postData['category'].'\', post_private = \''.$postData['private'].'\', post_block_comments = \''.$postData['block_comments'].'\', post_sponsored = \''.$postData['sponsored'].'\', post_smileys = \''.$postData['smileys'].'\', post_visitantes = \''.$postData['visitantes'].'\', post_sticky = \''.$postData['sticky'].'\' WHERE post_id = \''.(int)$post_id.'\'') or exit( show_error('Error al ejecutar la consulta de la l&iacute;nea '.__LINE__.' de '.__FILE__.'.', 'db') )) {
-				 // GUARDAR EN EL HISTORIAL	DE MODERACION		 
-				 if(($this->User->is_admod || $this->User->permisos['moedpo']) && $this->User->uid != $data['post_user'] && $_POST['razon']){
-					 include("c.moderacion.php");
-					 $tsMod = new tsMod();
-					 return $tsMod->setHistory('editar', 'post', array('post_id' => $post_id, 'title' => $postData['title'], 'autor' => $data['post_user'], 'razon' => $_POST['razon']));
-				 } else return 1;
+		if($this->User->uid === (int)$data['post_user'] || !$this->User->is_admod || !$this->User->permisos['moedpo']) {
+			$set = $this->Core->buildSqlSet($postData);
+			if(!db_exec([__FILE__, __LINE__], 'query', "UPDATE p_posts SET $set WHERE post_id = $postId")) {
+				return show_error('Error al ejecutar la consulta de la l&iacute;nea '.__LINE__.' de '.__FILE__.'.', 'db');
 			}
+			// GUARDAR EN EL HISTORIAL	DE MODERACION
+			$razon = (string)($_POST['razon'] ?? 'Sin motivo');
+			if(($this->User->is_admod || $this->User->permisos['moedpo']) && $this->User->uid !== (int)$data['post_user'] && $razon) {
+				$tsMod = new tsMod();
+				return $tsMod->setHistory('editar', 'post', [
+					'post_id' => $postId, 
+					'title' => $postData['title'], 
+					'autor' => $data['post_user'], 
+					'razon' => $razon
+				]);
+			} 
+			return 1;
 		}
 	}
 
 	/*
 		getEditPost()
 	*/
-	function getEditPost(){
+	public function getEditPost() {
+		$pid = $this->postId;
+		$post = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', "SELECT * FROM p_posts WHERE post_id = $pid LIMIT 1"));
 		//
-		$pid = intval($_GET['pid']);
-		//
-		$query = db_exec([__FILE__, __LINE__], 'query', 'SELECT * FROM p_posts WHERE post_id = \''.(int)$pid.'\' LIMIT 1');
-		$ford = db_exec('fetch_assoc', $query);
-		
-		//
-		if(empty($ford['post_id'])){
+		if(empty($post['post_id'])) {
 			return 'El post elegido no existe.';
-		}elseif($ford['post_status'] != '0' && $this->User->is_admod == 0 && $this->User->permisos['moedpo'] == false){
+		}
+		if((int)$post['post_status'] !== 0 && !$this->User->is_admod && !$this->User->permisos['moedpo']) {
 			return 'El post no puede ser editado.';
-		}elseif(($this->User->uid != $ford['post_user']) && $this->User->is_admod == 0 && $this->User->permisos['moedpo'] == false){
+		}
+		if(($this->User->uid !== (int)$post['post_user']) && !$this->User->is_admod && !$this->User->permisos['moedpo']) {
 			return 'No puedes editar un post que no es tuyo.';
 		}
-		// PEQUEÑO HACK
-		foreach($ford as $key => $val){
-			$iden = str_replace('post_','b_',$key);
-			$data[$iden] = $val;
-		}
 		//
-		return $data;
+		return $post;
 	}
 
 }

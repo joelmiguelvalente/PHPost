@@ -104,7 +104,7 @@ const dialog = {
       if (this.config.body) this.body(this.config.body);
       if (this.config.buttons) this.footer(this.config.buttons);
    },
-   alert(title, body, buttons = null) {
+   alert(title, body, reload = false, buttons = null) {
       this.close();
       this.init({
          title,
@@ -113,6 +113,9 @@ const dialog = {
             confirm: { text: 'Aceptar', action: 'close' }
          }
       });
+      if(reload) {
+         setTimeout(() => location.reload(), 1500);
+      }
    },
    loading(body = 'Procesando', title = 'Espere...') {
       this.close();
@@ -232,7 +235,7 @@ function initLazyLoading() {
 
          self.unobserve(target);
       });
-   }, { rootMargin: '50px' });
+   }, { rootMargin: '200px' });
 
    document.querySelectorAll('picture').forEach(picture => {
       observer.observe(picture.querySelector('img'));

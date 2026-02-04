@@ -21,7 +21,7 @@
       tomará al sitio como una web sin copyright 
       *}
       <div id="pp_copyright" style="display: block!important; opacity: 1!important;">
-         <a href="{$tsConfig.url}"><strong>{$tsConfig.titulo}</strong></a> &copy; {$smarty.now|date_format:"%Y"} - Powered by <a href="https://github.com/joelmiguelvalente/PHPost/" target="_blank"><strong>PHPost</strong></a>
+         <a href="{$tsConfig.url}"><strong>{$tsConfig.titulo}</strong></a> &copy; {$smarty.now|date_format:"Y"} - Powered by <a href="https://github.com/joelmiguelvalente/PHPost/" target="_blank"><strong>PHPost</strong></a>
       </div>
    </div>
    {if $tsUser->is_admod && $tsConfig.c_see_mod && $tsConfig.novemods.total}

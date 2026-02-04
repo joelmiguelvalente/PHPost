@@ -134,7 +134,7 @@ ol.cleanlist {
 		margin-bottom: 5px;
 	}
 	#webStats .wMod-h{
-		background-image: url(images/icons/chart.png);
+		background-image: url('../../assets/images/icons/chart.png');
 	}
 	#webStats .box_cuerpo{
 		border:1px solid #ccc;
@@ -149,11 +149,11 @@ ol.cleanlist {
 	}
 	/** => FOTOS **/
 	#lastFotos .wMod-h{
-		background: url(images/icons/photo.png) no-repeat left center;
+		background: url('../../assets/images/icons/photo.png') no-repeat left center;
 	}
 	/** => AFILIADOS **/
 	#webAffs .wMod-h{
-		background: url(images/icons/block-share.png) no-repeat left center;
+		background: url('../../assets/images/icons/block-share.png') no-repeat left center;
 		margin:0!important;
 	}
 	#webAffs .wMod-data {

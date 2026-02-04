@@ -9,115 +9,146 @@
 declare(strict_types=1);
 
 if (!defined('TS_HEADER')) {
-    exit('No se permite el acceso directo al script');
+	exit('No se permite el acceso directo al script');
 }
 
-final class Database
-{
-    private static ?self $instance = null;
-    private mysqli $connection;
+final class Database {
 
-    private function __construct()
-    {
-        $this->connect();
-    }
+	private static ?self $instance = null;
+	private mysqli $connection;
 
-    public static function instance(): self
-    {
-        return self::$instance ??= new self();
-    }
+	private function __construct() {
+		$this->connect();
+	}
 
-    private function connect(): void
-    {
-        mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+	public static function instance(): self {
+		return self::$instance ??= new self();
+	}
 
-        try {
-            $this->connection = new mysqli(
-                Config::db('hostname'),
-                Config::db('username'),
-                Config::db('password'),
-                Config::db('database')
-            );
+	private function connect(): void {
+		mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
-            $this->connection->set_charset(
-                Config::db('charset') ?? 'utf8mb4'
-            );
-        } catch (mysqli_sql_exception) {
-            show_error('Error de conexión a la base de datos.', 'db');
-        }
-    }
+		try {
+			$this->connection = new mysqli(
+				Config::db('hostname'),
+				Config::db('username'),
+				Config::db('password'),
+				Config::db('database')
+			);
 
-    /* ================= Legacy-safe API ================= */
+			$this->connection->set_charset(
+				Config::db('charset') ?? 'utf8mb4'
+			);
+		} catch (mysqli_sql_exception) {
+			show_error('Error de conexión a la base de datos.', 'db');
+		}
+	}
 
-    public function rawQuery(string $sql): mysqli_result|bool
-    {
-        return $this->connection->query($sql);
-    }
+	/* ================= Legacy-safe API ================= */
 
-    public function escape(string $value): string
-    {
-        return $this->connection->real_escape_string($value);
-    }
+	public function preparedQuery(string $sql, array $params = []): mysqli_stmt {
+	   $types = '';
+	   $values = [];
 
-    public function insertId(): int
-    {
-        return $this->connection->insert_id;
-    }
+	   // Convertir :param → ?
+	   $sql = preg_replace_callback('/:([a-zA-Z0-9_]+)/', function ($match) use ($params, &$types, &$values) {
+	   	$key = $match[1];
+	   	if (!array_key_exists($key, $params)) {
+	         throw new InvalidArgumentException("Missing parameter: $key");
+	      }
+	      $value = $params[$key];
+	      // Detectar tipo automáticamente
+	      if (is_int($value)) {
+	         $types .= 'i';
+	      } elseif (is_float($value)) {
+	         $types .= 'd';
+	      } elseif (is_null($value)) {
+	         $types .= 's';
+	         $value = null;
+	      } else {
+	         $types .= 's';
+	      }
+	      $values[] = $value;
+	      return '?';
+	   }, $sql);
+	   $stmt = $this->connection->prepare($sql);
+	   if ($values) {
+	      $stmt->bind_param($types, ...$values);
+	   }
+	   $stmt->execute();
+	   return $stmt;
+	}
 
-    public function error(): string
-    {
-        return $this->connection->error;
-    }
+	public function rawQuery(string $sql): mysqli_result|bool {
+	   try {
+	      return $this->connection->query($sql);
+	   } catch (mysqli_sql_exception $e) {
+	      return false;
+	   }
+	}
 
-    /* ================= Modern API ================= */
+	public function escape(string $value): string {
+		return $this->connection->real_escape_string($value);
+	}
 
-    public function prepare(string $sql): mysqli_stmt
-    {
-        return $this->connection->prepare($sql);
-    }
+	public function insertId(): int {
+		return $this->connection->insert_id;
+	}
 
-    public function fetchAll(mysqli_result $result): array
-    {
-        return $result->fetch_all(MYSQLI_ASSOC);
-    }
+	public function lastError(string $type): array {
+	   $errs = [
+	      'errno' 	  => $this->connection->errno,
+	      'error' 	  => $this->connection->error,
+	      'sqlstate' => $this->connection->sqlstate
+	   ];
+	   return $errs[$type];
+	}
 
-    public function fetch(mysqli_result $result): ?array
-    {
-        return $result->fetch_assoc() ?: null;
-    }
+	/* ================= Modern API ================= */
 
-    public function fetchRow(mysqli_result $result): ?array
-    {
-        return $result->fetch_row() ?: null;
-    }
+	public function prepare(string $sql): mysqli_stmt {
+		return $this->connection->prepare($sql);
+	}
 
-    public function numRows(mysqli_result $result): int
-    {
-        return $result->num_rows;
-    }
+	public function fetchAll(mysqli_result $result): array {
+		return $result->fetch_all(MYSQLI_ASSOC);
+	}
 
-    /* ================= Transactions ================= */
+	public function fetch(mysqli_result $result): ?array {
+		return $result->fetch_assoc() ?: null;
+	}
 
-    public function beginTransaction(): void
-    {
-        $this->connection->begin_transaction();
-    }
+	public function fetchRow(mysqli_result $result): ?array {
+		return $result->fetch_row() ?: null;
+	}
 
-    public function commit(): void
-    {
-        $this->connection->commit();
-    }
+	public function numRows(mysqli_result $result): int {
+		return $result->num_rows;
+	}
 
-    public function rollback(): void
-    {
-        $this->connection->rollback();
-    }
+	/* ================= Transactions ================= */
 
-    /* ================= Low-level access ================= */
+	public function beginTransaction(): void {
+		$this->connection->begin_transaction();
+	}
 
-    public function query(string $sql): mysqli_result|bool
-    {
-        return $this->connection->query($sql);
-    }
+	public function commit(): void {
+		$this->connection->commit();
+	}
+
+	public function rollback(): void {
+		$this->connection->rollback();
+	}
+
+	/* ================= Low-level access ================= */
+
+	#public function query(string $sql): mysqli_result|bool {
+	#	return $this->connection->query($sql);
+	#}
+
+	public function preparedFetch(string $sql, array $params = []): ?array {
+	   $stmt = $this->preparedQuery($sql, $params);
+	   return $stmt->get_result()->fetch_assoc() ?: null;
+	}
 
 }

@@ -1,7 +1,7 @@
                 	<div class="post-metadata floatL">
                     	<div style="padding: 12px">
                         	<div style="display:none" class="mensajes"></div>
-                            {if ($tsUser->is_admod || $tsUser->permisos.godp) && $tsUser->is_member == 1 && $tsPost.post_user != $tsUser->uid && $tsUser->info.user_puntosxdar >= 1}
+                            {if ($tsUser->is_admod || $tsUser->can('godp')) && $tsUser->is_member == 1 && $tsPost.post_user != $tsUser->uid && $tsUser->info.user_puntosxdar >= 1}
                             <div class="dar-puntos">
 							{if $tsPunteador.rango >= 50}
 							<center>
