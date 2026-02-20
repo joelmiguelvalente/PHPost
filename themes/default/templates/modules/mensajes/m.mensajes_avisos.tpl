@@ -39,7 +39,7 @@
                                         <div class="main clearBoth">
                                             <div class="autor-image"><img src="{$tsRoutes.tema.images}/icons/avtype_{$tsMensaje.av_type}.png" /></div>
                                             <div class="mensaje">
-                                                <div><a href="{$tsConfig.url}/perfil/{$mp.user_name}" class="autor-name">{$mp.user_name}</a> </div>
+                                                <div><a href="{$tsConfig.url}/@{$mp.user_name}" class="autor-name">{$mp.user_name}</a> </div>
                                                 <div>{$tsMensaje.av_body|nl2br}</div>
                                             </div>
                                         </div>

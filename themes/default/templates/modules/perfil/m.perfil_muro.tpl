@@ -1,6 +1,6 @@
 <div id="perfil_wall" status="activo">
 	{if $tsGeneral.fotos_total > 0}
-		<div id="perfil-foto-bar">
+		<div id="perfil-foto-bar" class="p-2">
 			{include "m.perfil_muro_fotos.tpl"}
 		</div>
 	{/if}
@@ -8,7 +8,7 @@
 		{if $tsPrivacidad.muro_firma.status == true}
 			{include "m.perfil_muro_form.tpl"}
 		{else}
-			<div class="emptyData" style="border-top:none">{$tsPrivacidad.muro_firma.message}</div>
+			<div class="alert-empty" style="border-top:none">{$tsPrivacidad.muro_firma.message}</div>
 		{/if}
 	</div>
 	<div class="widget clearfix" id="perfil-wall">
@@ -19,12 +19,12 @@
 		{if $tsMuro.total >= 10}
 			<div class="more-pubs">
 				<div class="content">
-					<a href="#" onclick="muro.stream.loadMore('wall'); return false;" class="a_blue">Publicaciones m&aacute;s antiguas</a>
-					<span><img width="16" height="11" alt="" src="http://static.ak.fbcdn.net/rsrc.php/yb/r/GsNJNwuI-UM.gif"/></span>
+					<button role="button" class="btnAction" data-action="loadMore" data-argument="wall">Publicaciones m&aacute;s antiguas</button>
+					<img width="20" height="20" style="display: none;" alt="Cargando publicaciones antiguas" src="{$tsRoutes.assets.images}/loader.gif"/>
 				</div>
 			</div>
 		{elseif $tsMuro.total == 0 && $tsUser->is_member}
-			<div class="emptyData">Este usuario no tiene comentarios, se el primero.</div>
+			<div class="alert-empty">Este usuario no tiene comentarios, se el primero.</div>
 		{/if}
 	</div>
 </div>

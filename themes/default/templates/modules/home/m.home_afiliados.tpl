@@ -1,16 +1,20 @@
 <script src="{$tsRoutes.assets.js}/afiliados.js"></script>
-<div id="webAffs">
-	<div class="wMod clearbeta">
-		<div class="wMod-h">Afiliados</div>
-		<div class="wMod-data">
-			<ul>
-			{foreach from=$tsAfiliados item=af}
-			<li><a href="#" onclick="afiliado.detalles({$af.aid}); return false;" title="{$af.a_titulo}">
-				<img src="{$af.a_banner}" width="190" height="40"/>
-			</a></li>
-			{/foreach}
-			</ul>
+<div class="box">
+	<div class="box-header">
+		<span class="box_txt" title="Afiliados">Afiliados</span>
+	</div>
+	{if $tsAfiliados}
+		<div class="box-content">
+			<div class="grupo-afiliados">
+				{foreach from=$tsAfiliados item=af}
+					<div class="afiliado">
+						<img src="{$af.a_banner}" width="190" height="40" onclick="afiliado.detalles({$af.aid}); return false;" title="{$af.a_titulo}"/>
+					</div>
+				{/foreach}
+			</div>
 		</div>
-		<div class="floatR"><a onclick="afiliado.nuevo(); return false">Afiliate a {$tsConfig.titulo}</a></div>
-	 </div>
+	{/if}
+	<div class="box-footer">
+		<span style="cursor: pointer;" onclick="afiliado.nuevo(); return false">Afiliate a {$tsConfig.titulo}</span>
+	</div>
 </div>

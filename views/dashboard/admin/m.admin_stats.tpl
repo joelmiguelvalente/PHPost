@@ -1,83 +1,60 @@
-                                <div class="boxy-title">
-								   <h3>Administrar Estad&iacute;sticas</h3>
-								</div>
-                        		<div id="res" class="boxy-content clearfix" style="position:relative">
-        							<div class="categoriaList estadisticasList" style="float:left; width:250px;">
-        								<h6>Posts <span class="floatR number">{$tsAdminStats.posts_total} &nbsp;</span></h6>
-        									<ul>
-        											<li class="clearfix"><span class="floatL">&nbsp; Visibles</span><span class="floatR number">{$tsAdminStats.posts_visibles} &nbsp;</span></li>
-        											<li class="clearfix"><span class="floatL">&nbsp; En revisi&oacute;n</span><span class="floatR number">{$tsAdminStats.posts_revision} &nbsp;</span></li>
-        											<li class="clearfix"><span class="floatL">&nbsp; Inactivos</span><span class="floatR number">{$tsAdminStats.posts_ocultos} &nbsp;</span></li>
-        											<li class="clearfix"><span class="floatL">&nbsp; Eliminados</span><span class="floatR number">{$tsAdminStats.posts_eliminados} &nbsp;</span></li>
-                                                    <li class="clearfix"><span class="floatL">&nbsp; Posts compartidos</span><span class="floatR number">{$tsAdminStats.posts_compartidos} &nbsp;</span></li>	
-                                                    <li class="clearfix"><span class="floatL">&nbsp; Posts favoritos</span><span class="floatR number">{$tsAdminStats.posts_favoritos} &nbsp;</span></li>
-        									</ul>
-        							</div>
-        							<div class="categoriaList estadisticasList" style="float:right; width:250px;">
-        								<h6>Fotos <span class="floatR number">{$tsAdminStats.fotos_total} &nbsp;</span></h6>
-        									<ul>
-        											<li class="clearfix"><span class="floatL">&nbsp; Visibles</span><span class="floatR number">{$tsAdminStats.fotos_visibles} &nbsp;</span></li>
-        											<li class="clearfix"><span class="floatL">&nbsp; En revisi&oacute;n</span><span class="floatR number">{$tsAdminStats.fotos_ocultas} &nbsp;</span></li>
-        											<li class="clearfix"><span class="floatL">&nbsp; Eliminadas</span><span class="floatR number">{$tsAdminStats.fotos_eliminadas} &nbsp;</span></li>
-        									</ul>
-        							</div>
-        							<div class="categoriaList estadisticasList" style="float:right; width:250px;">
-        								<h6>Comentarios en Posts <span class="floatR number">{$tsAdminStats.comentarios_posts_total} &nbsp;</span></h6>
-        									<ul>
-        											<li class="clearfix"><span class="floatL">&nbsp; Visibles</span><span class="floatR number">{$tsAdminStats.comentarios_posts_visibles} &nbsp;</span></li>
-        											<li class="clearfix"><span class="floatL">&nbsp; En revisi&oacute;n</span><span class="floatR number">{$tsAdminStats.comentarios_posts_ocultos} &nbsp;</span></li>
-        									</ul>
-        							</div>
-                                    <div class="categoriaList estadisticasList" style="float:left; width:250px;">
-        								<h6>Usuarios <span class="floatR number">{$tsAdminStats.usuarios_total} &nbsp;</span></h6>
-        									<ul>
-        											<li class="clearfix"><span class="floatL">&nbsp; Activos</span><span class="floatR number">{$tsAdminStats.usuarios_activos} &nbsp;</span></li>
-        											<li class="clearfix"><span class="floatL">&nbsp; Inactivos</span><span class="floatR number">{$tsAdminStats.usuarios_inactivos} &nbsp;</span></li>
-        											<li class="clearfix"><span class="floatL">&nbsp; Suspendidos</span><span class="floatR number">{$tsAdminStats.usuarios_baneados} &nbsp;</span></li>
-        									</ul>
-        							</div>
-        							<div class="categoriaList estadisticasList" style="float:right; width:250px;">
-        								<h6>Muro <span class="floatR number">{$tsAdminStats.muro_total} &nbsp;</span></h6>
-        									<ul>
-        											<li class="clearfix"><span class="floatL">&nbsp; Estados</span><span class="floatR number">{$tsAdminStats.muro_estados} &nbsp;</span></li>
-        											<li class="clearfix"><span class="floatL">&nbsp; Comentarios</span><span class="floatR number">{$tsAdminStats.muro_comentarios} &nbsp;</span></li>
-        									</ul>
-        							</div>
-                                    <div class="categoriaList estadisticasList" style="float:left; width:250px;">
-        								<h6>Afiliados <span class="floatR number">{$tsAdminStats.afiliados_total} &nbsp;</span></h6>
-        									<ul>
-        											<li class="clearfix"><span class="floatL">&nbsp; Activos</span><span class="floatR number">{$tsAdminStats.afiliados_activos} &nbsp;</span></li>
-        											<li class="clearfix"><span class="floatL">&nbsp; Inactivos</span><span class="floatR number">{$tsAdminStats.afiliados_inactivos} &nbsp;</span></li>
-        									</ul>
-        							</div>
-        							<div class="categoriaList estadisticasList" style="float:right; width:250px;">
-        								<h6>Medallas <span class="floatR number">{$tsAdminStats.medallas_total} &nbsp;</span></h6>
-        									<ul>
-        											<li class="clearfix"><span class="floatL">&nbsp; Usuarios</span><span class="floatR number">{$tsAdminStats.medallas_usuarios} &nbsp;</span></li>
-        											<li class="clearfix"><span class="floatL">&nbsp; Posts</span><span class="floatR number">{$tsAdminStats.medallas_posts} &nbsp;</span></li>
-        											<li class="clearfix"><span class="floatL">&nbsp; Fotos</span><span class="floatR number">{$tsAdminStats.medallas_fotos} &nbsp;</span></li>
-                                                    <li class="clearfix"><span class="floatL">&nbsp; Asignadas</span><span class="floatR number">{$tsAdminStats.medallas_asignadas} &nbsp;</span></li>								
-                                            </ul>
-        							</div>
-                                    <div class="categoriaList estadisticasList" style="float:left; width:250px;">
-        								<h6>Seguimiento <span class="floatR number">{$tsAdminStats.seguidos_total} &nbsp;</span></h6>
-        									<ul>
-        											<li class="clearfix"><span class="floatL">&nbsp; Usuarios</span><span class="floatR number">{$tsAdminStats.usuarios_follows} &nbsp;</span></li>
-        											<li class="clearfix"><span class="floatL">&nbsp; Posts</span><span class="floatR number">{$tsAdminStats.posts_follows} &nbsp;</span></li>
-        									</ul>
-        							</div>
-        							<div class="categoriaList estadisticasList" style="float:right; width:250px;">
-        								<h6>Mensajes <span class="floatR number">{$tsAdminStats.mensajes_total} &nbsp;</span></h6>
-        									<ul>
-        											<li class="clearfix"><span class="floatL">&nbsp; Eliminados por receptor</span><span class="floatR number">{$tsAdminStats.mensajes_para_eliminados} &nbsp;</span></li>
-        											<li class="clearfix"><span class="floatL">&nbsp; Eliminados por autor</span><span class="floatR number">{$tsAdminStats.mensajes_de_eliminados} &nbsp;</span></li>							
-                                                    <li class="clearfix"><span class="floatL">&nbsp; Respuestas</span><span class="floatR number">{$tsAdminStats.usuarios_respuestas} &nbsp;</span></li>
-                                            </ul>
-        							</div>
-        							<div class="categoriaList estadisticasList" style="float: left; width:250px;">
-        								<h6>Comentarios en Fotos <span class="floatR number">{$tsAdminStats.comentarios_fotos_total} &nbsp;</span></h6>
-        									<ul>
-        											<li class="clearfix"><span class="floatL">&nbsp; Visibles</span><span class="floatR number">{$tsAdminStats.comentarios_fotos_total} &nbsp;</span></li>
-        									</ul>
-        							</div>	
-                        		</div>
+<h1 class="text-xl font-semibold mb-4">Estad&iacute;sticas</h1>
+<div class="rounded border bg-white dark:bg-surface p-4 shadow-sm">
+	{include "dashboard/Alert.tpl" text="Tus cambios han sido guardados." color="green" show=$tsSave}
+
+	<div class="columns-1 sm:columns-2 xl:columns-4 [column-gap:1.5rem] space-y-5">
+		{include "dashboard/CardSection.tpl" header="Posts" total=$tsAdminStats.posts.total list=[
+		   ['title' => 'Visibles',  'total' => $tsAdminStats.posts.visibles],
+		   ['title' => 'Ocultos',  'total' => $tsAdminStats.posts.ocultos],
+		   ['title' => 'Eliminados',  'total' => $tsAdminStats.posts.eliminados],
+		   ['title' => 'Compartidos',  'total' => $tsAdminStats.posts.compartidos],
+		   ['title' => 'Favoritos',  'total' => $tsAdminStats.posts.favoritos],
+		]}
+
+		{include "dashboard/CardSection.tpl" header="Fotos" total=$tsAdminStats.fotos.total list=[
+		   ['title' => 'Visibles',  'total' => $tsAdminStats.fotos.visibles],
+		   ['title' => 'Ocultas',  'total' => $tsAdminStats.fotos.ocultas],
+		   ['title' => 'Eliminadas',  'total' => $tsAdminStats.fotos.eliminadas],
+		   ['title' => 'Comentarios',  'total' => $tsAdminStats.fotos.comentarios]
+		]}
+
+		{include "dashboard/CardSection.tpl" header="Comentarios en Posts" total=$tsAdminStats.comentarios.total list=[
+		   ['title' => 'Visibles',  'total' => $tsAdminStats.comentarios.visibles],
+		   ['title' => 'Ocultos',  'total' => $tsAdminStats.comentarios.ocultos]
+		]}
+
+		{include "dashboard/CardSection.tpl" header="Usuarios" total=$tsAdminStats.usuarios.total list=[
+		   ['title' => 'Activos',  'total' => $tsAdminStats.usuarios.activos],
+		   ['title' => 'Inactivos',  'total' => $tsAdminStats.usuarios.inactivos],
+		   ['title' => 'Baneados/Suspendidos',  'total' => $tsAdminStats.usuarios.baneados],
+		]}
+
+		{include "dashboard/CardSection.tpl" header="Muro" total=$tsAdminStats.muro.total list=[
+		   ['title' => 'Estados',  'total' => $tsAdminStats.muro.estados],
+		   ['title' => 'comentarios',  'total' => $tsAdminStats.muro.comentarios]
+		]}
+
+		{include "dashboard/CardSection.tpl" header="Afiliados" total=$tsAdminStats.afiliados.total list=[
+		   ['title' => 'Activos',  'total' => $tsAdminStats.afiliados.activos],
+		   ['title' => 'Inactivos',  'total' => $tsAdminStats.afiliados.inactivos]
+		]}
+
+		{include "dashboard/CardSection.tpl" header="Medallas" total=$tsAdminStats.medallas.total list=[
+		   ['title' => 'Posts',  'total' => $tsAdminStats.medallas.posts],
+		   ['title' => 'Fotos',  'total' => $tsAdminStats.medallas.fotos],
+		   ['title' => 'Usuarios',  'total' => $tsAdminStats.medallas.usuarios],
+		   ['title' => 'Asignadas',  'total' => $tsAdminStats.medallas.asignadas]
+		]}
+
+		{include "dashboard/CardSection.tpl" header="Seguimiento" total=$tsAdminStats.seguimientos.total list=[
+		   ['title' => 'Posts',  'total' => $tsAdminStats.seguimientos.posts],
+		   ['title' => 'Usuarios',  'total' => $tsAdminStats.seguimientos.usuarios]
+		]}
+
+		{include "dashboard/CardSection.tpl" header="Mensajes" total=$tsAdminStats.mensajes.total list=[
+		   ['title' => 'Eliminados por receptor',  'total' => $tsAdminStats.mensajes.para_eliminados],
+		   ['title' => 'Eliminados por autor',  'total' => $tsAdminStats.mensajes.de_eliminados],
+		   ['title' => 'Respuestas',  'total' => $tsAdminStats.mensajes.respuestas]
+		]}
+	</div>
+</div>

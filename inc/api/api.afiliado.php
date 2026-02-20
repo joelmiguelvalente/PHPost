@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name ajax.afiliado.php
+ * @name api.afiliado.php
  * @author PHPost Team
  * @copyright 2026
  */
@@ -19,7 +19,8 @@ const ACTIONS = [
    'afiliado-url' => ['nivel' => 0, 'template' => '', 'ajax' => false],
    'afiliado-detalles' => ['nivel' => 0, 'template' => 'detalles', 'ajax' => true],
    'afiliado-editar' => ['nivel' => 4, 'template' => '', 'ajax' => false],
-   'afiliado-form' => ['nivel' => 0, 'template' => 'form', 'ajax' => true]
+   'afiliado-form' => ['nivel' => 0, 'template' => 'form', 'ajax' => true],
+   'afiliado-setactive' => ['nivel' => 0, 'template' => '', 'ajax' => false]
 ];
 
 if (!array_key_exists($action, ACTIONS)) {
@@ -41,7 +42,7 @@ if(!$tsLevelMsg) {
 }
 
 // CLASE
-require_once dirname(__DIR__, 1) . "/class/c.afiliado.php";
+require_once TS_CLASS . "/c.afiliado.php";
 $tsAfiliado = new tsAfiliado($tsCore, $tsUser);
 
 switch($action) {
@@ -54,17 +55,14 @@ switch($action) {
 	case 'afiliado-borrar':
 		echo $tsAfiliado->DeleteAfiliado();
 	break;
-	case 'afiliado-editar':
-		echo $tsAfiliado->EditarAfiliado();
-	break;
 	case 'afiliado-setactive':
-		echo $tsAfiliado->SetActionAfiliado();
+		echo $tsAfiliado->activeAfiliado();
 	break;
 	case 'afiliado-url':
 		$tsAfiliado->urlOut();
 	break;
 	case 'afiliado-detalles':
-		$smarty->assign("tsAf", $tsAfiliado->getAfiliado());
+		$smarty->assign("tsAfiliado", $tsAfiliado->getAfiliado());
 	break;
 	default:
 		die('0: Este archivo no existe.');

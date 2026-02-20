@@ -14,18 +14,18 @@
          </div>
          <!--END CONTAINER-->
       </main>
-      <div class="rbott"></div>
       {* 
       El siguiente contenedor sirve para validar el Copyright,
       El ID del div NO debe ser alterado de lo contrario nuestro validador 
       tomará al sitio como una web sin copyright 
       *}
-      <div id="pp_copyright" style="display: block!important; opacity: 1!important;">
+      <div id="pp_copyright">
          <a href="{$tsConfig.url}"><strong>{$tsConfig.titulo}</strong></a> &copy; {$smarty.now|date_format:"Y"} - Powered by <a href="https://github.com/joelmiguelvalente/PHPost/" target="_blank"><strong>PHPost</strong></a>
       </div>
    </div>
-   {if $tsUser->is_admod && $tsConfig.c_see_mod && $tsConfig.novemods.total}
-      <div id="stickymsg" onmouseover="$('#brandday').css('opacity',0.5);" onmouseout="$('#brandday').css('opacity',1);" onclick="location.href = '{$tsConfig.url}/moderacion/'" style="cursor:default;">Hay {$tsConfig.novemods.total} contenido{if $tsConfig.novemods.total != 1}s{/if} esperando revisi&oacute;n</div>
+  
+   {if $tsUser->is_admod && $tsConfig.c_see_mod && $tsModerar.total}
+      <div id="stickymsg" onmouseover="$('#brandday').css('opacity',0.5);" onmouseout="$('#brandday').css('opacity',1);" onclick="location.href = '{$tsConfig.url}/moderacion/'" style="cursor:default;">Hay {$tsModerar.total} contenido{if $tsModerar.total != 1}s{/if} esperando revisi&oacute;n</div>
    {/if}
 
 </body>

@@ -1,62 +1,54 @@
-<?php if ( ! defined('TS_HEADER')) exit('No se permite el acceso directo al script');
+<?php
+
 /**
- * Controlador AJAX
- *
- * @name    ajax.favoritos.php
- * @author  PHPost Team
-*/
-/**********************************\
+ * @name api.cuenta.php
+ * @author PHPost Team
+ * @copyright 2026
+ */
 
-*	(VARIABLES POR DEFAULT)		*
+declare(strict_types=1);
 
-\*********************************/
+if (!defined('TS_HEADER')) {
+	exit('No se permite el acceso directo al script');
+}
 
-	// NIVELES DE ACCESO Y PLANTILLAS DE CADA ACCIÓN
-	$files = array(
-		'favoritos' => array('n' => 2, 'p' => 'home'),
-		'favoritos-agregar' => array('n' => 2, 'p' => ''),
-		'favoritos-borrar' => array('n' => 2, 'p' => ''),
-	);
+const ACTIONS = [
+   'favoritos' => ['nivel' => 2, 'template' => 'home', 'ajax' => true],
+   'favoritos-agregar' => ['nivel' => 2, 'template' => '', 'ajax' => false],
+   'favoritos-borrar' => ['nivel' => 2, 'template' => '', 'ajax' => false]
+];
 
-/**********************************\
+if (!array_key_exists($action, ACTIONS)) {
+   http_response_code(403);
+   exit('Acción inválida');
+}
 
-* (VARIABLES LOCALES ESTE ARCHIVO)	*
+$config = ACTIONS[$action];
 
-\*********************************/
+$tsLevel = $config['nivel'];
+$tsAjax  = (int) $config['ajax'];
+$tsPage  = sprintf('p.favoritos.%s', $config['template']);
 
-	// REDEFINIR VARIABLES
-	$tsPage = 'p.favoritos.'.$files[$action]['p'];
-	$tsLevel = $files[$action]['n'];
-	$tsAjax = empty($files[$action]['p']) ? 1 : 0;
+// DEPENDE EL NIVEL
+$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
+if(!$tsLevelMsg) { 
+	echo '0: '.$tsLevelMsg; 
+	die();
+}
 
-/**********************************\
+// CLASE
+require_once TS_CLASS . "/c.favoritos.php";
+$tsFavoritos = new tsFavoritos($tsCore, $tsUser);
 
-*	(INSTRUCCIONES DE CODIGO)		*
-
-\*********************************/
-	
-	// DEPENDE EL NIVEL
-	$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
-	if($tsLevelMsg != 1) { echo '0: '.$tsLevelMsg['mensaje']; die();}
-	// CLASE
-	require('../class/c.posts.php');
-	$tsPosts = new tsPosts();
-	// CODIGO
-	switch($action){
-		case 'favoritos':
-			//<--
-			$smarty->assign("tsFavoritos",$tsPosts->getFavoritos());
-			//-->
-		break;
-		case 'favoritos-agregar':
-			//<--
-			echo $tsPosts->saveFavorito();
-			//-->
-		break;
-		case 'favoritos-borrar':
-			//<--
-			echo $tsPosts->delFavorito();
-			//-->
-		break;
-	}
-?>
+// CODIGO
+switch($action){
+	case 'favoritos':
+		$smarty->assign("tsFavoritos",$tsFavoritos->getFavoritos());
+	break;
+	case 'favoritos-agregar':
+		echo $tsFavoritos->saveFavorito();
+	break;
+	case 'favoritos-borrar':
+		echo $tsFavoritos->delFavorito();
+	break;
+}

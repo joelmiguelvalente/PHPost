@@ -29,7 +29,7 @@
     <span class="size9">Para atender tu caso r&aacute;pidamente, adjunta pruevas de tu denuncia.<br /> (capturas de pantalla)</span>
 </div>
 {elseif $tsAction == 'denuncia-mensaje'}
-<div class="emptyData">Si reportas este mensaje ser&aacute; eliminado de tu bandeja. <br />&iquest;Realmente quieres denunciar este mensaje como correo no deseado?</div>
+<div class="alert-empty">Si reportas este mensaje ser&aacute; eliminado de tu bandeja. <br />&iquest;Realmente quieres denunciar este mensaje como correo no deseado?</div>
 <input type="hidden" name="razon" value="spam" />
 {elseif $tsAction == 'denuncia-usuario'}
 <div align="center" style="padding:10px 10px 0">

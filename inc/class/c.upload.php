@@ -44,7 +44,7 @@ final class tsUpload {
 	 */
 	public function cropAvatarWebp(int $userId): array
 	{
-		$source = TS_STORAGE . 'uploads/avatar_' . $_POST['key'] . '.' . $_POST['ext'];
+		$source = TS_STORAGE . '/uploads/avatar_' . $_POST['key'] . '.' . $_POST['ext'];
 
 		if (!is_file($source)) {
 			return ['error' => 'Archivo fuente inexistente'];
@@ -130,7 +130,7 @@ final class tsUpload {
 
 		$key  = bin2hex(random_bytes(4));
 		$ext  = image_type_to_extension($type, false);
-		$path = TS_STORAGE . "uploads/avatar_{$key}.{$ext}";
+		$path = TS_STORAGE . "/uploads/avatar_{$key}.{$ext}";
 
 		imagejpeg($img, $path, 95);
 		imagedestroy($img);

@@ -74,13 +74,13 @@ class tsSession {
 		$this->cookie_name   = $this->cookie_prefix . substr(md5($host), 0, 6);
 
 		// IP del usuario
-		$this->ip_address = (string)$Core->getIP();
+		$this->ip_address = (new IP)->getIP();
 
 		// Configuración: validar IP
-		$this->sess_match_ip = !empty($Core->settings['c_allow_sess_ip']);
+		$this->sess_match_ip = (int)$Core->settings['c_allow_sess_ip'] === 1;
 
 		// Configuración: intervalo de actividad
-		if (!empty($Core->settings['c_last_active'])) {
+		if ((int)$Core->settings['c_last_active'] === 1) {
 			$this->sess_time_online = (int)$Core->settings['c_last_active'] * 60;
 		}
 	}
@@ -159,22 +159,22 @@ class tsSession {
 			return false;
 		}
 
+		$autoLogin = $autologin ? 1 : 0;
+
 		// Preparar datos
 		$this->userdata['session_user_id'] = $user_id ?: $this->userdata['session_user_id'];
 		$this->userdata['session_ip']      = $this->ip_address;
 		$this->userdata['session_time']    = $this->time_now;
-
-		$autologin = $autologin ? 1 : 0;
-		$this->userdata['session_autologin'] = $autologin;
+		$this->userdata['session_autologin'] = $autoLogin;
 		
 		// Actualizar DB
-		db_exec([__FILE__, __LINE__], 'query', "UPDATE u_sessions SET session_user_id = '{$this->userdata['session_user_id']}', session_ip = '{$this->userdata['session_ip']}', session_time = '{$this->userdata['session_time']}', session_autologin = $autologin WHERE session_id = '{$this->ID}'");
+		db_exec([__FILE__, __LINE__], 'query', "UPDATE u_sessions SET session_user_id = '{$this->userdata['session_user_id']}', session_ip = '{$this->userdata['session_ip']}', session_time = '{$this->userdata['session_time']}', session_autologin = $autoLogin WHERE session_id = '{$this->ID}'");
 
 		// Limpieza ocasional
 		$this->sess_gc();
 
 		// Expiración cookie
-		$expiration = !empty($this->userdata['session_autologin']) ? 31500000 : $this->sess_expiration;
+		$expiration = ($this->userdata['session_autologin'] === 1) ? 31500000 : $this->sess_expiration;
 
 		$this->set_cookie('sid', $this->ID, $expiration);
 		return true;

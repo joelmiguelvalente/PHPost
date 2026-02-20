@@ -18,7 +18,7 @@
             {/if}
         </ul>
         {else}
-        <div class="emptyData">No hay posts</div>
+        <div class="alert-empty">No hay posts</div>
         {/if}
     </div>
 </div>

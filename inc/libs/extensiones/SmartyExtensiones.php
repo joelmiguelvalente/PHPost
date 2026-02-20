@@ -3,9 +3,7 @@
 use Smarty\Extension\Base;
 
 require __DIR__ . '/GetUrlModifierCompiler.php';
-require __DIR__ . '/HumanModifierCompiler.php';
 require __DIR__ . '/Nl2brModifierCompiler.php';
-#require __DIR__ . '/QuotModifierCompiler.php';
 require __DIR__ . '/SeoModifierCompiler.php';
 require __DIR__ . '/TrimModifierCompiler.php';
 
@@ -15,9 +13,7 @@ class SmartyExtensiones extends Base {
 
 		return match ($modifier) {
 			'getUrl' => new GetUrlModifierCompiler(),
-			'human' => new HumanModifierCompiler(),
 			'nl2br' => new Nl2brModifierCompiler(),
-			#'quot' => new QuotModifierCompiler(),
 			'seo' => new SeoModifierCompiler(),
 			'trim' => new TrimModifierCompiler(),
 			default => null

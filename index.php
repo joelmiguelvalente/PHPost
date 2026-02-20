@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 // Verificamos si el sitio fue instalado
 if(!file_exists(__DIR__ . DIRECTORY_SEPARATOR . '.lock')) {
-	header("Location: ./install/index.php?step=0");
+	header("Location: ./install/index.php?step=bienvenida");
 	die;
 }
 

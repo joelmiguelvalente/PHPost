@@ -29,7 +29,7 @@ final class Avatar {
     * Garantiza que todas las variantes del avatar existan.
     * Se usa en el registro o bootstrap del usuario.
     */
-   public function ensure(int $uid, string $username, int $color = 000): void {
+   public function ensure(int $uid, string $username, int|string $color): void {
       if ($this->hasAllVariants($uid)) {
          return;
       }
@@ -66,7 +66,7 @@ final class Avatar {
    /**
     * Crea todas las variantes del avatar.
     */
-   private function create(int $uid, string $username, int $color = 000): void {
+   private function create(int $uid, string $username, int|string $color ): void {
       $userDir = AvatarConfig::baseDir($uid);
       if (!is_dir($userDir) && !mkdir($userDir, 0755, true)) {
          return;
@@ -86,7 +86,7 @@ final class Avatar {
       imagedestroy($baseImage);
    }
 
-   private function normalizeHexColor(int $color): string {
+   private function normalizeHexColor(int|string $color): string {
       $color = ltrim((string)$color, '#');
       if (preg_match('/^[0-9a-fA-F]{6}$/', $color)) {
          return strtolower($color);

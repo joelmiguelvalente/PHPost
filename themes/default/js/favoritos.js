@@ -135,7 +135,7 @@ var favoritos = {
 		$.ajax({
 			type: 'POST',
 			url: route.url + '/favoritos-borrar.php',
-			data: 'fav_id=' + fav_id + queryParam('key'),
+			data: 'fav_id=' + fav_id + queryParam('userkey'),
 			success: function(h){
 				switch(h.charAt(0)){
 					case '0': //Error
@@ -167,7 +167,7 @@ var favoritos = {
 /*
 						//Quedaba solo un borrador
 						if(borradores_data.length==1)
-							$('div#borradores div#res').html('<div class="emptyData">No tienes ning&uacute;n borrador ni post eliminado</div>');
+							$('div#borradores div#res').html('<div class="alert-empty">No tienes ning&uacute;n borrador ni post eliminado</div>');
 */
 						//Actualizo la impresion de contadores
 						favoritos.printCounts();
@@ -198,7 +198,7 @@ var favoritos = {
 		$.ajax({
 			type: 'POST',
 			url: route.url + '/favoritos-agregar.php',
-			data: 'postid=' + post_id + '&reactivar=' + fav_date + queryParam('key'),
+			data: 'postid=' + post_id + '&reactivar=' + fav_date + queryParam('userkey'),
 			success: function(h){
 				switch(h.charAt(0)){
 					case '0': //Error
@@ -236,7 +236,7 @@ var favoritos = {
 /*
 						//Quedaba solo un borrador
 						if(borradores_data.length==1)
-							$('div#borradores div#res').html('<div class="emptyData">No tienes ning&uacute;n borrador ni post eliminado</div>');
+							$('div#borradores div#res').html('<div class="alert-empty">No tienes ning&uacute;n borrador ni post eliminado</div>');
 */
 						//Actualizo la impresion de contadores
 						favoritos.printCounts();

@@ -15,21 +15,19 @@ function countUpperCase(str) {
 	return (upper / letters) * 100;
 }
 
-function getFieldContainer(el) {
-	return $(el).closest('li');
-}
+const getFieldContainer = el => $(el).closest('div.form-group');
 
-function setError(el, message) {
-	const $li = getFieldContainer(el);
+const setError = (el, message) => {
+	const $div = getFieldContainer(el);
 	const hasError = Boolean(message);
-	$li.toggleClass('error', hasError);
-	$li.find('.errormsg').html(message || '').toggle(hasError);
+	$div.toggleClass('error', hasError);
+	$div.find('.form-helper').html(message || '').toggle(hasError);
 }
 
 function validateRequired() {
 	let valid = true;
-	$('.required').each(function () {
-		if (!$.trim(this.value)) {
+	$('.required').each(function (e, v) {
+		if (!$(v).val().trim()) {
 			setError(this, 'Este campo es obligatorio');
 			valid = false;
 			return false;
@@ -39,7 +37,7 @@ function validateRequired() {
 }
 
 function validateTitle() {
-	const input = $('input[name="titulo"]').get(0);
+	const input = $('input[name="title"]').get(0);
 	const value = input.value;
 	if (value.length >= 5 && countUpperCase(value) > 90) {
 		setError(input, 'El título no debe estar en mayúsculas');
@@ -61,7 +59,7 @@ function validateTags() {
 }
 
 function validateBodyLength() {
-	const $textarea = $('textarea[name="cuerpo"]'); // elemento real
+	const $textarea = $('textarea[name="body"]'); // elemento real
 	const content   = $textarea.bbcode();            // string BBCode
 
 	if (content.length > 65000) {
@@ -74,14 +72,16 @@ function validateBodyLength() {
 
 function buildBorradorParams() {
 	return $.param({
-		titulo: $('input[name="titulo"]').val(),
-		cuerpo: $('textarea[name="cuerpo"]').bbcode(),
+		title: $('input[name="title"]').val(),
+		body: $('textarea[name="body"]').bbcode(),
 		tags: $('input[name="tags"]').val(),
-		categoria: $('select[name="categoria"]').val(),
-		privado: $('input[name="privado"]').is(':checked') ? 1 : undefined,
-		sin_comentarios: $('input[name="sin_comentarios"]').is(':checked') ? 1 : undefined,
-		patrocinado: $('input[name="patrocinado"]').is(':checked') ? 1 : undefined,
-		sticky: $('input[name="sticky"]').is(':checked') ? 1 : undefined
+		category: $('select[name="category"]').val(),
+		private: $('input[name="private"]').is(':checked') ? 1 : 0,
+		block_comments: $('input[name="block_comments"]').is(':checked') ? 1 : 0,
+		sponsored: $('input[name="sponsored"]').is(':checked') ? 1 : 0,
+		visitantes: $('input[name="visitantes"]').is(':checked') ? 1 : 0,
+		smileys: $('input[name="smileys"]').is(':checked') ? 1 : 0,
+		sticky: $('input[name="sticky"]').is(':checked') ? 1 : 0
 	});
 }
 
@@ -115,19 +115,18 @@ function save_borrador() {
 	$('#borrador-guardado').text('Guardando...');
 	disableBorradorSave();
 	resetBorradorTimeout(60000);
-	$.post(route.url + url, data).done(handleBorradorResponse).fail(() => mydialog.error_500('save_borrador()'));
+	$.post(route.url + url, data, handleBorradorResponse).fail(() => dialog.reintentar('save_borrador()'));
 }
 
 function handleBorradorResponse(response) {
-	const status = response.charAt(0);
-	const payload = response.substring(3);
+	const { status, message } = $.parseResponse(response);
 
-	if (status === '0') {
-		borradorUltGuardado = payload;
+	if (status === 0) {
+		borradorUltGuardado = message;
 		resetBorradorTimeout(5000);
 	} else {
 		if (!$('input[name="borrador_id"]').val()) {
-			$('input[name="borrador_id"]').val(payload);
+			$('input[name="borrador_id"]').val(message);
 		}
 		borradorUltGuardado = `Guardado a las ${new Date().toLocaleTimeString()} hs.`;
 	}
@@ -139,38 +138,35 @@ let confirmLeave = true;
 let tagsGenerated = false;
 
 window.onbeforeunload = function () {
-	if (confirmLeave && ($('input[name="titulo"]').val() || $('textarea[name="cuerpo"]').bbcode())) {
+	if (confirmLeave && ($('input[name="title"]').val() || $('textarea[name="body"]').bbcode())) {
 		return 'Este post no fue publicado y se perderá.';
 	}
 };
 
-function postSave() {
+const postSave = () => {
 	confirmLeave = false;
 	$('form[name="newpost"]').submit();
 }
 
-$(function () {
+$(() => {
 
 	$('.required').on('keyup change', function () {
-		if ($.trim(this.value)) {
+		if ($(this).val().trim()) {
 			setError(this);
 		}
 	});
 
-	$('input[name="titulo"]').on('keyup', validateTitle);
+	$('input[name="title"]').on('keyup', validateTitle);
 
-	$('input[name="titulo"]').on('blur', function () {
-		$.post(route.url + '/posts-genbus.php?do=search', { q: this.value })
-			.done(h => $('#repost').html(h));
+	$('input[name="title"]').on('blur', () => {
+		const param = { query: this.value };
+		$.post(`${route.url}/posts-genbus.php?do=search`, param, response => $('#repost').html(response));
 	});
 
 	$('input[name="tags"]').on('click', function () {
-		if (tagsGenerated) return;
-
-		$.post(route.url + '/posts-genbus.php?do=generador', {
-			q: $('input[name="titulo"]').val()
-		}).done(h => {
-			$(this).val(h);
+		const param = { query: $('input[name="title"]').val() };
+		$.post(`${route.url}/posts-genbus.php?do=generador`, param, response => {
+			$('input[name="tags"]').val(response);
 			tagsGenerated = true;
 		});
 	});
@@ -187,32 +183,14 @@ $(function () {
 		}
 		dialog.alert('Vista previa', `Cargando vista previa...<br><br><img src="${route.img}/loading_bar.gif">`);
 
-		$.post(route.url + '/posts-preview.php?ts=true', {
-			cuerpo: $('textarea[name="cuerpo"]').bbcode()
-		}).done(response => {
-			console.log(response)
-			dialog.init({
-		      title: $('input[name="titulo"]').val(),
-		      body: response,
-		      buttons: {
-		         confirm: {
-		            text: 'Publicar post',
-		            action: () => postSave()
-		         },
-		         cancel: {
-		            text: 'Cerrar previsualización',
-		            action: 'close'
-		         }
-		      }
-		   });
+		const param = { cuerpo: $('textarea[name="body"]').bbcode() };
+
+		$.post(`${route.url}/posts-preview.php?ts=true`, param, response => {
+			dialog.easy($('input[name="title"]').val(), response, 'Publicar post', () => postSave())
 		});
 	});
 
-	$('a.consejos-view-more-button').on('click', function () {
-		$(this).hide();
-		$('div.consejos-view-more').show();
-	});
 	//Editor de posts
-  	$('textarea[name=cuerpo]').removeAttr('onblur onfocus class style').css('height', '400').addClass('required').wysibb();
+  	$('textarea[name=body]').css({ height: 400 }).addClass('required').wysibb();
    
-})
+});

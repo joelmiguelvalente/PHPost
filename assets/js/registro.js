@@ -1,5 +1,11 @@
 'use strict';
 
+// Función para obtener el parámetro redirect de la URL
+function getRedirectParam() {
+   const urlParams = new URLSearchParams(window.location.search);
+   return urlParams.get('redirect');
+}
+
 // --- CONSTANTES Y CONFIGURACIÓN ---
 const $form	= $('#RegistroForm');
 
@@ -41,20 +47,17 @@ const PASSWORD_LEVEL = {
 const $iWantPassword = $(".seePassword");
 const $inputPassword = $('input[type="password"]');
 
-function showLoader(show = true) {
+function onLoader(show = true) {
 	const $loader = $('#loader');
-
 	if (show && !$loader.length) {
 		$form.append(
 			`<div id="loader" class="fixed flex justify-center items-center bg-gray-50/50" style="inset:0;">
 				<img src="${route.img}/large-loading.gif" width="32" height="32" alt="Iniciando sesión">
 			</div>`
 		);
+		return;
 	}
-
-	if (!show) {
-		$loader.remove();
-	}
+	$loader.remove();
 }
 
 /**
@@ -104,6 +107,12 @@ function validateField(selector, response) {
 	return displayMessage(selector, "Formato incorrecto o fuera de rango", STATUS.ERROR);
 }
 
+const endpoint = (element, input, param) => {
+	displayMessage(element, `Comprobando ${input}...`, STATUS.WARNING);
+	const endpoint = `${route.url}/registro-check-${element}.php?ajax=true`;
+	$.post(endpoint, param, response => approved[input] = validateField(input, response));
+}
+
 /**
  * Evalúa la fortaleza de la contraseña y actualiza el feedback visual.
  * @param {string} password - La contraseña a evaluar.
@@ -123,7 +132,6 @@ function checkStrength(password) {
 	
 	$strengthEl.css({ 
 		'background-color': PASSWORD_LEVEL.colors[strength],
-		// Quitamos .removeAttr('style') y ponemos el width aquí para asegurar la animación
 		'width': `${(strength / 4) * 100}%` 
 	});
 	$textEl.html(PASSWORD_LEVEL.texts[strength]);
@@ -131,52 +139,43 @@ function checkStrength(password) {
 
 /**
  * Valida el campo Nick contra el servidor.
- * @param {string} inputNameElement - 'nick'.
- * @param {string} inputValue - Valor del campo.
- * @param {string} inputIDElement - Selector de ID (ej: '#nick').
+ * @param {string} input - 'nick'.
+ * @param {string} value - Valor del campo.
+ * @param {string} element - Selector de ID (ej: '#nick').
  */
-function validateNick(inputNameElement, inputValue, inputIDElement) {
+function validateNick(input, value, element) {
 	// Validaciones de longitud mínima/máxima antes de contactar al servidor
-  if (inputValue.length < 4) {
-		approved[inputNameElement] = displayMessage(inputIDElement, `Debe ser mayor a 4 caracteres`, STATUS.INFO);
+  if (value.length < 4) {
+		approved[input] = displayMessage(element, `Debe ser mayor a 4 caracteres`, STATUS.INFO);
 		return;
-	} else if (inputValue.length > 20) {
-		approved[inputNameElement] = displayMessage(inputIDElement, `Debe ser menor a 20 caracteres`, STATUS.INFO);
+	} else if (value.length > 20) {
+		approved[input] = displayMessage(element, `Debe ser menor a 20 caracteres`, STATUS.INFO);
 		return;
 	}
-	displayMessage(inputIDElement, `Comprobando ${inputNameElement}...`, STATUS.WARNING);
-	$.post(`${route.url}/registro-check-nick.php?ajax=true`, $.param({ nick: inputValue }), response => {
-		approved[inputNameElement] = validateField(inputNameElement, response);
-	});
+	endpoint(element, input, { nick: value });
 }
 
 /**
  * Valida el campo Email contra el servidor.
- * @param {string} inputNameElement - 'email'.
- * @param {string} inputValue - Valor del campo.
- * @param {string} inputIDElement - Selector de ID (ej: '#email').
+ * @param {string} input - 'email'.
+ * @param {string} value - Valor del campo.
+ * @param {string} element - Selector de ID (ej: '#email').
  */
-function validateEmail(inputNameElement, inputValue, inputIDElement) {
-	displayMessage(inputIDElement, `Comprobando ${inputNameElement}...`, STATUS.WARNING);
-	$.post(`${route.url}/registro-check-email.php?ajax=true`, { email: inputValue }, response => {
-		approved[inputNameElement] = validateField(inputNameElement, response);
-	});
-}
+const validateEmail = (input, value, element) => endpoint(element, input, { email: value });
 
 /**
  * Valida la contraseña (fortaleza local y contra el nick).
  * @param {string} inputNameElement - 'password'.
  * @param {string} inputIDElement - Selector de ID (ej: '#password').
  */
-function validatePassword(inputNameElement, inputIDElement) {
+function validatePassword(input, element) {
 	const valueOfPassword = $("#password").val();
 	const valueOfNick = $("#nick").val();
-	
-	checkStrength(valueOfPassword); // Actualiza UX de fortaleza
+
+	checkStrength(valueOfPassword);
 
 	let message = '';
-	let type = STATUS.SUCCESS; // Asumimos éxito a menos que haya reglas locales
-	
+	let type = STATUS.SUCCESS;
 	if (valueOfPassword === valueOfNick) {
 		message = 'No puede ser igual al Nick';
 		type = STATUS.ERROR;
@@ -184,15 +183,12 @@ function validatePassword(inputNameElement, inputIDElement) {
 		message = 'Debe tener al menos 4 caracteres';
 		type = STATUS.ERROR;
 	}
-
 	// Si hay un error local, lo mostramos y terminamos la validación
 	if (type === STATUS.ERROR) {
-		approved[inputNameElement] = displayMessage(inputIDElement, message, type);
+		approved[input] = displayMessage(element, message, type);
 	} else {
 		// Si no hay error local, mostramos el mensaje de éxito o info (como 'Comprobando...')
-		// Tu código original usaba validateField para esto, lo cual es incorrecto
-		// porque validateField espera la respuesta del servidor.
-		approved[inputNameElement] = displayMessage(inputIDElement, 'Contraseña OK. ', STATUS.SUCCESS);
+		approved[input] = displayMessage(element, 'Contraseña OK. ', STATUS.SUCCESS);
 	}
 }
 
@@ -201,30 +197,24 @@ function validatePassword(inputNameElement, inputIDElement) {
  * @param {HTMLElement} element - El elemento DOM que disparó el evento.
  */
 function checkField(element) {
-	const $element = $(element);
-	const inputNameElement = $element.attr('name');
-	const inputIDElement = $element.attr('id');
-	let inputValue = $element.val();
-
-	switch (inputNameElement) {
-		case 'nick':
-			validateNick(inputNameElement, inputValue, inputIDElement);
-		break;
-		case 'email':
-			validateEmail(inputNameElement, inputValue, inputIDElement);
-		break;
-		case 'password':
-			validatePassword(inputNameElement, inputIDElement);
-		break;
-		case 'terminos':
-			let isChecked = $element.prop('checked');
-			// Si no está marcado, tipo 0 (error), si sí, tipo 1 (success)
-			const type = isChecked ? STATUS.SUCCESS : STATUS.ERROR;
-			const msg = isChecked ? 'Términos aceptados' : 'Debes aceptar los términos';
-			
-			approved[inputNameElement] = displayMessage(inputIDElement, msg, type);
-		break;
-	}
+   const $field = $(element);
+   const field = {
+      name: $field.attr('name'),
+      id: $field.attr('id'),
+      value: $field.val()
+   };
+   const handlers = {
+      nick: ({ name, value, id }) => validateNick(name, value, id),
+      email: ({ name, value, id }) => validateEmail(name, value, id),
+      password: ({ name, id }) => validatePassword(name, id),
+      terminos: ({ name, id, $el }) => {
+         const isChecked = $field.prop('checked');
+         const status = isChecked ? STATUS.SUCCESS : STATUS.ERROR;
+         const message = isChecked ? 'Términos aceptados' : 'Debes aceptar los términos';
+         approved[name] = displayMessage(id, message, status);
+      }
+   };
+   handlers[field.name]?.(field);
 }
 
 /**
@@ -245,17 +235,17 @@ function areAllApproved(obj) {
  * Muestra/Oculta el estado de carga en el botón de submit.
  * @param {boolean} [action=false] - True para cargar, false para estado normal.
  */
-function btnLoad(action = false) {
+function buttonLoader(action = false) {
 	const TXT_ACTION = action ? 'Creando nueva cuenta...' : 'Registrarse';
 	$('#registrarme').attr({ disabled: action }).html(TXT_ACTION);
 }
 
-function showDialog(message, show = true) {
+const onDialog = (message, show = true) => {
 	if(show) {
-		dialog.alert('Info...', message)
-	} else {
-		dialog.close();
+		dialog.alert('Info...', message);
+		return;
 	}
+	dialog.close();
 }
 
 /**
@@ -263,85 +253,94 @@ function showDialog(message, show = true) {
  */
 function createAccount() {
 	// Solo continuar si todos los campos requeridos han pasado la validación
-	if (areAllApproved(approved)) {
-		btnLoad(true);
-		showLoader(true);
-		let formData = $('#RegistroForm').serializeArray();
-		//showDialog('Estamos procesando...');
-		// Petición de creación de cuenta
-		$.post(`${route.url}/registro-nuevo.php?ajax=true`, $.param(formData), response => {
-			const { status, message } = $.parseResponse(response);
-			showDialog(message);
-		
-			if (status === STATUS.ERROR || status === STATUS.WARNING) {
-				showLoader(true);
-				showDialog('', false);
-				btnLoad();
-				return;
-			}
-			
-			// Éxito o Acción Especial (e.g., 2FA)
-			if (status === STATUS.SUCCESS || status === STATUS.WARNING) { // Warning 2 puede ser redirigir
-				showLoader(false);
-				setTimeout(() => location.href = route.url, 5000);
-			}
-		}).catch(error => {
-			showDialog('Fallo al enviar la solicitud al servidor.');
-			showLoader(false);
-			btnLoad();
-		});
-	} else {
-		showDialog('Por favor, complete correctamente todos los campos requeridos.');
-		showLoader(false);
-		btnLoad();
+	if (!areAllApproved(approved)) {
+		onDialog('Por favor, complete correctamente todos los campos requeridos.');
+		onLoader(false);
+		buttonLoader();
 	}
+	buttonLoader(true);
+	onLoader(true);
+	let formData = $form.serializeArray();
+	// Petición de creación de cuenta
+	$.post(`${route.url}/registro-nuevo.php?ajax=true`, $.param(formData), response => {
+		const { status, message } = $.parseResponse(response);
+		onDialog(message);
+	
+		if (status === STATUS.ERROR || status === STATUS.WARNING) {
+			onLoader(true);
+			onDialog('', false);
+			buttonLoader();
+			return;
+		}
+		
+		// Éxito o Acción Especial (e.g., 2FA)
+		if (status === STATUS.SUCCESS || status === STATUS.WARNING) {
+			onLoader(false);
+			// Obtener el parámetro redirect
+			const redirectUrl = getRedirectParam();
+			// Si existe el parámetro redirect, redirigir a esa URL, de lo contrario recargar
+			if (redirectUrl) {
+				window.location.href = decodeURIComponent(redirectUrl);
+			} else {
+				setTimeout(() => location.href = route.url, 2000);
+			}
+		}
+
+
+	}).catch(error => {
+		onDialog('Fallo al enviar la solicitud al servidor.');
+		onLoader(false);
+		buttonLoader();
+	}); 
 }
 
 /**
  * Redirige al usuario después de un registro exitoso.
  * @param {number} [type=0] - Tipo de redirección (0: home, 2: cuenta).
  */
-function redirect(type = 0) {
-	location.href = route.url + '/' + (type === 2 ? 'cuenta/' : '');
-}
+const redirect = (type = 0) => location.href = route.url + '/' + (type === 2 ? 'cuenta/' : '');
 
 /**
  * Alterna la visibilidad del campo de contraseña (Mostrar/Ocultar).
  */
-function togglePasswordVisibility() {
+const togglePasswordVisibility = () => {
 	$iWantPassword.on('click', () => {
 		const isVisible = $inputPassword.attr('type') === 'text';
 		// Lógica: Si está visible, volvemos a 'password' y ponemos el icono 'lock'
-		const newType = isVisible ? 'password' : 'text';
-		$inputPassword.attr({ type: newType });
+		$inputPassword.attr({ type: (isVisible ? 'password' : 'text') });
 	});
 }
 
+async function executeCaptcha({ instance, key, action }) {
+   await new Promise(resolve => instance.ready(resolve));
+   const token = await instance.execute(key, { action });
+   response.value = token;
+   $('#registrarme').prop('disabled', false);
+}
+
 $(() => {
-	$('#RegistroForm').on('focusout keyup', 'input', function() {
+
+	// Verificamos mientras escribimos y cuando salimos del foco
+	$form.on('focusout keyup', 'input', function() {
 		checkField(this)
 	});
 
 	// Asignar evento change para inputs tipo radio y checkbox (ej: 'terminos')
-	$('#RegistroForm').on('change', 'input[type="checkbox"]', function() {
+	$form.on('change', 'input[type="checkbox"]', function() {
 		checkField(this)
 	});
 
 	// Asignar evento submit al formulario de registro
-	$('#RegistroForm').submit(function(e) {
+	$form.submit(e => {
 		e.preventDefault();
 		createAccount();
 	});
 
 	togglePasswordVisibility();
 
-	const { app: { publicKey } } = global_data;
-	
-   grecaptcha.ready(function() {
-   	grecaptcha.execute(publicKey, {action: 'submit'}).then(function(token) {
-   		response.value = token;
-   		$('#registrarme').removeAttr('disabled');
-   	});
-   });
+	const config = (captcha.type === 'recaptcha') ? 
+	{ instance: grecaptcha, key: captcha.key, action: 'submit' } : 
+	{ instance: grecaptcha.enterprise, key: captcha.key, action: 'LOGIN' };
+	executeCaptcha(config);
 
 });

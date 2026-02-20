@@ -9,7 +9,7 @@
                             </li>
                             {/foreach}
                             {else}
-                            <li class="emptyData">
+                            <li class="alert-empty">
                                 No hay posts aqu&iacute;,
                                 {if $tsType == 'posts'} <a onclick="$('#config_posts').slideDown();">configura</a> tus categor&iacute;as preferidas.
                                 {elseif $tsType == 'favs'} puedes agregar un post a tus favoritos para visitarlo m&aacute;s tarde.

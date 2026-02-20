@@ -1,7 +1,7 @@
 {include "main_header.tpl"}
 	<div class="comunidades">
 		{if !$tsFavoritos}
-			<div class="emptyData">No agregaste ning&uacute;n post a favoritos todav&iacute;a</div>
+			<div class="alert-empty">No agregaste ning&uacute;n post a favoritos todav&iacute;a</div>
 		{else}
 			<div id="izquierda" style="width:width: 170px;">
 				<label style="color:#999999; float: right; position: absolute; z-index: 5; margin: 12px; display: block;" for="favoritos-search">Buscar</label>

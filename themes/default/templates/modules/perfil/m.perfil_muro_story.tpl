@@ -1,38 +1,45 @@
+{assign var=ajax value=$ajax|default:false}
 {foreach from=$tsMuro.data item=p}
-	<div class="Story" id="pub_{$p.pub_id}">
-		<a href="{$tsConfig.url}/perfil/{$p.user_name}" class="Story_Pic">
-			{include "blocks/Avatar.tpl" alt=$p.user_name id=$p.p_user size=50}
+	<div class="Story grid gap-3" id="pub_{$p.pub_id}">
+		<a href="{$tsConfig.url}/@{$p.user_name}" class="Story_Pic">
+			{if $ajax}
+				<img src="{$tsRoutes.storage.avatar}/user_{$p.p_user}/thumb_avatar.png" alt="{$p.user_name}" width="50" height="50" loading="lazy" decoding="async">
+			{else}
+				{include "blocks/Avatar.tpl" alt=$p.user_name id=$p.p_user size=50}
+			{/if}
 		</a>
 		<div class="Story_Content">
-			<div class="Story_Head">
-				{if $p.p_user == $tsUser->uid || $p.p_user_pub == $tsUser->uid || $tsUser->is_admod || $tsUser->can('moepm')}
+			<div class="Story_Head relative">
+				{if $p.p_user == $tsUser->uid || $p.p_user_pub == $tsUser->uid || $tsUser->is_admod || $tsUser->permiso('moderacion.muro.eliminar_publicaciones')}
 					<div class="Story_Hide">
 						<span onclick="muro.del_pub({$p.pub_id},1);" title="Eliminar la publicaci&oacute;n" class="qtip uiClose"></span>
 					</div>
 				{/if}
 				<div class="Story_Message">
 					<div class="autor">
-						<a href="{$tsConfig.url}/perfil/{$p.user_name}" class="a_blue">
+						<a href="{$tsConfig.url}/@{$p.user_name}" class="a_blue">
 							{if $p.user_name == $tsUser->nick}{$tsUser->nick}{else}{$p.user_name}{/if}
 						</a>
 					</div>
-					<span>{$p.p_body|html_decode}</span>
+					<span class="block py-2 px-3">{$p.p_body|html_decode}</span>
 					{if $p.p_type != 1}
-						<div class="mvm clearfix">
+						<div class="mvm p-2">
 							{if $p.p_type == 2}
-								<a href="#" onclick="muro.load_atta('foto', '{$p.adj_url}', this); return false" class="uiPhoto"><img src="{$p.adj_image}"/></a>
+								<span role="button" data-action="loadAtta" data-type="foto" data-adjunto="{$p.adj_url}" class="uiPhoto block">
+									<img class="rounded ratio 1x1" style="max-width:200px!important;" src="{$p.adj_image}"/>
+								</span>
 							{elseif $p.p_type == 3}
-								<div class="uiLink">
-									<div><a href="{$p.adj_url}" target="_blank" class="a_blue"><strong>{$p.adj_title}</strong></a></div>
-									<a href="{$p.adj_url}" target="_blank" class="a_blue">{$p.adj_url}</a>
-								</div>
-							{elseif $p.p_type == 4}
-								<a href="#" onclick="muro.load_atta('video','{$p.adj_url}', this); return false;"class="uiVideoThumb">
-									<img src="http://img.youtube.com/vi/{$p.adj_url}/1.jpg" width="130" height="97"/><i></i>
+								<a href="{$p.adj_url}" class="uiLink block" title="{$p.adj_title}" rel="external" target="_blank">
+									<span class="uiLink-title">{$p.adj_title}</span>
+									<span class="uiLink-description block">{$p.adj_url}</span>
 								</a>
-								<div class="videoDesc">
-									<strong><a href="http://www.youtube.com/watch?v={$p.adj_url}" target="_blank" class="a_blue">{$p.adj_title}</a></strong>
-									<div style="margin-top:5px">{$p.adj_description}</div>
+							{elseif $p.p_type == 4}
+								<div class="uiVideo rounded overflow-hidden relative" data-action="loadAtta" data-type="video" data-adjunto="{$p.adj_url}">
+									<img src="https://i.ytimg.com/vi/{$p.adj_url}/sddefault.jpg" data-src="https://i.ytimg.com/vi/{$p.adj_url}/maxresdefault.jpg" alt="{$p.adj_title}" class="object-fit-cover ratio ratio-4x3 rounded">
+									<div class="video-description absolute">
+										<span class="block">{$p.adj_title}</span>
+										<p class="block">{$p.adj_description}...</p>
+									</div>
 								</div>
 							{/if}
 						</div>
@@ -40,9 +47,9 @@
 				</div>
 			</div>
 		<div class="Story_Foot">
-			<div class="Story_Info">
+			<div class="Story_Info flex justify-start items-center gap-2 relative">
 				<i class="stream w_{if $p.p_type == 1 && $p.p_user == $p.p_user_pub}0{else}{$p.p_type}{/if}"></i>
-				<span class="text">{$p.p_date|fecha}</span> &middot; 
+				<span class="text">{$p.p_date|hace:true}</span> &middot; 
 				<a onclick="muro.like_this({$p.pub_id}, 'pub', this); return false;" class="a_blue">{$p.likes.link}</a> &middot; 
 				<a onclick="muro.show_comment_box({$p.pub_id}); return false" class="a_blue">Comentar</a>
 				{if $tsUser->is_admod} &middot;
@@ -64,17 +71,19 @@
 								<div class="more_comments clearfix">
 									<i></i>
 									<a href="#" class="a_blue floatL" onclick="muro.more_comments({$p.pub_id}, this); return false">Ver los {$p.p_comments} comentarios</a>
-									<img width="16" height="11" src="http://static.ak.fbcdn.net/rsrc.php/yb/r/GsNJNwuI-UM.gif"/>
+									<img width="20" height="20" src="{$tsRoutes.assets.images}/loader.gif"/>
 								</div>
 							</li>
 						{/if}
 						{foreach from=$p.comments item=c}
 							<li class="ufiItem" id="cmt_{$c.cid}">
 								<div class="clearfix">
-									<a href="{$tsConfig.url}/perfil/{$c.user_name}" class="autorPic"><img alt="{$c.user_name}" src="{$tsRoutes.storage.avatar}/avatar_{$c.user_id}.webp" width="32" height="32"/></a>
-									{if $p.p_user == $tsUser->uid || $c.c_user == $tsUser->uid  || $tsUser->is_admod || $tsUser->can('moecm')}<span class="close"><a href="#" onclick="muro.del_pub({$c.cid}, 2); return false" class="uiClose" title="Eliminar"></a></span>{/if}
+									<a href="{$tsConfig.url}/@{$c.user_name}" class="autorPic">
+										{include "blocks/Avatar.tpl" id=$c.user_id size=32 alt=$c.user_name lazy=true class="avatar"}
+									</a>
+									{if $p.p_user == $tsUser->uid || $c.c_user == $tsUser->uid  || $tsUser->is_admod || $tsUser->permiso('moderacion.muro.eliminar_comentarios')}<span class="close"><a href="#" onclick="muro.del_pub({$c.cid}, 2); return false" class="uiClose" title="Eliminar"></a></span>{/if}
 									<div class="mensaje">
-										<a href="{$tsConfig.url}/perfil/{$c.user_name}" class="autorName a_blue">{$c.user_name}</a>
+										<a href="{$tsConfig.url}/@{$c.user_name}" class="autorName a_blue">{$c.user_name}</a>
 										<span>{$c.c_body|html_decode}</span>
 										<div class="cmInfo">{$c.c_date|fecha} &middot; <a onclick="muro.like_this({$c.cid}, 'com', this); return false;" class="a_blue">{$c.like}</a> <span class="cm_like"{if $c.c_likes == 0} style="display:none"{/if}>&middot; <i></i> <a onclick="muro.show_likes({$c.cid}, 'com'); return false;" id="lk_cm_{$c.cid}" class="a_blue">{$c.c_likes} persona{if $c.c_likes > 1}s{/if}</a></span>{if $tsUser->is_admod} &middot;<span class="cmInfo">{$c.c_ip}</span>{/if}</div>
 									</div>
@@ -88,9 +97,8 @@
 						<div class="newComment">
 							<input type="text" title="Escribe un comentario...." name="hack" value="Escribe un comentario..." pid="{$p.pub_id}" />
 							<div class="formulario" style="display:none">
-								<img src="{$tsRoutes.storage.avatar}/avatar_{$tsUser->uid}.webp" width="32" height="32"/>
+								{include "blocks/Avatar.tpl" id=$tsUser->uid size=32 alt=$tsUser->nick lazy=true class="avatar"}
 								<textarea class="comentar" placeholder="Escribe un comentario..." id="cf_{$p.pub_id}" pid="{$p.pub_id}" name="add_wall_comment"></textarea>
-								<div class="clearBoth"></div>
 							</div>
 						</div>
 					</li>
@@ -98,6 +106,5 @@
 			</ul>
 		</div>
 	</div>
-	<div class="clearBoth"></div>
 </div>
 {/foreach}

@@ -1,10 +1,10 @@
 					<div id="user_box" class="post-autor vcard">
                     	<div class="avatarBox" style="margin-bottom:0">
-                            <a href="{$tsConfig.url}/perfil/{$tsUser->nick}">
+                            <a href="{$tsConfig.url}/@{$tsUser->nick}">
                                 <img title="Ver tu perfil" class="avatar" src="{$tsConfig.url}/files/avatar/{$tsUser->uid}_120.jpg"/>
                             </a>
 						</div>
-                        <a href="{$tsConfig.url}/perfil/{$tsUser->nick}" style="text-decoration:none">
+                        <a href="{$tsConfig.url}/@{$tsUser->nick}" style="text-decoration:none">
 							<span class="given-name" style="color:#{$tsUser->info.rango.r_color}">{$tsUser->nick}</span>
 						</a>
                         <hr class="divider"/>

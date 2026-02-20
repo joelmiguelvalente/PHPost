@@ -1,45 +1,53 @@
-<div class="sidebar-add-post">
-	<div id="protocolo">
-		<div class="clearfix">
-			<p class="floatL">
-				<span class="stitle">Consejos: Para hacer un buen post es importante que tengas en cuenta algunos puntos.</span>
-			</p>
-			<a class="consejos-view-more-button">Ver m&aacute;s...</a>
-		</div>
-		<div style="display: none;" class="consejos-view-more clearfix">
-			<p style="margin-top: 5px;">Esto ayuda a mantener una mejor calidad de contenido y evitar que sea eliminado por los moderadores.</p>
-			<div class="clearfix">
-				<div class="floatL clearfix">
-					<strong>El Titulo</strong>
-					<ul>
-						<li class="correct">Que sea descriptivo</li>
-						<li class="">TODO EN MAYUSCULA</li>
-						<li class="">!!!!!!!Exagerados!!!!!!</li>
-						<li class="">PARCIALMENTE en may&uacute;sculas!</li>
-					</ul>
-				</div>
-				<div class="floatL clearfix">
-					<strong class="floatL">Contenido</strong>
-					<br/>
-					<ul style="margin-right: 10px;" class="floatL">
-						<li class="">Informaci&oacute;n personal o de un tercero</li>
-						<li class="">Fotos de personas menores de edad</li>
-						<li class="">Muertos, sangre, v&oacute;mitos, etc.</li>
-						<li class="">Con contenido racista y/o peyorativo</li>
-					</ul>
-					<ul class="floatL">
-						<li class="">Poca calidad (una imagen, texto pobre)</li>
-						<li class="">Chistes escritos, adivinanzas, trivias</li>
-						<li class="">Haciendo preguntas o cr&iacute;ticas</li>
-						<li class="">Insultos o malos modos</li>
-					</ul>
-					<ul class="floatL">
-						<li class="">Con intenci&oacute;n de armar pol&eacute;mica</li>
-						<li class="">Apolog&iacute;a de delito</li>
-						<li class="">Software spyware, malware, virus o troyanos</li>
-					</ul>
-				</div>
-			</div>
-		</div>
-	</div>
+<div class="form-group" data-field="category">
+	<label class="from-label" for="categoria">Categoría</label>
+	<select id="categoria" name="category" class="form-select required" tabindex="5" size="9" data-role="field">
+		<option value="" selected>Elegir una categoría</option>
+		{foreach from=$tsCategories item=c}
+			<option value="{$c.cid}"{if $tsDraft.post_category == $c.cid} selected{/if} style="background-image:url({$tsRoutes.assets.images}/icons/cat/{$c.c_img})">{$c.c_nombre}</option>
+		{/foreach}
+	</select>
+	<small class="form-helper" hidden></small>
+</div>
+
+<div class="form-group" data-field="opciones">
+	<h4>Opciones</h4>
+	<label class="option">
+		<input type="checkbox" id="privado" name="private"{if $tsDraft.post_private} checked{/if}>
+		<span>Sólo usuarios registrados</span>
+		<small>Tu post será visible solo para usuarios registrados.</small>
+	</label>
+
+	<label class="option">
+		<input type="checkbox" name="block_comments"{if $tsDraft.post_block_comments} checked{/if}>
+		<span>Cerrar comentarios</span>
+		<small>Recomendado para posts polémicos.</small>
+	</label>
+
+	<label class="option">
+		<input type="checkbox" name="visitantes"{if $tsDraft.post_visitantes} checked{/if}>
+		<span>Mostrar visitantes recientes</span>
+		<small>Tu post mostrar&aacute; los &uacute;ltimos visitantes que ha tenido.</small>
+	</label>
+
+	<label class="option">
+		<input type="checkbox" name="smileys"{if $tsDraft.post_smileys} checked{/if}>
+		<span>Sin Smileys</span>
+		<small>Si tu post no necesita smileys, desact&iacute;valos.</small>
+	</label>
+
+	{if $tsUser->is_admod}
+		<label class="option">
+			<input type="checkbox" name="sponsored"{if $tsDraft.post_sponsored} checked{/if}>
+			<span>Patrocinado</span>
+			<small>Resalta este post.</small>
+		</label>
+	{/if}
+
+	{if $tsUser->is_admod || $tsUser->permiso('moderacion.posts.fijar')}
+		<label class="option">
+			<input type="checkbox" name="sticky"{if $tsDraft.post_sticky} checked{/if}>
+			<span>Sticky</span>
+			<small>Fijar el post en la home.</small>
+		</label>
+	{/if}
 </div>

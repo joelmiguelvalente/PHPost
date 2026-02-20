@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name ajax.upload.php
+ * @name api.upload.php
  * @author PHPost Team
  * @copyright 2026
  */
@@ -14,7 +14,7 @@ if (!defined('TS_HEADER')) {
 
 const ACTIONS = [
 	'upload-avatar' => ['nivel' => 2, 'template' => '', 'ajax' => false],
-	'upload-crop' => ['nivel' => 2, 'template' => '', 'ajax' => false],
+	'upload-crop'   => ['nivel' => 2, 'template' => '', 'ajax' => false],
 	'upload-images' => ['nivel' => 2, 'template' => '', 'ajax' => false],
 ];
 
@@ -37,7 +37,7 @@ if(!$tsLevelMsg) {
 }
 
 // CLASE
-require_once dirname(__DIR__, 1) . '/class/c.upload.php';
+require_once TS_CLASS . '/c.upload.php';
 $tsUpload = new tsUpload();
 
 // CODIGO

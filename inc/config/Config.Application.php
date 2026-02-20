@@ -36,12 +36,23 @@ final class ConfigApplication extends AbstractConfig
 			'app' => [
 				'name'      => 'PHPost Risus',
 				'slogan'	   => 'Inteligencia recargada 2026',
-				'version'   => '2.3.' . date('d'),
-				'env'       => $APP_ENV,
-				'debug'     => $APP_ENV === 'development',
-				'debug_all' => true,
-				'logs_show' => true,
 				'server'    => 'https://discord.gg/StWZtrt2DE',
+				'version'   => '3.0.0',
+				'status'    => $APP_ENV,
+			],
+
+			/**
+			 * --------------------------------------------------------
+			 * Debug
+			 * --------------------------------------------------------
+			 */
+			'debug' => [
+				// 1 - E_ALL
+				// 2 - E_ALL & ~E_WARNING & ~E_NOTICE & ~E_DEPRECATED
+				// 3 - 0
+				'level' => file_exists(TS_ROOT."/.local") ? 1 : 0,
+				'active' => ($APP_ENV === 'development' && file_exists(TS_ROOT."/.local")),
+				'logs' 	=> 'always',
 			],
 
 			/**

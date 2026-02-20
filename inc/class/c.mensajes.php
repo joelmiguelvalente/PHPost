@@ -67,7 +67,7 @@ class tsMensajes {
 		#
 		if($this->User->is_member && $this->User->info['user_baneado'] == 0 && $this->User->info['user_activo'] == 1) {
 		//ANTI FLOOD ._.
-		$antiflood = $this->User->permisos['goaf']*5;
+		$antiflood = $this->User->permiso('limites.antiflood')*5;
 		$mensajito = $this->Core->setSecure(substr($_POST['mensaje'],0,75), true);
 		if(db_exec('num_rows', db_exec([__FILE__, __LINE__], 'query', 'SELECT mp_id FROM `u_mensajes` WHERE (mp_date > \''.(time()-$antiflood).'\' && mp_from = \''.$this->User->uid.'\') OR (mp_date > \''.(time()-$antiflood*3600).'\' && mp_from = \''.$this->User->uid.'\' && mp_preview = \''.$mensajito.'\' && `mp_subject` = \''.$this->Core->setSecure($_POST['asunto']).'\') ORDER BY mp_id DESC LIMIT 1'))) die('Espere '.$antiflood.' segundos para continuar'); 
 		$this->Core->antiFlood(true, 'mps');
@@ -311,7 +311,7 @@ class tsMensajes {
 		if (db_exec('num_rows', $query)) { $data = db_exec('fetch_assoc', $query); } else { $this->Core->redirectTo($this->Core->settings['url'] . '/mensajes/'); } 
 		
 		// NO PUEDE LEER MENSAJES DE OTROS USUARIOS NI RESPUESTAS POR SEPARADO, SI SOY MODERADOR NO PUEDO LEER MENSAJES A MENOS QUE ESTÉN REPORTADOS Y SI SOY ADMINISTRADOR LOS VEO TODOS :B
-		if(db_exec('num_rows', db_exec([__FILE__, __LINE__], 'query', 'SELECT obj_id FROM `w_denuncias` WHERE obj_id = \''.(int)$mp_id.'\' && `d_type` = \'2\' LIMIT 1')) && $this->User->is_admod){ $canview = true; }else{ $canview = false; }
+		if(db_exec('num_rows', db_exec([__FILE__, __LINE__], 'query', 'SELECT obj_id FROM `w_denuncias` WHERE obj_id = \''.(int)$mp_id.'\' && `d_type` = \'mensaje\' LIMIT 1')) && $this->User->is_admod){ $canview = true; }else{ $canview = false; }
 		// REDIRIGIR SI NO TIENE PERMISO
 		if($data['mp_to'] != $this->User->uid && $data['mp_from'] != $this->User->uid && !$canview && $this->User->is_admod != 1) $this->Core->redirectTo($this->Core->settings['url'].'/mensajes/');
 		

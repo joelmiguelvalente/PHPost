@@ -4,10 +4,10 @@
 		<ul id="v_album">
 			{if $tsFFotos}
 				{foreach from=$tsFFotos item=f}
-					<li><a href="{$tsConfig.url}/fotos/{$f.user_name}/{$f.foto_id}/{$f.f_title|seo}.html"><img src="{$f.f_url}" title="{$f.f_title}" width="120" height="90" /></a><br /><a href="{$tsConfig.url}/perfil/{$f.user_name}" style="text-decoration:underline;"><strong>{$f.user_name}</strong></a></li>
+					<li><a href="{$tsConfig.url}/fotos/{$f.user_name}/{$f.foto_id}/{$f.f_title|seo}.html"><img src="{$f.f_url}" title="{$f.f_title}" width="120" height="90" /></a><br /><a href="{$tsConfig.url}/@{$f.user_name}" style="text-decoration:underline;"><strong>{$f.user_name}</strong></a></li>
 				{/foreach}
 			{else}
-				<li class="emptyData"><u>{$tsFoto.user_name}</u> no sigue usuarios o no han subido fotos.</li>
+				<li class="alert-empty"><u>{$tsFoto.user_name}</u> no sigue usuarios o no han subido fotos.</li>
 			{/if}
 		</ul>
 		{if $tsFFotos}<a href="{$tsConfig.url}/fotos/{$tsFoto.user_name}" class="fb_foot">Ver todas</a>{/if}
@@ -24,7 +24,7 @@
 		<h6 style="text-align:center;">Visitas recientes</h6>
 		<ul id="v_album" style="margin-left:11px;">
 			{foreach from=$tsFVisitas item=v}
-			  <a href="{$tsConfig.url}/perfil/{$v.user_name}" class="hovercard" uid="{$v.user_id}" style="display:inline-block;"><img src="{$tsRoutes.storage.avatar}/avatar_{$v.user_id}.webp" class="vctip" title="{$v.date|hace:true}" width="32" height="32"/></a>
+			  <a href="{$tsConfig.url}/@{$v.user_name}" class="hovercard" uid="{$v.user_id}" style="display:inline-block;"><img src="{$tsRoutes.storage.avatar}/avatar_{$v.user_id}.webp" class="vctip" title="{$v.date|hace:true}" width="32" height="32"/></a>
 			{/foreach}
 		</ul>
 	</div>
@@ -37,7 +37,7 @@
 					<img src="{$tsRoutes.tema.images}/icons/med/{$m.m_image}_16.png"  style="margin-left:1px;margin-bottom:2px;" class="qtip" title="{$m.m_title} - {$m.m_description}"/>
 				{/foreach}
 			{else}
-				<li class="emptyData">Esta foto no tiene medallas</li>
+				<li class="alert-empty">Esta foto no tiene medallas</li>
 			{/if}
 		</ul>
 	</div>

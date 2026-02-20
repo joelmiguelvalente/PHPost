@@ -17,7 +17,6 @@ require_once TS_HELPERS . '/CoreHelper.php';
 require_once TS_HELPERS . '/UrlHelper.php';
 require_once TS_HELPERS . '/MuroHelper.php';
 require_once TS_UTILS . '/Avatar.php';
-require_once TS_UTILS . '/IP.php';
 
 class tsMuro {
 
@@ -48,7 +47,7 @@ class tsMuro {
 	 * @param int
 	 * @param int
 	*/
-	public function getPrivacity(int $userId = 0, string $username = '', int $follow = 0, int $yfollow = 0): array {
+	public function getPrivacity(int $userId = 0, ?string $username = '', int $follow = 0, int $yfollow = 0): array {
 		//
 		$context = [
 			'isMe' => ((int)$this->User->uid === (int)$userId),
@@ -253,8 +252,8 @@ class tsMuro {
 		];
 	}
 
-	private function loadNewsWall($query) {
-		$query = result_array($query);
+	private function loadNewsWall(string $query, array $param) {
+		$query = DB::fetchAll($query, $param);
 		$data = [];
 		foreach($query as $key => $row) {
 			// CARGAR LIKES
@@ -296,20 +295,21 @@ class tsMuro {
 		$amigos[] = "{$this->User->uid}";
 		$amigos = implode(', ',$amigos);
 		// OBTENEMOS LAS ULTIMAS PUBLICACIONES
-		$query = db_exec([__FILE__, __LINE__], 'query', "SELECT p.*, u.user_id, u.user_name FROM u_muro AS p LEFT JOIN u_miembros AS u ON p.p_user_pub = u.user_id WHERE p.p_user IN($amigos) AND p.p_user = p.p_user_pub ORDER BY p.p_date DESC LIMIT $start,$limit");
+		$query = "SELECT p.*, u.user_id, u.user_name FROM u_muro AS p LEFT JOIN u_miembros AS u ON p.p_user_pub = u.user_id WHERE p.p_user IN(:amigos) AND p.p_user = p.p_user_pub ORDER BY p.p_date DESC LIMIT :start, :limit";
 		
-		$data = $this->loadNewsWall($query);
+		$data = $this->loadNewsWall($query, ['amigos' => $amigos, 'start' => $start, 'limit' => $limit]);
 		// RETORNAMOS
-		return ['total' => count($data ?? 0), 'data' => $data];
+		return ['total' => count($data ?: 0), 'data' => $data];
 	}
 
 	/*
 		getWall($count)
 	*/
-	public function getWall(int $userId, int$start = 0): array {
-		$query = db_exec([__FILE__, __LINE__], 'query', "SELECT p.*, u.user_id, u.user_name FROM u_muro AS p LEFT JOIN u_miembros AS u ON p.p_user_pub = u.user_id WHERE p.p_user = $userId ORDER BY p.pub_id DESC LIMIT $start,10");
-		$data = $this->loadNewsWall($query);
-		return ['total' => count($data ?? 0), 'data' => $data];
+	public function getWall(int $userId, int $start = 0): array {
+		$total = DB::value("SELECT COUNT(*) FROM u_muro AS p LEFT JOIN u_miembros AS u ON p.p_user_pub = u.user_id WHERE p.p_user = :uid", ['uid' => $userId]) ?: 0;
+		$query = "SELECT p.*, u.user_id, u.user_name FROM u_muro AS p LEFT JOIN u_miembros AS u ON p.p_user_pub = u.user_id WHERE p.p_user = :uid ORDER BY p.pub_id DESC LIMIT :start, 10";
+		$data = $this->loadNewsWall($query, ['uid' => $userId, 'start' => $start]);
+		return ['total' => count($data ?: 0), 'data' => $data];
 	}
 
 	/*
@@ -431,7 +431,7 @@ class tsMuro {
 				//
 				if($data['p_user'] === '') return '0: La publicaci&oacute;n no existe.';
 				// SI ES EL DUEÑO DEL MURO O DE LA PUBLICACION...
-				if((int)$data['p_user'] !== $this->User->uid || (int)$data['p_user_pub'] !== $this->User->uid || !$this->User->is_admod || !$this->User->permisos['moepm']) {
+				if((int)$data['p_user'] !== $this->User->uid || (int)$data['p_user_pub'] !== $this->User->uid || !$this->User->is_admod || !$this->User->permiso('moderacion.muros.eliminar_publicaciones')) {
 					return '0: Hmmm... &iquest;Haciendo pruebas?';
 				}
 				if(!db_exec([__FILE__, __LINE__], 'query', "DELETE FROM `u_muro` WHERE `pub_id` = $id")) {
@@ -461,7 +461,7 @@ class tsMuro {
 				//
 				if($data['cid'] === '') return '0: El comentario no existe.';
 				// SI ES EL DUEÑO DEL MURO O DEL COMENTARIO...
-				if((int)$data['p_user'] !== $this->User->uid || (int)$data['c_user'] !== $this->User->uid || !$this->User->is_admod || !$this->User->permisos['moecm']) {
+				if((int)$data['p_user'] !== $this->User->uid || (int)$data['c_user'] !== $this->User->uid || !$this->User->is_admod || !$this->User->permiso('moderacion.muros.eliminar_comentarios')) {
 					return '0: Hmmm... &iquest;Haciendo pruebas?';
 				}
 				if(!db_exec([__FILE__, __LINE__], 'query', 'DELETE FROM `u_muro_comentarios` WHERE `cid` = \''.(int)$id.'\'')) {

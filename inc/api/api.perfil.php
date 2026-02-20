@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name ajax.perfil.php
+ * @name api.perfil.php
  * @author PHPost Team
  * @copyright 2026
  */
@@ -13,13 +13,13 @@ if (!defined('TS_HEADER')) {
 }
 
 const ACTIONS = [
-   'perfil-wall'      => ['nivel' => 0, 'template' => 'wall', 'ajax' => true],
-   'perfil-actividad' => ['nivel' => 0, 'template' => 'actividad', 'ajax' => true],
-   'perfil-info' => ['nivel' => 0, 'template' => 'info', 'ajax' => true],
-   'perfil-posts' => ['nivel' => 0, 'template' => 'posts', 'ajax' => true],
+   'perfil-wall'       => ['nivel' => 0, 'template' => 'wall', 'ajax' => true],
+   'perfil-actividad'  => ['nivel' => 0, 'template' => 'actividad', 'ajax' => true],
+   'perfil-info' 		  => ['nivel' => 0, 'template' => 'info', 'ajax' => true],
+   'perfil-posts' 	  => ['nivel' => 0, 'template' => 'posts', 'ajax' => true],
    'perfil-seguidores' => ['nivel' => 0, 'template' => 'follows', 'ajax' => true],
-   'perfil-siguiendo' => ['nivel' => 0, 'template' => 'follows', 'ajax' => true],
-   'perfil-medallas' => ['nivel' => 0, 'template' => 'medallas', 'ajax' => true]
+   'perfil-siguiendo'  => ['nivel' => 0, 'template' => 'follows', 'ajax' => true],
+   'perfil-medallas'   => ['nivel' => 0, 'template' => 'medallas', 'ajax' => true]
 ];
 
 if (!array_key_exists($action, ACTIONS)) {
@@ -41,7 +41,7 @@ if(!$tsLevelMsg) {
 }
 
 // CLASS
-require_once dirname(__DIR__, 1) . "/class/c.cuenta.php";
+require_once TS_CLASS . "/c.cuenta.php";
 $tsCuenta = new tsCuenta($tsCore, $tsUser);
 
 // USER ID
@@ -55,7 +55,7 @@ $smarty->assign("tsUsername", $username);
 // CODIGO
 switch($action){
 	case 'perfil-wall':
-		require_once dirname(__DIR__, 1) . "/class/c.muro.php";
+		require_once TS_CLASS . "/c.muro.php";
 		$tsMuro = new tsMuro($tsCore, $tsUser);
 		// GENERAL
 		$tsGeneral = $tsCuenta->loadGeneral($user_id);
@@ -77,8 +77,8 @@ switch($action){
 	case 'perfil-actividad':
 		//<---
 		$ac_do = trim($_POST['do'] ?? '');
-		$ac_type = isset($_POST['ac_type']) ? (int)$_POST['ac_type'] : 0;
-		$start = isset($_POST['start']) ? (int)$_POST['start'] : 0;
+		$ac_type = (int)($_POST['ac_type'] ?? 0);
+		$start = (int)($_POST['start'] ?? 0);
 		//
 		if($ac_do !== 'borrar') {
 			$actividad = $tsActividad->getActividad($user_id, $ac_type, $start);
@@ -93,8 +93,8 @@ switch($action){
 	break;
 	case 'perfil-info':
 		//<---
-		require_once dirname(__DIR__, 1) . '/extras/datos.php';
-		$tsPaises = require_once dirname(__DIR__, 1) . "/extras/Paises.php";
+		require_once TS_EXTRA . '/datos.php';
+		$tsPaises = require_once TS_EXTRA . "/Paises.php";
 		// PERFIL INFO
 		$tsPerfil = $tsCuenta->loadPerfil((int)$user_id);
 		$smarty->assign("tsPerfil", $tsPerfil);

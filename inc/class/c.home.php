@@ -12,18 +12,18 @@ if (!defined('TS_HEADER')) {
 	exit('No se permite el acceso directo al script');
 }
 
-require_once TS_UTILS . '/Paginator.php';
-
 class tsHome {
 	
 	protected tsCore $Core;
 	protected tsUser $User;
 	protected Paginator $Paginator;
+	protected Extras $Extras;
 
 	public function __construct(tsCore $Core, tsUser $User) {
 		$this->Core = $Core;
 		$this->User = $User;
 		$this->Paginator = new Paginator;
+		$this->Extras = new Extras;
 	}
 	
 	/**
@@ -45,7 +45,7 @@ class tsHome {
 	}
 
 	private function canSeeHiddenPosts(): bool {
-		return ($this->User->is_admod === true && (int)$this->Core->settings['c_see_mod'] === 1);
+		return ($this->User->is_admod === 1 && (int)$this->Core->settings['c_see_mod'] === 1);
 	}
 
 	private function countPosts(string $visibilityWhere, string $categoryWhere, string $stickyWhere): int {
@@ -72,7 +72,7 @@ class tsHome {
 
 		$query = result_array(db_exec([__FILE__, __LINE__], 'query', $sql));
 		foreach($query as $pid => $post) {
-			$query[$pid]['c_img'] = $this->Core->route('tema:images') . '/icons/cat/' . $post['c_img'];
+			$query[$pid]['c_img'] = $this->Core->route('assets:images') . '/icons/cat/' . $post['c_img'];
 		}
 		$pages = $sticky ? null : $this->Paginator->getPages((int)$total, (int)$this->Core->settings['c_max_posts']);
 		return [

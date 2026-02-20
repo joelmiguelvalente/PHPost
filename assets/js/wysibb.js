@@ -1,79 +1,7 @@
-CURLANG = {
-	bold: "Negrita",
-	italic: "Cursiva",
-	underline: "Subrayado",
-	strike: "Tachado",
-	link: "Enlace",
-	img: "Imagen",
-	sup: "Superíndice",
-	sub: "Subíndice",
-	hr: "Separador",
-	justify: 'Justificar',
-	justifyleft: "Alinear a la izquierda",
-	justifycenter: "Centrar",
-	justifyright: "Alinear a la derecha",
-	table: "Insertar tabla",
-	bullist: "Lista de viñetas",
-	numlist: "Lista numerada",
-	spoiler: "Spoiler",
-	messages: "Mensajes",
-	msg_notice: "Noticia",
-	msg_info: "Información",
-	msg_warning: "Advertencia",
-	msg_error: "Error",
-	msg_success: "Éxito",
-	quote: "Citar",
-	code: "Código",
-	spoiler: "Spoiler",
-	fontcolor: "Color del texto",
-	fontsize: "Tamaño",
-	fontfamily: "Fuente",
-	fs_verysmall: "Diminuta",
-	fs_small: "Pequeña",
-	fs_normal: "Normal",
-	fs_big: "Grande",
-	fs_verybig: "Enorme",
-	smilebox: "Emoticonos",
-	swf: "Archivo SWF",
-	video: "Vídeo de YouTube",
-	goear: "Canción de Goear",
-	fullscreen: "Maximizar",
-	removeFormat: "Eliminar formato",
-	
-	modal_link_title: "Insertar enlace",
-	modal_link_text: "Texto enlazado",
-	modal_link_url: "URL",
-	modal_email_text: "Texto enlazado",
-	modal_email_url: "Email",
-	modal_link_tab1: "Insertar desde URL",
-	
-	modal_img_title: "Insertar imagen",
-	modal_img_tab1: "Añadir desde URL",
-	modal_img_tab2: "Subir imagen",
-	modal_imgsrc_text: "URL de la imagen",
-	modal_img_btn: "Elegir una imagen",
-	add_attach: "Adjuntar archivo",
-	
-	modal_swf_text: "URL del SWF",
-	modal_video_text: "URL del vídeo",
-	modal_goear_text: "URL de la canción",
-	
-	close: "Cerrar",
-	save: "Guardar",
-	cancel: "Cancelar",
-	remove: "Borrar",
-	
-	validation_err: "La información ingresada no es válida",
-	error_onupload: "Ha ocurrido un error mientras se cargaban los archivos",
-	
-	fileupload_text1: "Suelta el archivo aquí",
-	fileupload_text2: "o también puedes",
-	
-	loading: "Cargando",
-	auto: "Auto",
-	views: "Visitas",
-	downloads: "Descargas",
-};
+
+const Copyright = {
+	app: '<span class="powered">Powered by <a href="https://github.com/joelmiguelvalente/PHPost" target="_blank" rel="external" title="Repositorio en github">PHPost V3</a></span>'
+}
 
 $(function() {
 	$('button, input, .btn_g, .answerCitar').on('hover', function() {
@@ -82,59 +10,61 @@ $(function() {
 	});
 });
 
-var toFullScreen = function() {
-	if(!$('.wysibb').attr('fullscreen')) {
-		var maxHeight = $(window).height() - $('.wysibb-toolbar').height();
-		$('body').css('overflow', 'hidden');
-		$('.wysibb').addClass('fullscreen').attr('fullscreen', true);
-		$('.wysibb-body, .wysibb-texarea').css({'max-height': maxHeight, 'height': maxHeight});
-	}else {
+const toFullScreen = () => {
+	let isFullscreen = !$('.wysibb').attr('fullscreen');
+	let maxHeight = $(window).height() - $('.wysibb-toolbar').height();
+	if(isFullscreen) {
+		$('body').css({ overflow: 'hidden' });
+	} else {
 		$('body, .wysibb').removeAttr('style');
-		$('.wysibb').removeAttr('fullscreen').removeClass('fullscreen');
-		$('.wysibb-body, .wysibb-texarea').css({'max-height': 500, 'height': ''});
 	}
+	
+	$('.wysibb')[(isFullscreen ? 'addClass' : 'removeClass')]('fullscreen').attr({ 
+		fullscreen: isFullscreen 
+	});
+	$('.wysibb-body, .wysibb-texarea').css({
+		'max-height': isFullscreen ? maxHeight : 500,
+		height: isFullscreen ? maxHeight : ''
+	});
 };
 
 /* Para no causar errores con el anterior editor */
-var wysi = { on: function() {}, off: function() {} };
+const wysi = { on: () => {}, off: () => {} };
 
-wbbdebug = false;
+let debug = false;
 
 (function($) {
 	'use strict';
-	$.wysibb = function(txtArea,settings) {
-		$(txtArea).data("wbb",this);
-		this.txtArea=txtArea;
-		this.$txtArea=$(txtArea);
-		var id = this.$txtArea.attr("id") || this.setUID(this.txtArea);
+	$.wysibb = function(txtArea, settings) {
+		$(txtArea).data("wbb", this);
+		this.txtArea = txtArea;
+		this.$txtArea = $(txtArea);
+		let id = this.$txtArea.attr("id") || this.setUID(this.txtArea);
 		this.options = {
 			bbmode:				false,
 			onlyBBmode:			false,
 			themeName:			"default", 
 			bodyClass:			"",
-			lang:				"es",
 			tabInsert:			true,
-			toolbar:			true,
+			toolbar:				true,
+			hotkeys:				true,
+			showHotkeys:		true,
+			autoresize:			true,
+			resize_maxheight:	500,
+			loadPageStyles:	true,
+			traceTextarea:		true,
+			smileConversion:	true,
 			//img upload config 
 			imgupload:			true,
 			img_uploadurl:		route.url + "/inc/extras/wysibbupload.php",
 			img_maxwidth:		800,
 			img_maxheight:		640,
-			hotkeys:			true,
-			showHotkeys:		true,
-			autoresize:			true,
-			resize_maxheight:	500,
-			loadPageStyles:		true,
-			traceTextarea:		true,
-//			direction:			"ltr",
-			smileConversion:	true,
-
 			//END img upload config 
-			buttons: "bold,italic,underline,strike,sup,sub,|,img,video,link,|,fontcolor,fontsize,fontfamily,|,smileBox,bullist,numlist,|,spoiler,messages,table,|,justifyleft,justifycenter,justifyright,justify,|,hr,quote,code,goear,swf,|,removeFormat,fullscreen",
+			buttons: "bold,italic,underline,strike,sup,sub,|,image,video,link,|,fontcolor,fontsize,fontfamily,|,smileBox,bullist,numlist,|,spoiler,messages,table,|,justifyleft,justifycenter,justifyright,justify,|,hr,quote,code,kbd,|,removeFormat,fullscreen",
 			allButtons: {
 				bold : {
-					title: CURLANG.bold,
-					buttonHTML: '<span class="fonticon ve-tlb-bold1">\uE018</span>',
+					title: "Negrita",
+					buttonHTML: '<span class="wysibb-icon wysibb-icon-bold"></span>',
 					excmd: 'bold',
 					hotkey: 'ctrl+b',
 					transform : {
@@ -143,8 +73,8 @@ wbbdebug = false;
 					}
 				},
 				italic : {
-					title: CURLANG.italic,
-					buttonHTML: '<span class="fonticon ve-tlb-italic1">\uE001</span>',
+					title: "Cursiva",
+					buttonHTML: '<span class="wysibb-icon wysibb-icon-italic"></span>',
 					excmd: 'italic',
 					hotkey: 'ctrl+i',
 					transform : {
@@ -153,8 +83,8 @@ wbbdebug = false;
 					}
 				},
 				underline : {
-					title: CURLANG.underline,
-					buttonHTML: '<span class="fonticon ve-tlb-underline1">\uE002</span>',
+					title: "Subrayado",
+					buttonHTML: '<span class="wysibb-icon wysibb-icon-underline"></span>',
 					excmd: 'underline',
 					hotkey: 'ctrl+u',
 					transform : {
@@ -162,8 +92,8 @@ wbbdebug = false;
 					}
 				},
 				strike : {
-					title: CURLANG.strike,
-					buttonHTML: '<span class="fonticon fi-stroke1 ve-tlb-strike1">\uE003</span>',
+					title: "Tachado",
+					buttonHTML: '<span class="wysibb-icon wysibb-icon-strike"></span>',
 					excmd: 'strikeThrough',
 					transform : {
 						'<strike>{SELTEXT}</strike>':"[s]{SELTEXT}[/s]",
@@ -171,39 +101,47 @@ wbbdebug = false;
 					}
 				},
 				sup : {
-					title: CURLANG.sup,
-					buttonHTML: '<span class="fonticon ve-tlb-sup1">\uE005</span>',
+					title: "Superíndice",
+					buttonHTML: '<span class="wysibb-icon wysibb-icon-sup"></span>',
 					excmd: 'superscript',
 					transform : {
 						'<sup>{SELTEXT}</sup>':"[sup]{SELTEXT}[/sup]"
 					}
 				},
 				sub : {
-					title: CURLANG.sub,
-					buttonHTML: '<span class="fonticon ve-tlb-sub1">\uE004</span>',
+					title: "Subíndice",
+					buttonHTML: '<span class="wysibb-icon wysibb-icon-sub"></span>',
 					excmd: 'subscript',
 					transform : {
 						'<sub>{SELTEXT}</sub>':"[sub]{SELTEXT}[/sub]"
 					}
 				},
 				hr : {
-					title: CURLANG.hr,
+					title: "Separador",
 					buttonText: '—',
 					transform : {
 						'<hr>':"[hr]"
 					}
 				},
 				link : {
-					title: CURLANG.link,
-					buttonHTML: '<span class="fonticon ve-tlb-link1">\uE007</span>',
+					title: "Enlace",
+					buttonHTML: '<span class="wysibb-icon wysibb-icon-link"></span>',
 					modal: {
-						title: CURLANG.modal_link_title,
+						title: "Insertar enlace",
 						width: "500px",
 						tabs: [
 							{
 								input: [
-									{param: "SELTEXT",title:CURLANG.modal_link_text, type: "div"},
-									{param: "URL",title:CURLANG.modal_link_url,validation: '^http(s)?://'}
+									{
+										param: "SELTEXT",
+										title: "Texto enlazado",
+										type: "div"
+									},
+									{
+										param: "URL",
+										title: "URL",
+										validation: '^http(s)?://'
+									}
 								]
 							}
 						]
@@ -213,56 +151,108 @@ wbbdebug = false;
 						'<a href="{URL}">{URL}</a>':"[url]{URL}[/url]"
 					}
 				},
-				img : {
-					title: CURLANG.img,
-					buttonHTML: '<span class="fonticon ve-tlb-img1">\uE006</span>',
-					modal: {
-						title: CURLANG.modal_img_title,
-						width: "600px",
-						tabs: [
-							{
-								title: CURLANG.modal_img_tab1,
-								input: [
-									{param: "SRC",title:CURLANG.modal_imgsrc_text,validation: '^http(s)?://.*?\.(jpg|png|gif|jpeg)$'}
-								]
-							},
-							{
-								title: CURLANG.modal_img_tab2,
-								html: '<div id="imguploader"> <form id="fupform" class="upload" action="{img_uploadurl}" method="post" enctype="multipart/form-data" target="fupload"><input type="hidden" name="iframe" value="1"/><input type="hidden" name="idarea" value="'+id+'" /><div class="fileupload"><input id="fileupl" class="file" type="file" name="img" /><button id="nicebtn" class="wbb-button">'+CURLANG.modal_img_btn+'</button> </div> </form> </div><iframe id="fupload" name="fupload" src="about:blank" frameborder="0" style="width:0px;height:0px;display:none"></iframe></div>'
-							}
-						],
-						onLoad: this.imgLoadModal
-					},
-					transform : {
-						'<img src="{SRC}" style="max-width: 100%;">':"[img={SRC}]",
-						'<img src="{SRC}" style="max-width: 100%;" />':"[img]{SRC}[/img]"
-					}
+				image : {
+				  	title: "Imagen",
+				   buttonHTML: '<span class="wysibb-icon wysibb-icon-img"></span>',
+				   modal: {
+				      title: "Insertar imagen",
+				      width: "600px",
+				      tabs: [
+				         {
+				            title: "Añadir desde URL",
+				            input: [
+				               {
+				                  param: "SRC",
+				                  title: "URL de la imagen",
+				                  validation: '^http(s)?://.*?\.(jpg|png|gif|jpeg|webp|avif)$'
+				               }, {
+				                  param: "CAPTION",
+				                  title: "Texto alternativo (Caption)",
+				                  type: "text" // Campo de texto para el caption
+				               }, {
+				                  param: "WIDTH",
+				                  title: "Ancho (opcional)",
+				                  type: "number", // Campo numérico para el ancho
+				                  validation: '^[0-9]+$' // Solo números
+				               }, {
+				                  param: "HEIGHT",
+				                  title: "Alto (opcional)",
+				                  type: "number", // Campo numérico para el alto
+				                  validation: '^[0-9]+$' // Solo números
+				               }
+				            ]
+				         }, {
+				            title: "Subir imagen",
+				            html: '<div id="imguploader"> <form id="fupform" class="upload" action="{img_uploadurl}" method="post" enctype="multipart/form-data" target="fupload"><input type="hidden" name="iframe" value="1"/><input type="hidden" name="idarea" value="'+id+'" /><div class="fileupload"><input id="fileupl" class="file" type="file" name="img" /><button id="nicebtn" class="wbb-button">Elegir una imagen</button> </div> </form> </div><iframe id="fupload" name="fupload" src="about:blank" frameborder="0" style="width:0px;height:0px;display:none"></iframe></div>'
+				         }
+				      ],
+				      onLoad: function() {},
+				     	onSubmit: function(cmd, opt, queryState) {
+				         // Recoger valores del formulario del modal
+				         var src = this.$modal.find('input[name="SRC"]').val();
+				         var caption = this.$modal.find('input[name="CAPTION"]').val();
+				         var width = this.$modal.find('input[name="WIDTH"]').val();
+				         var height = this.$modal.find('input[name="HEIGHT"]').val();
+				         if (!src) {
+				            alert('Por favor, introduce una URL de imagen válida.');
+				            return false;
+				         }
+				         var bbcode = "[image";
+				         var options = [];
+				         if (caption) {
+				           	// Escapar comillas dobles en el caption si las contiene
+				           	var escapedCaption = caption.replace(/"/g, '&quot;');
+				           	options.push('"' + escapedCaption + '"');
+				         }
+				         if (width) {
+				            options.push('width=' + width);
+				         }
+				         if (height) {
+				            options.push('height=' + height);
+				         }
+				         if (options.length > 0) {
+				            bbcode += '=' + options.join(' ');
+				         }
+				         bbcode += ']' + src + '[/image]';
+				         // Insertar el BBCode generado
+				         this.insertAtCursor(bbcode);
+				         // Cerrar el modal
+				         this.closeModal();
+				         this.updateUI();
+				         return false;
+				      }
+				   },
+				   transform : {
+				      '<figure class="bbc-figure" style="width:200px;height:500px;"><img src="{SRC}" alt="{CAPTION}" width="200" height="500" /></figure>': '[image="{CAPTION}" width=200 height=500]{SRC}[/image]',
+				      '<img src="{SRC}" alt="{CAPTION}" />': '[image="{CAPTION}"]{SRC}[/image]',
+				      '<img src="{SRC}" />': '[image]{SRC}[/image]'
+				   }
 				},
 				bullist : {
-					title: CURLANG.bullist,
-					buttonHTML: '<span class="fonticon ve-tlb-list1">\uE009</span>',
+					title: "Lista de viñetas",
+					buttonHTML: '<span class="wysibb-icon wysibb-icon-list"></span>',
 					excmd: 'insertUnorderedList',
 					transform : {
-						'<ul>{SELTEXT}</ul>':"[ul]{SELTEXT}[/ul]",
-						'<li>{SELTEXT}</li>':"[li]{SELTEXT}[/li]"
+						'<ul>{SELTEXT}</ul>':"[list]{SELTEXT}[/list]",
+						'<l>{SELTEXT}</li>':"[item]{SELTEXT}[/item]"
 					}
 				},
 				numlist : {
-					title: CURLANG.numlist,
-					buttonHTML: '<span class="fonticon ve-tlb-numlist1">\uE00a</span>',
+					title: "Lista numerada",
+					buttonHTML: '<span class="wysibb-icon wysibb-icon-numlist"></span>',
 					excmd: 'insertOrderedList',
 					transform : {
-						'<ol>{SELTEXT}</ol>':"[ol]{SELTEXT}[/ol]",
-						'<li>{SELTEXT}</li>':"[li]{SELTEXT}[/li]"
+						'<ol>{SELTEXT}</ol>':"[list=decimal]{SELTEXT}[/list]",
+						'<li>{SELTEXT}</li>':"[item]{SELTEXT}[/item]"
 					}
 				},
 				messages: {
 					type: 'select',
-					title: CURLANG.messages,
+					title: "Mensajes",
 					options: "notice,info,warning,error,success"
 				},
 				notice: {
-					title: CURLANG.msg_notice,
+					title: "Noticia",
 					buttonText: "notice",
 					exvalue: "1",
 					transform: {
@@ -270,7 +260,7 @@ wbbdebug = false;
 					}
 				},
 				info: {
-					title: CURLANG.msg_info,
+					title: "Información",
 					buttonText: "info",
 					exvalue: "2",
 					transform: {
@@ -278,53 +268,60 @@ wbbdebug = false;
 					}
 				},
 				warning: {
-					title: CURLANG.msg_warning,
+					title: "Advertencia",
 					exvalue: "3",
 					transform: {
 						'<div class="bbcmsg warning">{SELTEXT}</div>':'[warning]{SELTEXT}[/warning]'
 					}
 				},
 				error: {
-					title: CURLANG.msg_error,
+					title: "Error",
 					exvalue: "4",
 					transform: {
 						'<div class="bbcmsg error">{SELTEXT}</div>':'[error]{SELTEXT}[/error]'
 					}
 				},
-				
 				success: {
-					title: CURLANG.msg_success,
+					title: "Éxito",
 					exvalue: "5",
 					transform: {
 						'<div class="bbcmsg success">{SELTEXT}</div>':'[success]{SELTEXT}[/success]'
 					}
 				},
 				spoiler : {
-					title: CURLANG.spoiler,
-					buttonHTML: '<span class="newicon i-spoiler"></span>',
+					title: "Spoiler",
+					buttonHTML: '<span class="wysibb-icon wysibb-icon-spoiler"></span>',
 					transform : {
 						'<div class="spoiler"><div class="title" contenteditable="false"><a href="#" onclick="spoiler($(this)); return false;">Spoiler:</a></div><div class="body">{SELTEXT}</div></div>':"[spoiler]{SELTEXT}[/spoiler]",
 					}
 				},
 				quote : {
-					title: CURLANG.quote,
-					buttonHTML: '<span class="fonticon ve-tlb-quote1">\uE00c</span>',
+					title: "Citar",
+					buttonHTML: '<span class="wysibb-icon wysibb-icon-quote"></span>',
 					transform : {
 						'<blockquote><div class="cita" contenteditable="false"><strong>Cita:</strong></div><div class="citacuerpo">{SELTEXT}</div></blockquote>':"[quote]{SELTEXT}[/quote]",
 						'<blockquote><div class="cita" contenteditable="false"><strong>{AUTOR}</strong> dijo:</div><div class="citacuerpo">{SELTEXT}</div></blockquote>':"[quote={AUTOR}]{SELTEXT}[/quote]"
 					}
 				},
 				code : {
-					title: CURLANG.code,
-					buttonHTML: '<span class="newicon i-code"></span>',
+					title: "Código",
+					buttonHTML: '<span class="wysibb-icon wysibb-icon-code"></span>',
 					onlyClearText: true,
 					transform : {
 						'<code>{SELTEXT}</code>':"[code]{SELTEXT}[/code]"
 					}
 				},
+				kbd : {
+					title: "Teclas",
+					buttonHTML: '<span class="newicon i-code"></span>',
+					onlyClearText: true,
+					transform : {
+						'<kbd class="slug">{SELTEXT}</kbd>':"[kbd]{SELTEXT}[/kbd]"
+					}
+				},
 				fontcolor: {
 					type: "colorpicker",
-					title: CURLANG.fontcolor,
+					buttonHTML: '<span class="wysibb-icon wysibb-icon-color"></span>',
 					excmd: "foreColor",
 					valueBBname: "color",
 					subInsert: true,
@@ -342,25 +339,28 @@ wbbdebug = false;
 				},
 				table: {
 					type: "table",
-					title: CURLANG.table,
+					title: "Tabla",
 					cols: 10,
 					rows: 10,
 					cellwidth: 20,
 					transform: {
-						'<td>{SELTEXT}</td>': '[td]{SELTEXT}[/td]',
-						'<tr>{SELTEXT}</tr>': '[tr]{SELTEXT}[/tr]',
-						'<table class="bbctab">{SELTEXT}</table>': '[table]{SELTEXT}[/table]'
+						'<table class="bbc-table">{SELTEXT}</table>': '[table]{SELTEXT}[/table]',
+						'<thead class="bbc-thead">{SELTEXT}</thead>': '[thead]{SELTEXT}[/thead]',
+						'<tbody class="bbc-tbody">{SELTEXT}</tbody>': '[tbody]{SELTEXT}[/tbody]',
+						'<tr class="bbc-tr">{SELTEXT}</tr>': '[tr]{SELTEXT}[/tr]',
+						'<th class="bbc-th">{SELTEXT}</th>': '[th]{SELTEXT}[/th]',
+						'<td class="bbc-td">{SELTEXT}</td>': '[td]{SELTEXT}[/td]',
 					},
 					skipRules: true
 				},
 				fontsize: {
 					type: 'select',
-					title: CURLANG.fontsize,
+					title: "Tamaño",
 					options: "fs_verysmall,fs_small,fs_normal,fs_big,fs_verybig"
 				},
 				fontfamily: {
 					type: 'select',
-					title: CURLANG.fontfamily,
+					title: "Fuente",
 					excmd: 'fontName',
 					valueBBname: "font",
 					options: [
@@ -380,134 +380,100 @@ wbbdebug = false;
 				},
 				smilebox: {
 					type: 'smilebox',
-					title: CURLANG.smilebox,
-					buttonHTML: '<span class="fonticon ve-tlb-smilebox1">\uE00b</span>'
+					title: "Emoticonos",
+					buttonHTML: '<span class="wysibb-icon wysibb-icon-smilebox"></span>'
 				},
 				justify: {
-					title: CURLANG.justify,
-					buttonHTML: '<span class="newicon i-justify"></span>',
+					title: "Justificar",
+					buttonHTML: '<span class="wysibb-icon wysibb-icon-justify"></span>',
 					groupkey: 'align',
 					transform: {
 						'<div style="text-align:justify">{SELTEXT}</div>': '[align=justify]{SELTEXT}[/align]'
 					}
 				},
 				justifyleft: {
-					title: CURLANG.justifyleft,
-					buttonHTML: '<span class="fonticon ve-tlb-textleft1">\uE015</span>',
+					title: "Alinear a la izquierda",
+					buttonHTML: '<span class="wysibb-icon wysibb-icon-textleft"></span>',
 					groupkey: 'align',
 					transform: {
 						'<div style="text-align:left">{SELTEXT}</div>': '[align=left]{SELTEXT}[/align]'
 					}
 				},
 				justifyright: {
-					title: CURLANG.justifyright,
-					buttonHTML: '<span class="fonticon ve-tlb-textright1">\uE016</span>',
+					title: "Alinear a la derecha",
+					buttonHTML: '<span class="wysibb-icon wysibb-icon-textright"></span>',
 					groupkey: 'align',
 					transform: {
 						'<div style="text-align:right">{SELTEXT}</div>': '[align=right]{SELTEXT}[/align]'
 					}
 				},
 				justifycenter: {
-					title: CURLANG.justifycenter,
-					buttonHTML: '<span class="fonticon ve-tlb-textcenter1">\uE014</span>',
+					title: "Alinear al centro",
+					buttonHTML: '<span class="wysibb-icon wysibb-icon-textcenter"></span>',
 					groupkey: 'align',
 					transform: {
 						'<div style="text-align:center">{SELTEXT}</div>': '[align=center]{SELTEXT}[/align]'
 					}
 				},
-				swf : {
-					title: CURLANG.swf,
-					buttonHTML: '<span class="newicon i-flash"></span>',
-					modal: {
-						title: CURLANG.swf,
-						width: "500px",
-						tabs: [
-							{
-								input: [
-									{param: "URL",title:CURLANG.modal_swf_text,validation: '^http(s)?://.*?\.(swf)$'}
-								]
-							}
-						]
-					},
-					transform : {
-						'<embed src="{URL}" width="640" height="480" type="application/x-shockwave-flash">':"[swf={URL}]"
-					}
-				},
 				video: {
-					title: CURLANG.video,
-					buttonHTML: '<span class="fonticon ve-tlb-video1">\uE008</span>',
-					modal: {
-						title: CURLANG.video,
-						width: "600px",
-						tabs: [
-							{
-								title: CURLANG.video,
-								input: [
-									{param: "SRC",title:CURLANG.modal_video_text}
-								]
-							}
-						],
-						onSubmit: function(cmd,opt,queryState) {
-							var url = this.$modal.find('input[name="SRC"]').val();
-							if (url) {
-								url = url.replace(/^\s+/,"").replace(/\s+$/,"");
-							}
-							var a;
-							if (url.indexOf("youtu.be")!=-1) {
-								a = url.match(/^http[s]*:\/\/youtu\.be\/([a-z0-9_-]+)/i);
-							}else{
-								a = url.match(/^http[s]*:\/\/www\.youtube\.com\/watch\?.*?v=([a-z0-9_-]+)/i);
-							}
-							if (a && a.length==2) {
-								var code = a[1];
-								this.insertAtCursor(this.getCodeByCommand(cmd,{src:code}));
-							}
-							this.closeModal();
-							this.updateUI();
-							return false;
-						}
-					},
-					transform: {
-						'<iframe src="http://www.youtube.com/embed/{SRC}" width="640" height="360" frameborder="0" allowfullscreen></iframe>':'[swf=http://www.youtube.com/v/{SRC}]'
-					}
-				},
-				goear: {
-					title: CURLANG.goear,
-					buttonHTML: '<span class="newicon i-goear"></span>',
-					modal: {
-						title: CURLANG.goear,
-						width: "600px",
-						tabs: [
-							{
-								title: CURLANG.video,
-								input: [
-									{param: "SRC", title: CURLANG.modal_goear_text}
-								]
-							},
-						],
-						onSubmit: function(cmd,opt,queryState) {
-							var url = this.$modal.find('input[name="SRC"]').val();
-							if (url) {
-								url = url.replace(/^\s+/,"").replace(/\s+$/,"");
-							}
-							var a = url.match(/^http[s]*:\/\/www\.goear\.com\/listen\/([a-z0-9_-]+)/i);
-							
-							if (a && a.length==2) {
-								var code = a[1];
-								this.insertAtCursor(this.getCodeByCommand(cmd,{src:code}));
-							}
-							this.closeModal();
-							this.updateUI();
-							return false;
-						}
-					},
-					transform: {
-						'<iframe src="http://www.goear.com/embed/sound/{SRC}" width="580" height="115" scrolling="no" frameborder="0"></iframe>':'[goear={SRC}]'
-					}
+				   title: "Insertar Vídeo",
+				   buttonHTML: '<span class="wysibb-icon wysibb-icon-video"></span>',
+				   modal: {
+				      title: "Insertar Vídeo",
+				      width: "600px",
+				      tabs: [
+				         {
+				            title: "Insertar Vídeo",
+				            input: [
+				               {param: "SRC", title: "URL del vídeo"}
+				            ]
+				         }
+				      ],
+				      onSubmit: function(cmd, opt, queryState) {
+				         var url = this.$modal.find('input[name="SRC"]').val();
+				         if (url) {
+				            url = url.trim();
+				         }
+				         // Expresiones regulares para cada plataforma
+				         var patterns = {
+				            youtube: /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([A-Za-z0-9_-]{11})/,
+				            vimeo: /vimeo\.com\/(\d{6,10})/,
+				            dailymotion: /dailymotion\.com\/video\/([a-zA-Z0-9]+)/,
+				            tiktok: /tiktok\.com\/@.*\/video\/(\d+)/
+				         };
+				         var platform, match;
+				         // Probar cada plataforma
+				         for (platform in patterns) {
+				            match = url.match(patterns[platform]);
+				            if (match) {
+				               break;
+				            }
+				         }
+				         if (match && match[1]) {
+				            // Insertar el BBCode genérico [video]URL[/video]
+				            this.insertAtCursor('[video]' + url + '[/video]');
+				         } else {
+				            alert('URL de vídeo no válida o plataforma no soportada');
+				         }
+				         this.closeModal();
+				         this.updateUI();
+				         return false;
+				      }
+				   },
+				   transform: {
+				      // YouTube (usa el template de lite-youtube) - Corregido
+				      '<lite-youtube loading="lazy" videoid="{SRC}" style="width: 640px; height: 390px; background-image: url(\'https://i.ytimg.com/vi/{SRC}/maxresdefault.jpg\');"></lite-youtube>': '[video]https://youtu.be/{SRC}[/video]',
+				      // Vimeo
+				      '<div class="video-container"><iframe src="https://player.vimeo.com/video/{SRC}" width="640" height="360" frameborder="0" allowfullscreen></iframe></div>': '[video]https://vimeo.com/{SRC}[/video]',
+				      // DailyMotion
+				      '<div class="video-container"><iframe frameborder="0" width="640" height="360" src="https://www.dailymotion.com/embed/video/{SRC}?autoplay=0" allow="autoplay" allowfullscreen></iframe></div>': '[video]https://dailymotion.com/video/{SRC}[/video]',
+				      // TikTok
+				      '<blockquote class="tiktok-embed" cite="{SRC}"><a href="{SRC}"></a></blockquote><script async src="https://www.tiktok.com/embed.js"></script>': '[video]{SRC}[/video]'
+				   }
 				},
 				//select options
 				fs_verysmall: {
-					title: CURLANG.fs_verysmall,
+					title: "Diminuta",
 					buttonText: "fs1",
 					excmd: 'fontSize',
 					exvalue: "1",
@@ -517,7 +483,7 @@ wbbdebug = false;
 					}
 				},
 				fs_small: {
-					title: CURLANG.fs_small,
+					title: "Pequeña",
 					buttonText: "fs2",
 					excmd: 'fontSize',
 					exvalue: "2",
@@ -527,7 +493,7 @@ wbbdebug = false;
 					}
 				},
 				fs_normal: {
-					title: CURLANG.fs_normal,
+					title: "Normal",
 					buttonText: "fs3",
 					excmd: 'fontSize',
 					exvalue: "3",
@@ -538,7 +504,7 @@ wbbdebug = false;
 					}
 				},
 				fs_big: {
-					title: CURLANG.fs_big,
+					title: "Grande",
 					buttonText: "fs4",
 					excmd: 'fontSize',
 					exvalue: "4",
@@ -548,7 +514,7 @@ wbbdebug = false;
 					}
 				},
 				fs_verybig: {
-					title: CURLANG.fs_verybig,
+					title: "Enorme",
 					buttonText: "fs5",
 					excmd: 'fontSize',
 					exvalue: "5",
@@ -558,12 +524,12 @@ wbbdebug = false;
 					}
 				},
 				fullscreen: {
-					title: CURLANG.fullscreen,
+					title: "Maximizar",
 					buttonHTML: '<span class="newicon i-fullscreen"></span>',
 					cmd: toFullScreen
 				},
 				removeformat: {
-					title: CURLANG.removeFormat,
+					title: "Eliminar formato",
 					buttonHTML: '<span class="fonticon ve-tlb-removeformat1">\uE00f</span>',
 					excmd: "removeFormat"
 				}
@@ -573,12 +539,14 @@ wbbdebug = false;
 				'<span class="wbbtab">{SELTEXT}</span>': '   {SELTEXT}'
 			},
 			customRules: {
-				td: [["[td]{SELTEXT}[/td]",{seltext: {rgx:false,attr:false,sel:false}}]],
+				table: [["[table]{SELTEXT}[/table]",{seltext: {rgx:false,attr:false,sel:false}}]],
+				thead: [["[thead]{SELTEXT}[/thead]",{seltext: {rgx:false,attr:false,sel:false}}]],
 				tr: [["[tr]{SELTEXT}[/tr]",{seltext: {rgx:false,attr:false,sel:false}}]],
-				table: [["[table]{SELTEXT}[/table]",{seltext: {rgx:false,attr:false,sel:false}}]]
+				th: [["[th]{SELTEXT}[/th]",{seltext: {rgx:false,attr:false,sel:false}}]],
+				td: [["[td]{SELTEXT}[/td]",{seltext: {rgx:false,attr:false,sel:false}}]]
 			},
 			smileList: [
-			   				{ title: ":poop:",  img: `<img src="${route.smiles}/1f4a9.png">`, bbcode: ":poop:" },
+			   { title: ":poop:",  img: `<img src="${route.smiles}/1f4a9.png">`, bbcode: ":poop:" },
 				{ title: ":goblin:",  img: `<img src="${route.smiles}/1f47a.png">`, bbcode: ":goblin:" },
 				{ title: ":ghost:",  img: `<img src="${route.smiles}/1f47b.png">`, bbcode: ":ghost:" },
 				{ title: ":alien:",  img: `<img src="${route.smiles}/1f47d.png">`, bbcode: ":alien:" },
@@ -802,7 +770,7 @@ wbbdebug = false;
 				if (ob.type=="select" && typeof(ob.options)=="string") {
 					var olist = ob.options.split(",");
 					$.each(olist,function(i,op) {
-						if ($.inArray(op,btnlist)==-1) {
+						if (btnlist.includes(op)) {
 							btnlist.push(op);
 						}
 					});
@@ -816,7 +784,7 @@ wbbdebug = false;
 						
 						//create root selector for isContain bbmode
 						if (!ob.bbSelector) {ob.bbSelector=[];}
-						if ($.inArray(bbcode,ob.bbSelector)==-1) {
+						if (ob.bbSelector.includes(bbcode)) {
 							ob.bbSelector.push(bbcode);
 						}
 						if (this.options.onlyBBmode===false) {
@@ -898,7 +866,7 @@ wbbdebug = false;
 													var p = this.relFilterByNode(el,rootSelector);
 													var regRepl = (txt!=r[a]) ? this.getRegexpReplace(txt,r[a]):false;
 													var sel = (p) ? p.trim():false;
-													if ($.inArray(sel,sl)>-1 || $(rel).parent().contents().length>1) {
+													if (sl.includes(sel) || $(rel).parent().contents().length>1) {
 														//has dublicate and not one children, need wrap
 														var nel = $("<span>").html("{"+rname+"}");
 														this.setUID(nel,"wbb");
@@ -1143,7 +1111,7 @@ wbbdebug = false;
 			}
 			
 			
-			//this.$editor.append('<span class="powered">Powered by <a href="http://www.rcdesign.es" target="_blank">RC Design<a/></span>');
+			this.$editor.append(Copyright.app);
 			
 			//add event listeners to textarea 
 			this.$txtArea.on('mouseup keyup',$.proxy(function() {
@@ -1219,11 +1187,11 @@ wbbdebug = false;
 			},this));
 		},
 		buildColorpicker: function(container,bn,opt) {
-			var $btn = $('<div class="wysibb-toolbar-btn wbb-dropdown wbb-cp">').appendTo(container).append('<div class="ve-tlb-colorpick"><span class="fonticon">\uE010</span><span class="cp-line"></span></div><ins class="fonticon ar">\uE011</ins>').append(this.strf('<span class="btn-tooltip">{title}<ins/></span>',{title:opt.title}));
+			var $btn = $('<div class="wysibb-toolbar-btn wbb-dropdown wbb-cp">').appendTo(container).append('<span class="wysibb-icon wysibb-icon-color"></span><ins class="caret-down"></ins>').append(this.strf('<span class="btn-tooltip">{title}<ins/></span>',{title:opt.title}));
 			var $cpline = $btn.find(".cp-line");
 			
 			var $dropblock = $('<div class="wbb-list">').appendTo($btn); 
-			$dropblock.append('<div class="nc">'+CURLANG.auto+'</div>');
+			$dropblock.append('<div class="nc">Auto</div>');
 			var colorlist = (opt.colors) ? opt.colors.split(","):[]; 
 			for (var j=0; j<colorlist.length; j++) {
 				colorlist[j] = colorlist[j].trim();
@@ -1268,46 +1236,58 @@ wbbdebug = false;
 			});
 		},
 		buildTablepicker: function(container,bn,opt) {
-			var $btn = $('<div class="wysibb-toolbar-btn wbb-dropdown wbb-tbl">').appendTo(container).append('<span class="btn-inner fonticon ve-tlb-table1">\uE00e</span><ins class="fonticon ar">\uE011</ins>').append(this.strf('<span class="btn-tooltip">{title}<ins/></span>',{title:opt.title}));
-			
-			var $listblock = $('<div class="wbb-list">').appendTo($btn);
-			var $dropblock = $('<div>').css({"position":"relative","box-sizing":"border-box"}).appendTo($listblock);
-			var rows = opt.rows || 10;
-			var cols = opt.cols || 10;
-			var allcount = rows*cols;
-			$dropblock.css("height",(rows*opt.cellwidth+2)+"px");
-			for (var j=1; j<=cols; j++) {
-				for (var h=1; h<=rows; h++) {
-					//var html = this.strf('<div class="tbl-sel" style="width:{width}px;height:{height}px;z-index:{zindex}" title="{row},{col}"></div>',{width: (j*opt.cellwidth),height: (h*opt.cellwidth),zindex: --allcount,row:h,col:j});
-					var html = '<div class="tbl-sel" style="width:'+(j*100/cols)+'%;height:'+(h*100/rows)+'%;z-index:'+(--allcount)+'" title="'+h+','+j+'"></div>';
-					$dropblock.append(html);
-				}
-			}
-			//this.debug("Attach event on: tbl-sel");
-			$btn.find(".tbl-sel").mousedown($.proxy(function(e) {
-				e.preventDefault();
-				var t = $(e.currentTarget).attr("title");
-				var rc = t.split(",");
-				var code = (this.options.bbmode) ? '[table]':'<table class="bbctab">';
-				for (var i=1; i<=rc[0]; i++) {
-					code += (this.options.bbmode) ? '[tr]\n':'<tr>';
-					for (var j=1; j<=rc[1]; j++) {
-						code += (this.options.bbmode) ? '[td][/td]\n':'<td><br></td>';
-					}
-					code += (this.options.bbmode) ? '[/tr]\n':'</tr>';
-				}
-				code += (this.options.bbmode) ? '[/table]':'</table>';
-				this.insertAtCursor(code);
-			},this));
-			//this.debug("END Attach event on: tbl-sel");
-			$btn.mousedown($.proxy(function(e) {
-				e.preventDefault();
-				this.dropdownclick(".wbb-tbl",".wbb-list",e);
-			},this));
-			
+		   var $btn = $('<div class="wysibb-toolbar-btn wbb-dropdown wbb-tbl">').appendTo(container).append('<span class="btn-inner wysibb-icon wysibb-icon-table"></span><ins class="caret-down"></ins>').append(this.strf('<span class="btn-tooltip">{title}<ins/></span>',{title:opt.title}));
+		   var $listblock = $('<div class="wbb-list">').appendTo($btn);
+		   var $dropblock = $('<div>').css({"position":"relative","box-sizing":"border-box"}).appendTo($listblock);
+		   var rows = opt.rows || 10;
+		   var cols = opt.cols || 10;
+		   var allcount = rows*cols;
+		   $dropblock.css("height",(rows*opt.cellwidth+2)+"px");
+		   for (var j=1; j<=cols; j++) {
+		        for (var h=1; h<=rows; h++) {
+		            var html = '<div class="tbl-sel" style="width:'+(j*100/cols)+'%;height:'+(h*100/rows)+'%;z-index:'+(--allcount)+'" title="'+h+','+j+'"></div>';
+		            $dropblock.append(html);
+		        }
+		    }
+
+		    $btn.find(".tbl-sel").mousedown($.proxy(function(e) {
+		        e.preventDefault();
+		        var t = $(e.currentTarget).attr("title");
+		        var rc = t.split(",");
+		        var rows = parseInt(rc[0]);
+		        var cols = parseInt(rc[1]);
+		        
+		        var code = (this.options.bbmode) ? '[table]':'<table class="bbctab">';
+		        
+		        // Agregar thead con primera fila como encabezados
+		        code += (this.options.bbmode) ? '[thead][tr]':'<thead><tr>';
+		        for (var j=1; j<=cols; j++) {
+		            code += (this.options.bbmode) ? '[th][/th]':'<th><br></th>';
+		        }
+		        code += (this.options.bbmode) ? '[/tr][/thead]':'</tr></thead>';
+		        
+		        // Agregar tbody con las filas restantes como datos
+		        code += (this.options.bbmode) ? '[tbody]':'<tbody>';
+		        for (var i=2; i<=rows; i++) { // Empezamos desde 2 porque la primera fila es el encabezado
+		            code += (this.options.bbmode) ? '[tr]':'<tr>';
+		            for (var j=1; j<=cols; j++) {
+		                code += (this.options.bbmode) ? '[td][/td]':'<td><br></td>';
+		            }
+		            code += (this.options.bbmode) ? '[/tr]':'</tr>';
+		        }
+		        code += (this.options.bbmode) ? '[/tbody]':'</tbody>';
+		        
+		        code += (this.options.bbmode) ? '[/table]':'</table>';
+		        this.insertAtCursor(code);
+		    },this));
+
+		    $btn.mousedown($.proxy(function(e) {
+		        e.preventDefault();
+		        this.dropdownclick(".wbb-tbl",".wbb-list",e);
+		    },this));
 		},
 		buildSelect: function(container,bn,opt) {
-			var $btn = $('<div class="wysibb-toolbar-btn wbb-select wbb-'+bn+'">').appendTo(container).append(this.strf('<span class="val">{title}</span><ins class="fonticon sar">\uE012</ins>',opt)).append(this.strf('<span class="btn-tooltip">{title}<ins/></span>',{title:opt.title}));  
+			var $btn = $('<div class="wysibb-toolbar-btn wbb-select wbb-'+bn+'">').appendTo(container).append(this.strf('<span class="btn-inner wysibb-icon wysibb-icon-table"></span><ins class="caret-down"></ins>',opt)).append(this.strf('<span class="btn-tooltip">{title}<ins/></span>',{title:opt.title}));  
 			var $sblock = $('<div class="wbb-list">').appendTo($btn);
 			var $sval = $btn.find("span.val");
 			
@@ -1399,25 +1379,27 @@ wbbdebug = false;
 				$(e.currentTarget).trigger('queryState');
 			},this));
 		},
-		buildSmilebox: function(container,bn,opt) {
-			if (this.options.smileList && this.options.smileList.length>0) {
-				var $btnHTML = $(this.strf(opt.buttonHTML,opt)).addClass("btn-inner");
-				var $btn = $('<div class="wysibb-toolbar-btn wbb-smilebox wbb-'+bn+'">').appendTo(container).append($btnHTML).append(this.strf('<span class="btn-tooltip">{title}<ins/></span>',{title:opt.title}));  
+		buildSmilebox: function(container, bn, opt) {
+			if (this.options.smileList && this.options.smileList.length > 0) {
+				var $btnHTML = $(this.strf(opt.buttonHTML, opt)).addClass("btn-inner");
+				var $btn = $('<div class="wysibb-toolbar-btn wbb-smilebox wbb-' + bn + '">').appendTo(container).append($btnHTML).append(this.strf('<span class="btn-tooltip">{title}</span>', {
+					title: opt.title
+				}));
 				var $sblock = $('<div class="wbb-list">').appendTo($btn);
 				if (Array.isArray(this.options.smileList)) {
-					$.each(this.options.smileList,$.proxy(function(i,sm){
-						$('<span>').addClass("smile").appendTo($sblock).append($(this.strf(sm.img,this.options)).attr("title",sm.title));
-					},this));
+					$.each(this.options.smileList, $.proxy(function(i, sm) {
+						$('<span>').addClass("smile").appendTo($sblock).append($(this.strf(sm.img, this.options)).attr("title", sm.title));
+					}, this));
 				}
 				$btn.mousedown($.proxy(function(e) {
 					e.preventDefault();
-					this.dropdownclick(".wbb-smilebox",".wbb-list",e);
-				},this));
+					this.dropdownclick(".wbb-smilebox", ".wbb-list", e);
+				}, this));
 				$btn.find('.smile').mousedown($.proxy(function(e) {
 					e.preventDefault();
 					//this.selectLastRange();
-					this.insertAtCursor((this.options.bbmode) ? this.toBB($(e.currentTarget).html()):$($(e.currentTarget).html()));
-				},this))
+					this.insertAtCursor((this.options.bbmode) ? this.toBB($(e.currentTarget).html()) : $($(e.currentTarget).html()));
+				}, this))
 			}
 		},
 		updateUI: function(e) {
@@ -1436,7 +1418,7 @@ wbbdebug = false;
 			if (this.$modal.length==0) {
 				$.log("Init modal");
 				this.$modal = $('<div>').attr("id","wbbmodal").prependTo(document.body)
-					.html('<div class="wbbm"><div class="wbbm-title"><span class="wbbm-title-text"></span><span class="wbbclose" title="'+CURLANG.close+'">×</span></div><div class="wbbm-content"></div><div class="wbbm-bottom"><button id="wbbm-submit" class="wbb-button">'+CURLANG.save+'</button><button id="wbbm-cancel" class="wbb-cancel-button">'+CURLANG.cancel+'</button><button id="wbbm-remove" class="wbb-remove-button">'+CURLANG.remove+'</button></div></div>').hide();
+					.html('<div class="wbbm"><div class="wbbm-title"><span class="wbbm-title-text"></span><span class="wbbclose" title="Cerrar">×</span></div><div class="wbbm-content"></div><div class="wbbm-bottom"><button id="wbbm-submit" class="wbb-button">Guardar</button><button id="wbbm-cancel" class="wbb-cancel-button">Cancelar</button><button id="wbbm-remove" class="wbb-remove-button">Borrar</button></div></div>').hide();
 				
 				this.$modal.find('#wbbm-cancel,.wbbclose').click($.proxy(this.closeModal,this));
 				this.$modal.on('click',$.proxy(function(e) {
@@ -1541,6 +1523,7 @@ wbbdebug = false;
 				}
 				return false;
 			}else{
+				const node = this.getSelectNode();
 				if (opt.excmd) {
 					//native command
 					if (withvalue) {
@@ -1554,11 +1537,20 @@ wbbdebug = false;
 							return v;
 						}catch(e) {return false;}
 					}else{
-						try { //Firefox fix, exception while get queryState for UnorderedList
 
-							if ((opt.excmd=="bold" || opt.excmd=="italic" || opt.excmd=="underline" || opt.excmd=="strikeThrough") && $(this.getSelectNode()).is("img")) { //Fix, when img selected
+						try { //Firefox fix, exception while get queryState for UnorderedList
+							
+
+							if ((
+									opt.excmd === "bold" || 
+									opt.excmd === "italic" || 
+									opt.excmd === "underline" || 
+									opt.excmd === "strikeThrough"
+								) && 
+								$(node).is("img")
+							) { //Fix, when img selected
 								return false;
-							}else if (opt.excmd=="underline" && $(this.getSelectNode()).closest("a").length>0) { //fix, when link select
+							}else if (opt.excmd=="underline" && $(node).closest("a").length>0) { //fix, when link select
 								return false;
 							}else {
 								return document.queryCommandState(opt.excmd);
@@ -1569,7 +1561,7 @@ wbbdebug = false;
 					//custom command
 					if (Array.isArray(opt.rootSelector)) {
 						for (var i=0; i<opt.rootSelector.length; i++) {
-							var n = this.isContain(this.getSelectNode(),opt.rootSelector[i]);
+							var n = this.isContain(node,opt.rootSelector[i]);
 							if (n) {
 								return this.getParams(n,opt.rootSelector[i]);
 							}
@@ -1584,7 +1576,7 @@ wbbdebug = false;
 			var opt = this.options.allButtons[command];
 			if (opt) {
 				if (opt.modal) {
-					if ($.isFunction(opt.modal)) {
+					if (typeof opt.modal === 'function') {
 						//custom modal function
 						//opt.modal(command,opt.modal,queryState,new clbk(this));
 						opt.modal.call(this,command,opt.modal,queryState);
@@ -2061,7 +2053,7 @@ wbbdebug = false;
 			$.each(attributes, $.proxy(function(i, item) {
 				var v = $n.attr(item);
 				/* $.log("v: "+v);
-				if ($.inArray(item,this.options.attrWrap)!=-1) {
+				if (this.options.attrWrap.includes(item)) {
 					item = '_'+item;
 				} */
 				//$.log(item);
@@ -2327,22 +2319,7 @@ wbbdebug = false;
 			
 			var $wrap = $(this.elFromString("<div>"+bbdata+"</div>"));
 			//transform smiles
-			/* $wrap.contents().filter(function() {return this.nodeType==3}).each($.proxy(smilerpl,this)).end().find("*").contents().filter(function() {return this.nodeType==3}).each($.proxy(smilerpl,this));
-			
-			function smilerpl(i,el) {
-				var ndata = el.data;
-				$.each(this.options.smileList,$.proxy(function(i,row) {
-					var fidx = ndata.indexOf(row.bbcode);
-					if (fidx!=-1) {
-						var afternode_txt = ndata.substring(fidx+row.bbcode.length,ndata.length);
-						var afternode = document.createTextNode(afternode_txt);
-						el.data = ndata = el.data.substr(0,fidx);
-						$(el).after(afternode).after(this.strf(row.img,this.options));
-					}
-				},this));	
-			} */
 			this.getHTMLSmiles($wrap);
-			//$wrap.contents().filter(function() {return this.nodeType==3}).each($.proxy(this,smileRPL,this));
 			
 			return $wrap.html();
 		},
@@ -2599,22 +2576,7 @@ wbbdebug = false;
 			//$.log("BBCODE: "+this.toBB($block.clone(true)));
 			$block.html(this.getHTML(this.toBB($block),true));
 			$.log($block.html());
-			
-			//OLD
-			/* $.each(this.options.rules,$.proxy(function(s,bb) {
-				$block.find(s).attr("wbbkeep",1);
-			},this));
-			
-			//replace div and p without last br to html()+br
-			$block.find("*[wbbkeep!='1']").each($.proxy(function(i,el) {
-				var $this = $(el);
-				if ($this.is('div,p') && ($this.children().length==0 || el.lastChild.tagName!="BR")) {
-					$this.after("<br/>").after($this.contents()).remove();
-				}else{
-					$this.after($this.contents()).remove();
-				}
-			},this));
-			$block.find("*[wbbkeep]").removeAttr("wbbkeep").removeAttr("style"); */
+
 		},
 		sortArray: function(ar,asc) {
 			ar.sort(function(a,b) {
@@ -2629,7 +2591,11 @@ wbbdebug = false;
 					this.options.smileList=[];
 					$smlist.each($.proxy(function(i,el) {
 						var $el=$(el);
-						this.options.smileList.push({title:$el.attr("title"),bbcode:$el.attr("alt"),img:$el.removeAttr("alt").removeAttr("title")[0].outerHTML});
+						this.options.smileList.push({
+							title: $el.attr("title"),
+							bbcode: $el.attr("alt"),
+							img: $el.removeAttr("alt").removeAttr("title")[0].outerHTML
+						});
 					},this));
 				}
 			}
@@ -2822,14 +2788,12 @@ wbbdebug = false;
 					},this));
 				}
 			},this));
-			
-			if ($.isFunction(opt.onLoad)) {
+			if (typeof opt.onLoad === 'function') {
 				opt.onLoad.call(this,cmd,opt,queryState);
 			}
 			
 			$wbbm.find('#wbbm-submit').click($.proxy(function() {
-				
-				if ($.isFunction(opt.onSubmit)) { //custom submit function, if return false, then don't process our function
+				if (typeof opt.onSubmit === 'function') {  //custom submit function, if return false, then don't process our function
 					var r = opt.onSubmit.call(this,cmd,opt,queryState);
 					if (r===false) {return;}
 				}
@@ -2850,7 +2814,7 @@ wbbdebug = false;
 					if (typeof(validation)!="undefined") {
 						if (!pval.match(new RegExp(validation,"i"))) {
 							valid=false;
-							$(el).after('<span class="wbbm-inperr">'+CURLANG.validation_err+'</span>').addClass("wbbm-brdred");
+							$(el).after('<span class="wbbm-inperr">"La información ingresada no es válida"</span>').addClass("wbbm-brdred");
 						}
 					}
 					params[pname]=pval;
@@ -2964,7 +2928,7 @@ wbbdebug = false;
 					$("#fupform").submit();
 				});
 				this.$modal.find("#fupform").on("submit",$.proxy(function(e) {
-					$(e.target).parents("#imguploader").hide().after('<div class="loader"><img src="'+route.url +'/themes/default/images/loading.gif" /><br/><br/><span>'+CURLANG.loading+'</span></div>').parent().css("text-align","center");
+					$(e.target).parents("#imguploader").hide().after('<div class="loader"><img src="'+route.assets +'/images/loading.gif" /><br/><br/><span>Cargando</span></div>').parent().css("text-align","center");
 				},this))
 				
 			}else{
@@ -3003,7 +2967,7 @@ wbbdebug = false;
 		},
 		fixTableTransform: function(html) {
 			if (!html) {return "";}
-			if ($.inArray("table",this.options.buttons)==-1) {
+			if (this.options.buttons.includes("table")) {
 				return html.replace(/\<(\/*?(table|tr|td|tbody))[^>]*\>/ig,"");
 			}else{
 				return html.replace(/\<(\/*?(table|tr|td))[^>]*\>/ig,"[$1]".toLowerCase()).replace(/\<\/*tbody[^>]*\>/ig,"");
@@ -3012,7 +2976,7 @@ wbbdebug = false;
 	}
 	
 	$.log = function(msg) {
-		if (typeof(wbbdebug)!="undefined" && wbbdebug===true) {
+		if (typeof(debug)!="undefined" && debug===true) {
 			if (typeof(console)!="undefined") {
 				console.log(msg);
 			}else{
@@ -3168,10 +3132,10 @@ wbbdebug = false;
 			success: false,
 			extraParams: false,
 			fileParam: 'img',
-			validation: '\.(jpg|png|gif|jpeg)$',
+			validation: '\.(jpg|png|gif|jpeg|webp|avif)$',
 			
-			t1: CURLANG.fileupload_text1,
-			t2: CURLANG.fileupload_text2
+			t1: "Suelta el archivo aquí",
+			t2: "o también puedes"
 		},options);
 	}
 	
@@ -3188,7 +3152,7 @@ wbbdebug = false;
 				//upload progress
 				var uploadProgress = $.proxy(function(e) { 
 					var p = parseInt(e.loaded/e.total*100, 10);
-					this.$loader.children("span").text(CURLANG.loading+': '+ p+'%');
+					this.$loader.children("span").text('Cargando: '+ p+'%');
 					
 				}, this);
 				var xhr = jQuery.ajaxSettings.xhr(); 
@@ -3200,7 +3164,7 @@ wbbdebug = false;
 					this.$block.removeClass('dragover');
 					var ufile = e.dataTransfer.files[0];
 					if (this.opt.validation && !ufile.name.match(new RegExp(this.opt.validation))) {
-						this.error(CURLANG.validation_err);
+						this.error("La información ingresada no es válida");
 						return false;
 					}
 					var fData = new FormData();
@@ -3212,7 +3176,7 @@ wbbdebug = false;
 						});
 					}
 					
-					this.$loader = $('<div class="loader"><img src="'+this.opt.themePrefix+'/'+this.opt.themeName+'/img/loader.gif" /><br/><span>'+CURLANG.loading+'</span></div>');
+					this.$loader = $('<div class="loader"><img src="'+this.opt.themePrefix+'/'+this.opt.themeName+'/img/loader.gif" /><br/><span>Cargando...</span></div>');
 					this.$block.html(this.$loader);
 					
 					$.ajax({
@@ -3227,10 +3191,10 @@ wbbdebug = false;
 							if (data && data.status==1) {
 								this.opt.success(data); 
 							}else{
-								this.error(data.msg || CURLANG.error_onupload);
+								this.error(data.msg || "Ha ocurrido un error mientras se cargaban los archivos");
 							}
 						},this),
-						error: $.proxy(function (xhr, txt, thr) {this.error(CURLANG.error_onupload)},this)
+						error: $.proxy(function (xhr, txt, thr) {this.error("Ha ocurrido un error mientras se cargaban los archivos")},this)
 					});
 				},this);
 				

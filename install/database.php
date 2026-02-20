@@ -95,12 +95,13 @@ $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `p_borradores` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
 
 $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `p_categorias` (
-   `cid` INT AUTO_INCREMENT PRIMARY KEY,
+  `cid` INT AUTO_INCREMENT PRIMARY KEY,
   `c_orden` INT NOT NULL,
   `c_nombre` VARCHAR(50) NOT NULL DEFAULT '',
   `c_seo` VARCHAR(50) NOT NULL DEFAULT '',
   `c_img` VARCHAR(50) NOT NULL DEFAULT '',
-  `c_color` CHAR(12) NOT NULL DEFAULT ''
+  `c_color` CHAR(12) NOT NULL DEFAULT '',
+  `c_privada` TINYINT NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
 
 $phpost_sql[] = "INSERT INTO `p_categorias` (`cid`, `c_orden`, `c_nombre`, `c_seo`, `c_img`) VALUES
@@ -144,7 +145,8 @@ $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `p_comentarios` (
   `c_user` INT NOT NULL,
   `c_date` INT NOT NULL DEFAULT 0,
   `c_body` TEXT NULL,
-  `c_votos` INT NOT NULL DEFAULT 0,
+  `c_votos_pos` INT NOT NULL DEFAULT 0,
+  `c_votos_neg` INT NOT NULL DEFAULT 0,
   `c_status` INT NOT NULL DEFAULT 0,
   `c_answer` INT NOT NULL DEFAULT 0,
   `c_answer_cid` INT NOT NULL DEFAULT 0,
@@ -458,7 +460,7 @@ $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `u_rangos` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
 
 $phpost_sql[] = "
-INSERT INTO `u_rangos` (`rango_id`, `r_name`, `r_color`, `r_image`, `r_cant`, `r_allows`, `r_type`) VALUES
+INSERT INTO `u_rangos` (`rango_id`, `r_allows`, `r_cant`, `r_color`, `r_image`, `r_name`, `r_type`) VALUES
 (1, '{\"goaf\":5,\"godp\":false,\"gopf\":false,\"gopp\":false,\"mocc\":false,\"mocp\":false,\"modu\":false,\"moef\":false,\"moep\":false,\"moop\":false,\"morf\":false,\"morp\":false,\"most\":false,\"mosu\":false,\"moub\":false,\"suad\":true,\"sumo\":false,\"godpc\":false,\"goepc\":false,\"gopcf\":false,\"gopcp\":false,\"gopfd\":50,\"gopfp\":20,\"govpn\":false,\"govpp\":false,\"moacp\":false,\"moadf\":false,\"moadm\":false,\"mocdf\":false,\"mocdm\":false,\"mocdp\":false,\"mocdu\":false,\"moecf\":false,\"moecm\":false,\"moecp\":false,\"moepm\":false,\"movub\":false,\"moayca\":false,\"mocepc\":false,\"moedfo\":false,\"moedpo\":false,\"movcud\":false,\"movcus\":false,\"moaydcp\":false,\"moedcopo\":false}', 0, 'D6030B', 'rosette.png', 'Administrador', 0),
 (2, '{\"goaf\":15,\"godp\":false,\"gopf\":false,\"gopp\":false,\"mocc\":false,\"mocp\":false,\"modu\":false,\"moef\":false,\"moep\":false,\"moop\":false,\"morf\":false,\"morp\":false,\"most\":false,\"mosu\":false,\"moub\":false,\"suad\":false,\"sumo\":true,\"godpc\":false,\"goepc\":false,\"gopcf\":false,\"gopcp\":false,\"gopfd\":30,\"gopfp\":18,\"govpn\":false,\"govpp\":false,\"moacp\":false,\"moadf\":false,\"moadm\":false,\"mocdf\":false,\"mocdm\":false,\"mocdp\":false,\"mocdu\":false,\"moecf\":false,\"moecm\":false,\"moecp\":false,\"moepm\":false,\"movub\":false,\"moayca\":false,\"mocepc\":false,\"moedfo\":false,\"moedpo\":false,\"movcud\":false,\"movcus\":false,\"moaydcp\":false,\"moedcopo\":false}', 0, 'ff9900', 'shield.png', 'Moderador', 0),
 (3, '{\"goaf\":20,\"godp\":true,\"gopf\":true,\"gopp\":true,\"mocc\":false,\"mocp\":false,\"modu\":false,\"moef\":false,\"moep\":false,\"moop\":false,\"morf\":false,\"morp\":false,\"most\":false,\"mosu\":false,\"moub\":false,\"suad\":false,\"sumo\":false,\"godpc\":true,\"goepc\":true,\"gopcf\":true,\"gopcp\":true,\"gopfd\":5,\"gopfp\":5,\"govpn\":true,\"govpp\":true,\"moacp\":false,\"moadf\":false,\"moadm\":false,\"mocdf\":false,\"mocdm\":false,\"mocdp\":false,\"mocdu\":false,\"moecf\":false,\"moecm\":false,\"moecp\":false,\"moepm\":false,\"movub\":false,\"moayca\":false,\"mocepc\":false,\"moedfo\":false,\"moedpo\":false,\"movcud\":false,\"movcus\":false,\"moaydcp\":false,\"moedcopo\":false}', 0, '171717', 'new.png', 'Novato', 0),
@@ -536,16 +538,10 @@ $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `w_configuracion` (
   `c_last_active` TINYINT NOT NULL DEFAULT 3,
   `c_allow_sess_ip` TINYINT NOT NULL DEFAULT 1,
   `c_count_guests` TINYINT NOT NULL DEFAULT 0,
-  `c_reg_active` TINYINT NOT NULL DEFAULT 1,
-  `c_reg_activate` TINYINT NOT NULL DEFAULT 1,
-  `c_reg_rango` INT NOT NULL DEFAULT 3,
-  `c_met_welcome` TINYINT NOT NULL DEFAULT 0,
-  `c_message_welcome` varchar(500) NOT NULL DEFAULT 'Hola [usuario], [welcome] a [b][web][/b].',
   `c_fotos_private` TINYINT NOT NULL DEFAULT 0,
   `c_hits_guest` TINYINT NOT NULL DEFAULT 0,
   `c_keep_points` TINYINT NOT NULL DEFAULT 0,
   `c_allow_points` TINYINT NOT NULL DEFAULT 0,
-  `c_allow_edad` TINYINT NOT NULL DEFAULT 16,
   `c_max_posts` INT NOT NULL DEFAULT 16,
   `c_max_com` INT NOT NULL DEFAULT 25,
   `c_max_nots` INT NOT NULL DEFAULT 99,
@@ -564,13 +560,28 @@ $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `w_configuracion` (
   `c_desapprove_post` TINYINT NOT NULL DEFAULT 0,
   `offline` TINYINT NOT NULL DEFAULT 0,
   `offline_message` VARCHAR(255) NOT NULL DEFAULT 'Estamos en mantenimiento',
-  `pkey` VARCHAR(72) NOT NULL DEFAULT '',
-  `skey` VARCHAR(72) NOT NULL DEFAULT '',
   `version` VARCHAR(30) NOT NULL DEFAULT '',
   `version_code` VARCHAR(30) NOT NULL DEFAULT ''
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
 
 $phpost_sql[] = "INSERT INTO `w_configuracion` (`phpost_id`) VALUES (1);";
+
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `w_registro` (
+  `reg_id` INT PRIMARY KEY,
+  `c_reg_active` TINYINT NOT NULL DEFAULT 1,
+  `c_reg_activate` TINYINT NOT NULL DEFAULT 1,
+  `c_reg_rango` INT NOT NULL DEFAULT 3,
+  `c_met_welcome` TINYINT NOT NULL DEFAULT 0,
+  `c_message_welcome` varchar(500) NOT NULL DEFAULT 'Hola [usuario], [welcome] a [b][web][/b].',
+  `c_allow_edad` TINYINT NOT NULL DEFAULT 16,
+  `captcha_provider` ENUM('recaptcha', 'hcaptcha', 'recaptcha_enterprise') NOT NULL DEFAULT 'recaptcha',
+  `g_project_id` VARCHAR(255) NOT NULL DEFAULT '',
+  `g_credentials_json` VARCHAR(255) NOT NULL DEFAULT '/secure/google.json',
+  `public_key` VARCHAR(72) NOT NULL DEFAULT '',
+  `secret_key` VARCHAR(72) NOT NULL DEFAULT ''
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
+
+$phpost_sql[] = "INSERT INTO `w_registro` (`reg_id`) VALUES (1);";
 
 $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `w_sitemap` (
   `id` INT PRIMARY KEY AUTO_INCREMENT,
@@ -602,7 +613,7 @@ $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `w_denuncias` (
   `d_extra` TEXT DEFAULT NULL,
   `d_razon` TINYINT NOT NULL,
   `d_total` SMALLINT NOT NULL DEFAULT 1,
-  `d_type` TINYINT NOT NULL DEFAULT 0,
+  `d_type` ENUM('post','mensaje','usuario','foto') NOT NULL DEFAULT '',
   `d_user` INT NOT NULL,
   `obj_id` INT NOT NULL,
   INDEX idx_type (d_type),
@@ -755,4 +766,49 @@ $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `w_migrations` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `migration` VARCHAR(120) NOT NULL UNIQUE,
   `executed_at` INT NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 AUTO_INCREMENT=1 ;";
+
+$phpost_sql[] = "INSERT INTO `w_migrations` (`id`, `migration`, `executed_at`) VALUES
+(1, 'video_platforms', 1770957195),
+(2, 'categorias', 1770825789),
+(3, 'permisos', 1770409335),
+(4, 'configuracion_registro', 1770409300);";
+
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `w_video_platforms` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `name` VARCHAR(100) NOT NULL DEFAULT '',
+  `domain` VARCHAR(255) NOT NULL DEFAULT '',
+  `path_pattern` TEXT NOT NULL,
+  `embed_template` TEXT NOT NULL,
+  `enabled` TINYINT(1) DEFAULT 1,
+  `created_at` INT NOT NULL DEFAULT 0,
+  `updated_at` INT NOT NULL DEFAULT 0,
+  UNIQUE KEY `name` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 AUTO_INCREMENT=1 ;";
+
+$phpost_sql[] = "INSERT INTO `w_video_platforms` (`id`, `name`, `domain`, `path_pattern`, `embed_template`, `enabled`, `created_at`, `updated_at`) VALUES
+(1, 'youtube', 'youtube.com', '/watch?v={id}', '<iframe width=\"640\" height=\"360\" src=\"https://www.youtube.com/embed/{id}\" frameborder=\"0\" allowfullscreen></iframe>', 1, 1770957196, 0),
+(2, 'youtube_short', 'youtu.be', '/{id}', '<iframe width=\"640\" height=\"360\" src=\"https://www.youtube.com/embed/{id}\" frameborder=\"0\" allowfullscreen></iframe>', 1, 1770957196, 0),
+(3, 'vimeo', 'vimeo.com', '/{id}', '<iframe width=\"640\" height=\"360\" src=\"https://player.vimeo.com/video/{id}\" frameborder=\"0\" allowfullscreen></iframe>', 1, 1770957196, 0),
+(4, 'dailymotion', 'dailymotion.com', '/video/{id}', '<iframe frameborder=\"0\" width=\"640\" height=\"360\" src=\"https://www.dailymotion.com/embed/video/{id}\" allowfullscreen></iframe>', 1, 1770957196, 0),
+(5, 'tiktok', 'tiktok.com', '/@{username}/video/{id}', '<blockquote class=\"tiktok-embed\" cite=\"{url}\"><a href=\"{url}\"></a></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>', 0, 1770957196, 0),
+(6, 'twitch', 'twitch.com', '/videos/{id}', '<iframe src=\"https://player.twitch.tv/?video={id}&parent=localhost&autoplay=false\" width=\"640\" height=\"360\" frameborder=\"0\" allowfullscreen></iframe>', 0, 1770957196, 0),
+(7, 'instagram', 'instagram.com', '/p/{id}', '<blockquote class=\"instagram-media\" data-instgrm-permalink=\"{url}\"><a href=\"{url}\"></a></blockquote><script async defer src=\"//www.instagram.com/embed.js\"></script>', 0, 1770957196, 0),
+(8, 'streamable', 'streamable.com', '/p/{id}', '<iframe src=\"https://streamable.com/e/{id}\" width=\"640\" height=\"360\" frameborder=\"0\" allowfullscreen></iframe>', 0, 1770957196, 0);";
+
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `post_collaborators` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `post_id` INT NOT NULL,
+  `user_id` INT NOT NULL,
+  `status` ENUM('pending', 'accepted', 'rejected') NOT NULL DEFAULT 'pending',
+  `invited_by` TINYINT NOT NULL DEFAULT 0,
+  `created_at` INT NOT NULL DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 AUTO_INCREMENT=1 ;";
+
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `post_changes_log` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `post_id` INT NOT NULL,
+  `user_id` INT NOT NULL,
+  `change_note` TEXT NOT NULL,
+  `changed_at` INT NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 AUTO_INCREMENT=1 ;";

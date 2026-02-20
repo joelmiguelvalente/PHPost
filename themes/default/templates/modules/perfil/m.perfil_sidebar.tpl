@@ -1,99 +1,102 @@
 {if $tsInfo.p_socials != '' || $tsInfo.p_sitio != ''}
-   <div class="perfil-redes" style="display: flex;justify-content: flex-start;align-items: center;margin-bottom: 10px;gap:.5rem">
+   <div class="perfil-redes flex justify-start items-center gap-3 mb-3">
       {if $tsInfo.p_sitio}
-        <a class="sitio" target="_blank" href="{$tsInfo.p_sitio}" title="Mi sitio"><img height="30" width="30" alt="{$name}" src="{$tsRoutes.assets.images}/redes/icon_site.svg"/></a>
+         <a class="sitio" target="_blank" href="{$tsInfo.p_sitio}" title="Mi sitio">
+            <img height="30" width="30" alt="{$name}" src="{$tsRoutes.assets.images}/redes/icon_site.svg"/>
+         </a>
       {/if}
       {foreach $tsRedes key=name item=red}
          {if !empty($tsInfo.p_socials.$name)}
-            <a class="sitio {$name}" target="_blank" href="https://{$name}.{if $name == 'twitch'}tv{else}com{/if}/{$tsInfo.p_socials.$name}" title="{$red}"><img height="30" width="30" alt="{$name}" src="{$tsRoutes.assets.images}/redes/icon_{$name}.svg"/></a>
+            <a class="sitio {$name}" target="_blank" href="https://{$name}.{if $name == 'twitch'}tv{else}com{/if}/{$tsInfo.p_socials.$name}" title="{$red}">
+               <img height="30" width="30" alt="{$name}" src="{$tsRoutes.assets.images}/redes/icon_{$name}.svg"/>
+            </a>
          {/if}
       {/foreach}
    </div>
 {/if}
-{include "m.global_ads_300.tpl"}
          
-<div class="widget w-medallas clearfix">
-   <div class="title-w clearfix">
-      <h3>Medallas</h3>
-      <span>{$tsGeneral.m_total}</span>
+<div class="box w-medallas clearfix">
+   <div class="box-header clearfix">
+      <span class="box_txt">Medallas</span>
+      <span class="box_icon">{$tsGeneral.m_total}</span>
    </div>
-   {if $tsGeneral.m_total}
-      <ul class="clearfix">
-         {foreach from=$tsGeneral.medallas item=m}
-            <img src="{$tsRoutes.tema.images}/icons/med/{$m.m_image}_16.png" class="qtip" title="{$m.m_title} - {$m.m_description}"/>
-         {/foreach}
-      </ul>
-      {if $tsGeneral.m_total >= 21}
-         <a href="#medallas" onclick="perfil.load_tab('medallas', $('#medallas'));" class="see-more">Ver m&aacute;s &raquo;</a>
+   <div class="box-content">
+      {if $tsGeneral.m_total}
+         <div style="display: flex;justify-content: flex-start;align-items: flex-start;gap:.5rem;flex-wrap: wrap;">
+            {foreach from=$tsGeneral.medallas item=m}
+               <img src="{$tsRoutes.assets.images}/icons/med/{$m.m_image}_32.png" width="32" height="32" title="{$m.m_title} - {$m.m_description}"/>
+            {/foreach}
+         </div>
+         {if $tsGeneral.m_total >= 21}
+            <span class="item py-1 px-3 block text-center" role="button" data-tab="medallas">Ver m&aacute;s &raquo;</span>
+         {/if}
+      {else}
+         <div class="alert-empty">No tiene medallas</div>
       {/if}
-   {else}
-      <div class="emptyData">No tiene medallas</div>
-   {/if}
+   </div>
 </div>
-<div class="widget w-seguidores clearfix">
-   <div class="title-w clearfix">
-      <h3>Seguidores</h3>
-      <span>{$tsInfo.stats.user_seguidores}</span>
+<div class="box w-seguidores clearfix">
+   <div class="box-header clearfix">
+      <span class="box_txt">Seguidores</span>
+      <span class="box_icon">{$tsInfo.stats.user_seguidores}</span>
    </div>
-   {if $tsGeneral.segs.data}
-      <ul class="clearfix">
-         {foreach from=$tsGeneral.segs.data item=s}
-            <li>
-               <a href="{$tsConfig.url}/perfil/{$s.user_name}" class="hovercard" uid="{$s.user_id}" style="display:inline-block;">
-                  <img src="{$s.user_avatar}" width="32" height="32"/>
-               </a>
-            </li>
-         {/foreach}
-      </ul>
-      {if $tsGeneral.segs.total >= 21}
-         <a href="#seguidores" onclick="perfil.load_tab('seguidores', $('#seguidores'));" class="see-more">Ver m&aacute;s &raquo;</a>
+   <div class="box-content">
+      {if $tsGeneral.segs.data}
+         <div style="display: flex;justify-content: flex-start;align-items: flex-start;gap:.5rem;flex-wrap: wrap;">
+            {foreach from=$tsGeneral.segs.data item=s}
+               <a href="{$tsConfig.url}/@{$s.user_name}" style="display:inline-block;width:2rem;height:2rem;border-radius:10em;overflow:hidden;">
+                  {include "blocks/Avatar.tpl" id=$s.user_id size=32 alt=$s.user_name lazy=true class="avatar"}
+               </a> 
+            {/foreach}
+         </div>
+         {if $tsGeneral.segs.total >= 21}
+            <span class="item py-1 px-3 block text-center" role="button" data-tab="seguidores">Ver m&aacute;s &raquo;</span>
+         {/if}
+      {else}
+         <div class="alert-empty">No tiene seguidores</div>
       {/if}
-   {else}
-      <div class="emptyData">No tiene seguidores</div>
-   {/if}
+   </div>
 </div>
-<div class="widget w-siguiendo clearfix">
-   <div class="title-w clearfix">
-      <h3>Siguiendo</h3>
-      <span>{$tsGeneral.sigd.total}</span>
+<div class="box w-seguidores clearfix">
+   <div class="box-header clearfix">
+      <span class="box_txt">Siguiendo</span>
+      <span class="box_icon">{$tsGeneral.sigd.total}</span>
    </div>
-   {if $tsGeneral.sigd.data}
-      <ul class="clearfix">
-         {foreach from=$tsGeneral.sigd.data item=s}
-            <li>
-               <a href="{$tsConfig.url}/perfil/{$s.user_name}" class="hovercard" uid="{$s.user_id}" style="display:inline-block;">
-                  <img src="{$s.user_avatar}" width="32" height="32"/>
-                  {$s.user_avatar}
-               </a>
-            </li>
-         {/foreach}
-      </ul>
-      {if $tsGeneral.sigd.total >= 21}
-         <a href="#siguiendo" onclick="perfil.load_tab('siguiendo', $('#siguiendo'));" class="see-more">Ver m&aacute;s &raquo;</a>
+   <div class="box-content">
+      {if $tsGeneral.sigd.data}
+         <div style="display: flex;justify-content: flex-start;align-items: flex-start;gap:.5rem;flex-wrap: wrap;">
+            {foreach from=$tsGeneral.sigd.data item=s}
+               <a href="{$tsConfig.url}/@{$s.user_name}" style="display:inline-block;width:2rem;height:2rem;border-radius:10em;overflow:hidden;">
+                  {include "blocks/Avatar.tpl" id=$s.user_id size=32 alt=$s.user_name lazy=true class="avatar"}
+               </a> 
+            {/foreach}
+         </div>
+         {if $tsGeneral.sigd.total >= 21}
+            <span class="item py-1 px-3 block text-center" role="button" data-tab="siguiendo">Ver m&aacute;s &raquo;</span>
+         {/if}
+      {else}
+         <div class="alert-empty">No sigue usuarios</div>
       {/if}
-   {else}
-      <div class="emptyData">No sigue usuarios</div>
-   {/if}
+   </div>
 </div>
 {if $tsInfo.can_hits}
-   <div class="widget w-visitas clearfix">
-      <div class="title-w clearfix">
-         <h3>&Uacute;ltimas visitas</h3>
-         <span>{$tsInfo.visitas_total}</span>
+   <div class="box w-seguidores clearfix">
+      <div class="box-header clearfix">
+         <span class="box_txt">&Uacute;ltimas visitas</span>
+         <span class="box_icon">{$tsGeneral.visitas_total}</span>
       </div>
-      {if $tsInfo.visitas}
-   		<ul class="clearfix">
-            {foreach from=$tsInfo.visitas item=v}
-   			   <li>
-                  <a href="{$tsConfig.url}/perfil/{$v.user_name}" class="hovercard" uid="{$v.user_id}" style="display:inline-block;">
-                     <img src="{$v.user_avatar}" class="vctip" title="{$v.date|hace:true}" width="32" height="32"/>
-                  </a>
-
-               </li>
-            {/foreach}
-   		</ul>
-      {else}
-         <div class="emptyData">No tiene visitas</div>
-      {/if}
+      <div class="box-content">
+         {if $tsInfo.visitas}
+            <div style="display: flex;justify-content: flex-start;align-items: flex-start;gap:.5rem;flex-wrap: wrap;">
+               {foreach from=$tsInfo.visitas item=s}
+                  <a href="{$tsConfig.url}/@{$s.user_name}" style="display:inline-block;width:2rem;height:2rem;border-radius:10em;overflow:hidden;">
+                     {include "blocks/Avatar.tpl" id=$s.user_id size=32 alt=$s.user_name lazy=true class="avatar"}
+                  </a> 
+               {/foreach}
+            </div>
+         {else}
+            <div class="alert-empty">No tiene visitas</div>
+         {/if}
+     </div>
 	</div>
 {/if}

@@ -21,6 +21,6 @@
         {/foreach}
     </ul>
         {else}
-        <div class="emptyData">No tiene medallas</div>
+        <div class="alert-empty">No tiene medallas</div>
         {/if}
 </div>

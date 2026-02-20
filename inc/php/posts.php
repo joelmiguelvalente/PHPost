@@ -8,47 +8,41 @@
 
 declare(strict_types=1);
 
-/**
- * Inicializamos variable
- * 
- * $tsPage  = Plantilla para mostrar con este archivo.
- * $tsLevel = Nivel de acceso a esta pagina (ver faqs).
- * $tsAjax  = La respuesta sera por ajax si/no.
- */
-
-$tsPage  = "posts";
-$tsLevel = 0; 
-$tsAjax  = (!isset($_GET['ajax']) && empty($_GET['ajax']));
-
 require_once dirname(__DIR__, 2) . "/header.php";
 $tsTitle = "{$tsCore->settings['titulo']} - {$tsCore->settings['slogan']}";
 
 /**
- * En caso de problemas la variable cambia
-*/
-$tsContinue = true;  // CONTINUAR EL SCRIPT
+ * Inicializamos variable
+ */
 
-/**
- * Verificamos el nivel de acceso
-*/
-$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
-if (!$tsLevelMsg) {
-   $tsPage = 'aviso';
-   $tsAjax = 0;
+$ctx = Controller::page('posts')->everybody();
+// sincronizamos
+$ctx->exportLegacy();
+
+$tsLevelMsg = $tsCore->setLevel($ctx->getLevel(), true);
+if (is_array($tsLevelMsg)) {
+   $ctx->changePage('aviso');
+   $ctx->stop();
    $smarty->assign("tsAviso", $tsLevelMsg);
-   $tsContinue = false;
+   // sincroniza nuevamente
+   $ctx->exportLegacy();
 }
 
-if($tsContinue) {
+if($ctx->continue()) {
 
 	// Afiliados
-	require_once dirname(__DIR__, 1) . "/class/c.afiliado.php";
-	require_once dirname(__DIR__, 1) . "/class/c.posts.php";
+	require_once TS_CLASS . "/c.afiliado.php";
+	require_once TS_CLASS . "/c.posts.php";
 
 	// Posts Class
 	$tsPosts = new tsPosts($tsCore, $tsUser);
 	// Afiliado Class
 	$tsAfiliado = new tsAfiliado($tsCore, $tsUser);
+	
+	// Post anterior/siguiente
+	if(isset($_GET['action']) && in_array($_GET['action'], ['next', 'prev', 'random'], true)) {
+		$tsPosts->navigatePost();
+	}
 		
 	// Referido?
 	if(isset($_GET['ref']) && (int)$_GET['ref']) {
@@ -57,11 +51,6 @@ if($tsContinue) {
 	
 	// Category
 	$category = trim((string)$_GET['cat'] ?? '');
-	
-	// Post anterior/siguiente
-	if(isset($_GET['action']) && in_array($_GET['action'], ['next', 'prev', 'random'], true)) {
-		$tsPosts->navigatePost();
-	}
 
 /*
  * -------------------------------------------------------------------
@@ -78,7 +67,9 @@ if($tsContinue) {
 		// ASIGNAMOS A LA PLANTILLA
 		$smarty->assign("tsPost", $tsPost);
 		// DATOS DEL AUTOR
-		$smarty->assign("tsAutor", $tsPosts->getAutor((int)$tsPost['post_user']));						
+		$smarty->assign("tsAutor", $tsPosts->getAutor((int)$tsPost['post_user']));
+		$smarty->assign("PrevPost", $tsPosts->getNearbyPostTitle('prev'));
+		$smarty->assign("NextPost", $tsPosts->getNearbyPostTitle('next'));
 		// DATOS DEL RANGO DEL PUTEADOR						
 		$smarty->assign("tsPunteador", $tsPosts->getPunteador());
 		// RELACIONADOS
@@ -90,7 +81,7 @@ if($tsContinue) {
 		$smarty->assign("tsComments",$tsComments);*/
 		// PAGINAS
 		$total = $tsPost['post_comments'];
-		$tsPages = $tsCore->getPages($total, $tsCore->settings['c_max_com']);
+		$tsPages = (new Paginator)->getPages((int)$total, (int)$tsCore->settings['c_max_com']);
 		$tsPages['post_id'] = $tsPost['post_id'];
 		$tsPages['autor'] = $tsPost['post_user'];
 		//
@@ -108,7 +99,7 @@ if($tsContinue) {
 			$tsAjax = 0;
 			$smarty->assign("tsAviso",$tsPost);
 			//
-			$title = str_replace("-",",",$tsCore->setSecure($_GET['title']));
+			$title = str_replace("-",",",$tsCore->setSecure($_GET['title'] ?? ''));
 			$title = explode(",",$title);
 			// RELACIONADOS
 			$tsRelated = $tsPosts->getRelated($title);
@@ -119,5 +110,5 @@ if($tsContinue) {
 
 if($tsAjax) {
 	$smarty->assign("tsTitle", $tsTitle);
-   require_once dirname(__DIR__, 2) . "/footer.php";
+   require_once TS_ROOT . "/footer.php";
 }

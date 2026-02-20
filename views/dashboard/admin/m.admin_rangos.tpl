@@ -7,9 +7,7 @@ $(function(){
    });
 });
 </script>
-<div class="boxy-title">
-   <h3>Administrar Rangos de Usuarios</h3>
-</div>
+<h1 class="text-xl font-semibold mb-4">Administrar Rangos de Usuarios</h1>
 <div id="res" class="boxy-content" style="position:relative">
    {if $tsSave}<div class="mensajes ok">Tus cambios han sido guardados.</div>{/if}
    {if $tsError}<div class="mensajes error">{$tsError}</div>{/if}
@@ -197,7 +195,7 @@ $(function(){
 						<br /><hr>
 						<input type="checkbox" id="gopcp" name="global-publicarcomposts" {if $tsRango.permisos.gopcp}checked{/if} /><label style="font-weight:bold;" for="gopcp">Publicar Comentarios en Posts</label><label for="gopcp"> &nbsp; Podr&aacute;n publicar comentarios posts.</label>
 						<br /><hr>
-                  <input type="checkbox" id="govpp" name="global-votarposipost" {if $tsRango.permisos.govpp}checked{/if} /><label style="font-weight:bold;" for="govpp">Votar postivo</label><label for="govpp"> &nbsp; Podr&aacute;n votar positivamente comentarios de posts.</label>
+                  <input type="checkbox" id="govpp" name="global-votarposipost" {if $tsRango.permisos.govpp}checked{/if} /><label style="font-weight:bold;" for="govpp">Votar positivo</label><label for="govpp"> &nbsp; Podr&aacute;n votar positivamente comentarios de posts.</label>
 						<br /><hr>
                   <input type="checkbox" id="govpn" name="global-votarnegapost" {if $tsRango.permisos.govpn}checked{/if} /><label style="font-weight:bold;" for="govpn">Votar negativo</label><label for="govpn"> &nbsp; Podr&aacute;n votar negativamente comentarios de posts.</label>
 						<br /><hr>

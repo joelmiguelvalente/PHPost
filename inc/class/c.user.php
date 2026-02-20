@@ -6,7 +6,7 @@
  * @copyright 2026
  */
 
-declare(strict_types=1);
+declare (strict_types = 1);
 
 if (!defined('TS_HEADER')) {
 	exit('No se permite el acceso directo al script');
@@ -14,50 +14,59 @@ if (!defined('TS_HEADER')) {
 
 require_once TS_UTILS . '/AsignarMedallas.php';
 require_once TS_UTILS . '/Avatar.php';
-require_once TS_UTILS . '/IP.php';
 require_once TS_UTILS . '/PasswordHandler.php';
 require_once TS_UTILS . '/Permissions.php';
 require_once __DIR__ . '/c.session.php';
 
 class tsUser {
 
-	private ?tsSession $session = null;
+	protected ?tsSession $session = null;
 	protected tsCore $Core;
 	protected IP $IP;
 
-	public $permisos;
 	public $info = [];
-	public $is_member = 0;		// EL USUARIO ESTA LOGUEADO?
-	public $is_admod = 0;
-	public $is_banned = 0;
-	public $avatar = '';
-	public $nick = 'Visitante';// NOMBRE A MOSTRAR
-	public $uid = 0;			// USER ID
-	public $is_error;			// SI OCURRE UN ERROR ESTA VARIABLE CONTENDRA EL NUMERO DE ERROR
 
-	public function __construct() {
-		global $tsCore;
-		$this->Core = $tsCore;
+	public $permisos;
+
+	public int $uid = 0;
+
+	public int $is_admod = 0;
+
+	public int $is_banned = 0;
+
+	public int $is_member = 0;
+
+	public string $avatar = '';
+
+	public string $nick = 'Anonymous';
+
+	public function __construct(tsCore $Core) {
+		$this->Core = $Core;
 		$this->IP = new IP;
 		/* CARGAR SESSION */
-		$this->session = new tsSession($tsCore);
+		$this->session = new tsSession($this->Core);
 		$this->setSession();
 		# Esta logueado, actualiza puntos por día
-		if($this->is_member) $this->actualizarPuntos();
+		if ($this->is_member) {
+			$this->actualizarPuntos();
+		}
+
 	}
 
-	/*
-		CARGA LA SESSION
-		setSession()
-	*/
+	/**
+	 * @access private
+	 * @return void
+	 */
 	private function setSession(): void {
 		if ($this->session === null) {
-      	throw new RuntimeException('Session no inicializada');
-    	}
+			throw new RuntimeException('Session no inicializada');
+		}
 		// Si no existe una sessión la creamos
-		if (!$this->session->read()) $this->session->create();
+		if (!$this->session->read()) {
+			$this->session->create();
+
 		// si existe la actualizamos...
-		else {
+		} else {
 			// Actualizamos sesión
 			$this->session->update();
 			// Cargamos información
@@ -66,43 +75,51 @@ class tsUser {
 	}
 
 	/**
-	 * @name actualizarPuntos
 	 * @access public
 	 * @return bool
 	 */
 	public function actualizarPuntos(): bool {
-		// HORA EN LA CUAL RECARGAR PUNTOS 0 = MEDIA NOCHE DEL SERVIDOR
-		$ultimaRecarga = $this->info['user_nextpuntos'];
-		$tiempoActual = time();
-		// SI YA SE PASO EL TIEMPO RECARGAMOS...
-		if ($ultimaRecarga < $tiempoActual) {
-			// CALCULAR LA SIGUIENTE RECARGA A LAS 24 HRS
-			$sigRecarga = strtotime('tomorrow', $tiempoActual);
-			// ACTUALIZAR LA BASE DE DATOS
-			$keepPoints = (int)$this->Core->settings['c_keep_points'] === 0;
-			$points = (int)$this->permisos['gopfd'];
-			$puntosxdar = $keepPoints ? $points : "user_puntosxdar + $points";
-			// Actualizamos
-			db_exec([__FILE__, __LINE__], 'query', "UPDATE u_miembros SET user_puntosxdar = $puntosxdar, user_nextpuntos = $sigRecarga WHERE user_id = {$this->uid}");
-			// VAMONOS
-			return true;
-		}
-		return false;
+	   $ultimaRecarga = (int)$this->info['user_nextpuntos'];
+	   $keepPoints = (int)$this->Core->settings['c_keep_points'] === 0;
+	   $points = (int)$this->permiso('global.limites.puntos_por_dia');
+	   $tiempoActual = time();
+
+	   // Si ya pasó el tiempo de recarga
+	   if ($ultimaRecarga < $tiempoActual) {
+	      // Calcular la próxima recarga: mañana a medianoche
+	      $sigRecarga = strtotime('tomorrow', $tiempoActual);
+	      if ($keepPoints) {
+	         // Reiniciar puntos a lo que da el permiso
+	         $nuevosPuntos = $points;
+	      } else {
+	         // Sumar puntos al valor actual (recuperar desde la base de datos)
+	         $nuevosPuntos = DB::select('u_miembros', 'user_puntosxdar', ['user_id' => $this->uid]);
+	         $nuevosPuntos = (int)($nuevosPuntos[0]['user_puntosxdar'] ?? 0) + $points;
+	      }
+	      // Actualizar base de datos
+	      $data = [
+	         'user_puntosxdar' => $nuevosPuntos,
+	         'user_nextpuntos' => $sigRecarga
+	      ];
+	      $param = ['uid' => $this->uid];
+	      DB::update('u_miembros', $data, 'user_id = :uid', $param);
+	      return true;
+	   }
+	   return false;
 	}
 
 	private function getPermissions(): void {
 		// PERMISOS SEGUN RANGO
-		$this->info['rango'] = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', 'SELECT r_name, r_color, r_image, r_allows FROM u_rangos WHERE rango_id = '.$this->info['user_id'].' LIMIT 1'));
-		$rango = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', "SELECT r_allows FROM u_rangos WHERE rango_id = {$this->info['user_rango']} LIMIT 1"));
-		$raw = $rango['r_allows'] ?? '';
+		$this->info['rango'] = DB::fetch('SELECT r_name, r_color, r_image, r_allows FROM u_rangos WHERE rango_id = :rid LIMIT 1', ['rid' => $this->info['user_rango']]);
+		$raw = $this->info['rango']['r_allows'] ?? '';
 		$stored = json_decode($raw, true);
-		$this->permisos = array_merge(Permissions::DEFINITIONS, is_array($stored) ? $stored : []);
+		$this->permisos = array_merge(Permissions::definitions(), is_array($stored) ? $stored : []);
 		/* ES MIEMBRO */
 		$this->is_member = 1;
 		$this->is_admod = match (true) {
-	   	$this->permisos['suad'] => 1, // admin
-	   	$this->permisos['sumo'] => 2, // moderador
-	   	default => 0,
+			$this->permiso('admin.superadministrador') => 1, // administrador
+			$this->permiso('admin.supermoderador') => 2, // moderador
+			default => 0,
 		};
 	}
 
@@ -114,140 +131,188 @@ class tsUser {
 	 */
 	public function loadUser(bool $login = false) {
 		// Cargar datos
-		$sql = "SELECT u.*, s.* FROM u_sessions s, u_miembros u WHERE s.session_id = '{$this->session->ID}' AND u.user_id = s.session_user_id";
-		$query = db_exec([__FILE__, __LINE__], 'query', $sql);
-		$this->info = db_exec('fetch_assoc', $query);
+		$this->info = DB::fetch("SELECT u.*, s.* FROM u_sessions s, u_miembros u WHERE s.session_id = :sid AND u.user_id = s.session_user_id", ['sid' => $this->session->ID]);
 		// Existe el usuario?
-		if(!isset($this->info['user_id'])) return false;
+		if (!isset($this->info['user_id'])) {
+			return false;
+		}
 		// PERMISOS SEGUN RANGO
 		$this->getPermissions();
 		// NOMBRE
 		$this->nick = $this->info['user_name'];
-		$this->uid = (int)$this->info['user_id'];
-		$this->is_banned = $this->info['user_baneado'];
+		$this->uid = (int) $this->info['user_id'];
+		$this->is_banned = (int) $this->info['user_baneado'];
 		// Avatar
-		$this->avatar = (new Avatar)->get((int)$this->uid);
+		$this->avatar = (new Avatar)->get((int) $this->uid);
 		$time = time();
 		// ULTIMA ACCION
-		db_exec([__FILE__, __LINE__], 'query', "UPDATE u_miembros SET user_lastactive = $time WHERE user_id = {$this->uid}");
+		$data = ['user_lastactive' => $time];
 		# Si ha iniciado sesión cargamos estos datos.
-		if($login) {
-			// Last login
-			db_exec([__FILE__, __LINE__], 'query', "UPDATE u_miembros SET user_lastlogin = {$this->session->time_now} WHERE user_id = {$this->uid}");
-			/* REGISTAR IP */
-			db_exec([__FILE__, __LINE__], 'query', "UPDATE u_miembros SET user_last_ip = '{$this->session->ip_address}' WHERE user_id = {$this->uid}");
-	  	}
-	  	// Borrar variable session
-	  	#unset($this->session);
+		if ($login) {
+			// Último inicio & Registro IP
+			$data += [
+				'user_lastlogin' => $this->session->time_now,
+				'user_last_ip' => $this->session->ip_address
+			];
+		}
+		DB::update('u_miembros', $data, 'user_id = :uid', ['uid' => $this->uid]);
 	}
 
-	public function can(string $perm): bool {
-	   return !empty($this->permisos[$perm]);
+	public function permiso(string $path, mixed $default = null): mixed {
+		$meta = Permissions::resolve($path);
+		if (!$meta) {
+			return $default;
+		}
+		$code = $meta['code'];
+		$value = $this->permisos[$code] ?? $default;
+		return $meta['type'] === 'bool' ? (bool) $value : (int) $value;
 	}
 
-	public function perm(string $perm, int $default = 0): int {
-	   return (int) ($this->permisos[$perm] ?? $default);
+	public function canModerate(): bool {
+		return $this->is_admod ||
+		$this->permiso('moderacion.panel.acceso') ||
+		$this->permiso('moderacion.usuarios.suspender') ||
+		$this->permiso('moderacion.usuarios.desbanear') ||
+		$this->permiso('moderacion.posts.fijar') ||
+		$this->permiso('moderacion.posts.abrir_cerrar') ||
+		$this->permiso('moderacion.posts.eliminar') ||
+		$this->permiso('moderacion.posts.ocultar') ||
+		$this->permiso('moderacion.posts.editar_comentarios') ||
+		$this->permiso('moderacion.posts.revision') ||
+		$this->permiso('moderacion.posts.eliminar_comentarios');
 	}
 
 	private function DarMedalla(int $uid): void {
-		$q1 = (int)db_exec('num_rows', db_exec([__FILE__, __LINE__], 'query', "SELECT wm.medal_id FROM w_medallas AS wm LEFT JOIN w_medallas_assign AS wma ON wm.medal_id = wma.medal_id WHERE wm.m_type = 1 AND wma.medal_for = $uid"));
-		$q2 = (int)db_exec('fetch_row', db_exec([__FILE__, __LINE__], 'query', "SELECT follow_id FROM u_follows WHERE f_id = $uid AND f_type = 1"))[0];
-		$q3 = (int)db_exec('fetch_row', db_exec([__FILE__, __LINE__], 'query', "SELECT follow_id FROM u_follows WHERE f_user = $uid AND f_type = 1"))[0];
-		$q4 = (int)db_exec('fetch_row', db_exec([__FILE__, __LINE__], 'query', "SELECT cid FROM p_comentarios WHERE c_user = $uid AND c_status = 0"))[0];
-		$q5 = (int)db_exec('fetch_row', db_exec([__FILE__, __LINE__], 'query', "SELECT cid FROM f_comentarios WHERE c_user = $uid"))[0];
-		$q6 = (int)db_exec('fetch_row', db_exec([__FILE__, __LINE__], 'query', "SELECT foto_id FROM f_fotos WHERE f_status = 0 AND f_user = $uid"))[0];
-		$q7 = (int)db_exec('fetch_row', db_exec([__FILE__, __LINE__], 'query', "SELECT post_id FROM p_posts WHERE post_user = $uid AND post_status = 0"))[0];
-		//
-		$AsignarMedallas = new AsignarMedallas(1, $uid);
-		$medalla->setOwnerUser($uid)
-		->setRango($this->info['user_rango'] ?? null)
-		->setNotificationType(15)
-		->addMetric(1, (int)$this->info['user_puntos'])
-		->addMetric(2, $q2)->addMetric(3, $q3)->addMetric(4, $q4)
-		->addMetric(5, $q5)->addMetric(6, $q7)->addMetric(7, $q6)
-		->addMetric(8, $q1)
-		->ejecutar();
-	}
-
-	private function isLocked(int $userId): bool {
-	   $userId = (int)$userId;
-	   $row = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', "SELECT locked_until FROM u_lockout WHERE user_id = $userId"));
-   	if (!$row || empty($row['locked_until'])) {
-   	   return false;
-   	}
-   	return strtotime($row['locked_until']) > time();
-	}
-
-	private function logLoginAttempt(?int $userId, string $identifier, bool $success): void {
-		$userId = $userId !== null ? (int)$userId : 'NULL';
-	   $identifier = $this->Core->setSecure($identifier);
-	   $ip         = $this->Core->setSecure($this->IP->executeIP());
-	   $agent      = $this->Core->setSecure((string)($_SERVER['HTTP_USER_AGENT'] ?? ''));
-	   $success = $success ? 1 : 0;
-
-	   db_exec([__FILE__, __LINE__], 'query', "INSERT INTO u_login_attempts (user_id, identifier, ip, user_agent, success, created_at) VALUES ($userId, '$identifier', INET6_ATON('$ip'), '$agent', $success, NOW())");
-	}
-
-	private function evaluateLockout(int $userId): void {
-	   $row = db_exec('fetch_row', db_exec([__FILE__, __LINE__], 'query', "SELECT COUNT(*) FROM u_login_attempts WHERE user_id = $userId AND success = 0 AND created_at > NOW() - INTERVAL 10 MINUTE"));
-	   $fails = (int)$row[0];
-    	if ($fails >= 5) {
-    	   db_exec([__FILE__, __LINE__], 'query', "INSERT INTO u_lockout (user_id, locked_until) VALUES ($userId, NOW() + INTERVAL 30 MINUTE) ON DUPLICATE KEY UPDATE locked_until = VALUES(locked_until)");
-    	}
-	}
-
-	private function clearLockout(int $userId): void {
-	   db_exec([__FILE__, __LINE__], 'query', "DELETE FROM u_lockout WHERE user_id = $userId");
-	}
-
-	private function getRemainingLockMinutes(int $userId): int {
-	   $row = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', "SELECT locked_until FROM u_lockout WHERE user_id = $userId LIMIT 1"));
-	   if (!$row || empty($row['locked_until'])) {
-	      return 0;
+	   DB::begin();
+	   try {
+	   	$param = ['uid' => $uid];
+	      $q1 = DB::value("SELECT COUNT(wm.medal_id) FROM w_medallas AS wm LEFT JOIN w_medallas_assign AS wma ON wm.medal_id = wma.medal_id WHERE wm.m_type = 1 AND wma.medal_for = :uid", $param) ?: 0;
+	      $q2 = DB::value("SELECT COUNT(follow_id) FROM u_follows WHERE f_id = :uid AND f_type = 1", $param) ?: 0;
+	      $q3 = DB::value("SELECT COUNT(follow_id) FROM u_follows WHERE f_user = :uid AND f_type = 1", $param) ?: 0;
+	      $q4 = DB::value("SELECT COUNT(cid) FROM p_comentarios WHERE c_user = :uid AND c_status = 0", $param) ?: 0;
+	      $q5 = DB::value("SELECT COUNT(cid) FROM f_comentarios WHERE c_user = :uid", $param) ?: 0;
+	      $q6 = DB::value("SELECT COUNT(foto_id) FROM f_fotos WHERE f_status = 0 AND f_user = :uid", $param) ?: 0;
+	      $q7 = DB::value("SELECT COUNT(post_id) FROM p_posts WHERE post_user = :uid AND post_status = 0", $param) ?: 0;
+	      DB::commit();
+	   } catch (Exception $e) {
+	      DB::rollback();
+	      throw $e;
 	   }
-	   $remaining = strtotime($row['locked_until']) - time();
-	   return max(1, (int) ceil($remaining / 60));
+	   $medalla = new AsignarMedalla(1, $uid);
+	   $medalla->setOwnerUser($uid)
+	   ->setRango($this->info['user_rango'] ?? null)
+	   ->setNotificationType(15)
+	   ->addMetric(1, (int) $this->info['user_puntos'])->addMetric(2, $q2)
+	   ->addMetric(3, $q3)->addMetric(4, $q4)->addMetric(5, $q5)->addMetric(6, $q7)
+	   ->addMetric(7, $q6)->addMetric(8, $q1)->ejecutar();
 	}
 
 	/**
-	 * @name loginUser
+	 * @access private
+	 * @return bool
+	 */
+	private function isLocked(int $userId): bool {
+		$row = DB::fetch("SELECT locked_until FROM u_lockout WHERE user_id = :uid", ['uid' => $userId]);
+		if (!$row || empty($row['locked_until'])) {
+			return false;
+		}
+		return strtotime((int)$row['locked_until']) > time();
+	}
+
+	/**
+	 * @access private
+	 * @return void
+	 */
+	private function logLoginAttempt(?int $userId, string $identifier, bool $success): void {
+		$userId = $userId !== null ? (int) $userId : 'NULL';
+		$identifier = $this->Core->setSecure($identifier);
+		$ip = $this->IP->executeIP();
+		$agent = $this->Core->setSecure((string) ($_SERVER['HTTP_USER_AGENT'] ?? ''));
+		$success = $success ? 1 : 0;
+		DB::raw(
+			"INSERT INTO u_login_attempts 
+			(user_id, identifier, ip, user_agent, success, created_at) 
+			VALUES (:uid, :identifier, INET6_ATON(:ip), :agent, :success, NOW())", [
+			'uid' => $userId,
+			'identifier' => $identifier,
+			'ip' => $ip,
+			'agent' => $agent,
+			'success' => $success
+		]);
+	}
+
+	/**
+	 * @access private
+	 * @return void
+	 */
+	private function evaluateLockout(int $userId): void {
+		$row = DB::fetchRow("SELECT COUNT(*) FROM u_login_attempts WHERE user_id = :uid AND success = 0 AND created_at > NOW() - INTERVAL 10 MINUTE", ['uid' => $userId]);
+		$fails = (int) $row[0];
+		if ($fails >= 5) {
+			DB::raw("INSERT INTO u_lockout (user_id, locked_until) VALUES (:uid, NOW() + INTERVAL 30 MINUTE) ON DUPLICATE KEY UPDATE locked_until = VALUES(locked_until)", ['uid' => $userId]);
+		}
+	}
+
+	/**
+	 * @access private
+	 * @return void
+	 */
+	private function clearLockout(int $userId): void {
+		DB::delete('u_lockout', 'user_id = :uid', ['uid' => $userId]);
+	}
+
+	/**
+	 * @access private
+	 * @return int
+	 */
+	private function getRemainingLockMinutes(int $userId): int {
+		$row = DB::fecth("SELECT locked_until FROM u_lockout WHERE user_id = :uid LIMIT 1", ['uid' => $userId]);
+		if (!$row || empty($row['locked_until'])) {
+			return 0;
+		}
+		$remaining = strtotime($row['locked_until']) - time();
+		return max(1, (int) ceil($remaining / 60));
+	}
+
+	/**
 	 * @access public
 	 * @return string
 	 */
 	public function loginUser(): string {
-	   [$username, $password, $remember, $redirectTo] = array_pad(func_get_args(), 4, null);
-	   $identifier = mb_strtolower(trim((string)$username));
-    	$safeIdentifier = $this->Core->setSecure($identifier);
-    	$filter = filter_var($identifier, FILTER_VALIDATE_EMAIL) ? 'email' : 'name';
-    	$user = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', "SELECT user_id, user_name, user_password, user_activo FROM u_miembros WHERE LOWER(user_$filter) = '$safeIdentifier' LIMIT 1"));
-    	# Verificamos bloqueo ANTES de validar contraseña
-		if ($this->isLocked((int)$user['user_id'])) {
-		   $minutes = $this->getRemainingLockMinutes((int)$user['user_id']);
-		   return "4: Demasiados intentos fallidos. Vuelve a intentar en {$minutes} minutos.";
-		} else $this->clearLockout((int)$user['user_id']);
-	   // Verificar contraseña (sin revelar estado)
-	   $success = $user && (new PasswordHandler)->verify($password, $user['user_password']);
-	   // Registrar intento SIEMPRE
-	   $this->logLoginAttempt((int)$user['user_id'] ?? null, $identifier, $success);
-	   // Si falló → evaluar bloqueo
-	   if (!$success && $user) {
-	      $this->evaluateLockout((int)$user['user_id']);
-	      return '0: Credenciales inválidas.';
-	   }
-	   // Usuario inactivo (solo después de credenciales válidas)
-	   if ((int)$user['user_activo'] === 0) {
-	      return '3: Debes activar tu cuenta.';
-	   }
-	   // Login exitoso
-	   #$this->clearLockout((int)$user['user_id']);
-	   if ($this->session->update((int)$user['user_id'], $remember, true)) {
-	      $this->loadUser(true);
-	      if ($redirectTo !== null) {
-	         $this->Core->redirectTo($redirectTo);
-	      }
-	      return '1: Bien, estás ingresando...';
-	   }
-	   return '0: Error al crear la sesión.';
+		[$username, $password, $remember, $redirectTo] = array_pad(func_get_args(), 4, null);
+		$identifier = mb_strtolower(trim((string) $username));
+		$safeIdentifier = $this->Core->setSecure($identifier);
+		$filter = filter_var($identifier, FILTER_VALIDATE_EMAIL) ? 'email' : 'name';
+		$user = DB::fetch("SELECT user_id, user_name, user_password, user_activo FROM u_miembros WHERE LOWER(user_$filter) = :safe LIMIT 1", ['safe' => $safeIdentifier]);
+		# Verificamos bloqueo ANTES de validar contraseña
+		if ($this->isLocked((int) $user['user_id'])) {
+			$minutes = $this->getRemainingLockMinutes((int) $user['user_id']);
+			return "4: Demasiados intentos fallidos. Vuelve a intentar en {$minutes} minutos.";
+		} else {
+			$this->clearLockout((int) $user['user_id']);
+		}
+		// Verificar contraseña (sin revelar estado)
+		$success = $user && (new PasswordHandler)->verify($password, $user['user_password']);
+		// Registrar intento SIEMPRE
+		$this->logLoginAttempt((int) $user['user_id'] ?? null, $identifier, $success);
+		// Si falló → evaluar bloqueo
+		if (!$success && $user) {
+			$this->evaluateLockout((int) $user['user_id']);
+			return '0: Credenciales inválidas.';
+		}
+		// Usuario inactivo (solo después de credenciales válidas)
+		if ((int) $user['user_activo'] === 0) {
+			return '3: Debes activar tu cuenta.';
+		}
+		// Login exitoso
+		if ($this->session->update((int) $user['user_id'], $remember, true)) {
+			$this->loadUser(true);
+			if ($redirectTo !== null) {
+				$this->Core->redirectTo($redirectTo);
+			}
+			return '1: Bien, estás ingresando...';
+		}
+		return '0: Error al crear la sesión.';
 	}
 
 	/**
@@ -257,7 +322,7 @@ class tsUser {
 	 * @param string
 	 * @return bool|void
 	 */
-	public function logoutUser(int $user_id = 0, string $redirectTo = ''): mixed {
+	public function logoutUser(int $userID = 0, string $redirectTo = ''): mixed {
 		/* BORRAR SESSION */
 		$this->session = new tsSession($this->Core);
 		$this->session->read();
@@ -267,11 +332,13 @@ class tsUser {
 		$this->info = '';
 		$this->is_member = 0;
 		# UPDATE
-		$lastActive = (int)(time() - (((int)$this->Core->settings['c_last_active'] * 60) * 3));
-		db_exec([__FILE__, __LINE__], 'query', "UPDATE u_miembros SET user_lastactive = $lastActive WHERE user_id = $user_id");
+		$lastActive = (int) (time() - (((int) $this->Core->settings['c_last_active'] * 60) * 3));
+		DB::update('u_miembros', ['user_lastactive' => $lastActive], 'user_id = :uid', ['uid' => $userID]);
 		/* REDERIGIR */
-		if($redirectTo !== NULL) $this->Core->redirectTo($redirectTo);	// REDIRIGIR
-		else return true;
+		if ($redirectTo !== NULL) {
+			$this->Core->redirectTo($redirectTo);
+		} 
+		return true;
 	}
 
 	/**
@@ -282,26 +349,26 @@ class tsUser {
 	 * @return bool
 	 */
 	public function userActivate(int $userID, string $pin): bool {
-    	$userID = (int)$userID;
-    	// Buscamos si activo o no su cuenta
-    	$row = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', "SELECT id, code_hash, expire_at FROM w_activate WHERE user_id = $userID AND type = 'activation' AND used = 0 LIMIT 1"));
-    	// Ya no existe
-    	if (empty($row)) {
-      	return false;
-    	}
-    	// Ya expiro
-    	if ($row['expires_at'] < time()) {
-      	return false;
-    	}
-    	// El pin no coincide
-    	if (!password_verify($pin, $row['code_hash'])) {
-      	return false;
-    	}
-    	// Activamos cuenta
-    	db_exec([__FILE__, __LINE__], 'query', "UPDATE u_miembros SET user_activo = 1 WHERE user_id = $userID");
-    	// Marcamos código como usado
-    	db_exec([__FILE__, __LINE__], 'query', "UPDATE w_activate SET used = 1 WHERE id = {$row['id']}");
-    	return true;
+		$userID = (int) $userID;
+		// Buscamos si activo o no su cuenta
+		$row = DB::fecth("SELECT id, code_hash, expire_at FROM w_activate WHERE user_id = :uid AND type = 'activation' AND used = 0 LIMIT 1", ['uid' => $userID]);
+		// Ya no existe
+		if (empty($row)) {
+			return false;
+		}
+		// Ya expiro
+		if ($row['expires_at'] < time()) {
+			return false;
+		}
+		// El pin no coincide
+		if (!password_verify($pin, $row['code_hash'])) {
+			return false;
+		}
+		// Activamos cuenta
+		DB::update('u_miembros', ['user_activo' => 1], 'user_id = :uid', ['uid' => $userID]);
+		// Marcamos código como usado
+		DB::update('w_activate', ['used' => 1], 'id = :id', ['id' => $row['id']]);
+		return true;
 	}
 
 	/**
@@ -309,27 +376,26 @@ class tsUser {
 	 * @access public
 	 * @return bool|array
 	 */
-	public function getUserBanned(): bool|array {
-   	$uid = (int)$this->uid;
-    	$data = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', "SELECT * FROM u_suspension WHERE user_id = $uid LIMIT 1"));
-   	if (empty($data)) {
-   	   return false;
-   	}
-    	$now    = time();
-    	$endsAt = (int)$data['susp_termina'];
-    	// Suspensión expirada
-    	if ($endsAt > 0 && $endsAt < $now) {
-        	db_exec([__FILE__, __LINE__], 'query', "UPDATE u_miembros SET user_baneado = 0 WHERE user_id = $uid");
-        	db_exec([__FILE__, __LINE__], 'query', "DELETE FROM u_suspension WHERE user_id = $uid");
-        	return false;
-    	}
-    	return $data;
+	public function getUserBanned(): bool | array {
+		$uid = (int) $this->uid;
+		$data = DB::fetch("SELECT * FROM u_suspension WHERE user_id = :uid LIMIT 1", ['uid' => $uid]);
+		if (empty($data)) {
+			return false;
+		}
+		$now = time();
+		$endsAt = (int) $data['susp_termina'];
+		// Suspensión expirada
+		if ($endsAt > 0 && $endsAt < $now) {
+			DB::update('u_miembros', ['user_baneado' => 0], 'user_id = :uid', ['uid' => $uid]);
+			DB::delete('u_suspension', 'user_id = :uid', ['uid' => $uid]);
+			return false;
+		}
+		return $data;
 	}
 
-	private function fetchUserField(string $selectField, string $whereField, string|int $value): array {
-	   $value = is_int($value) ? (int)$value : $this->Core->setSecure($value);
-	   $query = "SELECT $selectField  FROM u_miembros WHERE $whereField = '$value' LIMIT 1";
-	   return db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', $query)) ?: [];
+	private function fetchUserField(string $selectField, string $whereField, string | int $value): array {
+		$value = is_int($value) ? (int) $value : $this->Core->setSecure($value);
+		return DB::fetch("SELECT $selectField  FROM u_miembros WHERE $whereField = :value LIMIT 1", ['value' => $value]) ?: [];
 	}
 
 	/**
@@ -340,7 +406,7 @@ class tsUser {
 	 */
 	public function getUserID(string $username = ''): int {
 		$row = $this->fetchUserField('user_id', 'user_name', $username);
-		return (int)($row['user_id'] ?? 0);
+		return (int) ($row['user_id'] ?? 0);
 	}
 
 	/**
@@ -351,7 +417,7 @@ class tsUser {
 	 */
 	public function getUserName(int $userId = 0): string {
 		$row = $this->fetchUserField('user_name', 'user_id', $userId);
-		return (string)($row['user_name'] ?? '');
+		return (string) ($row['user_name'] ?? '');
 	}
 
 	/**
@@ -360,18 +426,27 @@ class tsUser {
 	 * @param int
 	 * @return bool
 	 */
-	public function iFollow(int $user_id = 0): bool {
-		$data = db_exec('num_rows', db_exec([__FILE__, __LINE__], 'query', "SELECT follow_id FROM u_follows WHERE f_id = $user_id AND f_user = {$this->uid} AND f_type = 1 LIMIT 1"));
-		//
-		return ($data > 0);
+	public function iFollow(int $userID = 0): bool {
+  		return DB::exists("SELECT 1 FROM u_follows WHERE f_id = :fid AND f_user = :fuser AND f_type = 1 LIMIT 1", ['fid' => $userID, 'fuser' => $this->uid]);
 	}
 
 	private function getUserStatus(int $lastActive, int $onlineLimit, int $inactiveLimit): array {
-	   return match (true) {
-	      $lastActive > $onlineLimit   => ['t' => 'Online', 'css' => 'online'],
-	      $lastActive > $inactiveLimit => ['t' => 'Inactivo', 'css' => 'inactive'],
-	      default                      => ['t' => 'Offline', 'css' => 'offline'],
-	   };
+		return match (true) {
+			$lastActive > $onlineLimit 	=> ['t' => 'Online',   'css' => 'online'],
+			$lastActive > $inactiveLimit 	=> ['t' => 'Inactivo', 'css' => 'inactive'],
+			default 								=> ['t' => 'Offline',  'css' => 'offline'],
+		};
+	}
+
+	public function getUserBlacklist() {
+		$IPBAN = $this->IP->executeIP();
+		if (!filter_var($IPBAN, FILTER_VALIDATE_IP)) {
+			exit('Su ip no se pudo validar.');
+		}
+  		$exists = DB::exists("SELECT 1 FROM w_blacklist WHERE type = 1 AND value = :value LIMIT 1", ['value' => $IPBAN]);
+		if ($exists) {
+			die('Tu IP fue bloqueada por el administrador/moderador.');
+		}
 	}
 
 	/**
@@ -380,68 +455,70 @@ class tsUser {
 	 * @return array
 	 */
 	public function getUsuarios(): array {
-		$filters = [];
-		$data    = [];
+	   $filters = [];
+	   $params = [];
+	   $paramIndex = 0;
+	   // --- TIEMPOS ---
+	   $lastActive = (int) $this->Core->settings['c_last_active'] * 60;
+	   $now = time();
+	   $onlineLimit = $now - $lastActive;
+	   $inactiveLimit = $now - ($lastActive * 2);
+	   // --- FILTROS ---
+	   if (($_GET['online'] ?? null) === 'true') {
+	      $filters[] = "u.user_lastactive > :lastactive";
+	      $params['lastactive'] = $onlineLimit;
+	   }
+	   if (($_GET['avatar'] ?? null) === 'true') {
+	      $filters[] = "p.p_avatar = :avatar";
+	      $params['avatar'] = 1;
+	   }
+	   if (!empty($_GET['sexo'])) {
+	      $sexo = $this->Core->setSecure(trim($_GET['sexo']));
+	      $filters[] = "p.user_sexo = :sexo";
+	      $params['sexo'] = $sexo;
+	   }
+	   if (!empty($_GET['pais'])) {
+	      $pais = $this->Core->setSecure($_GET['pais']);
+	      $filters[] = "p.user_pais = :pais";
+	      $params['pais'] = $pais;
+	   }
+	   if (!empty($_GET['rango'])) {
+	      $rango = (int) $_GET['rango'];
+	      $filters[] = "u.user_rango = :rango";
+	      $params['rango'] = $rango;
+	   }
+	   // --- WHERE BASE ---
+	   $where = "u.user_activo = 1 AND u.user_baneado = 0";
+	   if ($filters) {
+	      $where .= ' AND ' . implode(' AND ', $filters);
+	   }
+	   // --- TOTAL ---
+	   $totalSql = "SELECT COUNT(*) FROM u_miembros u LEFT JOIN u_perfil p ON u.user_id = p.user_id WHERE " . $where;
+	   $total = (int) DB::value($totalSql, $params);
+	   $pages = (new Paginator)->getPagination($total, 12);
+	   // --- DATA ---
+	   $dataSql = "SELECT u.user_id, u.user_name, p.user_pais, p.user_sexo, p.p_avatar, p.p_mensaje, u.user_rango, u.user_puntos, u.user_comentarios, u.user_posts, u.user_lastactive, u.user_baneado, r.r_name, r.r_color, r.r_image FROM u_miembros u LEFT JOIN u_perfil p ON u.user_id = p.user_id LEFT JOIN u_rangos r ON r.rango_id = u.user_rango WHERE " . $where . " ORDER BY u.user_id DESC LIMIT {$pages['limit']}";
+	   // Añadir los mismos parámetros para la consulta de datos
+	   $dataRows = DB::fetchAll($dataSql, $params);
 
-		// --- TIEMPOS ---
-		$lastActive   = (int) $this->Core->settings['c_last_active'] * 60;
-		$now          = time();
-		$onlineLimit  = $now - $lastActive;
-		$inactiveLimit = $now - ($lastActive * 2);
-
-		// --- FILTROS ---
-		if (($_GET['online'] ?? null) === 'true') {
-			$filters[] = "u.user_lastactive > $onlineLimit";
-		}
-		if (($_GET['avatar'] ?? null) === 'true') {
-			$filters[] = "p.p_avatar = 1";
-		}
-		if (!empty($_GET['sexo'])) {
-			$sexo = $this->Core->setSecure(trim($_GET['sexo']));
-			$filters[] = "p.user_sexo = '$sexo'";
-		}
-		if (!empty($_GET['pais'])) {
-			$pais = $this->Core->setSecure($_GET['pais']);
-			$filters[] = "p.user_pais = '$pais'";
-		}
-		if (!empty($_GET['rango'])) {
-			$rango = (int) $_GET['rango'];
-			$filters[] = "u.user_rango = $rango";
-		}
-
-		// --- WHERE BASE ---
-		$where = "u.user_activo = 1 AND u.user_baneado = 0";
-		if ($filters) {
-			$where .= ' AND ' . implode(' AND ', $filters);
-		}
-		
-		// --- TOTAL ---
-		$query = db_exec([__FILE__, __LINE__], 'query', "SELECT COUNT(u.user_id) AS total FROM u_miembros u LEFT JOIN u_perfil p ON u.user_id = p.user_id WHERE $where");
-		$total = (int) db_exec('fetch_assoc', $query)['total'];
-		$pages = $this->Core->getPagination($total, 12);
-
-		// --- DATA ---
-		$query = db_exec([__FILE__, __LINE__], 'query', "SELECT u.user_id, u.user_name, p.user_pais, p.user_sexo, p.p_avatar, p.p_mensaje, u.user_rango, u.user_puntos, u.user_comentarios, u.user_posts, u.user_lastactive, u.user_baneado, r.r_name, r.r_color, r.r_image FROM u_miembros u LEFT JOIN u_perfil p ON u.user_id = p.user_id LEFT JOIN u_rangos r ON r.rango_id = u.user_rango WHERE $where ORDER BY u.user_id DESC LIMIT {$pages['limit']}");
-
-		while ($row = db_exec('fetch_assoc', $query)) {
-			$row['status'] = $this->getUserStatus((int)$row['user_lastactive'], $onlineLimit, $inactiveLimit);
-			$row['rango'] = [
-				'title' => $row['r_name'],
-				'color' => $row['r_color'],
-				'image' => $row['r_image'],
-			];
-			$data[] = $row;
-		}
-
-		// --- TOTAL ACTUAL ---
-		$offset = (int) explode(',', $pages['limit'])[0];
-		$totalActual = $offset + count($data);
-
-		return [
-			'data'  => $data,
-			'pages' => $pages,
-			'total' => $totalActual,
-		];
+	   $data = [];
+	   foreach ($dataRows as $row) {
+	      $row['status'] = $this->getUserStatus((int) $row['user_lastactive'], $onlineLimit, $inactiveLimit);
+	      $row['rango'] = [
+	         'title' => $row['r_name'],
+	         'color' => $row['r_color'],
+	         'image' => $row['r_image'],
+	      ];
+	      $data[] = $row;
+	   }
+	   // --- TOTAL ACTUAL ---
+	   $offset = (int) explode(',', $pages['limit'])[0];
+	   $totalActual = $offset + count($data);
+	   return [
+	      'data' => $data,
+	      'pages' => $pages,
+	      'total' => $totalActual,
+	   ];
 	}
-	
+
 }

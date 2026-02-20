@@ -1,83 +1,55 @@
-<?php 
+<?php
+
 /**
- * Controlador
- *
- * @name    buscador.php
- * @author  PHPost Team
-*/
-/**********************************\
+ * @name buscador.php
+ * @author PHPost Team
+ * @copyright 2026
+ */
 
-*	(VARIABLES POR DEFAULT)		*
+declare(strict_types=1);
 
-\*********************************/
-
-	$tsPage = "buscador";	// tsPage.tpl -> PLANTILLA PARA MOSTRAR CON ESTE ARCHIVO.
-
-	$tsLevel = 0;		// NIVEL DE ACCESO A ESTA PAGINA. => VER FAQs
-
-	$tsAjax = empty($_GET['ajax']) ? 0 : 1; // LA RESPUESTA SERA AJAX?
+require_once dirname(__DIR__, 2) . "/header.php";
+$tsTitle = "{$tsCore->settings['titulo']} - {$tsCore->settings['slogan']}";
 	
-	$tsContinue = true;	// CONTINUAR EL SCRIPT
-	
-/*++++++++ = ++++++++*/
+/**
+ * Inicializamos variable
+ */
 
-	include "../../header.php"; // INCLUIR EL HEADER
+$ctx = Controller::page('buscador')->everybody();
+// sincronizamos
+$ctx->exportLegacy();
 
-	$tsTitle = $tsCore->settings['titulo'].' - '.$tsCore->settings['slogan']; 	// TITULO DE LA PAGINA ACTUAL
+$tsLevelMsg = $tsCore->setLevel($ctx->getLevel(), true);
+if (is_array($tsLevelMsg)) {
+   $ctx->changePage('aviso');
+   $ctx->stop();
+   $smarty->assign("tsAviso", $tsLevelMsg);
+   // sincroniza nuevamente
+   $ctx->exportLegacy();
+}
 
-/*++++++++ = ++++++++*/
-	
-	// VERIFICAMOS EL NIVEL DE ACCESO ANTES CONFIGURADO
-	$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
-	if($tsLevelMsg != 1){	
-		$tsPage = 'aviso';
-		$tsAjax = 0;
-		$smarty->assign("tsAviso",$tsLevelMsg);
-		//
-		$tsContinue = false;
+if($ctx->continue()) {
+
+	$query = trim($_GET['query'] ?? '');
+   $engine = trim($_GET['engine'] ?? 'web');
+   $category = (int)($_GET['category'] ?? 0);
+   $autor = trim($_GET['autor'] ?? '');
+	//
+	require_once TS_CLASS . "/c.buscador.php";
+	$tsBuscador = new tsBuscador($tsCore, $tsUser);
+
+	if(!in_array('', [$query, $autor], true) && ($engine !== 'google')) {
+	   $smarty->assign("tsResults", $tsBuscador->getQuery());
 	}
 	//
-	if($tsContinue){
-/**********************************\
+	$smarty->assign("tsQuery", 	$query);
+   $smarty->assign("tsEngine", 	$engine);
+   $smarty->assign("tsCategory", $category);
+   $smarty->assign("tsAutor", 	$autor);
 
-* (VARIABLES LOCALES ESTE ARCHIVO)	*
+}
 
-\*********************************/
-
-	$q = htmlspecialchars($_GET['q']);
-    $e = htmlspecialchars($_GET['e']);
-    $c = (int)$_GET['cat'];
-    $a = htmlspecialchars($_GET['autor']);
-	//
-	include("../class/c.posts.php");
-	$tsPosts = new tsPosts();
-
-/**********************************\
-
-*	(INSTRUCCIONES DE CODIGO)		*
-
-\*********************************/
-
-	if((!empty($q) || !empty($a)) && $e != 'google'){
-	   $smarty->assign("tsResults",$tsPosts->getQuery());
-	}
-	//
-    $smarty->assign("tsQuery",$q);
-    $smarty->assign("tsEngine",$e);
-    $smarty->assign("tsCategory",$c);
-    $smarty->assign("tsAutor",$a);
-/**********************************\
-
-* (AGREGAR DATOS GENERADOS | SMARTY) *
-
-\*********************************/
-	}
-
-if(empty($tsAjax)) {	// SI LA PETICION SE HIZO POR AJAX DETENER EL SCRIPT Y NO MOSTRAR PLANTILLA, SI NO ENTONCES MOSTRARLA.
-
-	$smarty->assign("tsTitle",$tsTitle);	// AGREGAR EL TITULO DE LA PAGINA ACTUAL
-
-	/*++++++++ = ++++++++*/
-	include("../../footer.php");
-	/*++++++++ = ++++++++*/
+if($tsAjax) {
+	$smarty->assign("tsTitle", $tsTitle);
+   require_once TS_ROOT . "/footer.php";
 }

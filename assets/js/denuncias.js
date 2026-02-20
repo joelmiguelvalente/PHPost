@@ -4,11 +4,11 @@ const denuncia = {
 		const params = $.param({ obj_id, obj_title, obj_user });
 		$('#loading').fadeIn(250); 
 		$.post(`${route.url}/denuncia-${type}.php`, params, response => {
-			denuncia.set_dialog(response, obj_id, type);
+			denuncia.dialog(response, obj_id, type);
 			$('#loading').fadeOut(350);
 		});
 	},
-	set_dialog(html, obj_id, type) {
+	dialog(html, obj_id, type) {
 		dialog.init({
 			title: `Denunciar ${type}`,
 			body: html,
@@ -27,8 +27,9 @@ const denuncia = {
 			extras: $('textarea[name=extras]').val()
 		});
 		//
-		$('#loading').fadeIn(250);                         
+		$('#loading').fadeIn(250);                    
 		$.post(`${route.url}/denuncia-${type}.php`, params, response => {
+			console.log(response)
 			const { status, message } = $.parseResponse(response);
 			dialog.alert((status ? "Bien" : "Error"), message);
 			$('#loading').fadeOut(350);

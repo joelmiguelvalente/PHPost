@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name AsignarMedallas.php
+ * @name AsignarMedalla.php
  * @author PHPost Team
  * @copyright 2026
  */
@@ -47,7 +47,7 @@ class AsignarMedalla {
 	}
 
 	public function ejecutar(): void {
-		$medallas = result_array(db_exec('query', "SELECT * FROM w_medallas WHERE m_type = '{$this->type}' ORDER BY m_cant DESC"));
+		$medallas = DB::fetchAll("SELECT * FROM w_medallas WHERE m_type = :type ORDER BY m_cant DESC", ['type' => $this->type]);
 
 		foreach ($medallas as $m) {
 			$cond = (int)($m['m_cond_user'] ?? $m['m_cond_post'] ?? $m['m_cond_foto']);
@@ -64,14 +64,28 @@ class AsignarMedalla {
 	}
 
 	private function asignar(int $medalId): void {
-		$exists = db_exec('num_rows', db_exec('query', "SELECT id FROM w_medallas_assign WHERE medal_id = '$medalId' AND medal_for = '{$this->objectId}'"));
+		$exists = DB::exists("SELECT 1 FROM w_medallas_assign WHERE medal_id = :mid AND medal_for = :mfor", ['mid' => $medalId, 'mfor' => $this->objectId]);
 		if ($exists) {
 			return;
 		}
-		db_exec('query', "INSERT INTO w_medallas_assign (medal_id, medal_for, medal_date, medal_ip) VALUES ('$medalId', '{$this->objectId}', time(), '{$_SERVER['REMOTE_ADDR']}')");
+		
+		DB::insert('w_medallas_assign', [
+			'medal_id' => $medalId,
+			'medal_for' => $this->objectId,
+			'medal_date' => time(),
+			'medal_ip' => $_SERVER['REMOTE_ADDR'] ?? ''
+		]);
+		
 		if ($this->ownerUserId && $this->notType) {
-			db_exec('query', "INSERT INTO u_monitor (user_id, obj_uno, obj_dos, not_type, not_date) VALUES ({$this->ownerUserId}, $medalId, '{$this->objectId}', '{$this->notType}', time()')");
+			DB::insert('u_monitor', [
+				'user_id' => $this->ownerUserId,
+				'obj_uno' => $medalId,
+				'obj_dos' => $this->objectId,
+				'not_type' => $this->notType,
+				'not_date' => time()
+			]);
 		}
-		db_exec('query', "UPDATE w_medallas SET m_total = m_total + 1 WHERE medal_id = $medalId");
+		
+		DB::query("UPDATE w_medallas SET m_total = m_total + 1 WHERE medal_id = :mid", ['mid' => $medalId]);
 	}
 }

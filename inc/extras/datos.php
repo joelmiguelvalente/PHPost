@@ -16,7 +16,7 @@ $tsPrivacidad = [
 /**
  * Denuncias
 */
-$tsDenuncias = [
+$Denuncias = [
   'users' => [
       '',
       'Perfil falso/clon',

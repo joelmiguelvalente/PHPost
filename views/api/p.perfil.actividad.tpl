@@ -45,7 +45,7 @@
             {/if}
         </div>
         {else}
-        <div class="emptyData">Este usuario no tiene actividad.</div>
+        <div class="alert-empty">Este usuario no tiene actividad.</div>
         {/if}
     </div>
 </div>

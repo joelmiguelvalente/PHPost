@@ -1,0 +1,91 @@
+.menu-tabs {
+	background: #e1e1e1;
+	padding: 10px 10px 0 10px ;
+}
+
+.menu-tabs li {
+	float: left;
+	margin-right: 10px;
+}
+
+.menu-tabs li a {
+	display: block;
+	padding: 10px 15px;
+	background: #ebeaea;
+	font-size: 14px;
+	font-weight: bold;
+	color: #2b3ed3!important;
+}
+
+.menu-tabs li.selected a,.menu-tabs li a:hover {
+	background: #fafafa;
+	color: #000!important;
+}
+
+
+.listado li {
+	border-top: 1px solid #FFF;
+	background: #fafafa;
+	border-bottom: 1px dotted #CCC;
+}
+
+.listado li:first-child {
+	border-top: none;
+}
+
+.listado li:hover {
+	background: #EEE;
+}
+
+.listado a {
+	color: #2b3ed3!important;
+	font-weight: bold;
+}
+
+.listado .listado-avatar {
+	float:left;
+	margin-right: 10px;
+}
+
+.listado .listado-avatar img {
+	padding: 1px;
+	background: #FFF;
+	border: 1px solid #CCC;	
+}
+
+.listado .listado-content {
+	padding: 5px;
+	float: left;
+}
+
+
+.listado .txt {
+	float:left;
+	line-height:18px;
+	width:535px;
+}
+
+.listado .txt .grey {
+	color: #999;
+}
+
+.listado .action {
+	float: right;
+	border-left: 1px solid #d6d6d6;
+	background: #EEE;
+	padding: 9px;
+}
+
+.listado-paginador {
+	padding: 5px;
+}
+
+a.siguiente-listado, a.anterior-listado {
+	display: block;
+	padding: 5px 10px;
+	-moz-border-radius: 15px;
+	-webkit-border-radius: 15px;
+	border-radius:15px;
+	color: #000!important;
+	font-size: 13px;
+}

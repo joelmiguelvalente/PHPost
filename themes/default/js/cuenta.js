@@ -13,20 +13,7 @@ function desactivate(next = false) {
 		});
 		return;
 	}
-	dialog.init({
-		title: 'Desactivar Cuenta',
-		body: '&#191;Seguro que quiere desativar su cuenta?',
-		buttons: {
-			confirm: {
-				text: 'Desactivar',
-				action: () => desactivate(true)
-			},
-			cancel: {
-				text: 'Cerrar',
-				action: 'close'
-			}
-		}
-	});
+	dialog.easy('Desactivar Cuenta', '&#191;Seguro que quiere desativar su cuenta?', 'Desactivar', () => desactivate(true));
 }
 
 const cuenta = {

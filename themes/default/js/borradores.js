@@ -170,7 +170,7 @@ var borradores = {
 							$('li#borrador_id_' + id).fadeOut('normal', function(){ $(this).remove(); });
 							//Quedaba solo un borrador
 							if(borradores_data.length==1)
-								$('div#borradores div#res').html('<div class="emptyData">No tienes ning&uacute;n borrador ni post eliminado</div>');
+								$('div#borradores div#res').html('<div class="alert-empty">No tienes ning&uacute;n borrador ni post eliminado</div>');
 
 							//Lo elimino de borradores_data
 							for(var i=0; i<borradores_data.length; i++){

@@ -7,7 +7,7 @@
                         <div class="clearBoth"></div>
                     </div>
                     <div id="config_posts" style="display:none">
-                        <div class="emptyData">Elige las categor&iacute;as que quieras filtrar en los &uacute;ltimos posts.</div>
+                        <div class="alert-empty">Elige las categor&iacute;as que quieras filtrar en los &uacute;ltimos posts.</div>
                         <ul class="clearbeta" id="config_inputs">
                         {foreach from=$tsCategories item=c}
                             <li><label><input type="checkbox" value="{$c.cid}" {if $c.check == 1}checked="true"{/if} /><span style="background-image:url({$tsRoutes.tema.images}/icons/cat/{$c.c_img})">{$c.c_nombre}</span></label></li>

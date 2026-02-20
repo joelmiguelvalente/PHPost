@@ -1,3 +1,7 @@
+.bloqueadosList a.bloqueadosU { -moz-border-radius:3px; background:#D5122D none repeat scroll 0 0; color:#FFF!important; display:block; float:right; padding:3px 5px; float: right; font-weight:normal; font-size:12px!important; position: absolute; top: 3px; right: 6px; }
+a.desbloqueadosU { -moz-border-radius:3px; background:#209c4f none repeat scroll 0 0; color:#FFF!important; display:block; float:right; padding:3px 5px; float: right; font-weight:normal; font-size:12px!important; position: absolute; top: 3px; right: 6px; }
+.bloqueadosList li { padding: 6px; position: relative; border-bottom: 1px solid #CCC; }
+.bloqueadosList a { font-weight:bold; font-size:13px; }
 .tabbed-d {
 	display: grid;
 	grid-template-columns: 1fr 230px;

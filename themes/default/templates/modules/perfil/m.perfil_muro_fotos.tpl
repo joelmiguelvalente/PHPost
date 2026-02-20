@@ -1,6 +1,13 @@
-                            <ul>
-                                {foreach from=$tsGeneral.fotos item=f key=i}
-                                {if $f.foto_id}<li><div class="foto"><a href="{$tsConfig.url}/fotos/{$tsInfo.nick}/{$f.foto_id}/{$f.f_title|seo}.html" title="{$f.f_title}"><img border="0" src="{$f.f_url}"/></a></div></li>{else}
-                                <li><div class="foto">&nbsp;</div></li>{/if}
-                                {/foreach}
-                            </ul>
+<div class="list-fotos grid gap-2">
+	{foreach from=$tsGeneral.fotos item=f key=i}
+		{if $f.foto_id}
+			<div class="list-foto-item w-full">
+				<a href="{$tsConfig.url}/fotos/{$tsInfo.nick}/{$f.foto_id}/{$f.f_title|seo}.html" title="{$f.f_title}" class="block">
+					<img class="rounded" src="{$f.f_url}"/>
+				</a>
+			</div>
+		{else}
+			<div class="list-foto-item"></div>
+		{/if}
+	{/foreach}
+</div>

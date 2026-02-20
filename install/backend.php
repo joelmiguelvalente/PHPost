@@ -19,12 +19,13 @@ require_once dirname(__DIR__, 1) . '/inc/utils/Extras.php';
 require_once __DIR__ . '/connection.php';
 $Extras = new Extras;
 
-ini_set('display_errors', '1');
-ini_set('display_startup_errors', '1');
-ini_set('log_errors', '1');
-ini_set('error_log', TS_STORAGE . '/logs/install-error.log');
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+ini_set('log_errors', 1);
+ini_set('error_log', __DIR__ . '/install-error.log');
 error_reporting(E_ALL);
 
+session_save_path(__DIR__ . '/../sessions');
 session_start();
 
 $stepsNames = [
@@ -67,7 +68,7 @@ $base = $url . "/install";
 
 function checkedStep(string $step = ''): void {
 	if(!isset($_SESSION['license'])) {
-		header("Location: ./index?step=" . $step);
+		header("Location: ./index.php?step=" . $step);
 	}
 }
 function isValidSmtpHost(string $host): bool {
@@ -212,40 +213,40 @@ switch ($step) {
 			header("Location: ./index.php?step=datos_sitio");
 			die;
 		}
+		if($_SERVER['REQUEST_METHOD'] === 'POST') {
+			$errors = [];
 
-		$errors = [];
+			if (!isValidSmtpHost($phpmailer['smtphost'])) {
+				$errors['smtphost'] = 'Servidor SMTP inválido.';
+			}
 
-		if (!isValidSmtpHost($phpmailer['smtphost'])) {
-			$errors['smtphost'] = 'Servidor SMTP inválido.';
+			if (!isValidSmtpUser($phpmailer['smtpuser'])) {
+				$errors['smtpuser'] = 'Usuario SMTP inválido.';
+			}
+
+			if (!isValidSmtpPass($phpmailer['smtppass'])) {
+				$errors['smtppass'] = 'La contraseña SMTP es inválida.';
+			}
+
+			if (!isValidSmtpName($phpmailer['smtpname'])) {
+				$errors['smtpname'] = 'Nombre del remitente inválido.';
+			}
+
+			if ($errors) {
+				$message = join('<br>', $errors);
+				$next = false;
+				break;
+			}
+
+			if($next) {
+				# Guardamos los datos
+				$fileconfig = dirname(__DIR__, 1) . "/inc/config/Config.Mailer{$localUse}.php";
+				$config = str_replace(['smtphost', 'smtpuser', 'smtppass', 'smtpname'], $phpmailer, file_get_contents($fileconfig));
+				file_put_contents($fileconfig, $config);
+				header("Location: ./index.php?step=datos_sitio");
+				die;
+			}
 		}
-
-		if (!isValidSmtpUser($phpmailer['smtpuser'])) {
-			$errors['smtpuser'] = 'Usuario SMTP inválido.';
-		}
-
-		if (!isValidSmtpPass($phpmailer['smtppass'])) {
-			$errors['smtppass'] = 'La contraseña SMTP es inválida.';
-		}
-
-		if (!isValidSmtpName($phpmailer['smtpname'])) {
-			$errors['smtpname'] = 'Nombre del remitente inválido.';
-		}
-
-		if ($errors) {
-			$message = join('<br>', $errors);
-			$next = false;
-			break;
-		}
-
-		if($next) {
-			# Guardamos los datos
-			$fileconfig = dirname(__DIR__, 1) . "/inc/config/Config.Mailer{$localUse}.php";
-			$config = str_replace(['smtphost', 'smtpuser', 'smtppass', 'smtpname'], $phpmailer, file_get_contents($fileconfig));
-			file_put_contents($fileconfig, $config);
-			header("Location: ./index.php?step=datos_sitio");
-			die;
-		}
-
 	break;
 
 	// DATOS DEL SITIO
@@ -293,18 +294,21 @@ switch ($step) {
 						'slogan' 		=> $site['slogan'],
 						'url' 			=> $site['url'],
 						'email' 			=> $site['email'],
-						'pkey' 			=> $site['pkey'],
-						'skey' 			=> $site['skey'],
 						'version' 		=> $version,
 						'version_code' => $Extras->slugify($version, '_')
 					];
+					$registro = [
+						'public_key' => $site['pkey'],
+						'secret_key' => $site['skey']
+					];
+
 					// Instalamos el theme
 					$Connection->insert('w_temas', [
 						't_name' => 'Default by Miguel92',
 						't_path' => 'default',
 						't_copy' => 'Miguel92'
 					]);
-				
+					$Connection->update('w_registro', $registro, 'reg_id = ?', [1]);
 					if($Connection->update('w_configuracion', $data, 'phpost_id = ?', [1])) {
 						header("Location: ./index.php?step=datos_admin");
 						die;

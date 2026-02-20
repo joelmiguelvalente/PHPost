@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name ajax.feed.php
+ * @name api.feed.php
  * @author PHPost Team
  * @copyright 2026
  */
@@ -52,7 +52,7 @@ $code = [
 $key = base64_encode(serialize($code));
 
 $type = explode('-', $action)[1];
-$endpoint = "http://www.phpost.net/feed/index.php?type={$type}&key={$key}";
+$endpoint = file_get_contents("http://phpost-api.test/v1/scripts/phpost/{$type}");
 header('Content-Type: application/json; charset=UTF-8');
 // CODIGO
 
@@ -60,7 +60,7 @@ switch($action) {
 	case 'feed-support':
 	case 'feed-version':
 		// Al no existir el endpoint genera error 522!
-		// echo $CoreHelper->getUrlContent($endpoint);
+		//echo $endpoint;
 		if($action === 'feed-version') {
 			$version = 'PHPost 4.3.31';
 			$version_code = $Extras->slugify($version, '_');
@@ -70,21 +70,6 @@ switch($action) {
 				db_exec([__FILE__, __LINE__], 'query', "UPDATE w_configuracion SET version = '$version', version_code = '$version_code' WHERE phpost_id = 1 LIMIT 1");
 				db_exec([__FILE__, __LINE__], 'query', "UPDATE w_stats SET stats_time_upgrade = $time WHERE stats_no = 1 LIMIT 1");
 			}
-
-		} else {
-			$data = [
-					[
-					'link' => 'https://github.com/joelmiguelvalente', 
-					'title' => 'PHPost v4', 
-					'info' => 'El sistema actualizado con la ultima version de PHP y Smarty'
-				],
-					[
-					'link' => 'https://github.com/joelmiguelvalente/ZCodeV4', 
-					'title' => 'ZCode v4', 
-					'info' => 'Una forma diferente y nueva'
-				]
-			];
-			echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
 		}
 		
 	break;

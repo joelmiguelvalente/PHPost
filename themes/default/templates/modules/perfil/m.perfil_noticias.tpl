@@ -7,12 +7,12 @@
                             <div id="news-content">
                                 {foreach from=$tsMuro.data item=p}
                                 <div class="Story" id="pub_{$p.pub_id}">
-                                    <a href="{$tsConfig.url}/perfil/{$p.user_name}" class="Story_Pic"><img alt="{$p.user_name}" src="{$tsRoutes.storage.avatar}/avatar_50.webp"/></a>
+                                    <a href="{$tsConfig.url}/@{$p.user_name}" class="Story_Pic"><img alt="{$p.user_name}" src="{$tsRoutes.storage.avatar}/avatar_50.webp"/></a>
                                     <div class="Story_Content">
                                         <div class="Story_Head">
                                             {if $p.p_user == $tsUser->uid || $p.p_user_pub == $tsUser->uid}<div class="Story_Hide"><a href="#" onclick="muro.del_pub({$p.pub_id},1); return false;" title="Eliminar la publicaci&oacute;n" class="qtip uiClose"></a></div>{/if}
                                             <div class="Story_Message">
-                                                <div class="autor"><a href="{$tsConfig.url}/perfil/{$p.user_name}" class="a_blue">{$p.user_name}</a></div>
+                                                <div class="autor"><a href="{$tsConfig.url}/@{$p.user_name}" class="a_blue">{$p.user_name}</a></div>
                                                 <span>{$p.p_body|nl2br}</span>
                                                 {if $p.p_type != 1}
                                                 <div class="mvm clearfix">
@@ -62,10 +62,10 @@
                                                         {foreach from=$tsMuro.comments[$p.pub_id] item=c}
                                                         <li class="ufiItem" id="cmt_{$c.cid}">
                                                             <div class="clearfix">
-                                                                <a href="{$tsConfig.url}/perfil/{$c.user_name}" class="autorPic"><img alt="{$c.user_name}" src="{$tsRoutes.storage.avatar}/avatar_50.webp" width="32" height="32"/></a>
+                                                                <a href="{$tsConfig.url}/@{$c.user_name}" class="autorPic"><img alt="{$c.user_name}" src="{$tsRoutes.storage.avatar}/avatar_50.webp" width="32" height="32"/></a>
                                                                 {if $p.p_user == $tsUser->uid || $c.c_user == $tsUser->uid}<span class="close"><a href="#" onclick="muro.del_pub({$c.cid}, 2); return false" class="uiClose" title="Eliminar"></a></span>{/if}
                                                                 <div class="mensaje">
-                                                                    <a href="{$tsConfig.url}/perfil/{$c.user_name}" class="autorName a_blue">{$c.user_name}</a>
+                                                                    <a href="{$tsConfig.url}/@{$c.user_name}" class="autorName a_blue">{$c.user_name}</a>
                                                                     <span>{$c.c_body|nl2br}</span>
                                                                     <div class="cmInfo">{$c.c_date|fecha}</div>
                                                                 </div>
@@ -101,7 +101,7 @@
                                 </div>
                             </div>
                             {elseif $tsMuro.total == 0 && $tsUser->is_member}
-                            <div class="emptyData">Este usuario no tiene comentarios, se el primero.</div>
+                            <div class="alert-empty">Este usuario no tiene comentarios, se el primero.</div>
                             {/if}
     		            </div>
                   </div>

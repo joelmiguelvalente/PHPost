@@ -41,7 +41,7 @@
 					</div>
 					<div id="res" class="boxy-content">
 						{if $tsDrafts}<ul id="resultados-borradores"></ul>{else}
-						<div class="emptyData">No tienes ning&uacute;n borrador ni post eliminado.</div>{/if}
+						<div class="alert-empty">No tienes ning&uacute;n borrador ni post eliminado.</div>{/if}
 					</div>
 				</div>
 			</div>

@@ -23,7 +23,6 @@
  * @return   string
  */
 
-
 function smarty_modifier_hace(?int $fecha = null, bool $show = false): string {
    if (!$fecha || $fecha > time()) {
       return 'Nunca';

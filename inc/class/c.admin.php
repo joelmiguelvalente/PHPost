@@ -13,21 +13,24 @@ if (!defined('TS_HEADER')) {
 }
 
 require_once TS_HELPERS . '/AdminHelper.php';
+require_once TS_CLASS . '/c.emails.php';
 
 class tsAdmin {
    
    protected tsCore $Core;
    protected tsUser $User;
+   protected Paginator $Paginator;
 
    # Cantidad de objeto a mostrar
    CONST MAX_SHOW = 20;
 
-   public AdminHelper $AdminHelper;
+   protected AdminHelper $AdminHelper;
 
    public function __construct(tsCore $Core, tsUser $User) {
       $this->Core = $Core;
       $this->User = $User;
       $this->AdminHelper = new AdminHelper;
+      $this->Paginator = new Paginator($this->Core->settings['url']);
    }
 
    /**
@@ -48,7 +51,6 @@ class tsAdmin {
    */
    public function getVersions(): array {
       $data = [];
-
       // PHP
       $data['php'] = [
          'version' => PHP_VERSION,
@@ -56,20 +58,17 @@ class tsAdmin {
          'memory_limit' => ini_get('memory_limit'),
          'timezone' => date_default_timezone_get(),
       ];
-
       // Database
       $row = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', 'SELECT VERSION() AS v'));
       $data['database'] = [
          'engine' => 'mysql',
          'version' => $row['v'] ?? null,
       ];
-
       // Server
       $data['server'] = [
          'software' => $_SERVER['SERVER_SOFTWARE'] ?? 'unknown',
          'os' => PHP_OS_FAMILY,
       ];
-
       // Extensions
       $data['extensions'] = [
          'gd' => extension_loaded('gd') ? [
@@ -89,12 +88,10 @@ class tsAdmin {
     * @access public
     * @return bool
    */   
-   public function saveConfig(): bool {
+   public function saveConfig(string $table = 'w_configuracion', string $id = 'phpost_id'): bool {
       $columnas = $this->Core->buildSqlSet($_POST);
-      if (!db_exec([__FILE__, __LINE__], "query", "UPDATE w_configuracion SET {$columnas} WHERE phpost_id = 1")) {
-         return false;
-      }
-      return true;
+      $update = "UPDATE {$table} SET {$columnas} WHERE {$id} = 1";
+      return (db_exec([__FILE__, __LINE__], "query", $update));
    }
    
    /**
@@ -104,18 +101,17 @@ class tsAdmin {
     * ------------------------------ 
    */
    public function saveAds() {
-      global $tsCore;
       /**
        * Podria ser un riesgo de seguridad no limpiar estas variables? 
        * no lo creo pues cuando definimos el nivel de acceso solo 
        * pueden entrar administradores.
       */
-      $publicidades = $tsCore->buildSqlSet([
-         'ads_300' => $tsCore->setSecure(html_entity_decode($_POST['ads_300'])),
-         'ads_468' => $tsCore->setSecure(html_entity_decode($_POST['ads_468'])),
-         'ads_160' => $tsCore->setSecure(html_entity_decode($_POST['ads_160'])),
-         'ads_728' => $tsCore->setSecure(html_entity_decode($_POST['ads_728'])),
-         'ads_search' => $tsCore->setSecure($_POST['ads_search'])
+      $publicidades = $this->Core->buildSqlSet([
+         'ads_300' => $this->Core->setSecure(html_entity_decode($_POST['ads_300'])),
+         'ads_468' => $this->Core->setSecure(html_entity_decode($_POST['ads_468'])),
+         'ads_160' => $this->Core->setSecure(html_entity_decode($_POST['ads_160'])),
+         'ads_728' => $this->Core->setSecure(html_entity_decode($_POST['ads_728'])),
+         'ads_search' => $this->Core->setSecure($_POST['ads_search'])
       ]);
       # Guardamos los datos en la base
       if (db_exec([__FILE__, __LINE__], 'query', 'UPDATE `w_configuracion` SET '.$publicidades.' WHERE phpost_id = 1')) return true;
@@ -597,415 +593,120 @@ class tsAdmin {
       return $data;
    }
    public function ChangeNick_o_no() {
-      global $tsCore, $tsMonitor;
+      global $tsMonitor;
       # ID del nick
-      $nick_id = intval($_POST['nid']);
+      $nid = (int)($_POST['nid'] ?? 0);
       # Datos
-      $datos = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', 'SELECT * FROM u_nicks WHERE id = '.$nick_id.' LIMIT 1'));
+      $result = db_exec([__FILE__, __LINE__], 'query', "SELECT user_id, user_email, name_1, name_2 FROM u_nicks WHERE id = $nid LIMIT 1");
+      $user = db_exec('fetch_assoc', $result) ?? [];
+      [ 'user_id' => $uid, 'user_email' => $email, 'name_1' => $name1, 'name_2' => $name2] = $user;
+      $title = $this->Core->settings['titulo'];
       # Aprobamos
-      if ($_POST['accion'] === 'aprobar') {
-         db_exec([__FILE__, __LINE__], 'query', 'UPDATE u_miembros SET user_name = \'' . $datos['name_2'] . '\', user_password = \'' . $datos['hash'] . '\', user_name_changes = user_name_changes - 1 WHERE user_id = \'' . $datos['user_id'] . '\'');
-         db_exec([__FILE__, __LINE__], 'query', 'UPDATE u_nicks SET estado = 1 WHERE id = ' . $nick_id);
+      if (isset($_POST['accion']) && trim($_POST['accion']) === 'aprobar') {
+         db_exec([__FILE__, __LINE__], 'query', "UPDATE u_miembros SET user_name = '$name2', user_name_changes = user_name_changes - 1 WHERE user_id = $uid");
+         db_exec([__FILE__, __LINE__], 'query', "UPDATE u_nicks SET estado = 1 WHERE id = $nid");
          # Enviamos un aviso
-         $aviso = 'Hola <b>' . $datos['name_1'] . "</b>,\n\n Le informo que desde este momento su nombre de acceso ser&aacute; <b>" . $datos['name_2'] . "</b> . Hasta pronto.";
-         $tsMonitor->setAviso($datos['user_id'], 'Cambio realizado', $aviso, 4);
+         $aviso = "Hola <strong>$name1</strong>,\n\n Le informo que desde este momento su nombre de acceso ser&aacute; <strong>$name2</strong> . Hasta pronto.";
+         $tsMonitor->setAviso($uid, 'Cambio realizado', $aviso, 4);
          //ENVIAMOS CORREO
-         $subject = $datos['name_1'] . ', su petici&oacute;n de cambio ha sido aceptada';
-         $body = 'Hola ' . $datos['name_1'] . ':<br />Le enviamos este email para informarle que su petici&oacute;n de cambio de nick ha sido aceptada.<br>Desde este momento, podr&aacute; acceder en ' . $tsCore->settings['titulo'] .' con el nombre de usuario ' . $datos['name_2'] . '. <br /><hr>El staff de <strong>' . $tsCore->settings['titulo'] . '</strong>';
+         $subject = "$name1, su petici&oacute;n de cambio ha sido aceptada";
+         $body = "Hola $name1:\nLe enviamos este email para informarle que su petici&oacute;n de cambio de nick ha sido aceptada.<br>Desde este momento, podr&aacute; acceder en $title con el nombre de usuario $name2. <br /><hr>El staff de <strong>$title</strong>";
       # Denegamos
-      } elseif ($_POST['accion'] == 'denegar') {
-         db_exec([__FILE__, __LINE__], 'query', 'UPDATE u_miembros SET user_name_changes = user_name_changes - 1 WHERE user_id = \'' .
-                $datos['user_id'] . '\'');
-         db_exec([__FILE__, __LINE__], 'query', 'UPDATE u_nicks SET estado = 2 WHERE id = ' . $nick_id);
+      } elseif (isset($_POST['accion']) && trim($_POST['accion']) === 'denegar') {
+         db_exec([__FILE__, __LINE__], 'query', "UPDATE u_miembros SET user_name_changes = user_name_changes - 1 WHERE user_id = $uid");
+         db_exec([__FILE__, __LINE__], 'query', "UPDATE u_nicks SET estado = 2 WHERE id = $nid");
          # Enviamos un aviso
-         $aviso = 'Hola <b>' . $datos['name_1'] . "</b>,\n\n Lamento informarle que su petici&oacute;n de cambio de nick a <b>" . $datos['name_2'] . "</b> , ha sido denegada.";
-         $tsMonitor->setAviso($datos['user_id'], 'Cambio realizado', $aviso, 3);
+         $aviso = "Hola <strong>$name1</strong>,\n\n Lamento informarle que su petici&oacute;n de cambio de nick a <strong>$name2</strong> , ha sido denegada.";
+         $tsMonitor->setAviso($uid, 'Cambio realizado', $aviso, 3);
          //ENVIAMOS CORREO
-         $subject = $datos['name_1'] . ', su petici&oacute;n de cambio ha sido denegada';
-         $body = 'Hola ' . $datos['name_1'] . ':<br />Le enviamos este email para informarle que su petici&oacute;n de cambio de nick ha sido denegada. <br /><hr>El staff de <strong>' . $tsCore->settings['titulo'] . '</strong>';
+         $subject = "$name1, su petici&oacute;n de cambio ha sido denegada";
+         $body = "Hola $name1:\nLe enviamos este email para informarle que su petici&oacute;n de cambio de nick ha sido denegada.\n<hr>El staff de <strong>$title</strong>'";
       } else return '0: Mijo, ve de paseo';
 
-      // <--
-      include TS_CLASS . 'c.emails.php';
-      $tsEmail = new tsEmail('confirmar', 'nombre');
-      $tsEmail->emailTo = $datos['user_email'];
-      $tsEmail->emailSubject = $subject;
-      $tsEmail->emailBody = $body;
-      $tsEmail->emailHeaders = $tsEmail->setEmailHeaders();
-      $tsEmail->sendEmail($from, $to, $subject, $body) or die('0: Hubo un error al enviar el correo.');
-      die('1: <div class="box_cuerpo" style="padding: 12px 20px; border-top:1px solid #CCC">Hemos enviado un correo a <b>' . $datos['user_email'] . '</b> con la decisi&oacute;n tomada. Tambi&eacute;n le hemos enviado un aviso al usuario.</div>');
-      // -->
+      $email = new tsEmail($this->Core);
+      $email->sendSignup($email, 'confirmar', $body) OR die('0: Hubo un error al intentar procesar lo solicitado');
+
+      return "1: Hemos enviado un correo a <strong>$email</strong> con la decisi&oacute;n tomada. Tambi&eacute;n le hemos enviado un aviso al usuario.";
    }
 
 
     /****************** ADMINISTRACIÓN DE POSTS ******************/
+   public function getAdmin(string $type = 'posts') {
+      return match($type) {
+         'posts' => $this->getAdminPosts(),
+         'fotos' => $this->getAdminFotos(),
+         default => null
+      };
+   }
+   
+   private function getAdminPosts() {
+      $max = 20; // MAXIMO A MOSTRAR
+      $limit = $this->Paginator->setPageLimit($max, true);
+      $order = trim($_GET['order'] ?? '');
+      $asc = trim($_GET['modo'] ?? '');
+      $orden = match($order) {
+         'estado' => 'p.post_status',
+         'ip' => 'p.post_ip',
+         default => 'p.post_id'
+      };
+      $upper = strtoupper($asc);
+      $data['data'] = result_array(db_exec([__FILE__, __LINE__], 'query', "SELECT u.user_id, u.user_name, c.c_nombre, c.c_seo, c.c_img, p.* FROM p_posts AS p LEFT JOIN u_miembros AS u ON p.post_user = u.user_id LEFT JOIN p_categorias AS c ON c.cid = p.post_category WHERE p.post_id > 0 ORDER BY $orden $upper LIMIT $limit"));
 
-    function GetAdminPosts()
-    {
-        global $tsCore;
-        //
-        $max = 18; // MAXIMO A MOSTRAR
-        $limit = $tsCore->setPageLimit($max, true);
+      // PAGINAS
+      list($total) = db_exec('fetch_row', db_exec([__FILE__, __LINE__], 'query', 'SELECT COUNT(*) FROM p_posts WHERE post_id > 0'));
 
-        if ($_GET['o'] == 'e')
-        {
-            $order = 'p.post_status';
-        } elseif ($_GET['o'] == 'ip')
-        {
-            $order = 'p.post_ip';
-        } else
-        {
-            $order = 'p.post_id';
-        }
-
-        //
-        $query = db_exec([__FILE__, __LINE__], 'query', 'SELECT u.user_id, u.user_name, c.c_nombre, c.c_seo, c.c_img, p.* FROM p_posts AS p LEFT JOIN u_miembros AS u ON p.post_user = u.user_id LEFT JOIN p_categorias AS c ON c.cid = p.post_category WHERE p.post_id > \'0\' ORDER BY ' .
-            $order . ' ' . ($_GET['m'] == 'a' ? 'ASC' : 'DESC') . ' LIMIT ' . $limit);
-        //
-        $data['data'] = result_array($query);
-
-        // PAGINAS
-        $query = db_exec([__FILE__, __LINE__], 'query', 'SELECT COUNT(*) FROM p_posts WHERE post_id > \'0\'');
-        list($total) = db_exec('fetch_row', $query);
-
-        $data['pages'] = $tsCore->pageIndex($tsCore->settings['url'] . "/admin/posts?o=" .
-            $_GET['o'] . "&m=" . $_GET['m'] . "", $_GET['s'], $total, $max);
-        //
-        return $data;
-    }
+      $this->Paginator->route = $this->Core->settings['url'];
+      $data['pages'] = $this->Paginator->pageIndex("/admin/posts?order=$order&modo=$asc", (int)($_GET['s'] ?? 0), (int)$total, (int)$max);
+      //
+      return $data;
+   }
 
 
-    /****************** ADMINISTRACIÓN DE FOTOS ******************/
-    function GetAdminFotos()
-    {
-        global $tsCore;
-        //
-        $max = 15; // MAXIMO A MOSTRAR
-        $limit = $tsCore->setPageLimit($max, true);
-        //
-        $query = db_exec([__FILE__, __LINE__], 'query', 'SELECT u.user_id, u.user_name, f.* FROM f_fotos AS f LEFT JOIN u_miembros AS u ON f.f_user = u.user_id WHERE f.foto_id > \'0\' ORDER BY f.foto_id DESC LIMIT ' .
-            $limit);
-        //
-        $data['data'] = result_array($query);
+   /****************** ADMINISTRACIÓN DE FOTOS ******************/
+   public function getAdminFotos(): array {
+      $max = 15; // MAXIMO A MOSTRAR
+      $limit = $this->Paginator->setPageLimit($max, true);
+      //
+      $data['data'] = result_array(db_exec([__FILE__, __LINE__], 'query', "SELECT u.user_id, u.user_name, f.* FROM f_fotos AS f LEFT JOIN u_miembros AS u ON f.f_user = u.user_id WHERE f.foto_id > 0 ORDER BY f.foto_id DESC LIMIT $limit"));
+      // PAGINAS
+      list($total) = db_exec('fetch_row', db_exec([__FILE__, __LINE__], 'query', "SELECT COUNT(*) FROM f_fotos WHERE foto_id > 0"));
+      $this->Paginator->route = $this->Core->settings['url'];
+      $data['pages'] = $tsCore->pageIndex("/admin/fotos?", (int)($_GET['s']??0), (int)$total, (int)$max);
+      //
+      return $data;
+   }
 
-        // PAGINAS
-        $query = db_exec([__FILE__, __LINE__], 'query', 'SELECT COUNT(*) FROM f_fotos WHERE foto_id > \'0\'');
-        list($total) = db_exec('fetch_row', $query);
+   public function DelFoto(): string {
+      $foto = (int)($_POST['foto_id'] ?? 0);
+      if (!db_exec('num_rows', db_exec([__FILE__, __LINE__], 'query', "SELECT foto_id FROM f_fotos WHERE foto_id = $foto"))) {
+         return '0: La foto no existe';
+      }
+      if (!db_exec([__FILE__, __LINE__], 'query', "DELETE FROM f_fotos WHERE foto_id = $foto")) {
+         return '0: La foto no se pudo eliminar';
+      }
+      return '1: Foto eliminada';
+   }
 
-        $data['pages'] = $tsCore->pageIndex($tsCore->settings['url'] . "/admin/fotos?",
-            $_GET['s'], $total, $max);
-        //
-        return $data;
-    }
+   public function setOpenClosedFoto(): string {
+      $fid = (int)($_POST['fid'] ?? 0);
+      $data = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', "SELECT f_closed FROM f_fotos WHERE foto_id = $fid"));
+      // COMPROBAMOS
+      $active = ((int)$data['f_closed'] === 1) ? 0 : 1;
+      if(!db_exec([__FILE__, __LINE__], 'query', "UPDATE f_fotos SET f_closed = $active WHERE foto_id = $fid")) {
+         return '0: Ocurri&oacute, un error';
+      }
+      return ($active === 1) ? '2: Comentarios abiertos' : '1: Comentarios cerrados.';
+   }
 
-    function DelFoto()
-    {
-        //
-        $foto = intval($_POST['foto_id']);
-        if (db_exec('num_rows', db_exec([__FILE__, __LINE__], 'query', 'SELECT foto_id FROM `f_fotos` WHERE foto_id = \'' .
-            (int)$foto . '\'')))
-        {
-            if (db_exec([__FILE__, __LINE__], 'query', 'DELETE FROM f_fotos WHERE foto_id = \'' . (int)$foto . '\''))
-            {
-                return '1: Foto eliminada';
-            } else
-                return '0: La foto no se pudo eliminar';
-        } else
-            return '0: La foto no existe';
-
-    }
-
-    function setOpenClosedFoto()
-    {
-        global $tsUser;
-
-        $query = db_exec([__FILE__, __LINE__], 'query', 'SELECT f_closed FROM f_fotos WHERE foto_id = \'' . (int)$_POST['fid'] .
-            '\'');
-        $data = db_exec('fetch_assoc', $query);
-
-        // COMPROBAMOS
-        if ($data['f_closed'] == 1)
-        {
-            if (db_exec([__FILE__, __LINE__], 'query', 'UPDATE f_fotos SET f_closed = \'0\' WHERE foto_id = \'' . (int)
-                $_POST['fid'] . '\''))
-            {
-                return '2: Comentarios abiertos';
-            } else
-                return '0: Ocurri&oacute, un error';
-        } elseif ($data['f_closed'] == 0)
-        {
-            if (db_exec([__FILE__, __LINE__], 'query', 'UPDATE f_fotos SET f_closed = \'1\' WHERE foto_id = \'' . (int)
-                $_POST['fid'] . '\''))
-            {
-                return '1: Comentarios cerrados.';
-            } else
-                return 'Ocurri&oacute; un error';
-        }
-    }
-
-
-    function setShowHideFoto()
-    {
-        global $tsUser;
-
-        $query = db_exec([__FILE__, __LINE__], 'query', 'SELECT f_status FROM f_fotos WHERE foto_id = \'' . (int)$_POST['fid'] .
-            '\'');
-        $data = db_exec('fetch_assoc', $query);
-
-
-        // COMPROBAMOS
-        if ($data['f_status'] == 1)
-        {
-            if (db_exec([__FILE__, __LINE__], 'query', 'UPDATE f_fotos SET f_status = \'0\' WHERE foto_id = \'' . (int)
-                $_POST['fid'] . '\''))
-            {
-                return '2: Foto rehabilitada';
-            } else
-                return '0: Ocurri&oacute, un error';
-        } elseif ($data['f_status'] == 0)
-        {
-            if (db_exec([__FILE__, __LINE__], 'query', 'UPDATE f_fotos SET f_status = \'1\' WHERE foto_id = \'' . (int)
-                $_POST['fid'] . '\''))
-            {
-                return '1: Foto deshabilitada.';
-            } else
-                return 'Ocurri&oacute; un error';
-        }
-    }
-
-    /****************** ADMINISTRACIÓN DE LISTA NEGRA ******************/
-
-    function getBlackList()
-    {
-        global $tsCore;
-        //
-        $max = 20; // MAXIMO A MOSTRAR
-        $limit = $tsCore->setPageLimit($max, true);
-        //
-        $query = db_exec([__FILE__, __LINE__], 'query', 'SELECT u.user_id, u.user_name, b.* FROM w_blacklist AS b LEFT JOIN u_miembros AS u ON b.author = u.user_id ORDER BY b.date DESC LIMIT ' .
-            $limit);
-        //
-        $data['data'] = result_array($query);
-
-        // PAGINAS
-        $query = db_exec([__FILE__, __LINE__], 'query', 'SELECT COUNT(*) FROM w_blacklist');
-        list($total) = db_exec('fetch_row', $query);
-
-        $data['pages'] = $tsCore->pageIndex($tsCore->settings['url'] .
-            "/admin/blacklist?", $_GET['s'], $total, $max);
-        //
-        return $data;
-    }
-
-    function getBlock()
-    {
-        return db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', 'SELECT type, value, reason FROM w_blacklist WHERE id = \'' .
-            (int)$_GET['id'] . '\' LIMIT 1'));
-    }
-
-    function saveBlock()
-    {
-        global $tsCore, $tsUser;
-
-        if (empty($_POST['value']) || empty($_POST['type']))
-        {
-            return 'Debe rellenar todos los campos';
-        } else
-        {
-            if ($_POST['type'] == 1 && $_POST['value'] == $_SERVER['REMOTE_ADDR'])
-                return 'No puedes bloquear tu propia IP';
-            if (!db_exec('num_rows', db_exec([__FILE__, __LINE__], 'query', 'SELECT id FROM w_blacklist WHERE type = \'' . (int)
-                $_POST['type'] . '\' && value = \'' . $tsCore->setSecure($_POST['value']) . '\'')))
-            {
-                if (db_exec([__FILE__, __LINE__], 'query', 'UPDATE w_blacklist SET type = \'' . (int)$_POST['type'] . '\', value = \'' .
-                    $tsCore->setSecure($_POST['value']) . '\', author = \'' . $tsUser->uid . '\' WHERE id = \'' .
-                    (int)$_GET['id'] . '\''))
-                    return true;
-            } else
-                return 'Ya existe un bloqueo as&iacute;';
-        }
-    }
-
-    function newBlock()
-    {
-        global $tsCore, $tsUser;
-
-        if (empty($_POST['value']) || empty($_POST['type']) || empty($_POST['reason']))
-        {
-            return 'Rellene todos los campos';
-        } else
-        {
-            if ($_POST['type'] == 1 && $_POST['value'] == $_SERVER['REMOTE_ADDR'])
-                return 'No puedes bloquear tu propia IP';
-            if (!db_exec('num_rows', db_exec([__FILE__, __LINE__], 'query', 'SELECT id FROM w_blacklist WHERE type = \'' . (int)
-                $_POST['type'] . '\' && value = \'' . $tsCore->setSecure($_POST['value']) . '\'')))
-            {
-                if (db_exec([__FILE__, __LINE__], 'query', 'INSERT INTO w_blacklist (type, value, reason, author, date) VALUES (\'' .
-                    (int)$_POST['type'] . '\', \'' . $tsCore->setSecure($_POST['value']) . '\', \'' .
-                    $tsCore->setSecure($_POST['reason']) . '\', \'' . $tsUser->uid . '\', \'' . time
-                    () . '\')'))
-                    return true;
-            } else
-                return 'Ya existe un bloqueo as&iacute;';
-        }
-    }
-
-    function deleteBlock()
-    {
-
-        if (db_exec([__FILE__, __LINE__], 'query', 'DELETE FROM w_blacklist WHERE id = \'' . (int)$_POST['bid'] . '\''))
-            return '1: Bloqueo retirado';
-        else
-            return '0: Hubo un error al borrar';
-
-    }
-
-    /****************** ADMINISTRACIÓN DE LISTA NEGRA ******************/
-
-    function getBadWords()
-    {
-        global $tsCore;
-        //
-        $max = 20; // MAXIMO A MOSTRAR
-        $limit = $tsCore->setPageLimit($max, true);
-        //
-        $query = db_exec([__FILE__, __LINE__], 'query', 'SELECT u.user_id, u.user_name, bw.* FROM w_badwords AS bw LEFT JOIN u_miembros AS u ON bw.author = u.user_id ORDER BY bw.wid DESC LIMIT ' .
-            $limit);
-        //
-        $data['data'] = result_array($query);
-
-        // PAGINAS
-        $query = db_exec([__FILE__, __LINE__], 'query', 'SELECT COUNT(*) FROM w_badwords');
-        list($total) = db_exec('fetch_row', $query);
-
-        $data['pages'] = $tsCore->pageIndex($tsCore->settings['url'] .
-            "/admin/badwords?", $_GET['s'], $total, $max);
-        //
-        return $data;
-    }
-
-    function getBadWord()
-    {
-        return db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', 'SELECT * FROM w_badwords WHERE wid = \'' .
-            (int)$_GET['id'] . '\' LIMIT 1'));
-    }
-
-    function saveBadWord()
-    {
-        global $tsCore, $tsUser;
-
-        $method = empty($_POST['method']) ? 0 : 1;
-        $type = empty($_POST['type']) ? 0 : 1;
-        if (empty($_POST['before']) || empty($_POST['after']))
-        {
-            return 'Rellene todos los campos';
-        } else
-        {
-            if (!db_exec('num_rows', db_exec([__FILE__, __LINE__], 'query', 'SELECT wid FROM w_badwords WHERE LOWER(word) = \'' .
-                $tsCore->setSecure(strtolower($_POST['before'])) . '\' && LOWER(swop) = \'' . $tsCore->
-                setSecure(strtolower($_POST['after'])) . '\'')))
-            {
-                if (db_exec([__FILE__, __LINE__], 'query', 'UPDATE `w_badwords` SET method = \'' . $method . '\', type = \'' .
-                    (int)$type . '\', word = \'' . $tsCore->setSecure($_POST['before']) . '\', swop = \'' .
-                    $tsCore->setSecure($_POST['after']) . '\', author = \'' . $tsUser->uid . '\' WHERE wid = \'' .
-                    (int)$_GET['id'] . '\''))
-                    return true;
-                else
-                    return 'Error al guardar';
-            } else
-                return 'Ya existe un filtro as&iacute;';
-        }
-    }
-
-    function newBadWord()
-    {
-        global $tsCore, $tsUser;
-
-        $method = empty($_POST['method']) ? 0 : 1;
-        $type = empty($_POST['type']) ? 0 : 1;
-        if (empty($_POST['before']) || empty($_POST['after']) || empty($_POST['reason']))
-        {
-            return 'Rellene todos los campos';
-        } else
-        {
-            if (!db_exec('num_rows', db_exec([__FILE__, __LINE__], 'query', 'SELECT wid FROM w_badwords WHERE LOWER(word) = \'' .
-                $tsCore->setSecure(strtolower($_POST['before'])) . '\' && LOWER(swop) = \'' . $tsCore->
-                setSecure(strtolower($_POST['after'])) . '\'')))
-            {
-                if (db_exec([__FILE__, __LINE__], 'query', 'INSERT INTO w_badwords (word, swop, method, type, author, reason, date) VALUES (\'' .
-                    $tsCore->setSecure($_POST['before']) . '\', \'' . $tsCore->setSecure($_POST['after']) .
-                    '\', \'' . (int)$method . '\', \'' . (int)$type . '\', \'' . $tsUser->uid . '\', \'' .
-                    $tsCore->setSecure($_POST['reason']) . '\', \'' . time() . '\')'))
-                    return true;
-                else
-                    return 'Error al agregar';
-            } else
-                return 'Ya existe un filtro as&iacute;';
-        }
-    }
-
-    function deleteBadWord()
-    {
-
-        if (db_exec([__FILE__, __LINE__], 'query', 'DELETE FROM w_badwords WHERE wid = \'' . (int)$_POST['wid'] . '\''))
-            return '1: Filtro retirado';
-        else
-            return '0: Hubo un error al borrar';
-
-    }
-
-    /****************** ADMINISTRACIÓN DE ESTADÍSTICAS ******************/
-
-    function GetAdminStats()
-    {
-        $num = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', 'SELECT 
-        (SELECT count(foto_id) FROM f_fotos WHERE f_status = \'2\') as fotos_eliminadas, 
-        (SELECT count(foto_id) FROM f_fotos WHERE f_status = \'1\') as fotos_ocultas, 
-        (SELECT count(foto_id) FROM f_fotos WHERE f_status = \'0\') as fotos_visibles, 
-        (SELECT count(post_id) FROM p_posts WHERE post_status = \'0\') as posts_visibles, 
-        (SELECT count(post_id) FROM p_posts WHERE post_status = \'1\') as posts_ocultos, 
-        (SELECT count(post_id) FROM p_posts  WHERE post_status = \'2\') as posts_eliminados, 
-        (SELECT count(post_id) FROM p_posts  WHERE post_status = \'3\') as posts_revision, 
-        (SELECT count(cid) FROM p_comentarios WHERE c_status = \'0\') as comentarios_posts_visibles, 
-        (SELECT count(cid) FROM p_comentarios WHERE c_status = \'1\') as comentarios_posts_ocultos, 
-        (SELECT count(user_id) FROM u_miembros WHERE user_activo = \'1\') as usuarios_activos, 
-        (SELECT count(user_id) FROM u_miembros WHERE user_activo = \'0\' ) as usuarios_inactivos, 
-        (SELECT count(user_id) FROM u_miembros WHERE user_baneado = \'1\' ) as usuarios_baneados, 
-        (SELECT count(cid) FROM f_comentarios) as comentarios_fotos_total, 
-        (SELECT count(follow_id) FROM u_follows WHERE f_type  = \'1\' ) AS usuarios_follows,
-        (SELECT count(follow_id) FROM u_follows WHERE f_type  = \'2\' ) AS posts_follows,
-        (SELECT count(follow_id) FROM u_follows WHERE f_type  = \'3\' ) AS posts_compartidos,
-        (SELECT count(fav_id) FROM p_favoritos) AS posts_favoritos,  
-        (SELECT count(mr_id) FROM u_respuestas) AS usuarios_respuestas,
-        (SELECT count(mp_id) FROM u_mensajes) AS mensajes_total, 
-        (SELECT count(mp_id) FROM u_mensajes WHERE mp_del_to = \'1\') AS mensajes_de_eliminados,
-        (SELECT count(mp_id) FROM u_mensajes WHERE mp_del_from = \'1\') AS mensajes_para_eliminados,
-        (SELECT count(bid) FROM p_borradores) AS posts_borradores,
-        (SELECT count(bid) FROM u_bloqueos) AS usuarios_bloqueados, 
-        (SELECT count(bid) FROM u_bloqueos) AS usuarios_bloqueados,
-        (SELECT count(medal_id) FROM w_medallas WHERE m_type = \'1\') AS medallas_usuarios,
-        (SELECT count(medal_id) FROM w_medallas WHERE m_type = \'2\') AS medallas_posts,
-        (SELECT count(medal_id) FROM w_medallas WHERE m_type = \'3\') AS medallas_fotos,
-        (SELECT count(id) FROM w_medallas_assign) AS medallas_asignadas, 
-        (SELECT count(aid) FROM w_afiliados WHERE a_active = \'1\') AS afiliados_activos, 
-        (SELECT count(aid) FROM w_afiliados WHERE a_active = \'0\') AS afiliados_inactivos,
-        (SELECT count(pub_id) FROM u_muro) AS muro_estados, 
-        (SELECT count(cid) FROM u_muro_comentarios) AS muro_comentarios
-        '));
-
-        $num['usuarios_total'] = $num['usuarios_activos'] + $num['usuarios_inactivos'] +
-            $num['usuarios_baneados'];
-        $num['seguidos_total'] = $num['posts_follows'] + $num['usuarios_follows'];
-        $num['muro_total'] = $num['muro_estados'] + $num['muro_comentarios'];
-        $num['afiliados_total'] = $num['afiliados_activos'] + $num['afiliados_inactivos'];
-        $num['posts_total'] = $num['posts_visibles'] + $num['posts_ocultos'] + $num['posts_eliminados'];
-        $num['comentarios_posts_total'] = $num['comentarios_posts_visibles'] + $num['comentarios_posts_ocultos'];
-        $num['medallas_total'] = $num['medallas_usuarios'] + $num['medallas_posts'] + $num['medallas_fotos'];
-        $num['fotos_total'] = $num['fotos_visibles'] + $num['fotos_ocultas'] + $num['fotos_eliminadas'];
-
-        return $num;
-    }
-
-    /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+   public function setShowHideFoto(): string {
+      $fid = (int)($_POST['fid'] ?? 0);
+      $data = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', "SELECT f_status FROM f_fotos WHERE foto_id = $fid"));
+      // COMPROBAMOS
+      $active = ((int)$data['f_status'] === 1) ? 0 : 1;
+      if(!db_exec([__FILE__, __LINE__], 'query', "UPDATE f_fotos SET f_status = $active WHERE foto_id = $fid")) {
+         return '0: Ocurri&oacute, un error';
+      }
+      return ($active === 1) ? '2: Foto rehabilitada' : '1: Foto deshabilitada.';
+   }
 
 }

@@ -1,24 +1,19 @@
 <div id="procesando"><div id="post"></div></div>
-<div class="answerInfo">
-	<img width="48" height="48" src="{$tsRoutes.storage.avatar}/avatar_{$tsUser->uid}.webp" class="avatar-48"/><br />
-	<div id="gif_cargando" style="text-align:center; margin-top:1em; display:none">
-		<img src="{$tsRoutes.tema.images}/tload.gif" style="border:0;" />
+<div class="box-comment p-3">
+	<div class="box-avatar relative">
+		{include "blocks/Avatar.tpl" id=$tsUser->uid size=50 alt="Ver perfil" lazy=true class="avatar"}
+		<div id="gif_cargando" class="absolute">
+			<img src="{$tsRoutes.tema.images}/tload.gif" />
+		</div>
 	</div>
-</div>
-<div class="answerTxt">
-	<div class="Container">
+	<div class="comment">
 		<div class="error"></div>
-		<textarea id="body_comm" class="onblur_effect autogrow" tabindex="1" placeholder="Escribir un comentario..." style="resize:none;">Escribir un comentario...</textarea>
-		<div class="buttons" style="text-align:left">
-			<div class="floatL">
-				<input type="hidden" id="auser_post" value="{$tsPost.post_user}" />
-				<input type="button" onclick="comentario.nuevo('true')" class="mBtn btnOk" value="Enviar Comentario" tabindex="3" id="btnsComment"/>
-				&nbsp;<input type="button" onclick="comentario.preview('body_comm','new')" class="mBtn btnGreen" value="Vista Previa" tabindex="2" style="width:auto;" />
-			</div>
-			<div class="floatR">
-				<a href="#" onclick="moreEmoticons(true); return false;" class="floatR" id="moreemofn"> M&aacute;s emoticones</a>
-			</div>
-			<div class="clearfix"></div>
+		<textarea id="body_comm" class="form-control" placeholder="Escribir un comentario...">Escribir un comentario...</textarea>
+		<div class="buttons">
+			<input type="hidden" id="auser_post" value="{$tsPost.post_user}" />
+			<input type="button" onclick="comentario.nuevo(true)" class="mBtn btnOk" value="Enviar Comentario" tabindex="3" id="btnsComment"/>
 		</div>
 	</div>
 </div>
+
+

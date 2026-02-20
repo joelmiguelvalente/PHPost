@@ -59,7 +59,6 @@ $changeAvatar.on('click', '.avatar-upload', async function () {
 			method: 'POST',
 			body: data
 		});
-
 		const json = await rsp.json();
 		if (json.error) {
 			throw json.error;
@@ -80,7 +79,7 @@ $changeAvatar.on('click', '.avatar-upload', async function () {
 });
 
 function loadCropper(key, ext) {
-	const imgUrl = `${route.url}/inc/storage/uploads/avatar_${key}.${ext}?t=${Date.now()}`;
+	const imgUrl = `${route.url}/storage/uploads/avatar_${key}.${ext}?t=${Date.now()}`;
 	avatarState.imageUrl = imgUrl;
 
 	dialog.init({

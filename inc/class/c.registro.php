@@ -21,10 +21,12 @@ class tsRegistro {
 
 	protected tsCore $Core;
 	protected tsUser $User;
+	private string $myIP;
 
 	public function __construct(tsCore $Core, tsUser $User) {
 		$this->Core = $Core;
 		$this->User = $User;
+		$this->myIP = (new IP)->getIP();
 	}
 
 	/**
@@ -45,21 +47,19 @@ class tsRegistro {
     * @return bool
    */
 	private function checkUserExists(string $username = '', string $email = ''): bool {
-		$username = $this->Core->setSecure($username);
-		$email = $this->Core->setSecure(strtolower($email ?? ''));
-		$q = !empty($username) ? "user_name = '$username'" : "LOWER(user_email) = '$email'";
-		return db_exec('num_rows', db_exec([__FILE__, __LINE__], 'query', "SELECT user_id FROM u_miembros WHERE $q LIMIT 1")) === 1;
+		$column = !empty($username) ? "user_name" : "LOWER(user_email)";
+		$param = !empty($username) ? $username : strtolower($email ?? '');
+		return DB::value("SELECT COUNT(user_id) FROM u_miembros WHERE $column = :search LIMIT 1", ['search' => $param]) === 1;
 	}
 
 	private function getPostData(bool $check = false): array {
-		$username = $this->Core->setSecure($this->Core->parseBadWords(htmlspecialchars($_POST['nick'] ?? '')));
-		$email = $this->Core->setSecure(strtolower($_POST['email'] ?? ''));
+		$username = $this->Core->parseBadWords(trim($_POST['nick'] ?? ''));
+		$email = $this->Core->setSecure(strtolower(trim($_POST['email'] ?? '')));
 		// DATOS NECESARIOS
 		$data = [
 			'user_nick' => $username,
 			'user_email' => $email
 		];
-		
 		if($check) {
 			$data = [
 				...$data,
@@ -84,16 +84,20 @@ class tsRegistro {
 		$vars = $this->getPostData();
       $which = empty($vars['user_nick']) ? 'email' : 'nick';
 		// No puede ser solo números
-		if (!empty($vars['user_nick']) AND ctype_digit($vars['user_nick'])) return "3: T&uacute; nick no pueder solo n&uacute;meros.";
+		if (!empty($vars['user_nick']) AND ctype_digit($vars['user_nick'])) {
+			return "3: T&uacute; nick no pueder solo n&uacute;meros.";
+		}
 		// Existe el usuario
-		if($this->checkUserExists($vars['user_nick'], $vars['user_email'])) return '0: El '.$which.' ya se encuentra registrado.';
-		// Verificamos que no este en la lista negra
-     	if(db_exec('num_rows', db_exec([__FILE__, __LINE__], 'query', 
-         "SELECT id FROM w_blacklist WHERE 
-         (type = 3 AND value = '{$this->strstr($vars['user_email'])}') || 
-         (type = 4 AND value = '{$this->strstr($vars['user_email'], true)}') || 
-         (type = 4 AND value = '{$vars['user_nick']}') LIMIT 1"))
-     	) return '0: Parte del '.$which.' no est&aacute; permitida';
+		if($this->checkUserExists($vars['user_nick'], $vars['user_email'])) {
+			return '0: El '.$which.' ya se encuentra registrado.';
+		}
+		if(DB::exists("SELECT 1 FROM w_blacklist WHERE (type = 3 AND value = :email1) OR (type = 4 AND value = :email2) OR (type = 4 AND value = :nick) LIMIT 1", [
+      	'email1' => $this->strstr($vars['user_email']),
+      	'email2' => $this->strstr($vars['user_email'], true),
+      	'nick' => $vars['user_nick']
+    	])) {
+     		return '0: Parte del '.$which.' no est&aacute; permitida';
+     	}
 	
 		// retornar valor
 		return "1: El $which est&aacute; disponible.";
@@ -107,48 +111,95 @@ class tsRegistro {
    */
 	private function verifyCaptcha(string $captcha) {
 		// Verificando el captcha
-      $reCaptcha = new reCaptcha();  // Usar la misma clave para reCAPTCHA o hCaptcha
+      $reCaptcha = new reCaptcha($this->Core);  // Usar la misma clave para reCAPTCHA o hCaptcha
 		$reCaptcha->RECAPTCHA_TOKEN = $captcha;  // Token de reCAPTCHA o hCaptcha
 		$reCaptcha->verify_human();
 	}
 
-	private function verifyEmailUser(string $username, string $email) {
+	private function verifyEmailUser(string $username, string $email): ?string {
+		// Validación 
+    	if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+      	return '0: El formato del email es inválido.';
+    	}
 		// COMPROBAR NUEVAMENTE QUE EL USUARIO O EMAIL NO SE ENCUENTREN REGISTRADOS
-		$query = db_exec([__FILE__, __LINE__], 'query', "SELECT user_name,user_email FROM u_miembros WHERE user_name = '$username' OR LOWER(user_email) = '$email' LIMIT 1");
-
-		if(db_exec('num_rows', $query) === 0 || !filter_var($email, FILTER_VALIDATE_EMAIL) || (int)$this->Core->settings['c_reg_active'] === 0) {
+		$exists = DB::exists("SELECT 1 FROM u_miembros WHERE user_name = :username OR LOWER(user_email) = :email LIMIT 1", [
+			'username' => $username, 
+			'email' => strtolower($email)
+		]);
+		// 
+  		if ($exists) {
+  		   return '0: El nombre de usuario o email ya están registrados.';
+  		}
+  		$reCaptchaActive = (int)$this->Core->reCaptchaConfig('c_reg_active') === 0;
+		if($reCaptchaActive) {
 			return '0: Hubo problemas al intentar registrarle, hay campos vac&iacute;os, inv&aacute;lidos o no se le permite el registro.';
 		}
+		return null;
+	}
+
+	private function insertMuroMessage(int $uid, string $message) {
+	   $m_id = DB::insert('u_muro', [
+	   	'p_user' => $uid,
+			'p_user_pub' => 1,
+			'p_date' => time(),
+			'p_body' => $message,
+			'p_type' => 1
+	   ]);
+	   DB::insert('u_monitor', [
+	   	'user_id' => $uid,
+			'obj_user' => 1,
+			'obj_uno' => $m_id,
+			'not_type' => 12,
+			'not_total' => 1,
+			'not_menubar' => 1,
+			'not_monitor' => 1
+	   ]);
+	}
+
+	private function insertMessagePrivate(int $uid, string $message, string $titulo) {
+		$preview = substr($message, 0, 75);
+	   $mp_id = DB::insert('u_mensajes', [
+	   	'mp_to' => $uid,
+			'mp_from' => 1,
+			'mp_subject' => $titulo,
+			'mp_preview' => $preview,
+			'mp_date' => time()
+	   ]);
+	   DB::insert('u_respuestas', [
+	   	'mp_id' => $mp_id,
+			'mr_from' => 1,
+			'mr_body' => $message,
+			'mr_ip' => $this->myIP,
+			'mr_date' => time()
+	   ]);
+	}
+
+	private function insertAvise(int $uid, string $message, string $titulo) {
+	   DB::insert('u_avisos', [
+	   	'user_id' => $uid,
+			'av_subject' => $titulo,
+			'av_body' => $message,
+			'av_date' => $time,
+			'av_type' => 4
+	   ]);
 	}
 
 	private function sendMessageWelcome(int $uid, array $tsData = []) {
-		$send_welcome = $this->Core->settings['c_met_welcome'];
-		if($send_welcome > 0 && $send_welcome < 4) {
-			$sexo = 'Bienvenid' . (in_array($tsData['user_sexo'], ['none','male']) ? 'o' : 'a'); 
-         $msg_bienvenida = str_replace(
+		$welcome = $this->Core->reCaptchaConfig('c_met_welcome');
+		if($welcome > 0 && $welcome < 4) {
+			$heading = 'Bienvenid' . (in_array($tsData['user_sexo'], ['none','male']) ? 'o' : 'a'); 
+         $message = str_replace(
          	['[usuario]', '[welcome]', '[web]'], 
-         	[$tsData['user_nick'], $sexo, $this->Core->settings['titulo']], 
-	         $this->Core->parseBBCode($this->Core->settings['c_message_welcome'])
+         	[$tsData['user_nick'], $heading, $this->Core->settings['titulo']], 
+	         $this->Core->parseBBCode($this->Core->reCaptchaConfig('c_message_welcome'))
 	      );
          //
          $time = time();
-         $titulo = "$sexo a {$this->Core->settings['titulo']}";
-	      switch($send_welcome) {
-	         case 1:
-					db_exec([__FILE__, __LINE__], 'query', "INSERT INTO u_muro (p_user, p_user_pub, p_date, p_body, p_type) VALUES ($uid, 1, $time, '$msg_bienvenida', 1)"); 
-		         $m_id = db_exec('insert_id');
-					db_exec([__FILE__, __LINE__], 'query', "INSERT INTO u_monitor (user_id,obj_user,obj_uno, not_type,not_total,not_menubar,not_monitor) VALUES ($uid, 1, $m_id, 12, 1, 1, 1)");
-				break;
-	         case 2:
-					$preview = substr($msg_bienvenida, 0, 75); 
-					if(db_exec([__FILE__, __LINE__], 'query', "INSERT INTO u_mensajes (`mp_to`, `mp_from`, `mp_subject`, `mp_preview`, `mp_date`) VALUES ($uid, 1, '$titulo', '$preview', $time)")) {
-		            $mp_id = db_exec('insert_id');
-		            db_exec([__FILE__, __LINE__], 'query', "INSERT INTO u_respuestas (mp_id, mr_from, mr_body, mr_ip, mr_date) VALUES ($mp_id, 1, '$msg_bienvenida', '{$_SERVER['REMOTE_ADDR']}', $time)"); 
-		         }
-				break;
-		 		case 3:
-					db_exec([__FILE__, __LINE__], 'query', "INSERT INTO u_avisos (`user_id`, `av_subject`, `av_body`, `av_date`, `av_type`) VALUES ($uid, '$titulo', '$msg_bienvenida', $time, 4)");			
-         	break;
+         $title = "$heading a {$this->Core->settings['titulo']}";
+	      switch($welcome) {
+	         case 1: $this->insertMuroMessage($uid, $message); break;
+	         case 2: $this->insertMessagePrivate($uid, $message, $title); break;
+		 		case 3: $this->insertAvise($uid, $message, $title); break;
 			}
 		}
 	}
@@ -159,8 +210,16 @@ class tsRegistro {
 		$time = time();
 		$expires = $time + 900; // 15 minutos
 		#$words = str_split($pin, 1);
-				
-		if(!db_exec([__FILE__, __LINE__], 'query', "INSERT INTO w_activate (user_id, user_email, code_hash, expire_at, type, used, ip) VALUES ($uid, '{$tsData['user_email']}', '$pinHash', $time, 'activation', 0, $ip)")) {
+		
+	   if(!DB::insert('w_activate', [
+	   	'user_id' => $uid,
+			'user_email' => $tsData['user_email'],
+			'code_hash' => $pinHash,
+			'expire_at' => $time,
+			'type' => 'activation',
+			'used' => 0,
+			'ip' => $this->myIP,
+	   ])) {
 			return '0: Ocurri&oacute; un error, int&eacute;ntelo de nuevo.';
 		}
 
@@ -192,7 +251,7 @@ class tsRegistro {
 		</div>
 		ACTIVE;
 		// <--
-		$email = new tsEmail($tsCore);
+		$email = new tsEmail($this->Core);
 		$email->sendSignup($tsData['user_email'], 'activate', $bodyHtml) OR die('0: Hubo un error al intentar procesar lo solicitado');
 		return "2: Te hemos enviado un correo a <b>$to</b> con los &uacute;ltimos pasos para finalizar con el registro.<br><br>Si en los pr&oacute;ximos minutos no lo encuentras en tu bandeja de entrada, por favor, revisa tu carpeta de correo no deseado, es posible que se haya filtrado.<br><br>&iexcl;Muchas gracias!";	
 	}
@@ -227,19 +286,29 @@ class tsRegistro {
       }
 		$this->verifyEmailUser($tsData['user_nick'], $tsData['user_email']);
 		// PASAMOS BIEN... AHORA INSERTAR DATOS
-		$PasswordHandler = new PasswordHandler;
-		$newPassword = $PasswordHandler->create($tsData['user_password']);
+		$newPassword = (new PasswordHandler)->create($tsData['user_password']);
 		// Rango por defecto
-		$rango = (int)$this->Core->settings['c_reg_rango'] ?? 3;
+		$rango = (int)$this->Core->reCaptchaConfig('c_reg_rango') ?? 3;
 		//
-		if(!db_exec([__FILE__, __LINE__], 'query', "INSERT INTO `u_miembros` (`user_name`, `user_password`, `user_email`, `user_rango`, `user_registro`) VALUES ('{$tsData['user_nick']}', '$newPassword', '{$tsData['user_email']}', $rango, {$tsData['user_registro']})")) {
+		$uid = DB::insert('u_miembros', [
+	   	'user_name' => $tsData['user_nick'],
+			'user_password' => $newPassword,
+			'user_email' => $tsData['user_email'],
+			'user_rango' => $rango,
+			'user_registro' => $tsData['user_registro']
+	   ]);
+		if(!$uid) {
 			return '0: Ocurrio un error, intentalo ma&aacute;s tarde.';
 		}
-      $uid = (int)db_exec('insert_id');
       // Agregamos datos en diversas tablas
-      db_exec([__FILE__, __LINE__], "query", "INSERT INTO u_perfil (user_id, user_pais, p_avatar, user_sexo) VALUES($uid, 'XX', 1, '{$tsData['user_sexo']}')");
-      db_exec([__FILE__, __LINE__], "query", "INSERT INTO u_portal (user_id) VALUES($uid)");
-      db_exec([__FILE__, __LINE__], "query", "INSERT INTO u_miembros_sets (user_id) VALUES($uid)");
+      DB::insert('u_perfil', [
+      	'user_id' => $uid, 
+      	'user_pais' => 'XX', 
+      	'p_avatar' => 0, 
+      	'user_sexo' => $tsData['user_sexo']
+      ]);
+      DB::insert('u_portal', ['user_id' => $uid]);
+      DB::insert('u_miembros_sets', ['user_id' => $uid]);
       
       # Generamos automaticamente un avatar
       (new Avatar)->ensure((int)$uid, $tsData['user_nick'], 171717);
@@ -248,11 +317,11 @@ class tsRegistro {
 		$this->sendMessageWelcome($uid, $tsData);
 
 		// ENVIAMOS EL EMAIL
-		if((int)$this->Core->settings['c_reg_activate'] === 0) {
+		if((int)$this->Core->reCaptchaConfig('c_reg_activate') === 0) {
 			$this->sendEmail($uid, $tsData);
 		} else {
 			# Activamos cuenta directamente!
-			db_exec([__FILE__, __LINE__], 'query', "UPDATE u_miembros SET user_activo = 1 WHERE user_id = $uid");
+			DB::update('u_miembros', ['user_activo' => 1], 'user_id = :id', ['id' => $uid]);
 			$this->User->loginUser($tsData['user_nick'], $tsData['user_password'], true);
 			return "1: Bienvenido a <strong>{$this->Core->settings['titulo']}</strong>, Ahora estas registrado y tu cuenta ha sido activada, podr&aacute;s disfrutar de esta comunidad inmediatamente.<br><br>&iexcl;Muchas gracias!";
 		}

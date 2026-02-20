@@ -6,13 +6,13 @@
 			<span class="icon-noti puntos-n"></span>
 		</div>
 		<div class="boxy-content">
-			{if !$tsTops.puntos}<div class="emptyData">Nada por aqui</div>
+			{if !$tsTops.puntos}<div class="alert-empty">Nada por aqui</div>
 			{else}
 			<ol>
 				{foreach from=$tsTops.puntos item=u}
 				<li class="categoriaUsuario clearfix">
 					<img width="16" height="16" src="{$tsRoutes.storage.avatar}/avatar_{$u.user_id}.webp"/>
-					<a href="{$tsConfig.url}/perfil/{$u.user_name}">{$u.user_name}</a> <span>{$u.total}</span>
+					<a href="{$tsConfig.url}/@{$u.user_name}">{$u.user_name}</a> <span>{$u.total}</span>
 				</li>
 				{/foreach}
 			</ol>
@@ -26,13 +26,13 @@
 			<span class="icon-noti follow-n"></span>
 		</div>
 		<div class="boxy-content">
-			{if !$tsTops.seguidores}<div class="emptyData">Nada por aqui</div>
+			{if !$tsTops.seguidores}<div class="alert-empty">Nada por aqui</div>
 			{else}
 			<ol>
 				{foreach from=$tsTops.seguidores item=u}
 				<li class="categoriaUsuario clearfix">
 					<img width="16" height="16" src="{$tsRoutes.storage.avatar}/avatar_{$u.user_id}.webp"/>
-					<a href="{$tsConfig.url}/perfil/{$u.user_name}">{$u.user_name}</a> <span>{$u.total}</span>
+					<a href="{$tsConfig.url}/@{$u.user_name}">{$u.user_name}</a> <span>{$u.total}</span>
 				</li>
 				{/foreach}
 			</ol>
@@ -46,13 +46,13 @@
 			<span class="icon-noti medallas-n"></span>
 		</div>
 		<div class="boxy-content">
-			{if !$tsTops.medallas}<div class="emptyData">Nada por aqui</div>
+			{if !$tsTops.medallas}<div class="alert-empty">Nada por aqui</div>
 			{else}
 			<ol>
 				{foreach from=$tsTops.medallas item=u}
 				<li class="categoriaUsuario clearfix">
 					<img width="16" height="16" src="{$tsRoutes.storage.avatar}/avatar_{$u.user_id}.webp"/>
-					<a href="{$tsConfig.url}/perfil/{$u.user_name}">{$u.user_name}</a> <span>{$u.total}</span>
+					<a href="{$tsConfig.url}/@{$u.user_name}">{$u.user_name}</a> <span>{$u.total}</span>
 				</li>
 				{/foreach}
 			</ol>

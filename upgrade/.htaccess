@@ -1,0 +1,13 @@
+# Deshabilitar el listado de directorios
+Options -Indexes
+
+# Prevenir acceso directo a archivos PHP excepto index.php
+<Files ~ "^((?!index\.php$).)*\.php$">
+    Order deny,allow
+    Deny from all
+</Files>
+
+# Opcional: si estás en Apache 2.4+, usa esta sintaxis más moderna
+# <Files ~ "^((?!index\.php$).)*\.php$">
+#     Require all denied
+# </Files>

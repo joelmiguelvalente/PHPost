@@ -145,7 +145,7 @@ class tsPortal{
      public function getFotos(){
         // FOTOS
     	include(TS_CLASS."c.fotos.php");
-    	$tsFotos = new tsFotos();
+    	$tsFotos = new tsFotos($tsCore, $tsUser);
         return $tsFotos->getLastFotos();
      }
      /** getStats()
@@ -156,7 +156,7 @@ class tsPortal{
      public function getStats(){
     	// CLASE TOPS
     	include(TS_CLASS."c.tops.php");
-    	$tsTops = new tsTops();
+    	$tsTops = new tsTops($tsCore);
         return $tsTops->getStats();
      }
 }

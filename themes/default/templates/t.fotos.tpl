@@ -12,7 +12,7 @@
 {elseif $tsAction == 'album'}
    {include "m.fotos_album.tpl"}
 {elseif $tsAction == 'favoritas'}
-   <div class="emptyData">En construcci&oacute;n</div>
+   <div class="alert-empty">En construcci&oacute;n</div>
 {/if}
 <div class="clearBoth"></div>
 {include "main_footer.tpl"}

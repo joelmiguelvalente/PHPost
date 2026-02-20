@@ -1,21 +1,25 @@
-					<div id="webStats">
-                        <div class="wMod clearbeta">
-                            <div class="wMod-h"><span class="qtip" title="Actualizado: {$tsStats.stats_time|hace}">Estad&iacute;sticas</span></div>
-                            <div class="box_cuerpo">
-                            <table width="100%" cellspacing="0" cellpadding="0" border="0">
-                                <tr>
-                                	<td style="background-image:url({$tsRoutes.assets.images}/icons/power_on.png);"><a class="usuarios_online" href="{$tsConfig.url}/usuarios/?online=true"><span class="qtip" title="R&eacute;cord conectados: {$tsStats.stats_max_online} {$tsStats.stats_max_time|fecha}">{$tsStats.stats_online} online</span></a></td>
-        	                        <td style="background-image:url({$tsRoutes.assets.images}/icons/user.png);"><a href="{$tsConfig.url}/usuarios/">{$tsStats.stats_miembros} miembros</a></td>
-                                </tr>
-    	                        <tr>
-        	                        <td style="background-image:url({$tsRoutes.assets.images}/icons/posts.png);">{$tsStats.stats_posts} posts</td>
-            	                    <td style="background-image:url({$tsRoutes.assets.images}/icons/comment.png);">{$tsStats.stats_comments} comentarios</td>
-                                </tr>
-    	                        <tr>
-        	                        <td style="background-image:url({$tsRoutes.assets.images}/icons/foto.png);">{$tsStats.stats_fotos} fotos</td>
-            	                    <td style="background-image:url({$tsRoutes.assets.images}/icons/comment.png);">{$tsStats.stats_foto_comments} comentarios en fotos</td>
-                                </tr>
-                            </table>
-                            </div>
-                        </div>
-                    </div>
+<div class="box">
+	<div class="box-header">
+		<span class="box_txt" title="Actualizado: {$tsStats.stats_time|hace}">Estad&iacute;sticas</span>
+	</div>
+	<div class="box-content">
+		<div class="table">
+			<a class="table-item" href="{$tsConfig.url}/usuarios/?online=true">
+				<img src="{$tsRoutes.assets.images}/icons/power_on.png" alt="R&eacute;cord conectados: {$tsStats.stats_max_online}">
+				<span title="R&eacute;cord conectados: {$tsStats.stats_max_online} {$tsStats.stats_max_time|fecha}"><strong>{$tsStats.stats_max_online|number_abbr}</strong> online</span>
+			</a>
+			<a class="table-item" href="{$tsConfig.url}/usuarios/">
+				<img src="{$tsRoutes.assets.images}/icons/user.png" alt="Total de miembros">
+				<span title="Total de miembros"><strong>{$tsStats.stats_miembros|number_abbr}</strong> miembros</span>
+			</a>
+			<div class="table-item">
+				<img src="{$tsRoutes.assets.images}/icons/posts.png" alt="Total de posts">
+				<span title="Total de posts"><strong>{$tsStats.stats_posts|number_abbr}</strong> posts</span>
+			</div>
+			<div class="table-item">
+				<img src="{$tsRoutes.assets.images}/icons/comment.png" alt="Total de comentarios">
+				<span title="Total de comentarios"><strong>{$tsStats.stats_comments|number_abbr}</strong> comentarios</span>
+			</div>
+		</div>
+	</div>
+</div>

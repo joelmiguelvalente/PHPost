@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name ajax.admin.php
+ * @name api.admin.php
  * @author PHPost Team
  * @copyright 2026
  */
@@ -13,21 +13,21 @@ if (!defined('TS_HEADER')) {
 }
 
 const ACTIONS = [
-	'admin-medalla-borrar' => ['nivel' => 4, 'template' => '', 'ajax' => false],
-	'admin-medalla-asignar-form' => ['nivel' => 4, 'template' => 'asignar-form', 'ajax' => true],
-	'admin-medalla-asignar' => ['nivel' => 4, 'template' => '', 'ajax' => false],
 	'admin-foto-borrar' => ['nivel' => 4, 'template' => '', 'ajax' => false],
 	'admin-foto-setOpenClosed' => ['nivel' => 4, 'template' => '', 'ajax' => false],
 	'admin-foto-setShowHide' => ['nivel' => 4, 'template' => '', 'ajax' => false],
+	'admin-medalla-asignar' => ['nivel' => 4, 'template' => '', 'ajax' => false],
+	'admin-medalla-asignar-form' => ['nivel' => 4, 'template' => 'asignar-form', 'ajax' => true],
+	'admin-medalla-borrar' => ['nivel' => 4, 'template' => '', 'ajax' => false],
 	'admin-medallas-borrar-asignacion' => ['nivel' => 4, 'template' => '', 'ajax' => false],
-	'admin-users-setInActivo' => ['nivel' => 4, 'template' => '', 'ajax' => false],
-	'admin-users-sessions' => ['nivel' => 4, 'template' => '', 'ajax' => false],
-	'admin-noticias-setInActive' => ['nivel' => 4, 'template' => '', 'ajax' => false],
-	'admin-sesiones-borrar' => ['nivel' => 4, 'template' => '', 'ajax' => false],
 	'admin-nicks-change' => ['nivel' => 4, 'template' => '', 'ajax' => false],
-   'admin-blacklist-delete' => ['nivel' => 4, 'template' => '', 'ajax' => false],
+	'admin-noticias-setInActive' => ['nivel' => 4, 'template' => '', 'ajax' => false],
+	'admin-ordenar-categorias' => ['nivel' => 4, 'template' => '', 'ajax' => false],
+	'admin-sesiones-borrar' => ['nivel' => 4, 'template' => '', 'ajax' => false],
+	'admin-users-sessions' => ['nivel' => 4, 'template' => '', 'ajax' => false],
+	'admin-users-setInActivo' => ['nivel' => 4, 'template' => '', 'ajax' => false],
    'admin-badwords-delete' => ['nivel' => 4, 'template' => '', 'ajax' => false],
-	'admin-ordenar-categorias' => ['nivel' => 4, 'template' => '', 'ajax' => false]
+   'admin-blacklist-delete' => ['nivel' => 4, 'template' => '', 'ajax' => false],
 ];
 
 if (!array_key_exists($action, ACTIONS)) {
@@ -95,11 +95,15 @@ switch($action) {
 	case 'admin-nicks-change':
       echo $tsAdmin->ChangeNick_o_no();
 	break;
-     case 'admin-blacklist-delete':
-      echo $tsAdmin->deleteBlock();
+   case 'admin-blacklist-delete':
+   	require_once TS_CLASS . "/c.bloqueos.php";
+   	$tsBloqueos = new tsBloqueos($tsCore, $tsUser);
+      echo $tsBloqueos->deleteBlock();
 	break;
-     case 'admin-badwords-delete':
-      echo $tsAdmin->deleteBadWord();
+   case 'admin-badwords-delete':
+   	require_once TS_CLASS . "/c.censura.php";
+   	$tsCensura = new tsCensura($tsCore, $tsUser);
+      echo $tsCensura->deleteBadWord();
 	break;
 	case 'admin-ordenar-categorias':
 	   echo $tsAdmin->saveOrden();

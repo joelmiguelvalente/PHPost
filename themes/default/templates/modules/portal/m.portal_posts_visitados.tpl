@@ -11,7 +11,7 @@
                             </li>{/if}
                             {/foreach}
                             {else}
-                            <li class="emptyData">No has visitado posts recientemente.</li>
+                            <li class="alert-empty">No has visitado posts recientemente.</li>
                             {/if}
                         </ul>
                     </div>

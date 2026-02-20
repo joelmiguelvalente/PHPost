@@ -1,3 +1,69 @@
+.infoPost {
+    width: 715px;
+    margin-top:10px;
+    padding: 10px 10px 5px 10px;
+    clear:both;
+    border-top:1px solid #CCC;
+    }
+
+.infoPost strong.title {
+    margin-bottom: 3px;
+    display: block;
+}
+
+.infoPost .shareBox , .infoPost .rateBox , .infoPost .followBox , .infoPost .metaBox, .infoPost .ageBox {
+    width: 20%;
+    float: left;
+}
+
+.infoPost .tagsBox {
+    width:100%;
+    border-top: dashed 1px #CCC;
+    padding-top: 10px;
+    margin-top: 5px;
+}
+
+
+.infoPost .tagsBox ul {
+    display: inline;
+}
+
+.infoPost .rateBox {
+    font-weight: bold;
+}
+.thumbs {
+    background: url('../images/thumbs.png') no-repeat;
+    display: block;
+    float: left;
+    width: 16px;
+    height: 16px;
+    margin-right: 3px;
+}
+
+.thumbs.thumbsUp {
+    background-position: 0 0;
+}
+
+.thumbs.thumbsDown {
+    background-position: 0 -16px;
+}
+
+.thumbs.thumbsUp:hover {
+    background-position: 0 -32px;
+}
+
+.thumbs.thumbsDown:hover {
+    background-position: 0 -48px;
+}
+
+.infoPost .tagsBox ul li {
+    display: inline;
+    font-size: 11px;
+}
+
+.infoPost .followBox {
+    text-align: right;
+}
 /* FOTOS */
 .fotos-detail li{
     font-size: 12px;

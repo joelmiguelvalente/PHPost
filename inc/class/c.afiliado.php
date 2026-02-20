@@ -41,9 +41,18 @@ class tsAfiliado {
 	 * @return array
 	*/
 	public function getAfiliado(string $type = ''): array {
-		$aid = ($type === 'admin') ? (int)($_GET['aid'] ?? 0) : (int)($_POST['ref'] ?? 0);
-		$query = "SELECT aid, a_titulo, a_url, a_banner, a_descripcion FROM w_afiliados WHERE aid = $aid";
+		$id = ($type === 'admin') ? (int)($_GET['aid'] ?? 0) : (int)($_POST['ref'] ?? 0);
+		$query = "SELECT aid, a_titulo, a_url, a_banner, a_descripcion FROM w_afiliados WHERE aid = {$id}";
 		return db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', $query));
+	}
+
+	private function getData(): array {
+		$data = [];
+		foreach($_POST as $key => $value) {
+			$value = htmlspecialchars(trim($value ?? ''));
+			$data[$key] = $this->Core->setSecure($this->Core->parseBadWords($value));
+		}
+		return $data;
 	}
 
 	/**
@@ -52,31 +61,28 @@ class tsAfiliado {
 	*/
 	public function newAfiliado(): string {
 		global $tsMonitor;
-		$dataIn = [];
+		$dataIn = $this->getData();
 		$time = time();
-		foreach($_POST as $key => $value) {
-			$value = htmlspecialchars(trim($value ?? ''));
-			$dataIn[$key] = $this->Core->setSecure($this->Core->parseBadWords($value));
-		}
+		//
 		$checked = $dataIn; // Evitamos modificar el array principal
-		unset($checked['sid']); // Solo borramos el item de la copia del array
+		unset($checked['a_sid']); // Solo borramos el item de la copia del array
 		if(in_array('', $checked, true)) {
 		  return '2: Faltan datos';
 		}
-		if(!filter_var($dataIn['url'], FILTER_VALIDATE_URL)) { 
+		if(!filter_var($dataIn['a_url'], FILTER_VALIDATE_URL)) { 
 			return '0: Url incorrecta'; 
 		}
 		//
-		if(db_exec([__FILE__, __LINE__], 'query', "INSERT INTO w_afiliados (a_titulo, a_url, a_banner, a_descripcion, a_sid, a_date) VALUES ('{$dataIn['titulo']}', '{$dataIn['url']}', '{$dataIn['banner']}', '{$dataIn['descripcion']}', '{$dataIn['sid']}', {$time})")) {
+		if(db_exec([__FILE__, __LINE__], 'query', "INSERT INTO w_afiliados (a_titulo, a_url, a_banner, a_descripcion, a_sid, a_date) VALUES ('{$dataIn['a_titulo']}', '{$dataIn['a_url']}', '{$dataIn['a_banner']}', '{$dataIn['a_descripcion']}', '{$dataIn['a_sid']}', {$time})")) {
 			$afid = (int)db_exec('insert_id');
 		  	// AVISO
 			$aviso = "<center>
-				<a href=\"{$dataIn['url']}\">
-					<img alt=\"banner del sitio {$dataIn['titulo']}\" src=\"{$dataIn['banner']}\" title=\"{$dataIn['titulo']}\"/>
+				<a href=\"{$dataIn['a_url']}\">
+					<img alt=\"banner del sitio {$dataIn['a_titulo']}\" src=\"{$dataIn['a_banner']}\" title=\"{$dataIn['a_titulo']}\"/>
 				</a>
 			</center>
 			<br />
-			<span>{$dataIn['titulo']} quiere ser su afiliado, dir&iacute;jase a la administraci&oacute;n para aceptar o cancelarla.</span>";
+			<span>{$dataIn['a_titulo']} quiere ser su afiliado, dir&iacute;jase a la administraci&oacute;n para aceptar o cancelarla.</span>";
 			$tsMonitor->setAviso(1,'Nueva afiliaci&oacute;n', (string)$aviso, 0);
 			//
 			$titleSite  = $this->Core->settings['titulo'];
@@ -87,7 +93,7 @@ class tsAfiliado {
 			<div>Se le ha notificado al administrador tu afiliaci&oacute;n para que la apruebe, mientras tanto copia el siguiente c&oacute;digo, ser&aacute; con el cual nos debes enlazar.<br><br>
 				<div class=\"form-line\">
 					<label for=\"atitle\">C&oacute;digo HTML</label>
-					<textarea tabindex=\"4\" rows=\"10\" style=\"height:60px;width:100%\" onclick=\"select(this)\"><a href=\"$urlSiteRef\" target=\"_blank\" title=\"$titleSite\"><img src=\"$bannerSite\" alt=\"banner del sitio $titleSite\"></a></textarea>
+					<textarea tabindex=\"4\" style=\"border:1px solid #CCC;border-radius:.325rem;height:100px;width:100%\" onclick=\"select(this)\"><a href=\"$urlSiteRef\" target=\"_blank\" title=\"$titleSite\"><img src=\"$bannerSite\" alt=\"banner del sitio $titleSite\"></a></textarea>
 				</div>
 			</div>";
 		}
@@ -97,20 +103,17 @@ class tsAfiliado {
 	 * @access public
 	 * @return string
 	*/
-	public function EditarAfiliado(): string {
+	public function editarAfiliado(): string {
 		$afiliado = (int)($_GET['aid'] ?? 0);
-		$newData = [
-			'titulo' => $this->Core->parseBadWords($_POST['af_title']),
-			'url' => $this->Core->parseBadWords($_POST['af_url']),
-			'banner' => $this->Core->parseBadWords($_POST['af_banner']),
-			'descripcion' => $this->Core->parseBadWords($_POST['af_desc'])
-		];  
-	   if(!$afiliado || !$newData['titulo'] || !$newData['url'] || !$newData['banner'] || !$newData['descripcion']){
+		$newData = $this->getData();  
+	   if(!$afiliado || in_array('', $newData, true)) {
 		  return '0: Faltan datos';
 		}
-		if(!filter_var($newData['url'], FILTER_VALIDATE_URL)){ return '0: Url incorrecta'; }
+		if(!filter_var($newData['a_url'], FILTER_VALIDATE_URL)) { 
+			return '0: Url incorrecta'; 
+		}
 		//
-		$afs = $this->Core->buildSqlSet($newData , 'a_');
+		$afs = $this->Core->buildSqlSet($newData);
 		if(!db_exec([__FILE__, __LINE__], 'query', "UPDATE w_afiliados SET $afs WHERE aid= '$afiliado'")) {
 			return '0: Ocurri&oacute; un error';
 		}
@@ -136,15 +139,15 @@ class tsAfiliado {
 	 * @access public
 	 * @return string
 	*/
-	public function SetActionAfiliado(): string {
+	public function activeAfiliado(): string {
 		$afiliado = (int)($_POST['aid'] ?? 0);
 		$data = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', "SELECT a_active FROM w_afiliados WHERE aid = $afiliado"));
 		//
-		$active = ($data['a_active'] === 1) ? 0 : 1;
+		$active = ((int)$data['a_active'] === 1) ? 0 : 1;
 		if(!db_exec([__FILE__, __LINE__], 'query', "UPDATE w_afiliados SET a_active = $active WHERE aid = $afiliado")) {
 			return '0: Ocurri&oacute, un error';
 		}
-		return ($data['a_active'] === 1) ? '2: Afiliado deshabilitado' : '1: Afiliado habilitado.';
+		return ($active === 1) ? '2: Afiliado deshabilitado' : '1: Afiliado habilitado.';
 	}
 	
 	/**

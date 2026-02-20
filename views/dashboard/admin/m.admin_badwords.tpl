@@ -1,86 +1,73 @@
-                                <h1 class="text-xl font-semibold mb-4">Censurar palabras</h1>
-                                <div class="rounded border bg-white dark:bg-surface p-4 shadow-sm">
-                                {if $tsSave}<div style="display: block;" class="mensajes ok">Tus cambios han sido guardados.</div>{/if}
-                                {if $tsError}<div class="mensajes error">{$tsError}</div>{/if}
-                                {if !$tsAct}
-                                {if !$tsBadWords.data}
-                                <div class="phpostAlfa">No hay filtros de palabras</div>
-                                {else}
-                                <table cellpadding="0" cellspacing="0" border="0" width="100%" align="center" class="admin_table">
-                                    	<thead>
-                                        	<th>ID</th>
-                                            <th>M&eacute;todo</th>
-                                            <th>Tipo</th>
-                                            <th>Antes</th>
-											<th>Despu&eacute;s</th>
-                                            <th>Raz&oacute;n</th>
-                                            <th>Autor</th>
-                                            <th>Fecha</th>
-                                            <th>Acciones</th>
-                                        </thead>
-                                        <tbody>{foreach from=$tsBadWords.data item=b}
-                                        	<tr id="wid_{$b.wid}">
-                                                <td>{$b.wid}</td>
-                                                <td>{if $b.method == 1}Exacto{else}Parcial{/if}</td>
-                                                <td>{if $b.type == 1}Smiley{else}Texto{/if}</td>
-                                                <td>{$b.word}</td>
-                                                <td>{if $b.type == 1}<img src="{$b.swop}" style="max-width:32px; max-height:32px;"/>{else}{$b.swop}{/if}</td>
-                                                <td>{$b.reason}</td>
-                                                <td><a href="{$tsConfig.url}/perfil/{$b.user_name}" class="hovercard" uid="{$b.user_id}">{$b.user_name}</a></td>
-                                                <td>{$b.date|hace}</td>
-												<td class="admin_actions">
-                                                    <a href="{$tsConfig.url}/admin/badwords?act=editar&id={$b.wid}"><img src="{$tsRoutes.tema.images}/icons/editar.png" title="Editar" /></a>
-                                                    <a href="#" onclick="admin.badwords.borrar({$b.wid}); return false"><img src="{$tsRoutes.tema.images}/icons/close.png" title="Eliminar"/></a>
-                                                </td>
-                                            </tr>{/foreach}
-                                        </tbody>
-                                        <tfoot>
-										<td colspan="9">P&aacute;ginas: {$tsBadWords.pages}</td>
-										</tfoot>
-                                    </table>
-                                    {/if}
-									<br />
-                                <input type="button"  onclick="location.href = '{$tsConfig.url}/admin/badwords?act=nuevo'" value="Agregar nuevo filtro" class="mBtn btnCancel" style="margin-left:280px;"/>
-								{elseif $tsAct == 'editar' || $tsAct == 'nuevo'}
-										<form action="" method="post" autocomplete="off">
-										<fieldset class="rounded-lg border border-gray-200 dark:border-gray-700 p-6 bg-white dark:bg-surface shadow-sm">
-											<legend>{if $tsAct == 'editar'}Editar{else}Agregar{/if} filtro de palabra</legend>
-                                            <span>El m&eacute;todo exacto filtra s&oacute;lo palabras completas, mientras que el parcial filtra todas las coincidencias, aunque forme parte de una palabra. Si opta por usar un smiley, introduzca el enlace directo hacia la imagen.</span>
-											<dl>
-												<dt><label for="bw_before">Antes:</label></dt>
-												<dd><input type="text" id="bw_before" name="before" value="{$tsBW.word}" /></dd>
-											</dl>
-                                            <dl>
-												<dt><label for="bw_after">Despu&eacute;s:</label></dt>
-												<dd><input type="text" id="bw_after" name="after" value="{$tsBW.swop}" /></dd>
-											</dl>
-                                            <dl>
-												<dl>
-                                                    <dt><label for="bw_method">M&eacute;todo:</label></dt>
-                                                        <dd>
-                                                            <label><input name="method" type="radio" id="bw_method" value="0" {if $tsBW.method == 0}checked="checked"{/if} class="radio"/> Parcial</label>
-                                                            <label><input name="method" type="radio" id="bw_method" value="1" {if $tsBW.method == 1}checked="checked"{/if} class="radio"/> Exacto</label>
-                                                        </dd>
-                                                </dl>
-											</dl>
-                                            <dl>
-												<dl>
-                                                    <dt><label for="bw_type">Tipo:</label></dt>
-                                                        <dd>
-                                                            <label><input name="type" type="radio" id="bw_type" value="0" {if $tsBW.type == 0}checked{/if} class="radio"/> Texto</label>
-                                                            <label><input name="type" type="radio" id="bw_type" value="1" {if $tsBW.type == 1}checked{/if} class="radio"/> Smiley</label>
-                                                        </dd>
-                                                </dl>
-											</dl>
-                                            {if $tsAct == 'nuevo'}
-											<dl>
-												<dt><label for="bw_reason">Raz&oacute;n:</label><br /><span>Indica el motivo por el cual quiere agregar este filtro.</span></dt>
-												<dd><textarea name="reason" id="bw_reason" rows="3" cols="40">{$tsBW.reason}</textarea></dd>
-											</dl>
-                                            {/if}
-											<hr />
-										 <p><input type="submit" name="{if $tsAct == 'editar'}edit{else}new{/if}" value="{if $tsAct == 'editar'}Guardar{else}Agregar{/if}" class="btn_g"/>
-										</fieldset>
-										</form>
-										{/if}
+<h1 class="text-xl font-semibold mb-4">Censurar palabras</h1>
+<div class="rounded border bg-white dark:bg-surface p-4 shadow-sm">
+	{include "dashboard/Alert.tpl" text="Tus cambios han sido guardados." color="green" show=$tsSave}
+	{include "dashboard/Alert.tpl" text=$tsError color="red" show=$tsError}
+
+	{if !$tsAct}
+		{if !$tsBadWords.data}
+			{include "dashboard/Alert.tpl" text="No hay filtros de palabras" color="orange" show=true}
+			<a href="{$tsConfig.url}/admin/badwords?act=nuevo" class="inline-flex items-center rounded-md bg-primary px-5 py-2 text-sm font-medium text-white hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary" title="Agregar nuevo filtro">Agregar nuevo filtro</a>	
+		{else}
+			<div class="overflow-x-auto rounded-md border bg-white dark:bg-surface shadow-sm">
+				<table class="min-w-full border-collapse text-sm">
+					{include "dashboard/table/Thead.tpl" fields=[
+						"ID",
+						"M&eacute;todo",
+						"Tipo",
+						"Antes",
+						"Despu&eacute;s",
+						"Raz&oacute;n",
+						"Autor",
+						"Fecha",
+						"Acciones"
+					]}
+					<tbody class="divide-y dark:divide-gray-700">
+						{foreach from=$tsBadWords.data item=b}
+							<tr class="hover:bg-gray-50 dark:hover:bg-surface-alt transition-colors" id="wid_{$b.wid}">
+								<td class="px-3 py-2 text-gray-600 dark:text-gray-400">{$b.wid}</td>
+								<td class="px-3 py-2">{if $b.method == 1}Exacto{else}Parcial{/if}</td>
+								<td class="px-3 py-2">{if $b.type == 1}Smiley{else}Texto{/if}</td>
+								<td class="px-3 py-2">{$b.word}</td>
+								<td class="px-3 py-2">{if $b.type == 1}<img src="{$b.swop}" style="max-width:32px; max-height:32px;"/>{else}{$b.swop}{/if}</td>
+								<td class="px-3 py-2">{$b.reason}</td>
+								<td class="px-3 py-2"><a href="{$tsConfig.url}/@{$b.user_name}" >{$b.user_name}</a></td>
+								<td class="px-3 py-2">{$b.date|hace:true}</td>
+								<td class="px-3 py-2">
+									<div class="flex justify-center gap-2">
+										{include "dashboard/table/Action.tpl" action="badwords?act=editar&id={$b.wid}" title="Editar" icon="edit"}
+										{include "dashboard/table/Action.tpl" action="badwords.borrar({$b.wid})" type="button" title="Eliminar" icon="delete"}
+									</div>
+								</td>
+							</tr>
+						{/foreach}
+					</tbody>
+					{include "dashboard/table/Tfoot.tpl" span=9 link="badwords?act=nuevo" icon="add" text="Agregar nuevo filtro" pages=$tsBadWords.pages}
+				</table>
+			</div>
+		{/if}
+	{elseif $tsAct == 'editar' || $tsAct == 'nuevo'}
+		<form method="POST" autocomplete="off" class="space-y-6">
+			<fieldset class="rounded-lg border border-gray-200 dark:border-gray-700 p-6 bg-white dark:bg-surface shadow-sm">
+				{include "dashboard/Legend.tpl" text="{if $tsAct == 'editar'}Editar{else}Agregar{/if} filtro de palabra"}
+
+				{include "dashboard/Alert.tpl" text="El m&eacute;todo exacto filtra s&oacute;lo palabras completas, mientras que el parcial filtra todas las coincidencias, aunque forme parte de una palabra. Si opta por usar un smiley, introduzca el enlace directo hacia la imagen." color="orange" show=true}
+
+				<!-- before -->
+				{include "dashboard/FormGroup.tpl" id="word" label="Antes" name="word" value=$tsBadWord.word}
+								
+				<!-- after -->
+				{include "dashboard/FormGroup.tpl" id="swop" label="Despu&eacute;s" name="swop" value=$tsBadWord.swop}
+				
+				{include "dashboard/FormGroup.tpl" type="radio" id="method" label="M&eacute;todo" name="method" checked=$tsBadWord.method labels=["Parcial", "Exacto"] values=[0,1]}
+
+				{include "dashboard/FormGroup.tpl" type="radio" id="type" label="Tipo" name="type" checked=$tsBadWord.type labels=["Texto", "Smiley"] values=[0,1]}
+
+				{if $tsAct == 'nuevo'}
+					{include "dashboard/FormGroupTextarea.tpl" id="reason" label="Raz&oacute;n" helper="Indica el motivo por el cual quiere agregar este filtro." name="reason" value=$tsBadWord.reason}
+				{/if}
+				
+				{include "dashboard/Button.tpl" submit_text="{if $tsAct == 'editar'}Guardar{else}Agregar{/if}"}
+			</fieldset>
+		</form>
+	{/if}
 </div>

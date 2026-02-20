@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name ajax.muro.php
+ * @name api.muro.php
  * @author PHPost Team
  * @copyright 2026
  */
@@ -36,21 +36,20 @@ if(!$tsLevelMsg) {
 }
 
 // CLASS
-require_once dirname(__DIR__, 1) . '/class/c.muro.php';
+require_once TS_CLASS . '/c.muro.php';
 $tsMuro = new tsMuro($tsCore, $tsUser);
 
 // CODIGO
 switch($action){
 	case 'muro-stream':
-		$do = $_GET['do'];
+		$do = trim($_GET['do'] ?? '');
 		if($do === 'check'){
 			echo $tsMuro->ajaxCheck();
 			$tsAjax = false;
-		} elseif($do === 'post'){
+		} elseif($do === 'post') {
 			$tsStream = $tsMuro->streamPost();
-			if(!is_array($tsStream) && substr($tsStream,0,1) == '0') {
+			if(!is_array($tsStream) && substr($tsStream,0,1) === '0') {
 				echo $tsStream;
-				$tsAjax = true;
 			} else {
 				// ASIGNAMOS
 				$tsWall['data'][1] = $tsStream;
@@ -60,16 +59,17 @@ switch($action){
 			} 
 		} elseif($do === 'more'){
 			// CLASS
-			require_once dirname(__DIR__, 1) . '/class/c.cuenta.php';
+			require_once TS_CLASS . '/c.cuenta.php';
 			$tsCuenta = new tsCuenta($tsCore, $tsUser);
 			// VARIABLES
 			$user_id = (int)($_POST['pid'] ?? 0);
 			$start = (int)($_POST['start'] ?? 0);
 			//
-			$priv = $tsMuro->getPrivacity($user_id, null, $tsCuenta->isFollowed((int)$user_id, true), 0);
+			$follow = $tsCuenta->isFollowed((int)$user_id, true) ? 1 : 0;
+			$priv = $tsMuro->getPrivacity($user_id, 'null', $follow, 0);
 			$smarty->assign("tsPrivacidad", $priv);
 			//
-			if($_GET['type'] === 'wall') $tsStream = $tsMuro->getWall($user_id,$start);
+			if($_GET['type'] === 'wall') $tsStream = $tsMuro->getWall($user_id, (int)$start);
 			else if($_GET['type'] === 'news') $tsStream = $tsMuro->getNews($start);
 			// ASIGNAMOS
 			if(!is_array($tsStream)) {
@@ -110,7 +110,7 @@ switch($action){
 	break;
 	case 'muro-likes':
 		//<---
-		$action = (!isset($_GET['do']) || $_GET['do'] === '') ? $tsMuro->likePost() : $tsMuro->showLikes();
+		$action = (trim($_GET['do'] ?? '') === '') ? $tsMuro->likePost() : $tsMuro->showLikes();
 		echo json_encode($action);
 		//--->
 	break;

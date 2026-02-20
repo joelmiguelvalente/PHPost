@@ -1,74 +1,64 @@
 <h1 class="text-xl font-semibold mb-4">Administrar Registro</h1>
 <div class="rounded border bg-white dark:bg-surface p-4 shadow-sm">
-
-	{if $tsSave}<div style="display: block;" class="mensajes ok">Configuraciones guardadas</div>{/if}
-	<form action="" method="post" autocomplete="off">
+	{include "dashboard/Alert.tpl" text="Configuraciones guardadas" color="green" show=$tsSave}
+	<form method="post" autocomplete="off" class="space-y-6">
 		<fieldset class="rounded-lg border border-gray-200 dark:border-gray-700 p-6 bg-white dark:bg-surface shadow-sm">
-			<legend>Configuraci&oacute;n del Registro</legend>
-			<dl>
-				<dt>
-					<label for="ai_edad">Edad requerida:</label>
-					<br /><span>A partir de que edad los usuarios pueden registrarse.</span></dt>
-				<dd>
-					<input type="text" id="ai_edad" name="c_allow_edad" style="width:10%" maxlength="2" value="{$tsConfig.c_allow_edad}" /> a&ntilde;os.</dd>
-			</dl>
-			<dl>
-				<dt>
-					<label for="ai_met_welcome">Mensaje de Bienvenida:</label>
-					<br /><span id="c_message_welcome" {if $tsConfig.c_met_welcome==0 }style="display:none;" {/if}> <br /> [usuario] => Nombre del registrado <br /> [welcome] => Bienvenido/a depende del sexo <br /> [web] => Nombre de esta web <br /> <br />(Se aceptan BBCodes y Smileys)</span></dt>
-				<dd>
-					<select id="ai_met_welcome" name="c_met_welcome" style="width: 266px;" class="select" {if $tsConfig.c_met_welcome==0 } onchange="if($('#ai_met_welcome').val() != 0) $('textarea[name=c_message_welcome]').slideDown(); $('#c_message_welcome').slideDown();" {/if}>
-						<option value="0" {if $tsConfig.c_met_welcome==0 }selected{/if}>No dar bienvenida</option>
-						<option value="1" {if $tsConfig.c_met_welcome==1 }selected{/if}>Muro</option>
-						<option value="2" {if $tsConfig.c_met_welcome==2 }selected{/if}>Mensaje privado</option>
-						<option value="3" {if $tsConfig.c_met_welcome==3 }selected{/if}>Aviso</option>
-					</select>
-					<br />
-					<textarea name="c_message_welcome" id="ai_met_welcome" style="width: 260px; height: 100px; {if $tsConfig.c_met_welcome == 0} display:none; {/if}">{$tsConfig.c_message_welcome}</textarea>
-				</dd>
-			</dl>
-			<dl>
-				<dt>
-					<label for="ai_reg_active">Registro abierto:</label>
-					<br /><span>Permitir el registro de nuevos usuarios</span></dt>
-				<dd>
-					<label>
-						<input name="c_reg_active" type="radio" id="ai_reg_active" value="1" {if $tsConfig.c_reg_active==1 }checked="checked" {/if} class="radio" />S&iacute;</label>
-					<label>
-						<input name="c_reg_active" type="radio" id="ai_reg_active" value="0" {if $tsConfig.c_reg_active !=1 }checked="checked" {/if} class="radio" />No</label>
-				</dd>
-			</dl>
-			<dl>
-				<dt>
-					<label for="ai_reg_activate">Activar usuarios:</label>
-					<br /><span>Activar autom&aacute;ticamente la cuenta de usuario.</span></dt>
-				<dd>
-					<label>
-						<input name="c_reg_activate" type="radio" id="ai_reg_activate" value="1" {if $tsConfig.c_reg_activate==1 }checked="checked" {/if} class="radio" />S&iacute;</label>
-					<label>
-						<input name="c_reg_activate" type="radio" id="ai_reg_activate" value="0" {if $tsConfig.c_reg_activate !=1 }checked="checked" {/if} class="radio" />No</label>
-				</dd>
-			</dl>
-										
-			<dl>
-				<dt>
-					<label for="pkey">reCaptcha p&uacute;blica</label>
-					<br /><span>Clave p&uacute;blica de <a href="https://www.google.com/recaptcha/admin">reCatpcha</a>.</span>
-				</dt>
-				<dd>
-					<input type="text" id="pkey" name="pkey" value="{$tsConfig.pkey}" />
-				</dd>
-			</dl>
-			<dl>
-				<dt>
-					<label for="skey">reCaptcha secreta</label>
-					<br /><span>Clave privada de <a href="https://www.google.com/recaptcha/admin">reCatpcha</a>.</span>
-				</dt>
-				<dd>
-					<input type="text" id="skey" name="skey" value="{$tsConfig.skey}" />
-				</dd>
-			</dl>
-										<p><input type="submit" name="save" value="Guardar Cambios" class="btn_g"/></p>
-									</fieldset>
-									</form>
-								</div>
+			{include "dashboard/Legend.tpl" text="Configuraci&oacute;n del Registro"}
+
+			{include "dashboard/FormGroup.tpl" type="number" id="c_allow_edad" label="Edad requerida" helper="A partir de que edad los usuarios pueden registrarse." name="c_allow_edad" value=$tsRegistro.c_allow_edad group=true suffix="a&ntilde;os" maxlength=3}
+
+			<!-- Modo mantenimiento -->
+		   <div class="grid grid-cols-1 md:grid-cols-3 gap-4 py-2 mb-3">
+		      <div>
+		        	<label for="c_message_welcome" class="font-medium text-gray-700 dark:text-gray-300">Mensaje de Bienvenida</label>
+		        	<p class="mt-1 text-xs text-gray-500">[usuario] => Nombre del registrado <br /> [welcome] => Bienvenido/a depende del sexo <br /> [web] => Nombre de esta web <br /> <br />(Se aceptan BBCodes y Smileys)</p>
+		      </div>
+		      <div class="md:col-span-2 space-y-3">
+		        	<div class="flex gap-6">
+						{include "dashboard/Select.tpl" id="c_met_welcome" name="c_met_welcome" options=[
+						   ['value'=>0, 'label'=>'No dar bienvenida'],
+						   ['value'=>1, 'label'=>'Muro'],
+						   ['value'=>2, 'label'=>'Mensaje privado'],
+						   ['value'=>3, 'label'=>'Aviso']
+						] selected=$tsRegistro.c_met_welcome}
+		        	</div>
+		        	{include "dashboard/Input.tpl" name="c_message_welcome" id="c_message_welcome" value=$tsRegistro.c_message_welcome placeholder="{$tsRegistro.c_message_welcome}"}
+		      </div>
+		   </div>
+
+		   {include "dashboard/FormGroup.tpl" type="radio" id="c_reg_active" label="Registro abierto" helper="Permitir el registro de nuevos usuarios" name="c_reg_active" checked=$tsRegistro.c_reg_active labels=["Sí", "No"] values=[1,0]}
+
+		   {include "dashboard/FormGroup.tpl" type="radio" id="c_reg_activate" label="Activar usuarios" helper="Activar autom&aacute;ticamente la cuenta de usuario." name="c_reg_activate" checked=$tsRegistro.c_reg_activate labels=["Sí", "No"] values=[1,0]}
+
+		   <hr>
+
+			<div class="grid grid-cols-1 md:grid-cols-3 gap-4 py-2 mb-3">
+		      <div>
+		        	<label for="captcha_provider" class="font-medium text-gray-700 dark:text-gray-300">Proveedor de captcha</label>
+		        	<p class="mt-1 text-xs text-gray-500">reCaptcha Enterprise: Google podría cobrarte para evitar limitaciones.</p>
+		      </div>
+		      <div class="md:col-span-2 space-y-3">
+		        	<div class="flex gap-6">
+						{include "dashboard/Select.tpl" id="captcha_provider" name="captcha_provider" options=[
+						   ['value'=>'recaptcha', 'label'=>'reCaptcha v3'],
+						   ['value'=>'hcaptcha', 'label'=>'hCaptcha'],
+						   ['value'=>'recaptcha_enterprise', 'label'=>'reCaptcha Enterprise']
+						] selected=$tsRegistro.captcha_provider}
+		        	</div>
+		      </div>
+		   </div>
+
+			{include "dashboard/FormGroup.tpl" id="g_project_id" label="ID del proyecto (console cloud)" name="g_project_id" value=$tsRegistro.g_project_id}
+
+			{*include "dashboard/FormGroup.tpl" id="g_credentials_json" label="Credencial JSON" name="g_credentials_json" value=$tsRegistro.g_credentials_json*}
+
+			<h3 class="my-3">Para reCaptcha accede a <a href="https://console.cloud.google.com/security/recaptcha" target="_blank"><strong>console.cloud.google.com/security/recaptcha</strong></a></h3>
+
+			{include "dashboard/FormGroup.tpl" id="public_key" label="Clave publica" name="public_key" value=$tsRegistro.public_key}
+
+			{include "dashboard/FormGroup.tpl" id="secret_key" label="Clave secreta" name="secret_key" value=$tsRegistro.secret_key}
+
+			{include "dashboard/Button.tpl" submit_text="Guardar Cambios"}
+		</fieldset>
+	</form>
+</div>

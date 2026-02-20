@@ -1,69 +1,44 @@
 <div class="sidebar-group">
-  	<button type="button" onclick="toggleGroup(this)" class="flex w-full items-center gap-3 p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 font-medium text-left">
-    	<span class="material-symbols-outlined text-base">dashboard</span>
-    	<span class="sidebar-text flex-1">General</span>
-    	<span class="material-symbols-outlined text-sm sidebar-text transition-transform">expand_more</span>
-  	</button>
-
-  	<!-- SUBMENU -->
+  	{include "dashboard/aside/Toggle.tpl" icon="dashboard" label="General"}
    <div class="sidebar-submenu mt-1 ml-8 space-y-1 hidden">
-      <a href="{$tsConfig.url}/admin/" class="sidebar-link block rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-800">Centro de Administraci&oacute;n</a>
-      <a href="{$tsConfig.url}/admin/creditos" class="sidebar-link block rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-800">Soporte y Cr&eacute;ditos</a>
+		{include "dashboard/aside/Item.tpl" label="Centro de Administraci&oacute;n"}
+		{include "dashboard/aside/Item.tpl" link="creditos" label="Soporte y Cr&eacute;ditos"}
    </div>
 </div>
-
 <div class="sidebar-group">
-	<button type="button" onclick="toggleGroup(this)" class="flex w-full items-center gap-3 p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 font-medium text-left">
-	 	<span class="material-symbols-outlined text-base">settings</span>
-	 	<span class="sidebar-text flex-1">Configuraci&oacute;n</span>
-	 	<span class="material-symbols-outlined text-sm sidebar-text transition-transform">expand_more</span>
-	</button>
+  	{include "dashboard/aside/Toggle.tpl" icon="settings" label="Configuraci&oacute;n"}
 	<div class="sidebar-submenu mt-1 ml-8 space-y-1 hidden">
-		<a href="{$tsConfig.url}/admin/configs" class="sidebar-link block rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-800">Configuraci&oacute;n </a>
-		<a href="{$tsConfig.url}/admin/temas" class="sidebar-link block rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-800">Temas y apariencia</a>
-		<a href="{$tsConfig.url}/admin/news" class="sidebar-link block rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-800">Noticias</a>
-		<a href="{$tsConfig.url}/admin/ads" class="sidebar-link block rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-800">Publicidad</a>
+		{include "dashboard/aside/Item.tpl" link="configs" label="Configuraci&oacute;n"}
+		{include "dashboard/aside/Item.tpl" link="registro" label="Configuraci&oacute;n del registro"}
+		{include "dashboard/aside/Item.tpl" link="temas" label="Temas y apariencia"}
+		{include "dashboard/aside/Item.tpl" link="news" label="Noticias"}
+		{include "dashboard/aside/Item.tpl" link="ads" label="Publicidad"}
 	</div>
 </div>
-
 <div class="sidebar-group">
-	<button type="button" onclick="toggleGroup(this)" class="flex w-full items-center gap-3 p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 font-medium text-left">
-	 	<span class="material-symbols-outlined text-base">security</span>
-	 	<span class="sidebar-text flex-1">Control</span>
-	 	<span class="material-symbols-outlined text-sm sidebar-text transition-transform">expand_more</span>
-	</button>
+  	{include "dashboard/aside/Toggle.tpl" icon="security" label="Control"}
 	<div class="sidebar-submenu mt-1 ml-8 space-y-1 hidden">
-		<a href="{$tsConfig.url}/admin/medals" class="sidebar-link block rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-800">Medallas</a>
-		<a href="{$tsConfig.url}/admin/afs" class="sidebar-link block rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-800">Afiliados</a>
-		<a href="{$tsConfig.url}/admin/stats" class="sidebar-link block rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-800">Estad&iacute;sticas</a>
-		<a href="{$tsConfig.url}/admin/blacklist" class="sidebar-link block rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-800">Bloqueos</a>
-		<a href="{$tsConfig.url}/admin/badwords" class="sidebar-link block rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-800">Censuras</a>
+		{include "dashboard/aside/Item.tpl" link="medals" label="Medallas"}
+		{include "dashboard/aside/Item.tpl" link="afs" label="Afiliados"}
+		{include "dashboard/aside/Item.tpl" link="stats" label="Estad&iacute;sticas"}
+		{include "dashboard/aside/Item.tpl" link="blacklist" label="Bloqueos"}
+		{include "dashboard/aside/Item.tpl" link="badwords" label="Censuras"}
 	</div>
 </div>
-
 <div class="sidebar-group">
-	<button type="button" onclick="toggleGroup(this)" class="flex w-full items-center gap-3 p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 font-medium text-left">
-	 	<span class="material-symbols-outlined text-base">article</span>
-	 	<span class="sidebar-text flex-1">Contenido</span>
-	 	<span class="material-symbols-outlined text-sm sidebar-text transition-transform">expand_more</span>
-	</button>
+  	{include "dashboard/aside/Toggle.tpl" icon="article" label="Contenido"}
 	<div class="sidebar-submenu mt-1 ml-8 space-y-1 hidden">
-		<a href="{$tsConfig.url}/admin/posts" class="sidebar-link block rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-800">Todos los Posts</a>
-		<a href="{$tsConfig.url}/admin/fotos" class="sidebar-link block rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-800">Todas las Fotos</a>
-		<a href="{$tsConfig.url}/admin/cats" class="sidebar-link block rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-800">Categor&iacute;as</a>
+		{include "dashboard/aside/Item.tpl" link="posts" label="Todos los Posts"}
+		{include "dashboard/aside/Item.tpl" link="fotos" label="Todas las Fotos"}
+		{include "dashboard/aside/Item.tpl" link="cats" label="Categor&iacute;as"}
 	</div>
 </div>
-
 <div class="sidebar-group">
-	<button type="button" onclick="toggleGroup(this)" class="flex w-full items-center gap-3 p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 font-medium text-left">
-	 	<span class="material-symbols-outlined text-base">group</span>
-	 	<span class="sidebar-text flex-1">Usuarios</span>
-	 	<span class="material-symbols-outlined text-sm sidebar-text transition-transform">expand_more</span>
-	</button>
+  	{include "dashboard/aside/Toggle.tpl" icon="group" label="Usuarios"}
 	<div class="sidebar-submenu mt-1 ml-8 space-y-1 hidden">
-		<a href="{$tsConfig.url}/admin/users" class="sidebar-link block rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-800">Todos los Usuarios</a>
-		<a href="{$tsConfig.url}/admin/sesiones" class="sidebar-link block rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-800">Sesiones</a>
-		<a href="{$tsConfig.url}/admin/nicks" class="sidebar-link block rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-800">Cambios de Nicks</a>
-		<a href="{$tsConfig.url}/admin/rangos" class="sidebar-link block rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-800">Rangos de Usuarios</a>
+		{include "dashboard/aside/Item.tpl" link="users" label="Todos los Usuarios"}
+		{include "dashboard/aside/Item.tpl" link="sesiones" label="Sesiones"}
+		{include "dashboard/aside/Item.tpl" link="nicks" label="Cambios de Nicks"}
+		{include "dashboard/aside/Item.tpl" link="rangos" label="Rangos de Usuarios"}
 	</div>
 </div>

@@ -18,8 +18,8 @@
 				<h5 class="mb-3 text-2xl font-semibold tracking-tight text-heading leading-8">PHPost Risus</h5>
 				<ul id="version_pp" class="pp_list">
 					<li>
-						<div class="title">Versi&oacute;n instalada</div>
-						<div class="body"><b>{$tsConfig.version}</b></div>
+	            	<span class="text-lg font-medium text-heading">Versi&oacute;n instalada</span>
+	            	<small class="text-body block">{$tsConfig.version}</small>
 					</li>
 				</ul>
 			</div>
@@ -59,7 +59,16 @@ document.addEventListener('DOMContentLoaded', function () {
 	$(function () {
 	   const $news = $('#news_pp');
 	   const $versions = $('#version_pp');
-
+	   // ---- Feed version ----
+	   $.get(route.url + '/feed-version.php').done(response => {
+	      const { name, latest, required_php } = response;
+	      let html = `<li class="flex flex-col py-2">
+	         <span class="text-lg font-medium text-heading">Última versión</span>
+	         <small class="text-body block">${name} ${latest} (php ${required_php})</small>
+	      </li>`;
+	      
+	      $versions.append(html);
+	   }).fail((_, status, error) => console.error('Error feed-version:', status, error));
 	   // ---- Feed soporte ----
 	   $.getJSON(route.url + '/feed-support.php').done(response => {
 	      if (!Array.isArray(response)) {

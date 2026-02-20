@@ -1,14 +1,14 @@
 {if $tsFoto.f_status != 0 || $tsFoto.user_activo == 0}
-	<div class="emptyData">Esta foto no es visible{if $tsFoto.f_status == 1} por acumulaci&oacute;n de denuncias u orden administrativa{elseif $tsFoto.f_status == 2} porque est&aacute; eliminada{elseif $tsFoto.user_activo != 1} porque la cuenta del due&ntilde;o se encuentra desactivada{/if}, pero puedes verla porque eres {if $tsUser->is_admod == 1}administrador{elseif $tsUser->is_admod == 2}moderador{else}autorizado{/if}.</div><br />
+	<div class="alert-empty">Esta foto no es visible{if $tsFoto.f_status == 1} por acumulaci&oacute;n de denuncias u orden administrativa{elseif $tsFoto.f_status == 2} porque est&aacute; eliminada{elseif $tsFoto.user_activo != 1} porque la cuenta del due&ntilde;o se encuentra desactivada{/if}, pero puedes verla porque eres {if $tsUser->is_admod == 1}administrador{elseif $tsUser->is_admod == 2}moderador{else}autorizado{/if}.</div><br />
 {/if}
 <div id="fg_centro" style="width: 600px; float: left; margin:0 10px">
 	<div class="foto">
 		<div class="v_user">
 			<div class="avatar-box">
-				<a href="{$tsConfig.url}/perfil/{$tsFoto.user_name}"><img src="{$tsRoutes.storage.avatar}/avatar_{$tsFoto.user_id}.webp"/></a>
+				<a href="{$tsConfig.url}/@{$tsFoto.user_name}"><img src="{$tsRoutes.storage.avatar}/avatar_{$tsFoto.user_id}.webp"/></a>
 			</div>
 			<div class="v_info">
-				<a href="{$tsConfig.url}/perfil/{$tsFoto.user_name}" class="user">{$tsFoto.user_name}</a>
+				<a href="{$tsConfig.url}/@{$tsFoto.user_name}" class="user">{$tsFoto.user_name}</a>
 				<div class="links">
 					<span style="background-image:url({$tsRoutes.tema.images}/icons/ran/{$tsFoto.r_image});color:#{$tsFoto.r_color}"><strong>{$tsFoto.r_name}</strong></span>
 					<span style="background-image:url({$tsRoutes.tema.images}/flags/{$tsFoto.user_pais.0|lower}.png);">{$tsFoto.user_pais.1}</span>
@@ -17,8 +17,8 @@
 				</div>
 				{if $tsUser->uid != $tsFoto.f_user && $tsUser->is_member}
 					<div class="v_follow">
-						<a class="btn_g unfollow_user_post" onclick="notifica.unfollow('user', {$tsFoto.f_user}, notifica.userInPostHandle, $(this).children('span'))" {if $tsFoto.follow == 0}style="display: none;"{/if}><span class="icons unfollow">Dejar de seguir</span></a>
-						<a class="btn_g follow_user_post" onclick="notifica.follow('user', {$tsFoto.f_user}, notifica.userInPostHandle, $(this).children('span'))" {if $tsFoto.follow == 1}style="display: none;"{/if}><span class="icons follow">Seguir Usuario</span></a>
+						<a class="btn" data-follow onclick="notifica.unfollow('user', {$tsFoto.f_user}, notifica.userInPostHandle, $(this).children('span'))" {if $tsFoto.follow == 0}style="display: none;"{/if}><span class="icons unfollow">Dejar de seguir</span></a>
+						<a class="btn" data-follow onclick="notifica.follow('user', {$tsFoto.f_user}, notifica.userInPostHandle, $(this).children('span'))" {if $tsFoto.follow == 1}style="display: none;"{/if}><span class="icons follow">Seguir Usuario</span></a>
 													
 						<br /><a onclick="denuncia.nueva('foto',{$tsFoto.foto_id}, '{$tsFoto.f_title}', '{$tsFoto.user_name}'); return false;" class="btn_g" style="width:105px;"><span class="icons denunciar_post">Denunciar</span></a>
 					</div>
@@ -28,11 +28,11 @@
 		</div>
 		<span class="spacer"></span>
 		<div id="imagen">
-			{if $tsFoto.f_user == $tsUser->uid || $tsUser->is_admod || $tsUser->can('moef') || $tsUser->can('moedfo')}
+			{if $tsFoto.f_user == $tsUser->uid || $tsUser->is_admod || $tsUser->permiso('moderacion.fotos.eliminar') || $tsUser->permiso('moderacion.fotos.editar')}
 				<div class="tools">
-				{if $tsFoto.f_status != 2 && ($tsUser->is_admod || $tsUser->can('moef') || $tsFoto.f_user == $tsUser->uid)}<a href="#" onclick="{if $tsUser->uid == $tsFoto.f_user}fotos.borrar({$tsFoto.foto_id}, 'foto'); {else}mod.fotos.borrar({$tsFoto.foto_id}, 'foto');  {/if}return false;">
+				{if $tsFoto.f_status != 2 && ($tsUser->is_admod || $tsUser->permiso('moderacion.fotos.eliminar') || $tsFoto.f_user == $tsUser->uid)}<a href="#" onclick="{if $tsUser->uid == $tsFoto.f_user}fotos.borrar({$tsFoto.foto_id}, 'foto'); {else}moderacion.fotos.borrar({$tsFoto.foto_id}, 'foto');  {/if}return false;">
 				  <img alt="Borrar" src="{$tsRoutes.tema.images}/borrar.png"/> Borrar</a>{/if}
-				{if $tsUser->is_admod || $tsUser->can('moedfo') || $tsFoto.f_user == $tsUser->uid}<a href="#" onclick="location.href='{$tsConfig.url}/fotos/editar.php?id={$tsFoto.foto_id}'; return false">
+				{if $tsUser->is_admod || $tsUser->permiso('moderacion.fotos.editar') || $tsFoto.f_user == $tsUser->uid}<a href="#" onclick="location.href='{$tsConfig.url}/fotos/editar.php?id={$tsFoto.foto_id}'; return false">
 				  <img alt="Editar" src="{$tsRoutes.tema.images}/editar.png"/> Editar</a>{/if}
 				</div>
 			{/if}
@@ -88,12 +88,12 @@
 				{if $tsFComments}
 					{foreach from=$tsFComments item=c}
 						<div class="item" id="div_cmnt_{$c.cid}">
-							<a href="{$tsConfig.url}/perfil/{$c.user_name}">
+							<a href="{$tsConfig.url}/@{$c.user_name}">
 								<img src="{$tsRoutes.storage.avatar}/avatar_{$c.user_id}.webp" width="50" height="50" class="floatL"/>
 							</a>
 							<div class="firma">
 								<div class="options">
-									{if $tsFoto.f_user == $tsUser->info.user_id || $tsUser->is_admod || $tsUser->can('moecf')}
+									{if $tsFoto.f_user == $tsUser->info.user_id || $tsUser->is_admod || $tsUser->permiso('moderacion.fotos.eliminar_comentarios')}
 									<a href="#" onclick="fotos.borrar({$c.cid}, 'com'); return false" class="floatR" style="margin:8px 5px">
 									  <img title="Borrar Comentario" alt="borrar" src="{$tsRoutes.tema.images}/borrar.png"/>
 									</a>
@@ -110,11 +110,11 @@
 							<div class="clearBoth"></div>
 						</div>
 					{/foreach}
-				{elseif $tsFoto.f_closed == 0 && ($tsUser->is_admod || $tsUser->can('gopcf'))}
+				{elseif $tsFoto.f_closed == 0 && ($tsUser->is_admod || $tsUser->permiso('global.fotos.comentar'))}
 				<div class="noComments">Esta foto no tiene comentarios, Se el primero!.</div>
 				{/if}
 			</div>
-			{if $tsUser->is_admod == 0 && $tsUser->can('gopcf') == false}
+			{if $tsUser->is_admod == 0 && $tsUser->permiso('global.fotos.comentar') == false}
 			<div class="noComments">No tienes permiso para comentar.</div>
 			{elseif $tsFoto.f_closed == 1}
 			<div class="noComments">La foto se encuentra cerrada y no se permiten comentarios.</div>
@@ -133,7 +133,7 @@
 				<div class="clearBoth"></div>
 			</div>
 			{else}
-			<div class="emptyData">Para poder comentar necesitas estar <a href="{$tsConfig.url}/registro/">Registrado.</a> O.. ya tienes usuario? <a onclick="open_login_box('open')" href="#">Logueate!</a></div>
+			<div class="alert-empty">Para poder comentar necesitas estar <a href="{$tsConfig.url}/registro/">Registrado.</a> O.. ya tienes usuario? <a onclick="open_login_box('open')" href="#">Logueate!</a></div>
 			{/if}
 		</div>
 	</div>

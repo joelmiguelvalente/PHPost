@@ -8,46 +8,35 @@
 
 declare(strict_types=1);
 
-/**
- * Inicializamos variable
- * 
- * $tsPage  = Plantilla para mostrar con este archivo.
- * $tsLevel = Nivel de acceso a esta pagina (ver faqs).
- * $tsAjax  = La respuesta sera por ajax si/no.
- */
-
-$tsPage  = "home";
-$tsLevel = 0; 
-$tsAjax  = (!isset($_GET['ajax']) && empty($_GET['ajax']));
-
 require_once dirname(__DIR__, 2) . "/header.php";
 $tsTitle = "{$tsCore->settings['titulo']} - {$tsCore->settings['slogan']}";
 
 /**
- * En caso de problemas la variable cambia
-*/
-$tsContinue = true;  // CONTINUAR EL SCRIPT
+ * Inicializamos variable
+ */
 
-/**
- * Verificamos el nivel de acceso
-*/
-$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
-if (!$tsLevelMsg) {
-   $tsPage = 'aviso';
-   $tsAjax = 0;
+$ctx = Controller::page('home')->everybody();
+// sincronizamos
+$ctx->exportLegacy();
+
+$tsLevelMsg = $tsCore->setLevel($ctx->getLevel(), true);
+if (is_array($tsLevelMsg)) {
+   $ctx->changePage('aviso');
+   $ctx->stop();
    $smarty->assign("tsAviso", $tsLevelMsg);
-   $tsContinue = false;
+   // sincroniza nuevamente
+   $ctx->exportLegacy();
 }
 
-if($tsContinue) {
+if($ctx->continue()) {
 
 	// Afiliados
-	require_once dirname(__DIR__, 1) . "/class/c.afiliado.php";
-	require_once dirname(__DIR__, 1) . "/class/c.comentarios.php";
-	require_once dirname(__DIR__, 1) . "/class/c.fotos.php";
-	require_once dirname(__DIR__, 1) . "/class/c.home.php";
-	require_once dirname(__DIR__, 1) . "/class/c.posts.php";
-	require_once dirname(__DIR__, 1) . "/class/c.tops.php";
+	require_once TS_CLASS . "/c.afiliado.php";
+	require_once TS_CLASS . "/c.comentarios.php";
+	require_once TS_CLASS . "/c.fotos.php";
+	require_once TS_CLASS . "/c.home.php";
+	require_once TS_CLASS . "/c.posts.php";
+	require_once TS_CLASS . "/c.tops.php";
 
 	// Afiliado Class
 	$tsAfiliado = new tsAfiliado($tsCore, $tsUser);
@@ -69,15 +58,15 @@ if($tsContinue) {
 	$tsHome = new tsHome($tsCore, $tsUser);
 	$tsComentarios = new tsComentarios($tsCore, $tsUser);
 	$tsTops = new tsTops($tsCore);
-	$tsFotos = new tsFotos();
+	$tsFotos = new tsFotos($tsCore, $tsUser);
 	// PAGINA
 	$tsPage = "home";
-	$tsTitle = $tsTitle.' - '.$tsCore->settings['slogan']; 	// TITULO DE LA PAGINA ACTUAL
 	
 	// ULTIMOS POSTS
 	$tsLastPosts = $tsHome->getLastPosts($category);
 	$smarty->assign("tsPosts", $tsLastPosts['data']);
 	$smarty->assign("tsPages", $tsLastPosts['pages']);
+
 	// ULTIMOS POSTS FIJOS
 	if($tsLastPosts['pages']['current'] === 1) {
 	   $tsLastStickys = $tsHome->getLastStickys($category);
@@ -107,12 +96,9 @@ if($tsContinue) {
 	$smarty->assign("tsAfiliados", $tsAfiliado->getAfiliados());
 	// DO <= PARA EL MENU
 	$smarty->assign("tsDo", $_GET['do'] ?? '');
-
-	
-
 }
 
 if($tsAjax) {
 	$smarty->assign("tsTitle", $tsTitle);
-   require_once dirname(__DIR__, 2) . "/footer.php";
+   require_once TS_ROOT . "/footer.php";
 }

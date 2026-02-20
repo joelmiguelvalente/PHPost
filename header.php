@@ -6,7 +6,7 @@
  * @copyright 2026
  */
 
-declare(strict_types=1);
+declare (strict_types = 1);
 
 /*
  * -------------------------------------------------------------------
@@ -16,33 +16,33 @@ declare(strict_types=1);
 
 defined('TS_HEADER') OR define('TS_HEADER', TRUE);
 
-const BASEPATH = __DIR__;
+define('BASEPATH', realpath(__DIR__));
 require_once BASEPATH . '/inc/config/Config.Paths.php';
 require_once TS_CONFIG . '/Config.php';
 require_once TS_CONFIG . '/Config.Session.php';
 require_once TS_CONFIG . '/Config.Errors.php';
 
+date_default_timezone_set(Config::app('localization.timezone'));
+
 // Límite de ejecución
 set_time_limit(300);
 
-// Funciones
-require_once TS_UTILS . '/IP.php';
-require_once TS_UTILS . '/Paginator.php';
-
-$IP = new IP;
-$Paginator = new Paginator;
+// Evitamos llamar al archivo a cada clase
+require_once TS_UTILS . "/Paginator.php";
+require_once TS_UTILS . "/IP.php";
+require_once TS_UTILS . "/Extras.php";
 
 require_once TS_EXTRA . '/functions.php';
 
 // Nucleo
 require_once TS_CLASS . '/c.core.php';
-	
+
 // Controlador de usuarios
 require_once TS_CLASS . '/c.user.php';
 
 // Monitor de usuario
 require_once TS_CLASS . '/c.monitor.php';
-	
+
 // Actividad de usuario
 require_once TS_CLASS . '/c.actividad.php';
 
@@ -52,19 +52,21 @@ require_once TS_CLASS . '/c.mensajes.php';
 // Crean requests
 require_once TS_EXTRA . '/QueryString.php';
 
+// Controller para inc/php/...
+require_once TS_UTILS . '/Controller.php';
+
 /*
  * -------------------------------------------------------------------
  *  Inicializamos los objetos principales
  * -------------------------------------------------------------------
  */
-$cleanRequest = new LimpiarSolicitud();
-$cleanRequest->limpiar();
+(new LimpiarSolicitud())->limpiar();
 
 // Cargamos el nucleo
 $tsCore = new tsCore();
 
 // Usuario
-$tsUser = new tsUser();
+$tsUser = new tsUser($tsCore);
 
 // Monitor
 $tsMonitor = new tsMonitor($tsCore, $tsUser);
@@ -87,11 +89,12 @@ $smarty->output(false);
  * -------------------------------------------------------------------
  *  Asignación de variables
  * -------------------------------------------------------------------
-*/
+ */
 // Configuraciones
 $smarty->assign('tsConfig', $tsCore->settings);
 $smarty->assign('tsRoutes', $tsCore->route());
 $smarty->assign('tsCategories', $tsCore->getCategorias());
+$smarty->assign('tsModerar', $tsCore->getNovemods());
 
 // Obtejo usuario
 $smarty->assign('tsUser', $tsUser);
@@ -104,45 +107,45 @@ $smarty->assign('tsNots', $tsMonitor->notificaciones);
 
 // Mensajes
 $smarty->assign('tsMPs', $tsMP->mensajes);
-		
+
 /**
  * Si hay alguna IP bloqueada por el Moderador/Administrador,
  * ejecutamos esta función, en caso contrario no hará nada
-*/
-$IPBAN = $IP->executeIP();
-if(!filter_var($IPBAN, FILTER_VALIDATE_IP)) exit('Su ip no se pudo validar.');
-if(db_exec('num_rows', db_exec([__FILE__, __LINE__], 'query', "SELECT id FROM w_blacklist WHERE type = 1 && value = '{$IPBAN}' LIMIT 1"))) die('Tu IP fue bloqueada por el administrador/moderador.');
+ */
+$tsUser->getUserBlacklist();
 
 /**
  * Si hay un usuario baneado por el Moderador/Administrador,
  * ejecutamos esta función, en caso contrario no hará nada
-*/
+ */
 $banned_data = $tsUser->getUserBanned();
 
-if(!empty($banned_data)){
-   if(empty($_GET['action'])){
-      $smarty->assign([
-         'tsTitle' => "Usuario baneado - {$tsCore->settings['titulo']}",
-         'tsBanned' => $banned_data
-      ]);
-      $smarty->loadFilter('output', 'trimwhitespace');
-      $smarty->display('suspension.tpl');
-
-   } else die('<div class="emptyError">Usuario suspendido</div>');
-   //
-   exit;
+if (!empty($banned_data)) {
+	if (empty($_GET['action'])) {
+		$smarty->assign([
+			'tsTitle' => "Usuario baneado - {$tsCore->settings['titulo']}",
+			'tsBanned' => $banned_data,
+		]);
+		$smarty->setTheme(TS_TEMA);
+		$smarty->setPage('suspension');
+		$smarty->load('suspension', true);
+		die;
+	}
 }
 
 /**
  * Si la página esta en modo mantenimiento, ejecutamos la función
-*/
-if($tsCore->settings['offline'] == 1 && ($tsUser->is_admod != 1 && $tsUser->permisos['govwm'] == false) && $_GET['action'] != 'login-user'){
-   $smarty->assign('tsTitle', "Sitio en mantenimiento - {$tsCore->settings['titulo']}");
-   $smarty->assign('tsLogin', (isset($_GET["login"]) and $_GET["login"] == 'admin' ? true : false));
+ */
+$actionOFF = trim($_GET['action'] ?? '');
+if ((int)$tsCore->settings['offline'] === 1 && (!$tsUser->is_admod && !$tsUser->permiso('global.sistema.modo_mantenimiento')) && $actionOFF !== 'login-user') {
 
-   if(empty($_GET["action"])) {
-      $smarty->loadFilter('output', 'trimwhitespace');
-      $smarty->display('mantenimiento.tpl');
-   } else die('Espera un poco...');
-   exit();
+	$login = isset($_GET["login"]) && $_GET["login"] === 'admin';
+	$smarty->assign('tsTitle', "Sitio en mantenimiento - {$tsCore->settings['titulo']}");
+	$smarty->assign('tsLogin', $login);
+
+	$smarty->setTheme(TS_TEMA);
+	$smarty->setPage('mantenimiento');
+	$smarty->load('mantenimiento', true);
+	
+	exit();
 }

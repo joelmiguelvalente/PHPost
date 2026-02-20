@@ -129,14 +129,14 @@ require_once __DIR__ . '/backend.php';
 							</dl>
 							<br>
 							<legend>Datos de reCAPTCHA <small>(opcional)</small></legend>
-							<p>Completalo solo si querés habilitar protección antispam. Obten la clave desde <a href="https://www.google.com/recaptcha/admin" target="_blank"><strong>google.com/recaptcha/admin</strong></a></p>
+							<p>Completalo solo si querés habilitar protección antispam. Obten la clave desde <a href="https://console.cloud.google.com/security/recaptcha" target="_blank"><strong>console.cloud.google.com/security/recaptcha</strong></a></p>
 							<dl>
 								<dt><label for="pkey">Clave pública del sitio:</label></dt>
-								<dd><input type="text" id="pkey" name="pkey" value="<?= $site['pkey'] ?>" placeholder="6LfFFiMdAAAAAAQjDafWXZ0FeyesKYjVm4DSUoao" required /></dd>
+								<dd><input type="text" id="pkey" name="pkey" value="<?= $site['pkey'] ?>" placeholder="6LfFFiMdAAAAAAQjDafWXZ0FeyesKYjVm4DSUoao" /></dd>
 							</dl>
 							<dl>
 								<dt><label for="skey">Clave secreta:</label></dt>
-								<dd><input type="text" id="skey" name="skey" value="<?= $site['skey'] ?>" placeholder="6LfFFiMdAAAAAFIP4oNFLQx5Fo1FyorTzNps8ChE" required/></dd>
+								<dd><input type="text" id="skey" name="skey" value="<?= $site['skey'] ?>" placeholder="6LfFFiMdAAAAAFIP4oNFLQx5Fo1FyorTzNps8ChE"/></dd>
 							</dl>
 							<p class="button-group"><input type="submit" class="gbqfb" value="Continuar &raquo;"/></p>
 

@@ -12,8 +12,6 @@ if (!defined('TS_HEADER')) {
 	exit('No se permite el acceso directo al script');
 }
 
-require_once TS_UTILS . '/IP.php';
-
 class tsVisitas {
 
 	protected tsCore $Core;

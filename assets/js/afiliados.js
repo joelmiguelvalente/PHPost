@@ -14,7 +14,7 @@ function isImageUrl(value) {
 }
 
 function showMessage(message) {
-	$('#AFStatus span').fadeOut().text(message).fadeIn();
+	$('#AFStatus div').fadeOut().text(message).fadeIn();
 	return false;
 }
 
@@ -23,7 +23,6 @@ const afiliado = {
 	nuevo() {
 		$.get(`${route.url}/afiliado-form.php`, response => {
 			dialog.init({
-				maskClose: false,
 				title: 'Nueva Afiliaci&oacute;n',
 				body: response,
 				buttons: {
@@ -34,48 +33,46 @@ const afiliado = {
 		});
 	},
 	enviar() {
-		const inputs = $('#AFormInputs :input');
+		const inputs = $('#AFormInputs').find(':input[name]').not(':button, :submit, :reset');
 		let status = true;
-		const params = {};
-
-		inputs.each((_, field) => {
-			let value = $(field).val().trim();
-			const name = $(field).attr('name');
-			// valor por defecto
-			if (name === 'sid' && value === '') {
-				value = 'offKey';
-			}
-			// requerido
-			if (value === '' && status) {
-				const label = $(field).parent().find('label').text();
-				status = showMessage(`No has completado el campo ${label}`);
-				return;
-			}
-			// validación URL
-			if (status && name === 'url' && !isValidUrl(value)) {
-				status = showMessage('La URL ingresada no es válida');
-				return;
-			}
-			// validación banner (URL + imagen)
-			if (status && name === 'banner' && !isImageUrl(value)) {
-				status = showMessage('El banner debe ser una URL de imagen válida');
-				return;
-			}
-			if (status) {
-				params[name] = value;
-			}
-		});
-		if (status) {
-			dialog.loading('Enviando...', 'Nueva Afiliación');
-			afiliado.enviando(params);
-		}
+	   const params = {};
+	   inputs.each((_, field) => {
+	      const $field = $(field);
+	      const name = $field.attr('name');
+	      let value = ($field.val() ?? '').toString().trim();
+	      // valor por defecto
+	      if (name === 'a_sid' && value === '') {
+	         value = 'offKey';
+	      }
+	      // requerido
+	      if (value === '' && status) {
+	         const label = $field.parent().find('label').text();
+	         status = showMessage(`No has completado el campo ${label}`);
+	         return false; // ✔ corta el each
+	      }
+	      // validación URL
+	      if (status && name === 'a_url' && !isValidUrl(value)) {
+	         status = showMessage('La URL ingresada no es válida');
+	         return false;
+	      }
+	      // validación banner
+	      if (status && name === 'a_banner' && !isImageUrl(value)) {
+	      	status = showMessage('El banner debe ser una URL de imagen válida');
+	      	return false;
+	      }
+	      params[name] = value;
+	   });
+	   if (status) {
+	      dialog.loading('Enviando...', 'Nueva Afiliación');
+	      afiliado.enviando(params);
+	   }
 	},
 	enviando(params) {
 		$('#loading').fadeIn(250); 
 		$.post(`${route.url}/afiliado-nuevo.php`, params, response => {
 			const { status, message } = $.parseResponse(response);
 			if(status === 0) {
-				$('#AFStatus > span').fadeOut().text('La URL es incorrecta').fadeIn();
+				$('#AFStatus > span').fadeOut().text(message).fadeIn();
 				return;
 			}
 			if(status === 1) {
@@ -99,5 +96,43 @@ const afiliado = {
 			});
 			$('#loading').fadeOut(350); 
 		}); 
-	 }
+	},
+	// admin
+	borrar(afid, gew) {
+    	if(!gew) {
+			dialog.init({ 
+				title: 'Borrar Afiliado', 
+				body: '&#191;Quiere borrar este afiliado?',
+		      buttons: {
+		         confirm: { text: 'Borrar afiliado', action: () => afiliado.borrar(afid, true) },
+		      }
+		   });
+		   return;
+      } 
+      $('#loading').fadeIn(250);
+      $.post(`${route.url}/afiliado-borrar.php`, { afid }, response => {
+      	const { status, message } = $.parseResponse(response);
+      	dialog.alert(status ? 'Hecho' : 'Opps', message, false);
+      	if(status) {
+      		$(`#few_${afid}`).remove();
+      	}
+      });
+      $('#loading').fadeOut(350);
+         
+   },
+   activar(aid) {
+   	$('#loading').fadeIn(250);
+      $.post(`${route.url}/afiliado-setactive.php`, { aid }, response => {
+      	console.log(response)
+      	const { status, message } = $.parseResponse(response);
+      	dialog.alert(status ? 'Hecho' : 'Opps', message, false);
+      	if(status === 1 || status === 2) {
+				let color = (status === 1) ? 'green' : 'purple';
+				$(`#status_afiliado_${aid} > span`).removeClass('bg-purple-100 text-purple-800 bg-green-100 text-green-800')
+				.addClass(`bg-${color}-100 text-${color}-800`)
+				.text((status === 1 ? 'Activa' : 'Inactiva'))
+      	}
+      });
+   	$('#loading').fadeOut(250);
+  	}
 }

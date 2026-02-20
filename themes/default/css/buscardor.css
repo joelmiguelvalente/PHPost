@@ -1,0 +1,321 @@
+.searchBar {
+	padding: 7px 0 0 7px;
+	border-top-left-radius: 3px;
+	border-bottom-left-radius: 3px;
+	height: 21px;
+	border:1px solid #AFAFAF;
+	width: 406px;
+	float:left;
+}
+#buscador div.filterBy ul {
+	float:none;
+	margin:0 auto;
+	width:190px;
+}
+.xResults {
+	font-size:14px;
+	line-height: 23px;
+}
+.xResults strong {
+	color:#004a95;
+}
+#showResult ul li.resultBox {
+	float:left;
+	width: 48%;
+	margin: 5px;
+	height: 125px;
+}
+
+#showResult ul li h4 {
+	margin: 5px 0 2px;
+}
+
+#showResult ul li h4 a {
+	color:#053e78;
+	font-size: 14px;
+}
+
+#showResult .avatarBox {
+	width: 85px;
+	position:relative;
+	background:transparent url(images/shadowAvaS.gif) no-repeat scroll left bottom;
+	height:85px;
+}
+
+#showResult .avatarBox .riboon {
+	position: absolute;
+	display:none;
+	border:none;
+	background:none;
+}
+
+#showResult .resultBox.oficial .avatarBox .riboon {
+	display:block;
+	left:-9px;
+	top:30px;
+}
+
+#showResult .infoBox {
+	width: 230px;
+}
+
+#centro #showResult .infoBox {
+	width: 145px;
+}
+
+#showResult .infoBox span {
+	display:block;
+	padding: 5px;
+	border-top: 1px solid #CCC;
+}
+
+#showResult ul li img.av {
+	padding: 2px;
+	background: #FFF;
+	border: 1px solid #CCC;
+	float:left;
+}
+
+#showResult ul li ul {
+	margin-left: 5px;
+	float:left;
+	color:#222;
+	width:100%;
+	margin-right: 15px;
+}
+
+#showResult ul li ul li {
+	border-top: 1px solid #CCC;
+	padding: 3px 4px;
+	width:100%;
+}
+
+
+#showResult ul li ul strong {
+	color: #000;
+}
+
+#resultados {
+	width:100%;
+	float: left;
+}
+#resultados .filterBy, #resultados .paginatorBar {
+	width: 750px;
+}
+.searchFil {
+	color: #666;
+}
+.searchWith {
+	font-weight:bold;
+	color: #000;
+	font-size: 13px;
+	float:left;float:left;
+}
+.searchWith a {
+	color:#004a95!important;
+}
+
+.searchWith a.here {
+	color: #000!important;
+}
+span.sep {
+	font-weight: normal;
+	color:#EEE;
+	margin:0 5px;
+}
+.searchTabs {
+	bottom:-1px;
+	margin-bottom:-1px;
+	position:relative;
+	*bottom:0px;
+}
+.searchTabs li {
+	border:1px solid #CCC;
+	float:left;
+	background: #EEE;
+	margin-right: 5px;
+	font-weight: bold;
+	font-size:13px;
+	position:relative;
+	z-index:10;
+}
+
+.searchTabs li  a {
+	color: #004a95;
+	padding:5px 15px;
+	display:block;
+}
+.searchTabs li.here a {
+	color: #000;
+	padding:5px 15px;
+	display:block;
+}
+.searchTabs li:hover {
+	background: #CCC;
+}
+.searchTabs li.here {
+	background: white;
+	border-bottom:1px solid #FFF;
+}
+
+.searchTabs li.clearfix {
+	border:none;
+	padding:0;
+	margin:0;
+	background:none;
+}
+
+
+#buscadorBig {
+	position:relative;
+	width:555px;
+	margin: 45px auto;
+}
+.searchCont {
+	margin-top: -1px;
+	padding:12px;
+	*padding-top: 6px;
+	border: 1px solid #CCC; 
+	clear:both;
+	background: url('images/gradientSearch.gif') bottom left repeat-x;
+	-moz-border-radius-bottomleft:5px;
+	-moz-border-radius-bottomright:5px;
+	-moz-border-radius-topright:5px;
+}
+
+.logoMotorSearch {
+	*margin-right:12px;
+	float:right;
+}
+.searchBar {
+	-moz-border-radius:3px;
+	margin-right: 10px;
+	font-size:18px;
+	padding:7px 0 8px 7px;
+	*width: 370px;
+}
+.boxBox {
+	-moz-border-radius: 5px;
+	background: #E1E1E1;
+}
+#buscadorLite .boxBox {
+	*height:60px;
+}
+.inputTxt {
+	border: 2px solid #E1E1E1;
+	-moz-border-radius: 5px;
+	background: #FFF;
+	width: 100px;
+}
+.filterSearch {
+	padding: 8px ;
+	-moz-border-radius-bottomleft: 5px;
+	-moz-border-radius-bottomright: 5px;
+	border-top: 1px dashed #CCC  ;
+}
+.filterSearch strong {
+	display: block;
+	float:left;
+	color:#000;
+	margin: 2px 20px 2px 0;
+}
+.searchEngine {
+	padding:8px;
+}
+
+.searchEngine .mBtn {
+	padding:6px 10px;
+	font-size:17px;
+	*padding: 6px 2px;
+}
+
+.whereSearch {
+	border-right: 1px solid #CCC; 
+	padding-right: 20px;
+	float:left;
+}
+
+.byCatSearch {
+	border-left: 1px solid #FFF; 
+	padding-left: 20px;
+	float:left;
+}
+
+.byCatSearch label {
+	*margin-top:-5px;
+}
+
+.byCatSearch select {
+	margin-top:2px;
+	width: 200px;
+	height:20px
+}
+/* Lite  */
+#buscadorLite {
+	margin-bottom:15px;
+}
+#buscadorLite .searchEngine{
+	float:left;
+}
+#buscadorLite .filterSearch{
+	float:left;
+	border:none;
+}
+#buscadorLite .filterSearch strong {
+	margin:0 15px 0 0;
+}
+#buscadorLite .searchTabs li {
+	font-size:12px;
+} 
+#buscadorLite .searchWith {
+	float:left;
+}
+
+.mini_leftIbuscador { float: left }
+.mini_ibuscador {
+	background: url(images/mini_bgInputS_2.gif) top left repeat-x;
+	width: 295px;
+	padding: 0;
+	border: none;
+	float: left;
+	padding: 5px 0;
+	margin: 0;
+}
+.mini_bbuscador {
+		background: url(images/mini_buscar_2.gif) top left repeat-x;
+		border: none;
+		width: 41px;
+		height: 24px;
+		float: left;
+		cursor: pointer;
+		margin: 0 !important;
+}
+.search-label {
+		float: left;
+		color: #fff
+}
+.search-in {
+		color: #FFFFFF;
+		font-weight: bold;
+		margin-bottom: 5px;
+		padding-left: 10px;
+		text-shadow: 0 1px 2px #000000;
+}
+.search-in a { cursor: pointer }
+.search-in a:hover {
+		color: #ffff00;
+		text-decoration: none
+}
+.search_active { color: #ffff00 }
+.buscador-h {
+		width:350px;
+	margin: 10px 0 0 10px;
+	float: right
+}
+
+img.imagen-preview {
+	width: 120px;
+	height: 120px;
+	margin: 0 10px 0 10px;
+	display: block;
+}

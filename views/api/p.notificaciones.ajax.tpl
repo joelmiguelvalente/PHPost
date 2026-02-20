@@ -1,7 +1,16 @@
-    {if $tsData}
+{if $tsData}
 	{foreach from=$tsData item=noti}
-   	<li{if $noti.unread > 0}  class="unread"{/if}><span class="monac_icons ma_{$noti.style}"></span>{if $noti.total == 1}<a href="{$tsConfig.url}/perfil/{$noti.user}" title="{$noti.user}">{$noti.user}</a>{/if} {$noti.text} <a title="{$noti.ltit}" class="obj" href="{$noti.link}">{$noti.ltext}</a></li>
-    {/foreach}
-    {else}
-    <li style="padding:10px;"><b>No hay notificaciones</b></li>
-    {/if}
+      <div class="dropdown-item{if $noti.unread > 0} unread{/if}">
+         <div class="icon">
+            <span class="monac_icons ma_{$noti.style}"></span>
+         </div>
+         <div class="info">
+            {if $noti.total == 1 && $noti.user != ''}<a href="{$tsConfig.url}/@{$noti.user}" class="dropdown-link" title="{$noti.user}">{$noti.user}</a> {/if}{$noti.text}{if $noti.link} <a title="{$noti.ltit}" class="dropdown-link" href="{$noti.link}">{$noti.ltext}</a>{/if}
+         </div>
+      </div>
+   {/foreach}
+{else}
+   <div class="dropdown-empty">
+      No hay notificaciones
+   </div>
+{/if}

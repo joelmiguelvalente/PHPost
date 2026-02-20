@@ -1,284 +1,177 @@
-const mod = {
-	posts : {
-		view: function(pid) {
-			$('#loading').fadeIn(250);
-			$.ajax({
-				type: 'post',
-				url: route.url + '/moderacion-posts.php?do=view',
-				data: 'postid=' + pid,
-				success: function(r) {
-					mydialog.class_aux = 'preview';
-					mydialog.show(true);
-					mydialog.title('...');
-					mydialog.body(r);
-					mydialog.buttons(true, true, 'Cerrar', 'close', true, false);
-					mydialog.center();
-						  $('#loading').fadeOut(350);
+const moderacion = {
+	posts: {
+		ocultar(pid) {
+			const razon = $('#d_razon').val();
+			if(razon.length <= 1 || razon.length > 50) {
+				dialog.alert('Error', (razon.length <= 1 ? 'Introduzca una raz&oacute;n' : 'La raz&oacute;n debe tener menos de 50 letras.'));
+				$('#d_razon').focus();
+				return;
+			} else {
+				api('moderacion-posts.php?do=ocultar', { razon, pid }, response => {
+					const { status, message } = $.parseResponse(response);
+					const title = status === 1 ? 'Hecho' : 'Opps!';
+					dialog.alert(title, message, true);
+				});
+			}
+		}
+	},
+	view(postid) {
+		api('moderacion-posts.php?do=view', { postid }, response => {
+			dialog.init({
+				title: '...', 
+				body: response, 
+				buttons: { 
+					cancel: { text: 'Cerrar' } 
 				}
 			});
-		  },
-		
-		ocultar: function(pid){
-		
-		var text = $('#d_razon').val();
-		
-		if(text.length < 1){
-			mydialog.alert('Error', 'Introduzca una raz&oacute;n');
-			text.focus();
-			return;
-		}else if(text.length > 50){
-			mydialog.alert('Error', 'La raz&oacute;n debe tener menos de 50 letras.');
-			text.focus();
-			return;
-		}else{
-		
-		$.post(route.url + '/moderacion-posts.php?do=ocultar', 'razon=' + text + '&pid=' + pid, function(a){
-			
-			  mydialog.alert((a.charAt(0) == '0' ? 'Opps!' : 'Hecho'), a.substring(3), true);
-			
-			  mydialog.center();
-						
 		});
-		
-		
+	},
+	borrar(pid, redirect, aceptar) {
+		if(!aceptar) {
+			api('moderacion-posts.php?do=borrar', {}, response => {
+				dialog.init({ title: 'Borrar Post', body: response, 
+					buttons: { 
+						confirm: { text: 'Borrar', action: () => moderacion.posts.borrar(pid, redirect, 1) } 
+					}
+				});
+			});
+			return;
+		} else {
+			dialog.loading('Eliminando...', 'Borrar Post');
+			const razon = $('#razon').val()
+			const razon_desc = $('input[name=razon_desc]').val();
+			if($('#send_b').prop('checked')){
+				const send_b = 'yes';
+			}
+			api('moderacion-posts.php?do=borrar', { pid, razon, razon_desc, send_b }, response => {
+				const { status, message } = $.parseResponse(response);
+				if(status === 0) {
+					dialog.alert('Error', message);
+					return;
+				}
+				moderacion.redirect({ 
+					url: "/moderacion/posts", 
+					redirect, 
+					page: 'posts', 
+					target: `#report_${pid}`, 
+					message 
+				});
+			});
 		}
-		  },
-		  // BORRAR
-		  borrar:function(pid, redirect, aceptar){
-			if(!aceptar){
-				$('#loading').fadeIn(250);
-					$.ajax({
-						type: 'POST',
-						url: route.url + '/moderacion-posts.php?do=borrar',
-						success: function(h){
-							mydialog.show();
-							mydialog.title('Borrar Post');
-							mydialog.body(h);
-							mydialog.buttons(true, true, 'Borrar', 'mod.posts.borrar(' + pid + ", '" + redirect + "', 1);", true, false, true, 'Cancelar', 'close', true, true);
-								$('#modalBody').css('padding', '20px 10px 0');
-							mydialog.center();
-								$('#loading').fadeOut(350);
-							return;	  
-						}
-					});
+	},
+	mensajes: {
+		borrar(mpid, few) {
+			if(!few){
+				dialog.easy('Borrar Mensaje', '&#191;Quiere eliminar <b>toda</b> la conversaci&oacute;n?', 'S&iacute; borrar', () => moderacion.mensajes.borrar(mpid, 1));
+				return;
 			} else {
-					mydialog.procesando_inicio('Eliminando...', 'Borrar Post');
-					 var razon = $('#razon').val()
-					 var razon_desc = $('input[name=razon_desc]').val();
-				
-				if($('#send_b').prop('checked')){
-					var send_b = 'yes';
-				}
-				$('#loading').fadeIn(250);
-					$.ajax({
-						type: 'POST',
-						url: route.url + '/moderacion-posts.php?do=borrar',
-						data: 'postid=' + pid + '&razon=' + razon + '&razon_desc=' + razon_desc + '&send_b=' + send_b,
-						success: function(h){
-							switch(h.charAt(0)){
-								case '0': //Error
-									mydialog.alert('Error', h.substring(3));
-									break;
-								case '1':
-												if(redirect == 'true') mod.redirect("/moderacion/posts", 1200);
-												else if(redirect == 'posts') {
-													 mydialog.alert('Aviso', h.substring(3));
-													 mod.redirect("/posts/", 2000);
-												} 
-												else {
-													 mydialog.close();
-													 $('#report_' + pid).slideUp();   
-												}
-									break;
-							}
-								$('#loading').fadeOut(350);
-						},
-						complete: function(){
-							mydialog.procesando_fin();
-								$('#loading').fadeOut(350);
-						}
+				api('moderacion-mps.php?do=borrar', { mpid }, response => {
+					const { status, message } = $.parseResponse(response);
+					dialog.alert((status === 0 ? 'Opps!' : 'Hecho'), message, false);
+					$('#report_' + mpid).fadeOut(); 
+				});
+	  		}
+		}
+	},
+	fotos: {
+		borrar(fid, redirect, aceptar) {
+			if(!aceptar) {
+				api('moderacion-fotos.php?do=borrar', { fid }, response => {
+					dialog.easy('Borrar Foto', response, 'Borrar foto', () => moderacion.fotos.borrar(fid, redirect, 1));
+					$('#report_' + fid).fadeOut(); 
+				});
+			} else {
+				dialog.loading('Eliminando...', 'Borrar Foto');
+				const razon = $('#razon').val()
+				const razon_desc = $('input[name=razon_desc]').val();
+				api('moderacion-fotos.php?do=borrar', { fid, razon, razon_desc }, response => {
+					const { status, message } = $.parseResponse(response);
+					if(status === 0) {
+						dialog.alert('Error', message, false);
+						return;
+					}
+					moderacion.redirect({ 
+						url: "/moderacion/fotos", 
+						redirect, 
+						page: 'fotos', 
+						target: `#report_${fid}`, 
+						message 
 					});
-				}
-		  },
-	 },
-
-	mps : {
-		 borrar:function(mid, few){
-			 if(!few){
-				mydialog.show();
-			
-				mydialog.title('Borrar Mensaje');
-			
-				mydialog.body('&#191;Quiere eliminar <b>toda</b> la conversaci&oacute;n?');
-			
-				mydialog.buttons(true, true, 'S&iacute;', 'mod.mps.borrar(' + mid + ', 1)', true, false, true, 'No', 'close', true, true);
-			
-				mydialog.center();
-			
-		  }else{
-				
-				$('#loading').fadeIn(250);
-		
-			  $.post(route.url + '/moderacion-mps.php?do=borrar', 'mpid=' + mid, function(a){
-			
-			  mydialog.alert((a.charAt(0) == '0' ? 'Opps!' : 'Hecho'), a.substring(3), false);
-			
-			  mydialog.center();
-			
-			$('#report_' + mid).fadeOut(); 
-			  
-			  $('#loading').fadeOut(350);
-			
+				});
+			}
+		}
+	},
+	usuarios: {
+		action(uid, action, redirect) {
+			let esAviso = (action === 'aviso');
+			const btn_txt = esAviso ? 'Enviar' : 'Suspender';
+			const titulo = esAviso ? 'Enviar Aviso/Alerta' : 'Suspender usuario';
+			const funcion = `set_${action}`;
+			moderacion.loadDialog(`/moderacion-users.php?do=${action}`, { uid }, titulo, btn_txt, 
+				() => moderacion.usuarios[funcion](uid, redirect)
+			);
+		},
+		set_aviso(uid, redirect, type = '') {
+			const av_type = $('#mod_type').val();
+			const av_subject = $('#mod_subject').val();
+			const av_body = $('#mod_body').val();
+			moderacion.sendData('/moderacion-users.php?do=aviso', { uid, av_type, av_subject, av_body }, uid, redirect);
+		},
+		set_ban(uid, redirect, type = '') {
+			const b_time = $('#mod_time').val();
+			const b_cant = $('#mod_cant').val();
+			const b_causa = $('#mod_causa').val();
+			//
+			moderacion.sendData('/moderacion-users.php?do=ban', { uid, b_time, b_cant, b_causa }, uid, redirect, '');
+		}
+	},
+	loadDialog(endpoint, params, title, text, action) {
+		api(endpoint, params, response => dialog.easy(title, response, text, action));
+	},
+	sendData(endpoint, params, id, redirect, type) {
+		dialog.loading('Procesando...', 'Espere');
+		api(endpoint, params, response => {
+			const { status, message } = $.parseResponse(response);
+			if(status === 0) {
+				dialog.alert('Error', message, false);
+				return;
+			}
+			dialog.alert('Aviso', message);
+			moderacion.redirect({ 
+				url: `/moderacion/${type}`, 
+				redirect, 
+				page: '',
+				target: `#report_${id}`, 
+				message 
+			}); 
 		});
-	  }
+	},
+	reboot(id, type, hdo, redirect) {
+		api(`moderacion-${type}.php?do=${hdo}`, { id }, response => {
+			const { status, message } = $.parseResponse(response);
+			if(status === 0) {
+				dialog.alert('Error', message, false);
+				return;
+			}
+			dialog.alert('Aviso', message);
+			$('#report_' + id).fadeOut();
+			moderacion.redirect({ 
+				url: `/moderacion/${type}`, 
+				redirect, 
+				page: '',
+				target: `#report_${id}`, 
+				message 
+			}); 
+		});
+	},
+	redirect({ url, redirect, page, target, message }) {
+		if(redirect === 'true' || redirect === page) {
+			let show = (redirect === page)
+			if(show) dialog.alert('Aviso', message);
+			let endpoint = `${route.url}/` + (show ? `${page}/` : `${url}/`);
+			setTimeout(() => document.location.href =  endpoint, 1200);
+		} else {
+			$(target).slideUp();   
+		}
 	}
-},
-
-fotos : {
-		 // BORRAR
-		  borrar:function(fid, redirect, aceptar){
-			if(!aceptar){
-					$.ajax({
-						type: 'POST',
-						url: route.url + '/moderacion-fotos.php?do=borrar',
-						success: function(h){
-							mydialog.show();
-							mydialog.title('Borrar Foto');
-							mydialog.body(h);
-							mydialog.buttons(true, true, 'Borrar', 'mod.fotos.borrar(' + fid + ", '" + redirect + "', 1);", true, false, true, 'Cancelar', 'close', true, true);
-								$('#modalBody').css('padding', '20px 10px 0');
-							mydialog.center();
-							return;	  
-						}
-					});
-			} else {
-					mydialog.procesando_inicio('Eliminando...', 'Borrar Foto');
-					 var razon = $('#razon').val()
-					 var razon_desc = $('input[name=razon_desc]').val();
-					$('#loading').fadeIn(250);
-					 $.ajax({
-						type: 'POST',
-						url: route.url + '/moderacion-fotos.php?do=borrar',
-						data: 'fid=' + fid + '&razon=' + razon + '&razon_desc=' + razon_desc,
-						success: function(h){
-							switch(h.charAt(0)){
-								case '0': //Error
-									mydialog.alert('Error', h.substring(3));
-									break;
-								case '1':
-												if(redirect == 'true') mod.redirect("/moderacion/fotos", 1200);
-												else if(redirect == 'fotos') {
-													 mydialog.alert('Aviso', h.substring(3));
-													 mod.redirect("/fotos/", 2000);
-												} 
-												else {
-													 mydialog.close();
-													 $('#report_' + fid).slideUp();   
-												}
-									break;
-							}
-								$('#loading').fadeOut(350);
-						},
-						complete: function(){
-							mydialog.procesando_fin();
-								$('#loading').fadeOut(350);
-						}
-					});
-				}
-		  },
-},
-	
-	
-	 users: {
-		  action: function(uid, action, redirect){
-				var btn_txt = (action == 'aviso') ? 'Enviar' : 'Suspender';
-				var titulo = (action == 'aviso') ? 'Enviar Aviso/Alerta' : 'Suspender usuario';
-				//
-				mod.load_dialog('/moderacion-users.php?do=' + action, 'uid=' + uid, titulo, btn_txt, 'mod.users.set_' + action + '(' + uid + ', ' + redirect + ');');
-		  },
-		  set_aviso: function(uid, redirect){
-				var av_type = $('#mod_type').val();
-				var av_subject = $('#mod_subject').val();
-				var av_body = $('#mod_body').val();
-				//
-				mod.send_data('/moderacion-users.php?do=aviso', 'uid=' + uid + '&av_type=' + av_type + '&av_subject=' + av_subject + '&av_body=' + av_body, uid, redirect);
-		  },
-		  set_ban: function(uid, redirect){
-				var b_time = $('#mod_time').val();
-				var b_cant = $('#mod_cant').val();
-				var b_causa = $('#mod_causa').val();
-				//
-				mod.send_data('/moderacion-users.php?do=ban', 'uid=' + uid + '&b_time=' + b_time + '&b_cant=' + b_cant + '&b_causa=' + b_causa, uid, "'" + redirect + "'");
-		  }
-
-	
-	 },
-	 load_dialog: function(url_get, url_data, titulo, btn_txt, fn_txt){
-		  $('#loading').fadeIn(250);
-		$.ajax({
-			type: 'POST',
-			url: route.url + url_get,
-				data: url_data,
-			success: function(h){
-				mydialog.show();
-				mydialog.title(titulo);
-				mydialog.body(h);
-				mydialog.buttons(true, true, btn_txt, fn_txt, true, false, true, 'Cancelar', 'close', true, true);
-					 $('#loading').fadeOut(350);
-			}, complete: function(){
-			  mydialog.center();
-			}
-		});
-	 },
-	 send_data: function(url_post, url_data, id, redirect){
-		  $('#loading').fadeIn(250);
-		mydialog.procesando_inicio('Procesando...', 'Espere');
-		$.ajax({
-			type: 'POST',
-			url: route.url + url_post,
-			data: url_data,
-			success: function(h){
-				switch(h.charAt(0)){
-					case '0': //Error
-						mydialog.alert('Error', h.substring(3));
-						break;
-					case '1':
-								mydialog.alert('Aviso', h.substring(3));
-								if(redirect == 'true') mod.redirect("/moderacion/" + type, 1200);
-								else if(redirect == 'false') $('#report_' + id).slideUp(); 
-						break;
-				}
-					 $('#loading').fadeOut(350);
-			},
-			complete: function(){
-				mydialog.procesando_fin();
-					 $('#loading').fadeOut(350);
-			}
-		});
-	 },
-	 reboot: function(id, type, hdo, redirect){
-		  $('#loading').fadeIn(250);
-		$.ajax({
-			type: 'post',
-			url: route.url + '/moderacion-' + type +'.php?do=' + hdo,
-			data: 'id=' + id,
-			success: function(h) {
-					 switch(h.charAt(0)){
-						  case '0':
-								mydialog.alert("Error", h.substring(3));
-						  break;
-						  case '1':
-								mydialog.alert("Aviso", '<div class="dialog_box">' + h.substring(3) + '</div>');
-						$('#report_' + id).fadeOut();
-								if(redirect) if(redirect) mod.redirect("/moderacion/" + type, 1200);
-								else $('#report_' + id).slideUp();
-						  break;
-					 }
-					 $('#loading').fadeOut(350);
-			}
-		});
-	 },
-	 redirect: function(url_ref, time){
-		  setTimeout(function(){document.location.href = route.url + url_ref;}, time)
-	 }
 }

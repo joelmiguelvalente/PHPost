@@ -6,7 +6,7 @@
                             <span class="icon-noti puntos-n"></span>
                         </div>
                         <div class="boxy-content">
-                        	{if !$tsTops.puntos}<div class="emptyData">Nada por aqui</div>
+                        	{if !$tsTops.puntos}<div class="alert-empty">Nada por aqui</div>
                             {else}
                         	<ol>
                             	{foreach from=$tsTops.puntos item=p}
@@ -23,7 +23,7 @@
                             <span class="icon-noti favoritos-n"></span>
                         </div>
                         <div class="boxy-content">
-                        	{if !$tsTops.favoritos}<div class="emptyData">Nada por aqui</div>
+                        	{if !$tsTops.favoritos}<div class="alert-empty">Nada por aqui</div>
                             {else}
                         	<ol>
                             	{foreach from=$tsTops.favoritos item=p}
@@ -40,7 +40,7 @@
                             <span class="icon-noti comentarios-n"></span>
                         </div>
                         <div class="boxy-content">
-                        	{if !$tsTops.comments}<div class="emptyData">Nada por aqui</div>
+                        	{if !$tsTops.comments}<div class="alert-empty">Nada por aqui</div>
                             {else}
                         	<ol>
                             	{foreach from=$tsTops.comments item=p}
@@ -58,7 +58,7 @@
                             <span class="icon-noti follow-n"></span>
                         </div>
                         <div class="boxy-content">
-                        	{if !$tsTops.seguidores}<div class="emptyData">Nada por aqui</div>
+                        	{if !$tsTops.seguidores}<div class="alert-empty">Nada por aqui</div>
                             {else}
                         	<ol>
                             	{foreach from=$tsTops.seguidores item=p}

@@ -22,6 +22,18 @@ $.parseResponse = (request) => {
    };
 };
 
+const youtubeId = (url) => {
+   // Validación estricta de entrada (OWASP Input Validation)
+   if (typeof url !== 'string' || !url.trim()) {
+      console.error('YouTube ID extractor: Entrada inválida. Se requiere URL string no vacía');
+      return false;
+   }
+   const regExp = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e|embed|watch)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+   const match = url.match(regExp);
+   // Validación explícita del ID (11 caracteres válidos de YouTube)
+   return (match && match[1] && match[1].length === 11) ? match[1] : false;
+};
+
 const dialog = {
    default: {
       show: true,
@@ -104,6 +116,14 @@ const dialog = {
       if (this.config.body) this.body(this.config.body);
       if (this.config.buttons) this.footer(this.config.buttons);
    },
+   easy(title, body, text, action = 'close') {
+      this.init({ 
+         title, body, 
+         buttons: { 
+            confirm: { text, action }
+         }
+      });
+   },
    alert(title, body, reload = false, buttons = null) {
       this.close();
       this.init({
@@ -171,53 +191,34 @@ dialog.toast = function (options = {}) {
    }, config.duration);
 };
 
-$(() => {
-   /*
-   dialog.alert(
-      'Atención',
-      'Operación realizada correctamente'
-   );
-   */
-   /*dialog.init({
-      buttonClose: true,
-      title: 'Prueba',
-      body: 'El contenido del mismo',
-      buttons: {
-         confirm: {
-            text: 'Recargar',
-            action: () => location.reload()
-         },
-         cancel: {
-            text: 'Cerrar',
-            action: 'close'
+const api = (page, param, success, options = {}) => {
+   const settings = {
+      url: `${route.url}/${page}`,
+      type: (options.method || 'POST').toUpperCase(),
+      data: param,
+      dataType: options.type || 'text',
+      timeout: options.timeout || 10000,
+      headers: options.headers || {},
+      success: response => {
+         success(response);
+         $('#loading').fadeOut(350);
+      },
+      error: (xhr, status, error) => {
+         if (options.error) {
+            options.error({ xhr, status, error });
+            $('#loading').fadeOut(350);
          }
-      }
-   });*/
+      },
+      beforeSend: options.beforeSend || (() => $('#loading').fadeIn(350))
+   };
 
-   //dialog.loading('Cargando datos...');   
+   // Solo permitir GET o POST
+   if (!['GET', 'POST'].includes(settings.type)) {
+      settings.type = 'POST';
+   }
 
-   /*dialog.toast({
-      type: 'success',
-      title: 'Guardado',
-      message: 'Los cambios se guardaron correctamente',
-      duration: 4000,
-      position: 'top-right'
-   });*/
-
-   /*dialog.toast({
-      type: 'success',
-      title: 'Éxito',
-      message: 'Post publicado correctamente'
-   });*/
-
-  /* dialog.toast({
-      type: 'danger',
-      message: 'Error al guardar los datos',
-      position: 'bottom-left'
-   });*/
-
-
-});
+   return $.ajax(settings);
+};
 
 function initLazyLoading() {
    const observer = new IntersectionObserver((entries, self) => {
@@ -243,3 +244,37 @@ function initLazyLoading() {
    });
 }
 initLazyLoading()
+
+// Solo ejecutar si hay bloques pendientes
+if (document.querySelector('[data-bbcode-code]')) {
+    loadHighlightJS().then(() => {
+        // Resaltar solo bloques NO procesados
+        document.querySelectorAll('pre code[data-bbcode-code]').forEach(el => {
+            if (!el.hasAttribute('data-highlighted')) {
+                hljs.highlightElement(el);
+            }
+        });
+    });
+}
+
+function loadHighlightJS() {
+    return new Promise((resolve) => {
+        if (window.hljs) return resolve();
+
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/default.min.css';
+        document.head.appendChild(link);
+
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js';
+        script.onload = () => {
+            // Asegurar que hljs esté listo
+            if (typeof hljs !== 'undefined') {
+                hljs.configure({ ignoreUnescapedHTML: true }); // ⚠️ Clave: evita advertencias
+            }
+            resolve();
+        };
+        document.head.appendChild(script);
+    });
+}

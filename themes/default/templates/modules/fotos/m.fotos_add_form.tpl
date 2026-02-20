@@ -1,4 +1,4 @@
-				{if ($tsAction == 'agregar' && ($tsUser->can('gopf') || $tsUser->is_admod)) || ($tsAction == 'editar' && ($tsUser->can('moedfo') || $tsUser->is_admod))} 
+				{if ($tsAction == 'agregar' && ($tsUser->permiso('global.fotos.publicar') || $tsUser->is_admod)) || ($tsAction == 'editar' && ($tsUser->permiso('moderacion.fotos.editar') || $tsUser->is_admod))} 
                 <div id="centroDerecha" style="width: 630px; float: left;">
                 	<div class="">
                         <h2 style="font-size: 15px;">{if $tsAction == 'agregar'}Agregar nueva{else}Editar{/if} foto</h2>
@@ -66,7 +66,7 @@
                     </form>
                 </div>
 				{else}
-						<div class="emptyData clearfix">
+						<div class="alert-empty clearfix">
                     	Lo sentimos, pero no puedes {if $tsAction == 'agregar'}agregar{else}editar{/if} una nueva foto.
 						</div>
 						{/if}

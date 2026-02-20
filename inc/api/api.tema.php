@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name ajax.tema.php
+ * @name api.tema.php
  * @author PHPost Team
  * @copyright 2026
  */

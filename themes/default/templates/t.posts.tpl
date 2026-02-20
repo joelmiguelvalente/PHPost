@@ -1,30 +1,35 @@
 {include "main_header.tpl"}
+<script src="{$tsRoutes.assets.js}/lite-youtube.js"></script>
 <a name="cielo"></a>
 {if $tsPost.post_status > 0 || $tsAutor.user_activo != 1}
-	<div class="emptyData">Este post se encuentra {if $tsPost.post_status == 2}eliminado{elseif $tsPost.post_status == 1} inactivo por acomulaci&oacute;n de denuncias{elseif $tsPost.post_status == 3} en revisi&oacute;n{elseif $tsPost.post_status == 3} en revisi&oacute;n{elseif $tsAutor.user_activo != 1} oculto porque pertenece a una cuenta desactivada{/if}, t&uacute; puedes verlo porque {if $tsUser->is_admod == 1}eres Administrador{elseif $tsUser->is_admod == 2}eres Moderador{else}tienes permiso{/if}.</div><br />
+	<div class="alert-empty">Este post se encuentra {if $tsPost.post_status == 2}eliminado{elseif $tsPost.post_status == 1} inactivo por acomulaci&oacute;n de denuncias{elseif $tsPost.post_status == 3} en revisi&oacute;n{elseif $tsPost.post_status == 3} en revisi&oacute;n{elseif $tsAutor.user_activo != 1} oculto porque pertenece a una cuenta desactivada{/if}, t&uacute; puedes verlo porque {if $tsUser->is_admod == 1}eres Administrador{elseif $tsUser->is_admod == 2}eres Moderador{else}tienes permiso{/if}.</div><br>
 {/if}
 <div class="post-wrapper">
-	{include "m.posts_autor.tpl"}
-	{include "m.posts_content.tpl"}
-	<div class="floatR" style="width: 766px;">
-		{include "m.posts_related.tpl"}
-		{include "m.posts_banner.tpl"}
-		<div class="clearfix"></div>
+	<div class="post-wrapper-content">
+		<div class="post-autor">
+			{include "autor/autor_datos.tpl"}
+			{include "autor/autor_herramientas.tpl"}
+			{include "autor/autor_medallas.tpl"}
+			{include "autor/autor_visitas.tpl"}
+			{include "m.posts_related.tpl"}
+		</div>
+		<div class="post-contenedor relative rounded">
+			{include "m.posts_content.tpl"}
+			{if $tsUser->is_member}
+				<a name="comentarios"></a>
+				{include "m.posts_comments.tpl"}
+				<a name="comentarios-abajo"></a>
+			{/if}
+			<br />
+			{if !$tsUser->is_member}
+				<div class="alert-empty mx-5 mb-3">Para poder comentar necesitas estar <a title="Crea una cuenta gratis" href="{$tsConfig.url}/registro/?redirect={$tsRoutes.redirectTo}">Registrado.</a> O.. ya tienes usuario? <a title="Inicia sesion" href="{$tsConfig.url}/login/?redirect={$tsRoutes.redirectTo}">Logueate!</a></div>
+			{elseif $tsPost.block > 0}
+				<div class="alert-empty">&iquest;Te has portado mal? {$tsPost.user_name} te ha bloqueado y no podr&aacute;s comentar sus post.</div>
+			{/if}
+			<div class="block py-2 text-center"><a class="irCielo" href="#cielo"><strong>Ir al cielo</strong></a></div>
+		</div>
 	</div>
-	<a name="comentarios"></a>
-	{include "m.posts_comments.tpl"}
-	<a name="comentarios-abajo"></a>
-	<br />
-	{if !$tsUser->is_member}
-	<div class="emptyData clearfix">
-		Para poder comentar necesitas estar <a href="{$tsConfig.url}/registro/">Registrado.</a> O.. ya tienes usuario? <a onclick="open_login_box('open')" href="#">Logueate!</a>
-	</div>
-	{elseif $tsPost.block > 0}
-	<div class="emptyData clearfix">
-		&iquest;Te has portado mal? {$tsPost.user_name} te ha bloqueado y no podr&aacute;s comentar sus post.
-	</div>
-	{/if}
-	<div style="text-align:center"><a class="irCielo" href="#cielo"><strong>Ir al cielo</strong></a></div>
-</div>
-<div style="clear:both"></div>		
+
+
+</div>		
 {include "main_footer.tpl"}

@@ -1,67 +1,27 @@
-<div class="frameForm">
-	<ul class="options clearfix">
-		<li><span class="share">Compartir:</span></li>
-		<li>
-			<ul class="atta">
-				<li>
-					<span class="uiComposer">
-						<i class="stream {if $tsInfo.uid == $tsUser->uid}status{else}mpub{/if}"></i>
-						<a href="#" class="a_blue hidden" onclick="muro.stream.load('status', this); return false;" id="stMain">{if $tsInfo.uid == $tsUser->uid}Estado{else}Publicaci&oacute;n{/if}</a>
-						<span>{if $tsInfo.uid == $tsUser->uid}Estado{else}Publicaci&oacute;n{/if}</span>
-						<i class="nub"></i>
-					</span>
-				</li>
-				<li><span class="uiComposer">
-						<i class="stream mfoto"></i>
-						<a href="#" class="a_blue" onclick="muro.stream.load('foto', this); return false;">Foto</a>
-						<span class="hidden">Foto</span>
-						<i class="nub hidden"></i>
-					</span>
-				</li>
-				<li><span class="uiComposer">
-						<i class="stream mlink"></i>
-						<a href="#" class="a_blue" onclick="muro.stream.load('enlace', this); return false;">Enlace</a>
-						<span class="hidden">Enlace</span>
-						<i class="nub hidden"></i>
-					</span>
-				</li>
-				<li><span class="uiComposer">
-						<i class="stream mvideo"></i>
-						<a href="#" class="a_blue" onclick="muro.stream.load('video', this); return false;">Video</a>
-						<span class="hidden">Video</span>
-						<i class="nub hidden"></i>
-					</span>
-				</li>
-				<li class="streamLoader"><img width="16" height="11" alt="" src="http://static.ak.fbcdn.net/rsrc.php/yb/r/GsNJNwuI-UM.gif" class="img"/></li>
-			</ul>
-		</li>
-	</ul>
-	<div class="attaFrame">
-		<div id="attaContent">
-			<div id="statusFrame" style="padding:1px 5px; display:block">
-				<textarea class="status autogrow" id="wall" placeholder="{if $tsInfo.uid == $tsUser->uid}&iquest;Qu&eacute; est&aacute;s pensando?{else}Escribe algo....{/if}"></textarea>
-			</div>
-			<div id="fotoFrame">
-				<input type="text" class="itext" name="ifoto" placeholder="{$tsRoutes.tema.images}/ejemplo.jpg"/>
-				<a href="#" class="btn_g adj" onclick="muro.stream.adjuntar(); return false;">Adjuntar</a>
-			</div>
-			<div id="enlaceFrame">
-				<input type="text" class="itext" name="ienlace" placeholder="{$tsConfig.url}/blog/ejemplo.html"/>
-				<a href="#" class="btn_g adj" onclick="muro.stream.adjuntar(); return false;">Adjuntar</a>
-			</div>
-			<div id="videoFrame">
-				<input type="text" class="itext" name="ivideo" placeholder="http://www.youtube.com/watch?v=f_30BAGNqqA"/>
-				<a href="#" class="btn_g adj" onclick="muro.stream.adjuntar(); return false;">Adjuntar</a>
-			</div>
+<div class="publish-wall">
+	<div class="publish-options flex justify-start items-center gap-2">
+		<div class="option">Compartir</div>
+		<div class="option flex justify-center items-center gap-1 btnAction" data-action="load" data-argument="status">
+			<i aria-hidden="true" class="stream {if $tsInfo.uid == $tsUser->uid}status{else}mpub{/if}"></i>
+			<span role="button" id="stMain">{if $tsInfo.uid == $tsUser->uid}Estado{else}Publicaci&oacute;n{/if}</span>
 		</div>
-		<div class="attaDesc">
-			<div class="wrap"><textarea class="status autogrow" id="attaDesc" placeholder="Haz un comentario sobre esta foto..."></textarea></div>
-			<input type="button" class="mBtn btnOk shareBtn" value="Compartir" onclick="muro.stream.compartir();" />
-			<div class="clearBoth"></div>
+		<div class="option flex justify-center items-center gap-1 btnAction" data-action="load" data-argument="foto">
+			<i aria-hidden="true" class="stream mfoto"></i>
+			<span role="button">Foto</span>
+		</div>
+		<div class="option flex justify-center items-center gap-1 btnAction" data-action="load" data-argument="enlace">
+			<i aria-hidden="true" class="stream mlink"></i>
+			<span role="button">Enlace</span>
+		</div>
+		<div class="option flex justify-center items-center gap-1 btnAction" data-action="load" data-argument="video">
+			<i aria-hidden="true" class="stream mvideo"></i>
+			<span role="button">Video</span>
 		</div>
 	</div>
-	<div class="btnStatus">
-		<input type="button" class="mBtn btnOk shareBtn" value="Compartir" onclick="muro.stream.compartir();" />
-		<div class="clearBoth"></div>
+	<div class="publish-box p-2 rounded my-2">
+		<div class="option-publish my-2 rounded none justify-start items-center"></div>
+		<div id="result"></div>
+		<textarea class="w-full form-control" id="publishText" placeholder="{if $tsInfo.uid == $tsUser->uid}&iquest;Qu&eacute; est&aacute;s pensando?{else}Escribe algo....{/if}"></textarea>
+		<input type="button" data-action="compartir" class="mBtn btnOk btnAction" value="Compartir" />
 	</div>
 </div>

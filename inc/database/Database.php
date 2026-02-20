@@ -17,8 +17,19 @@ final class Database {
 	private static ?self $instance = null;
 	private mysqli $connection;
 
+	private const INTERNAL_CLASSES = [
+	   Database::class,
+	   DB::class
+	];
+
 	private function __construct() {
 		$this->connect();
+	}
+
+	private function __clone() {}
+
+	public function __wakeup() {
+		throw new Exception("Cannot unserialize singleton");
 	}
 
 	public static function instance(): self {
@@ -39,52 +50,69 @@ final class Database {
 			$this->connection->set_charset(
 				Config::db('charset') ?? 'utf8mb4'
 			);
+
 		} catch (mysqli_sql_exception) {
 			show_error('Error de conexión a la base de datos.', 'db');
 		}
 	}
 
-	/* ================= Legacy-safe API ================= */
+	/* ================= Named Prepared ================= */
 
 	public function preparedQuery(string $sql, array $params = []): mysqli_stmt {
-	   $types = '';
-	   $values = [];
+		try {
+			$types = '';
+			$values = [];
+			$usedParams = [];
 
-	   // Convertir :param → ?
-	   $sql = preg_replace_callback('/:([a-zA-Z0-9_]+)/', function ($match) use ($params, &$types, &$values) {
-	   	$key = $match[1];
-	   	if (!array_key_exists($key, $params)) {
-	         throw new InvalidArgumentException("Missing parameter: $key");
-	      }
-	      $value = $params[$key];
-	      // Detectar tipo automáticamente
-	      if (is_int($value)) {
-	         $types .= 'i';
-	      } elseif (is_float($value)) {
-	         $types .= 'd';
-	      } elseif (is_null($value)) {
-	         $types .= 's';
-	         $value = null;
-	      } else {
-	         $types .= 's';
-	      }
-	      $values[] = $value;
-	      return '?';
-	   }, $sql);
-	   $stmt = $this->connection->prepare($sql);
-	   if ($values) {
-	      $stmt->bind_param($types, ...$values);
-	   }
-	   $stmt->execute();
-	   return $stmt;
+			$sql = preg_replace_callback('/:([a-zA-Z0-9_]+)/',
+				function ($match) use ($params, &$types, &$values, &$usedParams) {
+					$key = $match[1];
+					if (!array_key_exists($key, $params)) {
+						throw new InvalidArgumentException("Missing parameter: $key");
+					}
+					$value = $params[$key];
+					$usedParams[] = $key;
+					if (is_int($value)) {
+						$types .= 'i';
+					} elseif (is_float($value)) {
+						$types .= 'd';
+					} elseif (is_null($value)) {
+						$types .= 's';
+					} else {
+						$types .= 's';
+					}
+					$values[] = $value;
+					return '?';
+				},
+				$sql
+			);
+
+			// Validar params extra
+			$extra = array_diff(array_keys($params), $usedParams);
+			if ($extra) {
+				throw new InvalidArgumentException('Unused parameters: ' . implode(', ', $extra));
+			}
+			$stmt = $this->connection->prepare($sql);
+			if ($values) {
+				$stmt->bind_param($types, ...$values);
+			}
+			$stmt->execute();
+			return $stmt;
+		} catch (Throwable $e) {
+        	$this->handleException($e, $sql);
+        	throw $e;
+    	}
 	}
 
+	/* ================= Raw Query ================= */
+
 	public function rawQuery(string $sql): mysqli_result|bool {
-	   try {
-	      return $this->connection->query($sql);
-	   } catch (mysqli_sql_exception $e) {
-	      return false;
-	   }
+		try {
+			return $this->connection->query($sql);
+		} catch (mysqli_sql_exception $e) {
+			error_log('[SQL ERROR] ' . $e->getMessage());
+			return false;
+		}
 	}
 
 	public function escape(string $value): string {
@@ -95,16 +123,16 @@ final class Database {
 		return $this->connection->insert_id;
 	}
 
-	public function lastError(string $type): array {
-	   $errs = [
-	      'errno' 	  => $this->connection->errno,
-	      'error' 	  => $this->connection->error,
-	      'sqlstate' => $this->connection->sqlstate
-	   ];
-	   return $errs[$type];
+	public function lastError(string $type): string|int {
+		return match ($type) {
+			'errno'    => $this->connection->errno,
+			'error'    => $this->connection->error,
+			'sqlstate' => $this->connection->sqlstate,
+			default    => '',
+		};
 	}
 
-	/* ================= Modern API ================= */
+	/* ================= Modern Helpers ================= */
 
 	public function prepare(string $sql): mysqli_stmt {
 		return $this->connection->prepare($sql);
@@ -126,6 +154,55 @@ final class Database {
 		return $result->num_rows;
 	}
 
+	private function getCaller(): array {
+	   $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 15);
+	   foreach ($trace as $frame) {
+	   	if (!isset($frame['file'])) {
+	         continue;
+	      }
+	      // Ignorar cualquier llamada dentro de Database.php o DB.php
+	      if (str_contains($frame['file'], 'Database.php') || str_contains($frame['file'], 'DB.php')) {
+	         continue;
+	      }
+	      return [
+	         'file' => $frame['file'],
+	         'line' => $frame['line'] ?? null,
+	         'function' => $frame['function'] ?? null,
+	         'class' => $frame['class'] ?? null
+	      ];
+	    }
+
+	    return [];
+	}
+
+	/* ================= Prepared Fetch Helpers ================= */
+
+	public function preparedFetch(string $sql, array $params = []): ?array {
+		$stmt = $this->preparedQuery($sql, $params);
+		$result = $this->safeGetResult($stmt)->fetch_assoc() ?: null;
+		$stmt->close();
+		return $result;
+	}
+
+	public function preparedFetchAll(string $sql, array $params = []): array {
+		$stmt = $this->preparedQuery($sql, $params);
+		$result = $this->safeGetResult($stmt)->fetch_all(MYSQLI_ASSOC);
+		$stmt->close();
+		return $result;
+	}
+
+	private function safeGetResult(mysqli_stmt $stmt): mysqli_result {
+		$result = $stmt->get_result();
+
+		if (!$result) {
+			throw new RuntimeException(
+				'mysqlnd is required for get_result()'
+			);
+		}
+
+		return $result;
+	}
+
 	/* ================= Transactions ================= */
 
 	public function beginTransaction(): void {
@@ -140,15 +217,25 @@ final class Database {
 		$this->connection->rollback();
 	}
 
-	/* ================= Low-level access ================= */
+	/* ================= Low-level ================= */
 
-	#public function query(string $sql): mysqli_result|bool {
-	#	return $this->connection->query($sql);
-	#}
+	public function connection(): mysqli {
+		return $this->connection;
+	}
 
-	public function preparedFetch(string $sql, array $params = []): ?array {
-	   $stmt = $this->preparedQuery($sql, $params);
-	   return $stmt->get_result()->fetch_assoc() ?: null;
+	private function handleException(Throwable $e, string $query): void {
+	   global $tsUser, $tsAjax;
+
+	   $caller = $this->getCaller();
+
+	   if (!$tsAjax && Config::app('debug.active') && ($tsUser->is_admod || Config::app('debug.active'))) {
+	     	show_error('Error en consulta SQL.', 'db', [
+	     	   'file'  => $caller['file'],
+	     	   'line'  => $caller['line'],
+	     	   'query' => $query,
+	     	   'error' => $e->getMessage()
+	     	]);
+	   }
 	}
 
 }

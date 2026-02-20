@@ -1,84 +1,57 @@
 <?php 
+
 /**
- * Controlador
- *
- * @name    usuarios.php
- * @author  PHPost Team
-*/
-/**********************************\
+ * @name usuarios.php
+ * @author PHPost Team
+ * @copyright 2026
+ */
 
-*	(VARIABLES POR DEFAULT)		*
+declare(strict_types=1);
 
-\*********************************/
-
-	$tsPage = "usuarios";	// tsPage.tpl -> PLANTILLA PARA MOSTRAR CON ESTE ARCHIVO.
-
-	$tsLevel = 0;		// NIVEL DE ACCESO A ESTA PAGINA. => VER FAQs
-
-	$tsAjax = empty($_GET['ajax']) ? 0 : 1; // LA RESPUESTA SERA AJAX?
+require_once dirname(__DIR__, 2) . "/header.php";
+$tsTitle = "{$tsCore->settings['titulo']} - {$tsCore->settings['slogan']}";
 	
-	$tsContinue = true;	// CONTINUAR EL SCRIPT
-	
-/*++++++++ = ++++++++*/
+/**
+ * Inicializamos variable
+ */
 
-	include "../../header.php"; // INCLUIR EL HEADER
+$ctx = Controller::page('usuarios')->everybody();
+// sincronizamos
+$ctx->exportLegacy();
 
-	$tsTitle = $tsCore->settings['titulo'].' - '.$tsCore->settings['slogan']; 	// TITULO DE LA PAGINA ACTUAL
+$tsLevelMsg = $tsCore->setLevel($ctx->getLevel(), true);
+if (is_array($tsLevelMsg)) {
+   $ctx->changePage('aviso');
+   $ctx->stop();
+   $smarty->assign("tsAviso", $tsLevelMsg);
+   // sincroniza nuevamente
+   $ctx->exportLegacy();
+}
 
-/*++++++++ = ++++++++*/
+if($ctx->continue()) {
 
-	// VERIFICAMOS EL NIVEL DE ACCESO ANTES CONFIGURADO
-	$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
-	if($tsLevelMsg != 1){	
-		$tsPage = 'aviso';
-		$tsAjax = 0;
-		$smarty->assign("tsAviso",$tsLevelMsg);
-		//
-		$tsContinue = false;
-	}
-	//
-	if($tsContinue){
-
-/**********************************\
-
-* (VARIABLES LOCALES ESTE ARCHIVO)	*
-
-\*********************************/
-
-
-
-/**********************************\
-
-*	(INSTRUCCIONES DE CODIGO)		*
-
-\*********************************/
-    // PAICES
-    include("../extras/datos.php");
-    $smarty->assign("tsPaises",$tsPaises);
-    // USUARIOS
-    $tsUsers = $tsUser->getUsuarios();
-    $smarty->assign("tsUsers",$tsUsers['data']);
-    $smarty->assign("tsPages",$tsUsers['pages']);
-    $smarty->assign("tsTotal",$tsUsers['total']);
-    // FILTROS
-    $smarty->assign("tsFiltro",array('online' => $_GET['online'], 'avatar' => $_GET['avatar'], 'sex' => $_GET['sexo'], 'pais' => $_GET['pais'], 'rango' => $_GET['rango']));
+   $tsPaises = require_once TS_EXTRA . "/Paises.php";
+   $smarty->assign("tsPaises", $tsPaises);
+   // USUARIOS
+   $tsUsers = $tsUser->getUsuarios();
+   $smarty->assign("tsUsers", $tsUsers['data']);
+   $smarty->assign("tsPages", $tsUsers['pages']);
+   $smarty->assign("tsTotal", $tsUsers['total']);
+   // FILTROS
+   $smarty->assign("tsFiltro", [
+   	'online' => trim($_GET['online'] ?? ''),
+   	'avatar' => trim($_GET['avatar'] ?? ''),
+   	'sex' 	 => trim($_GET['sexo'] ?? ''),
+   	'pais' 	 => trim($_GET['pais'] ?? ''),
+   	'rango'  => trim($_GET['rango'] ?? '')
+   ]);
     // RANGOS
-	$query = db_exec([__FILE__, __LINE__], 'query', 'SELECT rango_id, r_name FROM u_rangos ORDER BY rango_id');
-    $smarty->assign("tsRangos",result_array($query));
+	$query = result_array(db_exec([__FILE__, __LINE__], 'query', 'SELECT rango_id, r_name FROM u_rangos ORDER BY rango_id'));
+    $smarty->assign("tsRangos", $query);
     
+}
 
-/**********************************\
-
-* (AGREGAR DATOS GENERADOS | SMARTY) *
-
-\*********************************/
-	}
-
-if(empty($tsAjax)) {	// SI LA PETICION SE HIZO POR AJAX DETENER EL SCRIPT Y NO MOSTRAR PLANTILLA, SI NO ENTONCES MOSTRARLA.
-
-	$smarty->assign("tsTitle",$tsTitle);	// AGREGAR EL TITULO DE LA PAGINA ACTUAL
-
-	/*++++++++ = ++++++++*/
-	include("../../footer.php");
-	/*++++++++ = ++++++++*/
+if($tsAjax) {
+	$smarty->assign("tsTitle", $tsTitle);
+   require_once TS_ROOT . "/footer.php";
 }

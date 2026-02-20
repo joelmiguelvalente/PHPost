@@ -1,46 +1,40 @@
 <?php
 
 /**
- * @name registro.php
+ * @name perfil.php
  * @author PHPost Team
  * @copyright 2026
  */
 
 declare(strict_types=1);
-
-/**
- * Inicializamos variable
- * 
- * $tsPage  	= Plantilla para mostrar con este archivo.
- * $tsLevel 	= Nivel de acceso a esta pagina (ver faqs).
- * $tsAjax  	= La respuesta sera por ajax si/no.
- * $tsContinue	= Continuar con la ejecución
- */
-
-$tsPage  = "perfil";
-$tsLevel = 0; 
-$tsAjax  = (!isset($_GET['ajax']) && empty($_GET['ajax']));
-$tsContinue = true;
 	
 require_once dirname(__DIR__, 2) . "/header.php";
 $tsTitle = "{$tsCore->settings['titulo']} - {$tsCore->settings['slogan']}";
 
-// VERIFICAMOS EL NIVEL DE ACCESO ANTES CONFIGURADO
-$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
-if(!$tsLevelMsg){	
-	$tsPage = 'aviso';
-	$tsAjax = 0;
-	$smarty->assign("tsAviso",$tsLevelMsg);
-	//
-	$tsContinue = false;
+/**
+ * Inicializamos variable
+ */
+
+$ctx = Controller::page('perfil')->everybody();
+// sincronizamos
+$ctx->exportLegacy();
+
+$tsLevelMsg = $tsCore->setLevel($ctx->getLevel(), true);
+if (is_array($tsLevelMsg)) {
+   $ctx->changePage('aviso');
+   $ctx->stop();
+   $smarty->assign("tsAviso", $tsLevelMsg);
+   // sincroniza nuevamente
+   $ctx->exportLegacy();
 }
 
-if($tsContinue) {
+if($ctx->continue()) {
 
 	$username = $tsCore->setSecure($_GET['user'] ?? '');
 	$usuario = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', "SELECT user_id, user_name, user_activo, user_baneado FROM u_miembros WHERE user_name = '{$username}'"));
 	// EXISTE?
-	if(empty($usuario['user_id']) || ((int)$usuario['user_activo'] !== 1 && !$tsUser->permisos['movcud'] && !$tsUser->is_admod) || ((int)$usuario['user_baneado'] !== 0 && !$tsUser->permisos['movcus'] && !$tsUser->is_admod)) {
+	if(empty($usuario['user_id']) || ((int)$usuario['user_activo'] !== 1 && 
+		!$tsUser->permiso('moderacion.usuarios.ver_desactivados') && !$tsUser->is_admod) || ((int)$usuario['user_baneado'] !== 0 && !$tsUser->permiso('moderacion.usuarios.ver_suspendidos') && !$tsUser->is_admod)) {
 		$tsPage = 'aviso';
 		$tsAjax = 0;
 		$smarty->assign("tsAviso", [
@@ -51,8 +45,8 @@ if($tsContinue) {
 	} else {
 		//
 		require_once dirname(__DIR__, 1) . "/helpers/UserHelper.php";
-		require_once dirname(__DIR__, 1) . "/class/c.cuenta.php";
-		require_once dirname(__DIR__, 1) . "/class/c.muro.php";
+		require_once TS_CLASS . "/c.cuenta.php";
+		require_once TS_CLASS . "/c.muro.php";
 		$tsPaises = require_once dirname(__DIR__, 1) . "/extras/Paises.php";
 
 		$tsCuenta = new tsCuenta($tsCore, $tsUser);
@@ -117,5 +111,5 @@ if($tsContinue) {
 
 if($tsAjax) {
 	$smarty->assign("tsTitle", $tsTitle);
-   require_once dirname(__DIR__, 2) . "/footer.php";
+   require_once TS_ROOT . "/footer.php";
 }

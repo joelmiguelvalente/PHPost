@@ -1,77 +1,49 @@
-<?php 
+<?php
+
 /**
- * Controlador
- *
- * @name    mod-hisroty.php
- * @author  PHPost Team
-*/
-/**********************************\
+ * @name mod-history.php
+ * @author PHPost Team
+ * @copyright 2026
+ */
 
-*	(VARIABLES POR DEFAULT)		*
+declare(strict_types=1);
 
-\*********************************/
-
-	$tsPage = "mod-history";	// tsPage.tpl -> PLANTILLA PARA MOSTRAR CON ESTE ARCHIVO.
-
-	$tsLevel = 2;		// NIVEL DE ACCESO A ESTA PAGINA. => VER FAQs
-
-	$tsAjax = empty($_GET['ajax']) ? 0 : 1; // LA RESPUESTA SERA AJAX?
+require_once dirname(__DIR__, 2) . "/header.php";
+$tsTitle = "{$tsCore->settings['titulo']} - {$tsCore->settings['slogan']}";
 	
-	$tsContinue = true;	// CONTINUAR EL SCRIPT
-	
-/*++++++++ = ++++++++*/
+/**
+ * Inicializamos variable
+ */
 
-	include "../../header.php"; // INCLUIR EL HEADER
+$ctx = Controller::page('mod-history')->members();
+// sincronizamos
+$ctx->exportLegacy();
 
-	$tsTitle = $tsCore->settings['titulo'].' - '.$tsCore->settings['slogan']; 	// TITULO DE LA PAGINA ACTUAL
+$tsLevelMsg = $tsCore->setLevel($ctx->getLevel(), true);
+if (is_array($tsLevelMsg)) {
+   $ctx->changePage('aviso');
+   $ctx->stop();
+   $smarty->assign("tsAviso", $tsLevelMsg);
+   // sincroniza nuevamente
+   $ctx->exportLegacy();
+}
 
-/*++++++++ = ++++++++*/
+if($ctx->continue()) {
 
-	// VERIFICAMOS EL NIVEL DE ACCESO ANTES CONFIGURADO
-	$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
-	if($tsLevelMsg != 1){	
-		$tsPage = 'aviso';
-		$tsAjax = 0;
-		$smarty->assign("tsAviso",$tsLevelMsg);
-		//
-		$tsContinue = false;
-	}
-	//
-	if($tsContinue){
+	require_once TS_CLASS . "/c.moderacion.php";
+	$tsMod = new tsMod();
 
-/**********************************\
-
-* (VARIABLES LOCALES ESTE ARCHIVO)	*
-
-\*********************************/
-
-		include("../class/c.moderacion.php");
-		$tsMod = new tsMod();
-
-/**********************************\
-
-*	(INSTRUCCIONES DE CODIGO)		*
-
-\*********************************/
 	// ACTION
-	$action = htmlspecialchars($_GET['ver']);
-    // HISTORIAL
-    if($action == 'fotos') $smarty->assign("tsHistory",$tsMod->getHistory('fotos'));
-	else $smarty->assign("tsHistory",$tsMod->getHistory(1));
-/**********************************\
+	$action = trim($_GET['ver'] ?? '');
+   // HISTORIAL
+   $smarty->assign("tsHistory", $tsMod->getHistory(($action === 'fotos' ? 'fotos' : 1)));
 
-* (AGREGAR DATOS GENERADOS | SMARTY) *
-
-\*********************************/
 	// ACCION?
 	$smarty->assign("tsAction",$action);
-	}
+	
+}
 
-if(empty($tsAjax)) {	// SI LA PETICION SE HIZO POR AJAX DETENER EL SCRIPT Y NO MOSTRAR PLANTILLA, SI NO ENTONCES MOSTRARLA.
-
-	$smarty->assign("tsTitle",$tsTitle);	// AGREGAR EL TITULO DE LA PAGINA ACTUAL
-
-	/*++++++++ = ++++++++*/
-	include("../../footer.php");
-	/*++++++++ = ++++++++*/
+if($tsAjax) {
+	$smarty->assign("tsTitle", $tsTitle);
+   require_once TS_ROOT . "/footer.php";
 }

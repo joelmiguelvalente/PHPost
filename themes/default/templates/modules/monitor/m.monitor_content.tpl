@@ -7,12 +7,12 @@
                     	{foreach from=$tsData.data item=noti}
                     	<li{if $noti.unread > 0} class="unread"{/if}>
                         	<div class="avatar-box" style="z-index: 99;">
-                            	<a href="{$tsConfig.url}/perfil/{$noti.user}">
+                            	<a href="{$tsConfig.url}/@{$noti.user}">
                             		<img height="32" width="32" src="{$tsConfig.url}/files/avatar/{$noti.avatar}"/>
                                 </a>
                             </div>
                             <div class="notification-info">
-                            	<span>{if $noti.total == 1}<a href="{$tsConfig.url}/perfil/{$noti.user}">{$noti.user}</a>{/if} 
+                            	<span>{if $noti.total == 1}<a href="{$tsConfig.url}/@{$noti.user}">{$noti.user}</a>{/if} 
                             		<span title="{$noti.date|fecha}" class="time">{$noti.date|fecha}</span>
                                 </span>
                                 <span class="action">
@@ -24,6 +24,6 @@
                         {/foreach}
                     </ul>
                     {else}
-                    <div class="emptyData">No tienes notificaciones</div>
+                    <div class="alert-empty">No tienes notificaciones</div>
                     {/if}
                 </div>

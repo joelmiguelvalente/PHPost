@@ -16,10 +16,12 @@ class Paginator {
 
 	protected int $page;
 	protected int $start;
+	public string $route;
 
-	public function __construct() {
+	public function __construct(?string $route = null) {
 		$this->page  = isset($_GET['page']) ? max(1, (int) $_GET['page']) : 1;
 		$this->start = isset($_GET['s']) ? max(0, (int) $_GET['s']) : 0;
+		$this->route = $route ?? '';
 	}
 
 	/*
@@ -35,7 +37,7 @@ class Paginator {
 			}
 		}
 
-		return $offset . ',' . $tsLimit;
+		return $offset . ', ' . $tsLimit;
 	}
 
 	/*
@@ -93,6 +95,9 @@ class Paginator {
 	 */
 	public function pageIndex(string $base_url, int $start, int $max_value, int $num_per_page, bool $flexible_start = false) {
 	   // Limpieza de la URL base
+	   if(!empty($this->route)) {
+	   	$base_url = $this->route . $base_url;
+	   }
 	   $base_url = explode('&s=', $base_url, 2)[0];
 	   // Normalización del start
 	   $startInvalid = $start < 0;

@@ -1,5 +1,11 @@
 'use strict';
 
+// Función para obtener el parámetro redirect de la URL
+function getRedirectParam() {
+   const urlParams = new URLSearchParams(window.location.search);
+   return urlParams.get('redirect');
+}
+
 const $form        = $('#LoginForm');
 const $btnLogin    = $('#btn-login');
 const $passwordInp = $('input[type="password"]');
@@ -57,10 +63,16 @@ function iniciarSesion() {
 	setButtonLoading(true);
 
 	$.post(`${route.url}/login-user.php`, $.param(params), response => {
-		console.log(response)
 		const { status, message } = $.parseResponse(response);
 		if (status === 1) {
-			setTimeout(() => location.reload(), 2000);
+			// Obtener el parámetro redirect
+			const redirectUrl = getRedirectParam();
+			// Si existe el parámetro redirect, redirigir a esa URL, de lo contrario recargar
+			if (redirectUrl) {
+				window.location.href = decodeURIComponent(redirectUrl);
+			} else {
+				setTimeout(() => location.reload(), 2000);
+			}
 			return;
 		}
 		dialog.alert('Atención', message);

@@ -25,6 +25,7 @@ final class MuroHelper {
 		$this->url = $Core->settings['url'];
 		$this->Core = $Core;
 		$this->User = $User;
+		$this->CoreHelper = new CoreHelper;
 	}
 
 	/**
@@ -145,62 +146,92 @@ final class MuroHelper {
 	   }
 	   [$width, $height] = $data;
 	   $min = 130;
-	   $max = 1024;
+	   $max = 2000;
 	   if ($width < $min || $height < $min) {
 	      return "0: Tu foto debe tener un tamaño superior a {$min}x{$min} pixeles.";
 	   }
 	   if ($width > $max || $height > $max) {
 	      return "0: Tu foto debe tener un tamaño menor a {$max}x{$max} pixeles.";
 	   }
-	   return $return ? $url : "1: <img src=\"{$url}\"/>";
+	   return $return ? $url : "1: <span class=\"uiPhoto block\">
+	   	<img class=\"rounded ratio 1x1\" style=\"max-width:200px!important;\" src=\"{$url}\"/>
+	   </span>";
 	}
 
 	public function checkLink(string $url, bool $return): string|array {
 	   if (strlen($url) > 400) {
 	      return '0: La url es demasiado larga.';
 	   }
-	   $html = (new CoreHelper)->getUrlContent($url);
-	   if (!$html) {
-	      return '0: El enlace ingresado no es válido o no está disponible.';
-	   }
-	   if (!preg_match('/<title>(.*?)<\/title>/is', $html, $matches)) {
-	      return '0: La url ingresada no es una página web válida.';
-	   }
-	   $title = $this->Core->setSecure(trim($matches[1]), true);
+	   $html =  $this->CoreHelper->getUrlContent($url);
+	   if ($html === null) { /* error */ }
+		$meta = $this->extractMeta($html);
+		$title = $meta['title'] ?? '';
+		$description = $meta['description'] ?? rawurldecode($url);
 	  	if ($return) {
-	      return [ 'title' => $title, 'url' => rawurldecode($url)];
+	      return [ 'title' => $title, 'url' => $description];
 	   }
-	   return "1: <a href=\"{$url}\" target=\"_blank\" class=\"big a_blue\">{$title}</a><br><span class=\"desc\">{$url}</span>";
+	   return "1: <a href=\"{$url}\" class=\"uiLink block\" title=\"{$title}\" rel=\"external\" target=\"_blank\">
+	   	<span class=\"uiLink-title\">{$title}</span>
+	   	<span class=\"uiLink-description block\">{$description}</span>
+	   </a>";
+	}
+
+	private function extractMeta(string $html): array {
+	   // Asegurar UTF-8 antes de procesar
+	   if (!mb_check_encoding($html, 'UTF-8')) {
+	      $html = mb_convert_encoding($html, 'UTF-8', 'ISO-8859-1');
+	   }
+	   $meta = [ 'title' => '', 'description' => '' ];
+	   // Patrón robusto para meta tags (case-insensitive, soporta name/property)
+	   $pattern = '/<meta\s+(?:name|property)\s*=\s*"(title|description|og:title|og:description)"\s+content\s*=\s*"([^"]+)"/i';
+	   preg_match_all($pattern, $html, $matches, PREG_SET_ORDER);
+	   foreach ($matches as $match) {
+	      $key = $match[1];
+	      $value = $match[2];
+	      // Normalizar claves
+	      if (in_array($key, ['title', 'og:title'], true)) {
+	         $meta['title'] = $value;
+	      } elseif (in_array($key, ['description', 'og:description'], true)) {
+	         $meta['description'] = $value;
+	      }
+	   }
+	   // Fallback: si no hay meta, buscar <title> (menos fiable, pero útil)
+	   if (empty($meta['title']) && preg_match('/<title>([^<]+)<\/title>/i', $html, $t)) {
+	      $meta['title'] = $t[1];
+	   }
+	   return $meta;
 	}
 
 	public function checkYoutube(string $url, bool $return): string|array {
-	   if (!preg_match('~v=([a-zA-Z0-9_-]{11})~', $url, $m)) {
-	      return '0: La dirección del video no es válida.';
+	   if (! $this->CoreHelper->isSafeHttpUrl($url)) {
+	      error_log('YouTube Check: URL inválida o SSRF detectado - ' . $url);
+	      return '0: URL inválida. Formato requerido: https://youtube.com/watch?v=ID';
 	   }
-	   $videoId = $m[1];
-	   $meta = @get_meta_tags("https://www.youtube.com/watch?v={$videoId}");
-	   if (empty($meta['title'])) {
-	      return '0: El video no existe o fue eliminado.';
+	   if (!preg_match('~(?:youtube\.com/(?:[^/]+/.+/|(?:v|e|embed|watch)/|\?|.*[?&]v=)|youtu\.be/)([a-zA-Z0-9_-]{11})~', $url, $matches) || strlen($matches[1]) !== 11) {
+	      return '0: ID de video no válido (formato o longitud incorrecta)';
 	   }
-
-	   $title = $this->Core->setSecure($meta['title'], true);
-	   $desc  = isset($meta['description']) ? $this->Core->setSecure(substr(html_entity_decode($meta['description']), 0, 160)) : '';
-
+	   $videoId = $matches[1];
+	   $youtubeUrl = 'https://www.youtube.com/watch?v=' . $videoId; // Sin espacios, safe para urlencode
+	   // 
+	   $html =  $this->CoreHelper->getUrlContent($youtubeUrl);
+	   if ($html === null) { /* error */ }
+		$meta = $this->extractMeta($html);
+		$title = $meta['title'] ?? '';
+		if (empty($title) || $title === 'YouTube') {
+		   return '0: Video no encontrado';
+		}
+		$title = $this->Core->setSecure($title, true);
+		$desc  = $meta['description'] ? $this->Core->setSecure(substr($meta['description'], 0, 160)) : '';
 	   if ($return) {
-	     	return [
-	     	   'id'    => $videoId,
-	     	   'title' => $title,
-	     	   'desc'  => $desc,
-	     	];
+	      return ['ID' => $videoId, 'title' => $title, 'desc' => $desc];
 	   }
-
-	   return '1: <div class="vContent">
-	   	<img src="https://img.youtube.com/vi/'.$videoId.'/0.jpg" class="thumb"/>
-	      <div class="vDesc">
-	      	<strong><a href="https://www.youtube.com/watch?v='.$videoId.'" target="_blank" class="a_blue">'.$title.'</a></strong>
-	      	<div style="margin-top:5px">'.$desc.'</div>
-	      </div>
-	   </div>';
+	   return "1: <div class=\"uiVideo rounded overflow-hidden relative\">
+			<img src=\"https://i.ytimg.com/vi/{$videoId}/maxresdefault.jpg\" alt=\"{$title}\" class=\"object-fit-cover ratio ratio-4x3 rounded\">
+			<div class=\"video-description absolute\">
+				<span class=\"block\">{$title}</span>
+				<p class=\"block\">{$desc}...</p>
+			</div>
+		</div>";
 	}
 
 	public function insertMuro(int $pid, string $body, int $type, int $date, string $visibility = 'everyone', int $adult = 0): int|false {

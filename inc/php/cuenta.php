@@ -8,38 +8,35 @@
 
 declare(strict_types=1);
 
-/**
- * Inicializamos variable
- * 
- * $tsPage  	= Plantilla para mostrar con este archivo.
- * $tsLevel 	= Nivel de acceso a esta pagina (ver faqs).
- * $tsAjax  	= La respuesta sera por ajax si/no.
- * $tsContinue	= Continuar con la ejecución
- */
-
-$tsPage  = "cuenta";
-$tsLevel = 2; 
-$tsAjax  = (!isset($_GET['ajax']) && empty($_GET['ajax']));
-$tsContinue = true;
-
 require_once dirname(__DIR__, 2) . "/header.php";
 $tsTitle = "{$tsCore->settings['titulo']} - {$tsCore->settings['slogan']}";
 	
-// VERIFICAMOS EL NIVEL DE ACCESO ANTES CONFIGURADO
-$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
-if(!$tsLevelMsg){	
-	$tsPage = 'aviso';
-	$tsAjax = 0;
-	$smarty->assign("tsAviso",$tsLevelMsg);
-	//
-	$tsContinue = false;
+/**
+ * Inicializamos variable
+ * 
+ * $ctx = Controller::page(_pagina_)->requireLevel(_nivel_);
+ * $ctx->getLevel() obtinene el nivel para comprobar
+ * $ctx->exportLegacy() sincroniza con el sistema
+ */
+
+$ctx = Controller::page('cuenta')->requireLevel(2);
+// sincronizamos
+$ctx->exportLegacy();
+
+$tsLevelMsg = $tsCore->setLevel($ctx->getLevel(), true);
+if (is_array($tsLevelMsg)) {
+   $ctx->changePage('aviso');
+   $ctx->stop();
+   $smarty->assign("tsAviso", $tsLevelMsg);
+   // sincroniza nuevamente
+   $ctx->exportLegacy();
 }
 
-if($tsContinue) {
+if($ctx->continue()) {
 
 	$action = trim($_GET['action'] ?? '');
 	//
-	require_once dirname(__DIR__, 1) . "/class/c.cuenta.php";
+	require_once TS_CLASS . "/c.cuenta.php";
 	$tsCuenta = new tsCuenta($tsCore, $tsUser);
 
 	if(empty($action)) {
@@ -48,7 +45,7 @@ if($tsContinue) {
 		$tsPaises = require_once TS_EXTRA . "/Paises.php";
 		$tsEstados = require_once TS_EXTRA . "/geodata.php";
 
-		$minAge = (int)$tsCore->settings['c_allow_edad']; // ej. 16
+		$minAge = (int)$tsCore->reCaptchaConfig('c_allow_edad'); // ej. 16
 		$maxAge = 100;
 
 		$today = new DateTimeImmutable('today');
@@ -87,5 +84,5 @@ $smarty->assign("tsAccion", $_GET["accion"] ?? '');
 	
 if($tsAjax) {
 	$smarty->assign("tsTitle", $tsTitle);
-   require_once dirname(__DIR__, 2) . "/footer.php";
+   require_once TS_ROOT . "/footer.php";
 }

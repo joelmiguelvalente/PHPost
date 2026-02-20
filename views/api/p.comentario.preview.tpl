@@ -24,21 +24,21 @@
                             </a>
                         </li>
                         {/if}
-						{if $tsUser->is_admod || $tsUser->permisos.goepc}
+						{if $tsUser->is_admod || $tsUser->permiso('global.comentarios.editar_propios')}
                     	<li>
                         	<a onclick="comentario.editar({$tsComment.0}, 'show')" title="Editar">
                                 <span class="editar-comentario"></span>
                             </a>
                         </li>
 						{/if}
-						{if $tsUser->is_admod || $tsUser->permisos.godpc}
+						{if $tsUser->is_admod || $tsUser->permiso('global.comentarios.eliminar_propios')}
                         <li class="iconDelete">
                             <a onclick="borrar_com({$tsComment.0}, {$tsUser->uid})">
 								<span class="borrar-comentario"></span>
 							</a>
                         </li>
 						{/if}
-						{if $tsUser->is_admod || $tsUser->permisos.moaydcp}
+						{if $tsUser->is_admod || $tsUser->permiso('moderacion.posts.revision')}
 						<li class="iconHide">
                                                     	
 							<a onclick="ocultar_com({$tsComment.0}, {$tsUser->uid});" title="Ocultar/Mostrar">

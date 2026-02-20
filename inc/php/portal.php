@@ -1,53 +1,39 @@
 <?php 
+
 /**
- * Controlador
- *
- * @name    portal.php
- * @author  PHPost Team
-*/
-/**********************************\
+ * @name portal.php
+ * @author PHPost Team
+ * @copyright 2026
+ */
 
-*	(VARIABLES POR DEFAULT)		*
+declare(strict_types=1);
 
-\*********************************/
+$tsTitle = "{$tsCore->settings['titulo']} - {$tsCore->settings['slogan']}";
 
-	$tsPage = "portal";	// tsPage.tpl -> PLANTILLA PARA MOSTRAR CON ESTE ARCHIVO.
+/**
+ * Inicializamos variable
+ */
 
-	$tsLevel = 0;		// NIVEL DE ACCESO A ESTA PAGINA. => VER FAQs
+$ctx = Controller::page('portal')->everybody();
+// sincronizamos
+$ctx->exportLegacy();
 
-	$tsAjax = empty($_GET['ajax']) ? 0 : 1; // LA RESPUESTA SERA AJAX?
-	
-	$tsContinue = true;	// CONTINUAR EL SCRIPT
-	
-/*++++++++ = ++++++++*/
+$tsLevelMsg = $tsCore->setLevel($ctx->getLevel(), true);
+if (is_array($tsLevelMsg)) {
+   $ctx->changePage('aviso');
+   $ctx->stop();
+   $smarty->assign("tsAviso", $tsLevelMsg);
+   // sincroniza nuevamente
+   $ctx->exportLegacy();
+}
 
-	$tsTitle = $tsCore->settings['titulo'].' - '.$tsCore->settings['slogan']; 	// TITULO DE LA PAGINA ACTUAL
+if($ctx->continue()) {
 
-/*++++++++ = ++++++++*/
-
-	// VERIFICAMOS EL NIVEL DE ACCESO ANTES CONFIGURADO
-	$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
-	if($tsLevelMsg != 1){	
-		$tsPage = 'aviso';
-		$tsAjax = 0;
-		$smarty->assign("tsAviso",$tsLevelMsg);
-		//
-		$tsContinue = false;
-	}
-	//
-	if($tsContinue){
-
-
-/**********************************\
-
-* (VARIABLES LOCALES ESTE ARCHIVO)	*
-
-\*********************************/
     // PORTAL
-    include(TS_CLASS."c.portal.php");
+    require_once TS_CLASS . "/c.portal.php";
+    require_once TS_CLASS . "/c.afiliado.php";
     $tsPortal = new tsPortal();
     // AFILIADOS
-    include("inc/class/c.afiliado.php");
     $tsAfiliado = new tsAfiliado();
     // NOS HAN REFERIDO?
     if(!empty($_GET['ref'])) $tsAfiliado->urlIn();
@@ -78,18 +64,9 @@
     // AFILIADOS
     $smarty->assign("tsAfiliados",$tsAfiliado->getAfiliados());
 
-/**********************************\
+}
 
-* (AGREGAR DATOS GENERADOS | SMARTY) *
-
-\*********************************/
-	}
-
-if(empty($tsAjax)) {	// SI LA PETICION SE HIZO POR AJAX DETENER EL SCRIPT Y NO MOSTRAR PLANTILLA, SI NO ENTONCES MOSTRARLA.
-
-	$smarty->assign("tsTitle",$tsTitle);	// AGREGAR EL TITULO DE LA PAGINA ACTUAL
-
-	/*++++++++ = ++++++++*/
-	include(TS_ROOT."/footer.php");
-	/*++++++++ = ++++++++*/
+if($tsAjax) {
+	$smarty->assign("tsTitle", $tsTitle);
+   require_once TS_ROOT . "/footer.php";
 }

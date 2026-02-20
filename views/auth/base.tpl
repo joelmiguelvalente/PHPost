@@ -4,8 +4,8 @@
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>{$tsTitle}</title>
 <link rel="shortcut icon" href="{$tsRoutes.tema.images}/favicon.ico" type="image/x-icon" />
+<link rel="preload" href="{$tsRoutes.assets.base}/fonts/Inter.woff2" as="font" type="font/woff2" crossorigin="anonymous">
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
 {load file=['dialog'] type="css"}
 <script>
@@ -13,8 +13,7 @@ const global_data = {
    app: {
       domain:'{$tsRoutes.domain}',
       title: '{$tsConfig.titulo}',
-      slogan: '{$tsConfig.slogan}',
-   	publicKey: '{$publicKey}'
+      slogan: '{$tsConfig.slogan}'
    }
 };
 const route = {
@@ -22,11 +21,17 @@ const route = {
    img:'{$tsRoutes.tema.images}',
    smiles:'{$tsConfig.url}/files/smiles'
 }
+{if $tsPage == 'registro'}
+const captcha = {
+	type: '{$service_captcha}',
+	key: '{$publicKey}'
+}
+{/if}
 </script>
 {if $tsPage == 'registro'}
-<script src="https://www.google.com/recaptcha/api.js?render={$publicKey}"></script>
+<script src="{$recaptcha}"></script> 
 {/if}
-{load file=['jquery.min','jquery.plugins',$tsPage] type="js"}
+{load file=['jquery.min','jquery.plugins',$tsPage] type="js" cache=true}
 <script id="tailwind-config">
 	tailwind.config = {
 		darkMode: "class",
@@ -41,8 +46,8 @@ const route = {
                "secondary": "#D2D2D2"
             },
             fontFamily: {
-               "display": ["Inter"]
-            },
+				   sans: ["Inter", "ui-sans-serif", "system-ui"]
+				},
             borderRadius: {
                "DEFAULT": "0.25rem",
                "lg": "0.5rem",
@@ -138,7 +143,7 @@ const route = {
    }
 </style>
 </head>
-<body class="bg-background-light dark:bg-background-dark font-display min-h-screen transition-colors duration-300">
+<body class="font-sans bg-background-light dark:bg-background-dark font-display min-h-screen transition-colors duration-300">
 
 	<div class="layout-container flex h-full grow flex-col">
 		<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-[#dce1e5] dark:border-[#2d3748] bg-white dark:bg-background-dark px-6 md:px-40 py-4 shadow-sm">
@@ -147,7 +152,7 @@ const route = {
 			</div>
 			<div class="hidden md:flex flex-1 justify-end gap-8">
 				<div class="flex items-center gap-9">
-					<a class="text-[#121517] dark:text-gray-300 text-sm font-medium leading-normal hover:text-primary transition-colors" href="{$tsRoutes.url}">Explorar</a>
+					<a class="text-[#121517] dark:text-gray-300 text-sm font-medium leading-normal hover:text-primary transition-colors" href="{$tsRoutes.url}">Ir al sitio</a>
 				</div>
 			</div>
 		</header>

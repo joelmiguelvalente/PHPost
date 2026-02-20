@@ -1,87 +1,51 @@
 <?php 
+
 /**
- * Controlador
- *
- * @name    monitor.php
- * @author  PHPost Team
-*/
+ * @name monitor.php
+ * @author PHPost Team
+ * @copyright 2026
+ */
 
-/**********************************\
+declare(strict_types=1);
 
-*	(VARIABLES POR DEFAULT)		*
-
-\*********************************/
-
-	$tsPage = "monitor";	// tsPage.tpl -> PLANTILLA PARA MOSTRAR CON ESTE ARCHIVO.
-
-	$tsLevel = 2;		// NIVEL DE ACCESO A ESTA PAGINA. => VER FAQs
-
-	$tsAjax = empty($_GET['ajax']) ? 0 : 1; // LA RESPUESTA SERA AJAX?
+require_once dirname(__DIR__, 2) . "/header.php";
+$tsTitle = "{$tsCore->settings['titulo']} - {$tsCore->settings['slogan']}";
 	
-	$tsContinue = true;	// CONTINUAR EL SCRIPT
-	
-/*++++++++ = ++++++++*/
+/**
+ * Inicializamos variable
+ */
 
-	include "../../header.php"; // INCLUIR EL HEADER
+$ctx = Controller::page('monitor')->members();
+// sincronizamos
+$ctx->exportLegacy();
 
-	$tsTitle = $tsCore->settings['titulo'].' - '.$tsCore->settings['slogan']; 	// TITULO DE LA PAGINA ACTUAL
+$tsLevelMsg = $tsCore->setLevel($ctx->getLevel(), true);
+if (is_array($tsLevelMsg)) {
+   $ctx->changePage('aviso');
+   $ctx->stop();
+   $smarty->assign("tsAviso", $tsLevelMsg);
+   // sincroniza nuevamente
+   $ctx->exportLegacy();
+}
 
-/*++++++++ = ++++++++*/
+if($ctx->continue()) {
 
-	// VERIFICAMOS EL NIVEL DE ACCESO ANTES CONFIGURADO
-	$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
-	if($tsLevelMsg != 1){	
-		$tsPage = 'aviso';
-		$tsAjax = 0;
-		$smarty->assign("tsAviso",$tsLevelMsg);
-		//
-		$tsContinue = false;
+	$action = trim($_GET['action'] ?? '');
+
+	if(empty($action)) {
+      $tsMonitor->show_type = 2;
+		$notificaciones = $tsMonitor->getNotificaciones();
+		$smarty->assign("tsData",$notificaciones);
+      $smarty->assign("tsStatus",$_COOKIE);
+   } else {
+		$smarty->assign("tsData",$tsMonitor->getFollows($action));
 	}
-	//
-	if($tsContinue){
 
-/**********************************\
-
-* (VARIABLES LOCALES ESTE ARCHIVO)	*
-
-\*********************************/
-
-	$action = htmlspecialchars($_GET['action']);
-	
-
-/**********************************\
-
-*	(INSTRUCCIONES DE CODIGO)		*
-
-\*********************************/
-        
-
-		if(empty($action)){
-            $tsMonitor->show_type = 2;
-			$notificaciones = $tsMonitor->getNotificaciones();
-			$smarty->assign("tsData",$notificaciones);
-            // LIVE SOUND
-            $smarty->assign("tsStatus",$_COOKIE);
-            //
-		} else {
-			$smarty->assign("tsData",$tsMonitor->getFollows($action));
-		}
-
-/**********************************\
-
-* (AGREGAR DATOS GENERADOS | SMARTY) *
-
-\*********************************/
-	//
 	$smarty->assign("tsAction",$action);
 	
-	}
+}
 
-if(empty($tsAjax)) {	// SI LA PETICION SE HIZO POR AJAX DETENER EL SCRIPT Y NO MOSTRAR PLANTILLA, SI NO ENTONCES MOSTRARLA.
-
-	$smarty->assign("tsTitle",$tsTitle);	// AGREGAR EL TITULO DE LA PAGINA ACTUAL
-
-	/*++++++++ = ++++++++*/
-	include("../../footer.php");
-	/*++++++++ = ++++++++*/
+if($tsAjax) {
+	$smarty->assign("tsTitle", $tsTitle);
+   require_once TS_ROOT . "/footer.php";
 }

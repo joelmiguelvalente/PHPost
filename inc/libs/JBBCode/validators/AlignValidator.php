@@ -1,26 +1,31 @@
 <?php
 
 namespace JBBCode\validators;
-
-require_once dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'InputValidator.php';
-
+require_once TS_LIBS . '/JBBCode/InputValidator.php';
 /**
  * Un InputValidator para valores de alineación de texto válidos
  *
  * @author Kmario19
  * @since Jul 2015
+ * @update Miguel92 - 2026
  */
 class AlignValidator implements \JBBCode\InputValidator {
 
+    private const VALID_VALUES = [
+        'left'   => true,
+        'center' => true,
+        'justify' => true,
+        'right'  => true,
+    ];
+
     /**
-     * Retorna true si $input es un valor válido de alineacion
-     * de texto
+     * Validates text alignment values.
      *
-     * @param $input texto para validar
+     * @param string $input The alignment value to validate
+     * @return bool
      */
-    public function validate($input) {
-        $values = array('left', 'center', 'justify', 'right');
-        return (bool) in_array($input, $values);
+    public function validate($input): bool {
+        return isset(self::VALID_VALUES[$input]);
     }
 
 }

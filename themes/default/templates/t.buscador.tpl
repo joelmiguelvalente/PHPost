@@ -76,7 +76,7 @@
                                     <label>Categoria</label><br/>
         							<select style="width: 150px;" name="cat">
         								<option value="-1">Todas</option>
-                                        {foreach from=$tsConfig.categorias item=c}
+                                        {foreach from=$tsCategories item=c}
                                         <option value="{$c.cid}"{if $tsCategory == $c.cid} selected="true"{/if}>{$c.c_nombre}</option>
                                         {/foreach}
         							</select>
@@ -123,7 +123,7 @@
                             <div class="info" style="background-color:#FFF">
                                 <img alt="Creado hace" src="{$tsRoutes.tema.images}/icons/clock.png"/> <strong>{$r.post_date|hace:true}</strong> -
                                 <img alt="Posts relacionados" src="{$tsRoutes.tema.images}/icons/relacionados.png"/> <a href="{$tsConfig.url}/buscador/?q={$r.post_title}&e={$tsEngine}&cat={$tsCategory}&autor={$tsAutor}">Post Relacionados</a> -
-                                <img alt="Creado por" src="{$tsRoutes.tema.images}/icons/autor.png"/> <a href="{$tsConfig.url}/perfil/{$r.user_name}">{$r.user_name}</a> |
+                                <img alt="Creado por" src="{$tsRoutes.tema.images}/icons/autor.png"/> <a href="{$tsConfig.url}/@{$r.user_name}">{$r.user_name}</a> |
                                 <img alt="0 puntos" src="{$tsRoutes.tema.images}/icons/puntos.png"/> Puntos <strong>{$r.post_puntos}</strong> -
                                 <img alt="0 puntos" src="{$tsRoutes.tema.images}/icons/favoritos.gif"/> <strong>{$r.post_favoritos}</strong> Favoritos -
                                 <img alt="0 puntos" src="{$tsRoutes.tema.images}/icons/comentarios.gif"/> <strong>{$r.post_comments}</strong> Comentarios
@@ -185,7 +185,7 @@
         							<label>Categor&iacute;a</label>
         							<select style="width: 200px;" name="cat">
         								<option value="-1">Todas</option>
-                                        {foreach from=$tsConfig.categorias item=c}
+                                        {foreach from=$tsCategories item=c}
                                         <option value="{$c.cid}">{$c.c_nombre}</option>
                                         {/foreach}
         							</select>

@@ -42,7 +42,7 @@
 
 		<div class="flex items-center gap-4 py-1">
 			<div class="flex-1 h-[1px] bg-[#dce1e5] dark:bg-[#374151]"></div>
-			<p class="text-[#121517] dark:text-gray-300 text-sm">¿Aún no eres parte de la comunidad? <a class="text-primary font-bold hover:underline ml-1" href="{$tsRoute.url}/registro/">Regístrate gratis</a></p>
+			<p class="text-[#121517] dark:text-gray-300 text-sm">¿Aún no eres parte de la comunidad? <a class="text-primary font-bold hover:underline ml-1" href="{$tsConfig.url}/registro/">Regístrate gratis</a></p>
 			<div class="flex-1 h-[1px] bg-[#dce1e5] dark:bg-[#374151]"></div>
 		</div>
 

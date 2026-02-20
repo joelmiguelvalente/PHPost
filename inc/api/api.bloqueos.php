@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name ajax.bloqueos.php
+ * @name api.bloqueos.php
  * @author PHPost Team
  * @copyright 2026
  */
@@ -35,7 +35,7 @@ if(!$tsLevelMsg) {
 }
 
 // CLASE
-require_once dirname(__DIR__, 1) . "/class/c.cuenta.php";
+require_once TS_CLASS . "/c.cuenta.php";
 $tsCuenta = new tsCuenta($tsCore, $tsUser);
 
 // CODIGO

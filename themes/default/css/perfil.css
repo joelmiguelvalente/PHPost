@@ -1,105 +1,134 @@
-/* PERFIL */
-.perfil-content .emptyData{
-	border:1px solid #CCC;
-	border-width: 1px 0;
+.header-profile {
+	--avatar: 120px;
+	.profile-data {
+		grid-template-columns: var(--avatar) 1fr 300px;
+		.data-avatar {
+			width: var(--avatar);
+			height: var(--avatar);
+		}
+		.data-info {
+			line-height: 1.5rem;
+			h1 {
+				font-weight: 600;
+				font-size: 1.5rem;
+			}
+			.frase-personal {
+				font-style: italic;
+				color: #444;
+			}
+		}
+		.data-stats {
+			grid-template-columns: repeat(2, 1fr);
+			.stats-item {
+				line-height: 1rem;
+				font-size: var(--font-size-sm);
+				background: var(--color-surface-alt);
+			}
+		}
+	}
 }
-.ex_opts{
-	display: block;
-	margin-top: 3px;
+#followUser {
+	top: 1rem;
+	right: 1rem;
 }
-.ex_opts a, .ex_opts span{
-	float:left;
-	color:#FFF;
-	display:block;
-	padding:3px 5px;
-	margin-right: 5px;
-	font-weight:bold;
-	background-color:#ce152e;
-	-moz-border-radius:5px;
-	-webkit-border-radius:5px;
-	border-radius:5px;    
+.profile-navegation {
+	border-bottom: 1px solid var(--color-border);
+	#tabs_menu {
+		.tab-item {
+			border-radius: .325rem .325rem 0 0;
+			&.active, &:hover {
+				background: #EEE;
+			}
+		}
+	}
 }
-/**** FOTO BAR ****/
-#perfil-foto-bar{
-	width: 594px;
-	overflow: hidden;
-	margin:0 auto 10px;
+
+.perfil-main {
+	grid-template-columns: 1fr 300px;
 }
-#perfil-foto-bar ul li{
-	float: left;
-	line-height: 0;
-	padding-left: 2px;
+.publish-box {
+	background: #eeeeee38;
+	border:1px solid var(--color-surface-alt);
 }
-#perfil-foto-bar div.foto{
-	background-color: #F2F2F2;
-	border-top: 1px solid #D9D9D9;
-	width: 97px;
-	height: 68px;
+.option-publish {
+	input {
+		all: unset;
+		padding: .5rem .5rem;
+		width: 100%;
+		background: var(--color-surface);
+	}
+	span {
+		display:block;
+		background: var(--color-primary);
+		color: var(--color-primary-contrast);
+		padding: .5rem 1rem;
+		&:hover {
+			background: var(--color-border);
+		}
+	}
 }
-#perfil-foto-bar ul li img{
-	width: 97px;
-	height: 68px;
+.publish-box #result  {
+	padding: .5rem;
+	.big.a_blue {
+		font-weight: 600;
+	}
+	span.desc {
+		font-style: italic;
+		font-size: .75rem;
+	}
+}
+
+.more-pubs {
+	width: 80%;
+	margin: 1em auto;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	& button {
+		background: transparent;
+		border: transparent;
+		padding: .5rem;
+	}
+}
+#perfil-foto-bar 
+.perfil-sidebar .title-w {
+}
+.perfil-sidebar .title-w h3 {
+}
+.perfil-sidebar .title-w span {
+}
+.perfil-content .title-w  span {
+}
+.perfil-sidebar {
+}
+.perfil-sidebar li {
+}
+
+.widget {
+}
+.widget .see-more {
+}
+
+.ultimos li.see-more a {
+}
+/*** FOTO BAR ***/
+#perfil-foto-bar .list-fotos {
+	grid-template-columns: repeat(6, 1fr);
+}
+#perfil-foto-bar .list-fotos .list-fotos-item {
+	height: 100px;
+}
+#perfil-foto-bar img {
+	width: 100px;
+	height: 100px;
+	object-fit: cover;
 }
 /**** FORM PUB ****/
-#perfil-form {
-	border-top: 1px solid #CCCCCC;
-	margin-bottom: 10px;
-} 
-#perfil-form .frameForm {
-	width: 500px;
-	margin:0 auto;
-	padding-bottom: 10px;
-}
-#perfil-form .options{
-	line-height: 22px;
-	padding: 3px 0;
-	position: relative;
-	z-index: 2;
-}
-#perfil-form .options li{
-	float:left;
-	display:block;
-}
-#perfil-form .options .share {
-	font-weight: bold;
-	color:#808080;
-}
-#perfil-form .options span.uiComposer {
-	color: #333333;
-	display: inline-block;
-	position: relative;
-	padding-left: 20px;
-}
-#perfil-form .options .atta li{
-	padding-left:10px;
-}
-#perfil-form .options .streamLoader {
-	line-height: normal;
-	position: absolute;
-	right: 2px;
-	top: 9px;
-	display: none;
-}
-#perfil-form .options .atta span, #perfil-form .options .atta a{
-	font-weight: bold;
-}
 .stream {
-	background: url(../images/icons/muro/stream.png) no-repeat left top;
+	background: url('../../../assets/images/icons/muro/stream.png') no-repeat left top;
 	display: inline-block;
 	width: 16px;
 	height: 16px;
-	top:3px;
-	left: 0;
-	position: absolute;
-	vertical-align: middle;
-}
-.nub {
-	background: url("../images/icons/muro/fb_arrow_up.gif") no-repeat scroll center top transparent;
-	height: 7px;
-	left: 2px;
-	position: absolute;
-	top: 19px;
-	width: 11px;
 }
 .mpub, .w_1 {background-position: left -16px;}
 .mfoto, .w_2 {background-position: left -32px;}
@@ -191,28 +220,25 @@
 .a_blue{
 	color:var(--color-primary-hover)!important;
 }
-#wall-content{
-	width: 90%;
-	margin:0 auto;
-}
 .Story {
 	--space: .875rem;
 	--avatar: 48px;
-	margin-bottom: 1.5rem;
+	grid-template-columns: var(--avatar) 1fr;
+	grid-template-areas: "avatar content" "avatar footer";
 }
 .Story_Pic {
-	float: left;
-	margin-right: var(--space);
+	grid-area: avatar;
 	display: block;
 	width: var(--avatar);
 	height: var(--avatar);
-	border: 2px solid var(--color-text-muted);
+	border: 1px solid var(--color-text-muted);
+	border-radius: .5rem;
+	overflow: hidden;
 }
 .Story_Content {
-	--left: calc(var(--avatar) + var(--space));
-	margin-left: var(--left);
-	width: calc(100% - var(--left));
-	border: 2px solid var(--color-border);
+	grid-area: content;
+	width: 100%;
+	border: 1px solid var(--color-border);
 	padding: 0.325rem;
 	box-sizing: border-box;
 	border-radius: .325rem;
@@ -222,21 +248,21 @@
 		width: 0;
 		height: 0;
 		position: absolute;
-		border-top: 8px solid transparent;
-		border-bottom: 8px solid transparent;
-		border-right: 8px solid var(--color-border);
-		margin-left: -14px;
+		border-top: 6px solid transparent;
+		border-bottom: 6px solid transparent;
+		border-right: 6px solid var(--color-border);
+		margin-left: -13px;
 		margin-top: 10px;
 	}
 }
 .Story_Content .uiClose {
-	background: url("../images/icons/muro/fb_close_big.png") no-repeat center top;
-	height: 15px;
-	width: 15px;
+	background: url("../../../assets/images/icons/muro/fb_close_big.png") no-repeat center top;
+	height: 1rem;
+	width: 1rem;
 	display: block;
-}
-.Story_Content .uiClose:hover {
-	background-position: center -45px;
+	&:hover {
+		background-position: center -45px;
+	}
 }
 .Story_Head {
 	position: relative;
@@ -252,65 +278,56 @@
 	
 }
 .Story_Head .Story_Message {
-	color: #000000;
-	font-size: 12px;
-	font-weight: normal;
-	margin: 0 0 5px;
+	font-size: var(--font-size-sm);
 	word-wrap: break-word;
-	> span {
-		display: block;
-		padding: .325rem .125rem;
-	}
 }
-/****************************/
 .Story_Message .autor {
-	padding-bottom: 3px;
 	font-weight: bold;
 }
-.Story_Message .mvm {
-	margin-bottom: 10px;
-	margin-top: 10px;
+
+.uiLink {
+	color: var(--color-primary);
+	padding: .325rem;
+	text-decoration: none;
+   & .uiLink-title {
+		font-size: var(--font-size-base);
+   	font-weight: 600;
+   }
+   & .uiLink-description {
+		font-size: var(--font-size-sm);
+		font-style: italic;
+	}
 }
-.Story_Message .uiPhoto img{
-	max-width: 130px;
-	max-height: 130px;
-	border: 1px solid #CCC;
-	padding: 3px;
-	background: #FFF;
+.uiVideo {
+	min-height: 333px;
+	max-height: 410px;
+	.video-description {
+		bottom: 6px;
+		padding: .75rem;
+		width: 100%;
+		background: linear-gradient(to top, #000, #0009, #0002);
+		box-sizing: border-box;
+		color: #FFF;
+		line-height: 1.5rem;
+		backdrop-filter: blur(3px);
+		span {
+			font-size: 14px;
+			font-weight: 600;
+		}
+		p {
+			margin: 0;
+			line-height: 1rem;
+			font-size: 11px;
+		}
+	}
 }
-.Story_Message .uiLink {
-	border-left:2px solid #CCC;
-	padding-left: 10px;
-}
-.Story_Message .uiVideoThumb {
-	overflow: hidden;
-	position: relative;
-	margin-right: 10px;
-	float: left;
-}
-.Story_Message .uiVideoThumb img{
-	max-width: 130px;
-	max-height: 130px;
-}
-.Story_Message .videoDesc{
-	color:#808080;
-	display: table-cell;
-	vertical-align: top;
-	width: 10000px;
-}
-.Story_Message .uiVideoThumb i {
-	background: url("../images/icons/muro/fb_video_play.png") no-repeat scroll 0 0 transparent;
-	bottom: 0;
-	height: 32px;
-	left: 0;
-	position: absolute;
-	width: 39px;
-}
+
 /******************/
+.Story_Foot {
+	grid-area: footer;
+}
 .Story_Foot .Story_Info {
-	color:#999;
 	position: relative;
-	padding-left: 21px;
 }
 .Story_Foot .Story_Info i{
 	top:0!important;
@@ -387,25 +404,6 @@
 	float:left;
 	width: 354px;
 }
-.more-pubs {
-	background-color: #EDEFF4;
-	border: 1px solid #D8DFEA;
-	width: 520px;
-	margin:1em auto 0;
-}
-.more-pubs:hover .content {
-	background-color: #D8DFEA;
-}
-.more-pubs a{
-	display: block;
-	padding: 10px 15px;
-} 
-.more-pubs span{
-	display: none;
-	width: 100%;
-	padding: 12px 15px 11px;
-	text-align: center;
-}
 .likes {
 	color:#333!important;
 }
@@ -459,17 +457,11 @@
 	font-weight: bold;
 }
 /***********/
-#cuerpocontainer {
-	padding: 0!important;
-	width: 960px!important;
-}
+
 /*
 	ACTIVIDAD EN PERFIL
 	-------------------------------------------------
 */
-.perfil-content .widget .title-w select {
-	float: right;
-}
 .big-info .last-activity div.sep {
 	background: none repeat scroll 0 0 #FFFFFF !important;
 	border-bottom: 1px dotted #CCCCCC;

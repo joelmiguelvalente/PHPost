@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name ajax.recover.php
+ * @name api.recover.php
  * @author PHPost Team
  * @copyright 2026
  */
@@ -14,15 +14,14 @@ if(!$tsLevelMsg) {
 	die('0: '.$tsLevelMsg);
 }
 	
-require_once TS_UTILS . '/IP.php';
-require_once dirname(__DIR__, 1) . '/class/c.emails.php';
+require_once TS_CLASS . '/c.emails.php';
 $IP = new IP;
 $tsEmail = new tsEmail($tsCore);
 	
 $email = $tsCore->setSecure($_REQUEST['r_email']);
 $user_info = db_exec([__FILE__, __LINE__], 'query', "SELECT user_id, user_name, user_registro, user_activo FROM u_miembros WHERE user_email = '$email'");
 if(!db_exec('num_rows', $user_info)){
-	die('0: El email no se encuentra registrado.');
+	echo '0: El email no se encuentra registrado.';
 }
 $tsData = db_exec('fetch_assoc', $user_info);
 $uid = (int)$tsData['user_id'];
@@ -42,13 +41,13 @@ switch($action){
 		
 		// <--
 		if(!$tsEmail->sendSignup($email, 'password_recovery', $body)) {
-			die('0: Hubo un error al intentar procesar lo solicitado');
+			echo '0: Hubo un error al intentar procesar lo solicitado';
 		}
-		die('1: Las intrucciones para recuperar su contrase&ntilde;a de <b>'.$tsCore->settings['titulo'].'</b> a <b>'.$email.'</b>, si no aparece el e-mail en su bandeja de entrar, revise en correo no deseado porque puede haberse filtrado...');
+		echo '1: Las intrucciones para recuperar su contrase&ntilde;a de <b>'.$tsCore->settings['titulo'].'</b> a <b>'.$email.'</b>, si no aparece el e-mail en su bandeja de entrar, revise en correo no deseado porque puede haberse filtrado...';
 		// -->
 	break;
 	case 'recover-validation':
-		if((int)$tsData['user_activo'] === 1) die('0: La cuenta ya se encuentra activada');
+		if((int)$tsData['user_activo'] === 1) echo '0: La cuenta ya se encuentra activada';
 		$pinHash = password_hash($hash, PASSWORD_DEFAULT);
 		db_exec([__FILE__, __LINE__], 'query', "INSERT INTO w_activate (user_id, user_email, code_hash, expire_at, type, used, ip) VALUES ($uid, '{$tsData['user_email']}', '$pinHash', $time, 'validation', 0, {$IP->executeIP()})");
 
@@ -82,12 +81,12 @@ switch($action){
 		
 		// <--
 		if(!$tsEmail->sendSignup($email, 'activate', $body)) {
-			die('0: Hubo un error al intentar procesar lo solicitado');
+			echo '0: Hubo un error al intentar procesar lo solicitado';
 		}
-		die('1: <div class="box_cuerpo" style="padding: 12px 20px; border-top:1px solid #CCC">Hemos enviado un correo a <b>'.$email.'</b> con los &uacute;ltimos pasos para finalizar con el registro.<br><br>Si en los pr&oacute;ximos minutos no lo encuentras en tu bandeja de entrada, por favor, revisa tu carpeta de correo no deseado, es posible que se haya filtrado.<br><br>&iexcl;Muchas gracias!</div>');
+		echo '1: Hemos enviado un correo a <b>'.$email.'</b> con los &uacute;ltimos pasos para finalizar con el registro.<br><br>Si en los pr&oacute;ximos minutos no lo encuentras en tu bandeja de entrada, por favor, revisa tu carpeta de correo no deseado, es posible que se haya filtrado.<br><br>&iexcl;Muchas gracias!';
 		// -->
 	break;
 	default:
-		die('0: Este archivo no existe.');
+		echo '0: Este archivo no existe.';
 	break;
 }

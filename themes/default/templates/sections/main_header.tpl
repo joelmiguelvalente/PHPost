@@ -2,10 +2,23 @@
 <html lang="es">
 <head>
 <title>{$tsTitle}</title>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="shortcut icon" href="{$tsRoutes.tema.images}/favicon.ico" type="image/x-icon" />
-{load file=['estilo','phpost','extras','dialog',$tsPage] type="css"}
+{meta 
+   description="Descubre nuestra plataforma completamente renovada. Actualizaciones constantes, nuevas funcionalidades y experiencia mejorada. En constante evolución para ofrecerte lo mejor." 
+   url=$tsRoutes.canonical 
+   favicon_name="main-#.png"
+   favicon_path="{$tsRoutes.assets.images}/phpost" 
+   favicon_sizes=[16, 32, 64] 
+   image="{$tsRoutes.assets.images}/phpost/banner-social.png"  
+   og=true 
+   twitter=true 
+   json_ld=true 
+   keywords="plataforma, actualizada, renovada, refactorizada, desarrollo web, php, smarty" 
+   data=[
+      'robots' => 'index,follow', 
+      'generator' => 'Miguel92'
+   ]
+}
+{load file=['estilo','phpost','extras','dialog',$tsPage] type="css" cache=true}
 <script>
 const global_data = {
    app: {
@@ -26,13 +39,14 @@ const global_data = {
 };
 const route = {
    url:'{$tsConfig.url}',
+   canonical:'{$tsRoutes.canonical}',
    assets:'{$tsRoutes.assets.base}',
    img:'{$tsRoutes.tema.images}',
    smiles:'{$tsRoutes.assets.images}/smiles'
 }
 </script>
 {load file=['jquery.min','jquery.plugins','acciones',$tsPage] type="js"}
-{if $tsUser->is_admod || $tsUser->can('moacp') || $tsUser->can('most') || $tsUser->can('moayca') || $tsUser->can('mosu') || $tsUser->can('modu') || $tsUser->can('moep') || $tsUser->can('moop') || $tsUser->can('moedcopo') || $tsUser->can('moaydcp') || $tsUser->can('moecp')}
+{if $tsUser->is_admod || $tsUser->canModerate()}
 <script src="{$tsRoutes.assets.js}/moderacion.js" defer></script>
 {/if}
 {if $tsConfig.c_allow_live}
@@ -40,8 +54,6 @@ const route = {
 {/if}
 </head>
 <body>
-   
-   {if $tsUser->is_admod}{$tsConfig.install}{/if}
 
    <div id="loading" style="display:none">
       <img src="{$tsRoutes.tema.images}/ajax-loader.gif" alt="Cargando"> Procesando...
@@ -52,15 +64,10 @@ const route = {
    <div class="UIBeeper" id="BeeperBox"></div>
 
    <div id="brandday">
-      <div class="rtop"></div>
       <main id="maincontainer">
        	<!--MAIN CONTAINER-->
          <div id="head">
-         	<div id="logo">
-               <a id="logoi" title="{$tsConfig.titulo}" href="{$tsConfig.url}">
-                  <img border="0" align="top" title="{$tsConfig.titulo}" alt="{$tsConfig.titulo}" src="{$tsRoutes.tema.images}/space.gif">
-               </a>
-            </div>
+            <a id="logo" title="{$tsConfig.titulo}" href="{$tsConfig.url}"></a>
             <div id="banner">
                {if $tsPage == 'posts' && $tsPost.post_id}
                   {include "m.global_search.tpl"}

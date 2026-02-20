@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name ajax.notificacion.php
+ * @name api.notificacion.php
  * @author PHPost Team
  * @copyright 2026
  */
@@ -36,20 +36,20 @@ if(!$tsLevelMsg) {
 }
 $how = trim($_POST['action'] ?? '');
 
-switch($action){
+switch($action) {
 	case 'notificaciones-ajax':
-		#$tsAjax = 1; // AJAX
 		switch($how){
 			case 'last':
-				#$tsAjax = 0; // AJAX
 				$notificaciones = $tsMonitor->getNotificaciones();
-				$smarty->assign("tsData",$notificaciones['data']);
+				$smarty->assign("tsData", $notificaciones['data']);
 			break;
 			case 'follow':
 				echo $tsMonitor->setFollow();
+				$tsAjax = false;
 			break;
 			case 'unfollow':
 				echo $tsMonitor->setUnFollow();
+				$tsAjax = false;
 			break;
 			case 'spam':
 				echo $tsMonitor->setSpam();
@@ -60,6 +60,3 @@ switch($action){
 		echo $tsMonitor->setFiltro();
 	break;
 }
-
-// HACK xD
-$_GET['ts'] = true;

@@ -1,135 +1,100 @@
 <?php 
+
 /**
- * Controlador
- *
- * @name    moderacion.php
- * @author  PHPost Team
-*/
-/**********************************\
+ * @name moderacion.php
+ * @author PHPost Team
+ * @copyright 2026
+ */
 
-*	(VARIABLES POR DEFAULT)		*
+declare(strict_types=1);
 
-\*********************************/
+require_once dirname(__DIR__, 2) . "/header.php";
+$tsTitle = "Moderacion de {$tsCore->settings['titulo']}";
 
-	$tsPage = "moderacion";	// tsPage.tpl -> PLANTILLA PARA MOSTRAR CON ESTE ARCHIVO.
+/**
+ * Inicializamos variable
+ */
 
-	$tsLevel = 3;		// NIVEL DE ACCESO A ESTA PAGINA. => VER FAQs
+$ctx = Controller::page('moderacion')->moderator();
+// sincronizamos
+$ctx->exportLegacy();
 
-	$tsAjax = empty($_GET['ajax']) ? 0 : 1; // LA RESPUESTA SERA AJAX?
-	
-	$tsContinue = true;	// CONTINUAR EL SCRIPT
-	
-/*++++++++ = ++++++++*/
+$tsLevelMsg = $tsCore->setLevel($ctx->getLevel(), true);
+if (is_array($tsLevelMsg)) {
+   $ctx->changePage('aviso');
+   $ctx->stop();
+   $smarty->assign("tsAviso", $tsLevelMsg);
+   // sincroniza nuevamente
+   $ctx->exportLegacy();
+}
 
-	include "../../header.php"; // INCLUIR EL HEADER
-
-	$tsTitle = $tsCore->settings['titulo'].' - '.$tsCore->settings['slogan']; 	// TITULO DE LA PAGINA ACTUAL
-
-/*++++++++ = ++++++++*/
-
-	// VERIFICAMOS EL NIVEL DE ACCESO ANTES CONFIGURADO
-	$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
-	if($tsLevelMsg != 1){	
-		$tsPage = 'aviso';
-		$tsAjax = 0;
-		$smarty->assign("tsAviso",$tsLevelMsg);
-		//
-		$tsContinue = false;
-	}
-	//
-	if($tsContinue){
-
-/**********************************\
-
-* (VARIABLES LOCALES ESTE ARCHIVO)	*
-
-\*********************************/
+if($ctx->continue()) {
 
 	// ACTION
-	$action = htmlspecialchars($_GET['action']);
+	$action = trim($_GET['action'] ?? '');
 	// ACTION 2
-	$act = htmlspecialchars($_GET['act']);
+	$act = trim($_GET['act'] ?? '');
 	// CLASE POSTS
-	include("../class/c.moderacion.php");
-	$tsMod = new tsMod();
+	require_once TS_CLASS . "/c.moderacion.php";
+	$tsMod = new tsMod($tsCore, $tsUser);
 
-/**********************************\
+	if($action === '') {
+		$smarty->assign("tsPlantilla", "");
+		$smarty->assign("tsMods", $tsMod->getMods());
 
-*	(INSTRUCCIONES DE CODIGO)		*
-
-\*********************************/
-
-	$denuncia = ['posts', 'users', 'mps', 'fotos'];
-
-	if($action == ''){
-		$smarty->assign("plantilla", "mod_welcome");
-		$smarty->assign("tsMods",$tsMod->getMods());
-    // DENUNCIAS
-	} elseif(in_array($action, $denuncia)) {
-		$smarty->assign("plantilla", "mod_report_" . $action);
+   # DENUNCIAS
+	} elseif(in_array($action, ['posts', 'users', 'mps', 'fotos'], true)) {
+		$smarty->assign("tsPlantilla", "report_$action");
       // DATOS EXTRA
-      include('../extras/datos.php');
+      require_once TS_EXTRA . '/datos.php';
       // SEGUNDA ACCION
 		if(empty($act)){
 		 	$smarty->assign("tsReports", $tsMod->getDenuncias($action));
-         $smarty->assign("tsDenuncias", $tsDenuncias[$action]);
-		} elseif($act == 'info') {
+		} elseif($act === 'info') {
          $smarty->assign("tsDenuncia", $tsMod->getDenuncia($action));
-         $smarty->assign("tsDenuncias", $tsDenuncias[$action]);
 		}
+      $smarty->assign("tsDenuncias", $Denuncias[$action]);
 	}
    // SUSPENSIONES
-   elseif($action == 'banusers'){
-		$smarty->assign("plantilla", "mod_ban_users");
+   elseif($action === 'banusers'){
+		$smarty->assign("tsPlantilla", "ban_users");
       $smarty->assign("tsSuspendidos",$tsMod->getSuspendidos());
    }
 	//PAPELERAS
-	elseif($action == 'pospelera'){
-		$smarty->assign("plantilla", "mod_papelera_posts");
+	elseif($action === 'pospelera'){
+		$smarty->assign("tsPlantilla", "papelera_posts");
       $smarty->assign("tsPospelera",$tsMod->getPospelera());
    }
-	elseif($action == 'fopelera'){
-		$smarty->assign("plantilla", "mod_papelera_fotos");
+	elseif($action === 'fopelera'){
+		$smarty->assign("tsPlantilla", "papelera_fotos");
        $smarty->assign("tsFopelera",$tsMod->getFopelera());
    }
 	// CONTENIDO DESAPROBADO
-	elseif($action == 'comentarios'){
-		$smarty->assign("plantilla", "mod_revision_comentarios");
+	elseif($action === 'comentarios'){
+		$smarty->assign("tsPlantilla", "revision_comentarios");
       $smarty->assign("tsComentarios",$tsMod->getComentariosD());
    }
-	elseif($action == 'revposts'){
-		$smarty->assign("plantilla", "mod_revision_posts");
+	elseif($action === 'revposts'){
+		$smarty->assign("tsPlantilla", "revision_posts");
       $smarty->assign("tsPosts",$tsMod->getPostsD());
    }
 	// BUSCADOR DE IP Y CONTENIDO
-   elseif($action == 'buscador') {
-		$smarty->assign("plantilla", "mod_buscador");
-		if($_POST['buscar']) {
+   elseif($action === 'buscador') {
+		$smarty->assign("tsPlantilla", "buscador");
+		if(isset($_POST['buscar'])) {
 			$tsCore->redirectTo($tsCore->settings['url'].'/moderacion/buscador/'.$_POST['m'].'/'.$_POST['t'].'/'.$_POST['texto']);
 		}	
-		if($act == 'search') $smarty->assign("tsContenido", $tsMod->getContenido()); 
-
+		if($act === 'search') $smarty->assign("tsContenido", $tsMod->getContenido()); 
 	}
 
-/**********************************\
-
-* (AGREGAR DATOS GENERADOS | SMARTY) *
-
-\*********************************/
 	// ACCION?
 	$smarty->assign("tsAction",$action);
-	//
 	$smarty->assign("tsAct",$act);
-	//
-	}
 
-if(empty($tsAjax)) {	// SI LA PETICION SE HIZO POR AJAX DETENER EL SCRIPT Y NO MOSTRAR PLANTILLA, SI NO ENTONCES MOSTRARLA.
+}
 
-	$smarty->assign("tsTitle",$tsTitle);	// AGREGAR EL TITULO DE LA PAGINA ACTUAL
-	
-	$smarty->assign("tsSave",$_GET['save']);	// AGREGAR EL TITULO DE LA PAGINA ACTUAL
-	
-	/*++++++++ = ++++++++*/
-	include("../../footer.php");
-	/*++++++++ = ++++++++*/
+if($tsAjax) {
+	$smarty->assign("tsTitle", $tsTitle);
+	if(isset($_GET['save'])) $smarty->assign("tsSave", $_GET['save']);
+   require_once TS_ROOT . "/footer.php";
 }

@@ -95,9 +95,11 @@ class tsSmarty extends \Smarty\Smarty {
 
 	private function resolvePage(string $page, bool $useExtension): string {
 		$file = match ($page) {
-			'registro', 'login' => 'base.tpl',
+			'registro', 'login' 	 => 'base.tpl',
 			'admin', 'moderacion' => 'main.tpl',
-			'saliendo' => 'themes/html/saliendo.html',
+			'suspension' 			 => 'views/output/suspension.tpl',
+			'mantenimiento' 		 => 'views/output/mantenimiento.tpl',
+			'saliendo' 				 => 'themes/html/saliendo.html',
 			default => ($useExtension ? "t.$page.tpl" : "$page.tpl")
 		};
 		return $this->templateExists($file) ? $file : $this->templateError;

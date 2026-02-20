@@ -16,7 +16,7 @@ function irACategoria(cat) {
 }
 
 const GGET_KEY_MAP = Object.freeze({
-	key: 'user_key',
+	userid: 'user_key',
 	postid: 'postid',
 	fotoid: 'fotoid',
 	temaid: 'temaid'
@@ -31,84 +31,6 @@ const queryParam = (key, withoutAmp = false) => {
 	const prefix = withoutAmp ? '' : '&';
 	return `${prefix}${key}=${encodeURIComponent(value)}`;
 };
-
-/**
- * Funcion para bloquear usuarios
-*/
-const configBloqueo = {
-	perfil: {
-		selector: '#bloquear_cambiar',
-		remove: 'bloquearU desbloquearU',
-		add: bloqueado => bloqueado ? 'desbloquearU' : 'bloquearU',
-		withClasses: true
-	},
-	mis_bloqueados: {
-		selector: bloqueado => `.bloquear_usuario_${user}`,
-		remove: 'bloqueadosU desbloqueadosU',
-		add: bloqueado => bloqueado ? 'desbloqueadosU' : 'bloqueadosU',
-		withClasses: true
-	},
-	mensajes: {
-		selector: '#bloquear_cambiar',
-		withClasses: false
-	}
-};
-const actualizarUIBloqueo = (user, bloqueado, lugar) => {
-	if (configBloqueo[lugar]) {
-		const cfg = BLOQUEO_UI[lugar];
-		const $el = $(typeof cfg.selector === 'function' ? cfg.selector(user) : cfg.selector);
-		$el.text(bloqueado ? 'Desbloquear' : 'Bloquear');
-		if (cfg.classes) {
-			$el.removeClass(cfg.remove).addClass(cfg.add(bloqueado));
-		}
-		$el.off('click.bloqueo').on('click.bloqueo', e => {
-			e.preventDefault();
-			bloquear(user, !bloqueado, lugar);
-		});
-	}
-	if (lugar === 'respuestas' || lugar === 'comentarios') {
-		$(`.bloquear_${user}`).toggle(!bloqueado);
-		$(`.desbloquear_${user}`).toggle(bloqueado);
-	}
-}
-
-const bloquear = (user, bloqueado, lugar, aceptar) => {
-	if(!aceptar && bloqueado) {
-		dialog.init({
-			title: 'Bloquear usuario',
-			body: '&iquest;Realmente deseas bloquear a este usuario?',
-			buttons: {
-				confirm: {
-					text: 'Si, bloquear',
-					action: () => bloquear(`'${user}'`, true, `'${lugar}'`, true)
-				},
-				cancel: {
-					text: 'No, cerrar'
-				}
-			}
-		});
-		return;
-	}
-	if(bloqueado) {
-		dialog.loading('Procesando...');
-	}
-	const params = new URLSearchParams({
-		user,
-		...queryParam('key') && { user_key: queryParam('key') },
-		...(bloqueado && { bloquear: 1 })
-	});
-	$.post(`${route.url}/bloqueos-cambiar.php`, params.toString()).done(response => {
-		const { status, message } = $.parseResponse(response);
-		dialog.alert('Bloquear Usuarios', message);
-		if (status === 1) {
-			actualizarUIBloqueo(user, bloqueado, lugar);
-		}
-	})
-	.fail(() => {
-		dialog.reintentar(`bloquear("${user}", ${bloqueado}, "${lugar}", true)`);
-	})
-	.always(() => dialog.close);
-}
 
 const media = {
 	popup(response, short) {
@@ -132,7 +54,7 @@ const media = {
 		if (!$container.length) {
 			$container = $(`
 				<div class="alertas" id="alerta_${short}"><a title=""><span></span></a></div>
-			`).appendTo(`.userInfoLogin .${clase}`);
+			`).appendTo(`.navbar-user .${clase}`);
 		}
 		$container.find('a').attr('title', total + label).find('span').text(total);
 		$container.stop(true).animate({ top: '-=5px' }, 100).animate({ top: '+=5px' }, 100);
@@ -143,17 +65,17 @@ const media = {
 		// Limpiar alert previo si existe
 		$(`#alerta_${short}`).remove();
 		// Marcar monitor activo y quitar spinner
-		$ref.parent('li').addClass(name.toLowerCase() + '-notificaciones');
+		$ref.parent('div').addClass(name.toLowerCase() + '-notificaciones');
 		$ref.children('span').removeClass('spinner');
 		if (!last) return;
 		// Mostrar lista y rellenar contenido
-		$list.show().children('ul').html(last);
+		$list.show().children(`[dropdown-open=${name}]`).html(last);
 	},
 	close(name, short) {
 		const $list = $(`#${short}_list`);
 		const $ref = $(`a[name=${name}]`);
 		$list.hide();
-		$ref.parent('li').removeClass(`${name.toLowerCase()}-notificaciones`);
+		$ref.parent('div').removeClass(`${name.toLowerCase()}-notificaciones`);
 	}
 }
 
@@ -167,7 +89,7 @@ const notifica = {
 		if(additional !== '') {
 			value += ` ${additional}`;
 		}
-		$(block).html(this.handleNumber(value));
+		$(block).html(value);
 	},
 	handleResponse(response, onSuccess, onError = null) {
 		const parts = response.split('-');
@@ -189,45 +111,43 @@ const notifica = {
 		}
 	},
 	userMenuHandle(response) {
-		this.handleResponse(response, res => {
+		notifica.handleResponse(response, res => {
 			const cache_id = 'following_' + res.id;
-			this.cache[cache_id] = 0;
+			notifica.cache[cache_id] = 0;
 			$('div.avatar-box').children('ul').hide();
 		});
 	},
 	userInPostHandle(response) {
-		this.handleResponse(response, res => {
-			$('.follow_user_post, .unfollow_user_post').toggle();
-			this.handleNumber('.metadata-usuario > .nData.user_follow_count', res.value);
-			this.userMenuHandle(response);
+		notifica.handleResponse(response, res => {
+			notifica.handleNumber('[data-count-follow]', res.value);
+			notifica.userMenuHandle(response);
 		});
 	},
 	userInMonitorHandle(response, obj) {
-		this.handleResponse(response, () => $(obj).fadeOut(() => $(obj).remove()));	
+		notifica.handleResponse(response, () => $(obj).fadeOut(() => $(obj).remove()));	
 	},
 	inPostHandle(response) {
-		this.handleResponse(response, res => {
-			$('a.follow_post, a.unfollow_post').parent('li').toggle();
-			this.handleNumber('.post-estadisticas .icons.monitor', res.value);
+		notifica.handleResponse(response, res => {
+			notifica.handleNumber('[data-post-follow]', res.value);
 		});
 	},
 	inComunidadHandle(response) {
-		this.handleResponse(response, res => {
+		notifica.handleResponse(response, res => {
 			$('.follow_comunidad, .unfollow_comunidad').toggle();
-			this.handleNumber('.comunidad_seguidores', res.value, 'Seguidores');
+			notifica.handleNumber('.comunidad_seguidores', res.value, 'Seguidores');
 		});
 	},
 	temaInComunidadHandle(response) {
-		this.handleResponse(response, res => {
+		notifica.handleResponse(response, res => {
 			$('.followBox > .follow_tema, .unfollow_tema').toggle();
-			this.handleNumber('.tema_notifica_count', res.value, 'Seguidores');
+			notifica.handleNumber('.tema_notifica_count', res.value, 'Seguidores');
 		});
 	},
 	ruserInAdminHandle(response) {
-		this.handleResponse(response, res => $('.ruser' + res.id).toggle());
+		notifica.handleResponse(response, res => $('.ruser' + res.id).toggle());
 	},
 	listInAdminHandle(response) {
-		this.handleResponse(response, res => {
+		notifica.handleResponse(response, res => {
 			const $items = $('.list' + res.id);
 			$items.toggle();
 			$items.first().closest('li').children('div:first').fadeTo(0, $items.first().is(':hidden') ? 0.5 : 1);
@@ -241,76 +161,66 @@ const notifica = {
 			dialog.close();
 		}
 	},
+	follow({ action, type, id, fn, obj }) {
+		notifica.ajax([`action=${action}`, `type=${type}`, `obj=${id}`], fn, obj);
+	},
+	spam(id, cb, param) {
+		notifica.ajax(['action=spam', `${param}=${id}`], cb);
+	},
 	ajax(params, callback, target = null) {
 		const $target = target ? $(target) : null;
 		if ($target?.hasClass('spinner')) return;
 		const request = { params, callback, target };
-		this.retry = request;
+		notifica.retry = request;
 		const isCount = params.includes('action=count');
 		if ($target) {
 			$target.addClass('spinner');
 		}
-		$('#loading').fadeIn(250);
-		$.post(`${route.url}/notificaciones-ajax.php`, params.join('&') + queryParam('key'), response => {
+		api('notificaciones-ajax.php', params.join('&') + queryParam('userkey'), response => {
 			if ($target) {
 				$target.removeClass('spinner');
 			}
 			callback(response, target);
-		}).fail(() => {
-			if (!isCount) {
-				dialog.reintentar(`notifica.ajax(${JSON.stringify(this.retry.params)})`);
-			}
-		}).always(() => dialog.close);
-	},
-	follow(type, id, cb, obj) {
-		this.ajax(['action=follow', `type=${type}`, `obj=${id}`], cb, obj);
-	},
-	unfollow(type, id, cb, obj) {
-		this.ajax(['action=unfollow', `type=${type}`, `obj=${id}`], cb, obj);
-	},
-	spam(id, cb, param) {
-		this.ajax(['action=spam', `${param}=${id}`], cb);
-	},
-	handleRecomendar(id, type) {
-		dialog.init({
-			title: 'Recomendar',
-			boody: `¿Quieres recomendar este ${type} a tus seguidores?`,
-			buttons: {
-				confirm: {
-					text: 'Recomendar',
-					action: () => notifica.spam(id, notifica.spamHandle, `${type}id`)
+		}, {
+			error: ({ xhr, status, error }) => {
+				if (!isCount) {
+					dialog.reintentar(`notifica.ajax(${JSON.stringify(notifica.retry.params)})`);
 				}
 			}
 		});
+	},
+	handleRecomendar(id, type) {
+		dialog.easy('Recomendar', `¿Quieres recomendar este ${type} a tus seguidores?`, 'Recomendar', () => notifica.spam(id, notifica.spamHandle, `${type}id`))
 	},
 	last() {
 		const $list = $('#mon_list');
 		const $monitor = $('a[name=Monitor]');
 		const count = parseInt($('#alerta_mon > a > span').text(), 10) || 0;
 		mensaje.close();
+		usuario.close();
 		// Si está visible → cerrar
 		if ($list.is(':visible')) {
 			$list.fadeOut();
-			$monitor.parent('li').removeClass('monitor-notificaciones');
+			$monitor.parent('div').removeClass('monitor-notificaciones');
 			return;
 		}
-		const hasCache = this.cache.last !== undefined;
+		const hasCache = notifica.cache.last !== undefined;
 		// Mostrar panel
 		$monitor.children('span').addClass('spinner');
-		$monitor.parent('li').addClass('monitor-notificaciones');
+		$monitor.parent('div').addClass('monitor-notificaciones');
 		$list.slideDown();
 		// Pedir datos si hace falta
 		if (!hasCache || count > 0) {
-			this.ajax(['action=last'], response => {
-				this.cache.last = response;
-				this.show();
+			notifica.ajax(['action=last'], response => {
+				notifica.cache.last = response;
+				notifica.show();
 			});
 		} else {
-			this.show();
+			notifica.show();
 		}
 	},
 	check() {
-		this.ajax(['action=count'], notifica.popup);
+		notifica.ajax(['action=count'], notifica.popup);
 	},
 	popup(response) {
 		media.popup(response, 'mon');
@@ -324,8 +234,7 @@ const notifica = {
 		inputs.map((pos, input) => {
 			if($(input).prop('checked')) fid.push(input.id)
 		})
-		$.post(`${route.url}/notificaciones-filtro.php`, { fid })
-		.fail(() => console.error('Error al filtrar notificaciones'));  
+		$.post(`${route.url}/notificaciones-filtro.php`, { fid }).fail(() => console.error('Error al filtrar notificaciones'));  
 	},
 	close() {
 		media.close('Monitor', 'mon');
@@ -339,10 +248,10 @@ const mensaje = {
 	vars: [],
 	// CREAR HTML
 	form() {
-		const { to, sub, msg, error } = this.save;
+		const { to, sub, msg, error } = mensaje.save;
 		let html = '';
 		if(error) {
-			html += `<div class="emptyData">${error}</div>`;
+			html += `<div class="alert-empty">${error}</div>`;
 		}
 		html += `<div style="display:grid;grid-template-columns:80px 1fr;gap:.5rem">
 			<div class="m-col1">Para:</div>
@@ -410,47 +319,40 @@ const mensaje = {
 		});
 	},
 	// PREPARAR EL ENVIO
-	nuevo(to, sub, msg, error = '') {
-		Object.assign(this.save, { to, sub, msg, error });
-		dialog.init({
-			title: 'Nuevo mensaje',
-			body: this.form(),
-			buttons: {
-				confirm: { text: 'Enviar', action: () => mensaje.enviar(0) },
-				cancel: { text: 'Cancelar', action: 'close' }
-			}
-		});
+	nuevo(to, sub = '', msg = '', error = '') {
+		Object.assign(mensaje.save, { to, sub, msg, error });
+		dialog.easy('Nuevo mensaje', mensaje.form(), 'Enviar', () => mensaje.enviar(0))
 	},
 	// ENVIAR...
 	enviar(enviar) {
 		// DATOS
-		Object.assign(this.save, {
+		Object.assign(mensaje.save, {
 			to: $('#msg_to').val(),
 			sub: $('#msg_subject').val(),
 			msg: $('#msg_body').val()
 		});
 		// COMPROBAR
 		if(enviar === 0) {
-			if(!this.save.to || !this.save.msg) {
-				return this.nuevo(this.save.to, this.save.sub, this.save.msg, (!this.save.to ? 'Especifique destinatario.' : 'El mensaje está vacío.'));
+			if(!mensaje.save.to || !mensaje.save.msg) {
+				return mensaje.nuevo(mensaje.save.to, mensaje.save.sub, mensaje.save.msg, (!mensaje.save.to ? 'Especifique destinatario.' : 'El mensaje está vacío.'));
 			}
 			dialog.loading('Verificando...');
-			this.ajax('validar', `para=${this.save.to}`, this.checkform);
+			mensaje.ajax('validar', `para=${mensaje.save.to}`, mensaje.checkform);
 		} else {
 			dialog.loading('Enviando...');
-			this.ajax('enviar', `para=${this.save.to}&asunto=${encodeURIComponent(this.save.sub)}&mensaje=${encodeURIComponent(this.save.msg)}`, this.alert);
+			mensaje.ajax('enviar', `para=${mensaje.save.to}&asunto=${encodeURIComponent(mensaje.save.sub)}&mensaje=${encodeURIComponent(mensaje.save.msg)}`, mensaje.alert);
 		}
 	},
 	// RESPONDER
 	responder(mp_id) {
-		this.vars['mp_id'] = $('#mp_id').val();
-		this.vars['mp_body'] = encodeURIComponent($('#respuesta').bbcode());
-		if(this.vars['mp_body'] === '') {
+		mensaje.vars['mp_id'] = $('#mp_id').val();
+		mensaje.vars['mp_body'] = encodeURIComponent($('#respuesta').val());
+		if(mensaje.vars['mp_body'] === '') {
 			$('#respuesta').focus();
 			return;
 		}
 		//
-		this.ajax('respuesta', `id=${this.vars['mp_id']}&body=${this.vars['mp_body']}`, response => {
+		mensaje.ajax('respuesta', `id=${mensaje.vars['mp_id']}&body=${mensaje.vars['mp_body']}`, response => {
 			const { status, message } = $.parseResponse(response);
 			$('#respuesta').val('');
 			if(status === 0) dialog.alert("Error", message);
@@ -460,28 +362,29 @@ const mensaje = {
 	},
 	last() {
 		const $list = $('#mp_list');
-		const $mensage = $('a[name=Mensajes]');
+		const $mensaje = $('a[name=Mensajes]');
 		const count = parseInt($('#alerta_mps > a > span').text(), 10) || 0;
 		notifica.close();
+		usuario.close();
 		// Si está visible → cerrar
 		if ($list.is(':visible')) {
 			$list.fadeOut();
-			$mensage.parent('li').removeClass('monitor-notificaciones');
+			$mensaje.parent('div').removeClass('monitor-notificaciones');
 			return;
 		}
-		const hasCache = this.cache.last !== undefined;
+		const hasCache = mensaje.cache.last !== undefined;
 		// Mostrar panel
-		$mensage.children('span').addClass('spinner');
-		$mensage.parent('li').addClass('monitor-notificaciones');
+		$mensaje.children('span').addClass('spinner');
+		$mensaje.parent('div').addClass('monitor-notificaciones');
 		$list.slideDown();
 		// Pedir datos si hace falta
 		if (!hasCache || count > 0) {
-			this.ajax('lista', '', response => {
-				this.cache.last = response;
-				this.show();
+			mensaje.ajax('lista', '', response => {
+				mensaje.cache.last = response;
+				mensaje.show();
 			});
 		} else {
-			this.show();
+			mensaje.show();
 		}
 	},
 	popup(response) {
@@ -495,6 +398,26 @@ const mensaje = {
 	}
 }
 
+const usuario = {
+	last() {
+		notifica.close();
+		mensaje.close();
+		const $list = $('#user_list');
+		if ($list.is(':visible')) {
+			$list.fadeOut();
+			return;
+		}
+		$list.slideDown();
+		usuario.show();
+	},
+	show() {
+		media.show(undefined, 'Usuario', 'user');
+	},
+	close() {
+		media.close('Usuario', 'user');
+	}
+}
+
 /* IMAGENES */
 const imagenes = {
 	total: 0,
@@ -502,13 +425,13 @@ const imagenes = {
 	delay: 5000,
 	$container: $('#imContent'),
 	presentacion() {
-		this.$container.animate({ top: '0px' }, 1000, 'easeOutQuad', () => {
-			this.$container.css({ top: `${this.offset}px` });
-			for (let i = this.total; i > 0; i--) {
+		imagenes.$container.animate({ top: '0px' }, 1000, 'easeOutQuad', () => {
+			imagenes.$container.css({ top: `${imagenes.offset}px` });
+			for (let i = imagenes.total; i > 0; i--) {
 				$(`#img_${i}`).html($(`#img_${i - 1}`).html());
 			}
-			$(`#img_0`).html($(`#img_${this.total}`).html());
-			setTimeout(() => this.presentacion(), this.delay);
+			$(`#img_0`).html($(`#img_${imagenes.total}`).html());
+			setTimeout(() => imagenes.presentacion(), imagenes.delay);
 		});
 	}
 };
@@ -520,11 +443,11 @@ const news = {
 	delay: 7000,
 	$items: $('#top_news > li'),
 	slider() {
-		if (this.total <= 1) return;
-		this.current = this.current < this.total ? this.current + 1 : 1;
-		this.$items.hide();
-		$(`#new_${this.current}`).fadeIn();
-		setTimeout(() => this.slider(), this.delay);
+		if (news.total <= 1) return;
+		news.current = news.current < news.total ? news.current + 1 : 1;
+		news.$items.hide();
+		$(`#new_${news.current}`).fadeIn();
+		setTimeout(() => news.slider(), news.delay);
 	}
 };
 
@@ -535,12 +458,16 @@ const closeIfClickOutside = ({ panel, trigger, onClose }, $target) => {
 };
 
 $(document).ready(() => {
+
 	$('body').off('click.uiClose').on('click.uiClose', e => {
-		const $target = $(e.target);
-		// Notificaciones
-		closeIfClickOutside({ panel: $('#mon_list'), trigger: 'a[name=Monitor]', onClose: () => notifica.last() }, $target);
-		// Mensajes
-		closeIfClickOutside({ panel: $('#mp_list'), trigger: 'a[name=Mensajes]', onClose: () => mensaje.last() }, $target);
+		[
+		   { panel: '#mon_list', trigger: 'a[name=Monitor]', onClose: () => notifica.last() },
+		   { panel: '#mp_list', trigger: 'a[name=Mensajes]', onClose: () => mensaje.last() },
+		   { panel: '#user_list', trigger: 'a[name=Usuario]', onClose: () => usuario.last() }
+		].forEach(({ panel, trigger, onClose }) => closeIfClickOutside(
+			{ panel: $(panel), trigger, onClose }, 
+			$(e.target)
+		));
 	});
 
 	/* NOTICIAS */

@@ -8,7 +8,7 @@
                         	<h4>Categor&iacute;a</h4>
                             <select onchange="location.href='{$tsConfig.url}/top/{$tsAction}/?fecha={$tsFecha}&cat='+$(this).val()">
                             <option value="0">Todas</option>
-                            {foreach from=$tsConfig.categorias item=c}
+                            {foreach from=$tsCategories item=c}
                                 <option value="&cat={$c.cid}" {if $tsCat == $c.cid}selected="selected"{/if}>{$c.c_nombre}</option>
                             {/foreach}
                             </select>

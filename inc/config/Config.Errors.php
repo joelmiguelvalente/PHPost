@@ -8,39 +8,51 @@
 
 declare(strict_types=1);
 
-require_once TS_UTILS . '/Logger.php';
+require_once TS_LOGGER . '/LogLevel.php';
+require_once TS_LOGGER . '/LoggerFormatter.php';
+require_once TS_LOGGER . '/Logger.php';
 
-define('REPORTING', 
-	(Config::app('app.debug_all') ? E_ALL : 
-		(Config::app('app.debug') ? (E_ALL & ~E_WARNING & ~E_NOTICE & ~E_DEPRECATED) : 0)
-	)
-);
+$level = match(Config::app('debug.level')) {
+   1 => E_ALL,
+   2 => E_ALL & ~E_WARNING & ~E_NOTICE & ~E_DEPRECATED,
+   default => 0
+};
 
 // Reporte de errores
-error_reporting(REPORTING);
+error_reporting($level);
 
-ini_set('display_errors', Config::app('app.env') === 'development' ? '1' : '0');
-ini_set('log_errors', '1');
+ini_set('display_errors', Config::app('debug.active'));
+ini_set('log_errors', Config::app('debug.logs') === 'always');
+ini_set('html_errors', Config::app('debug.logs') === 'always');
 
 if(!is_dir(Config::app('paths.logs'))) {
 	mkdir(Config::app('paths.logs'), 0777);
 }
 
 set_error_handler(function (int $severity, string $message, string $file, int $line) {
-   Logger::log('php', 'ERROR', $message, compact('file', 'line', 'severity'));
+   if (!(error_reporting() & $severity)) {
+      return false;
+   }
+   Logger::log($message, LogLevel::ERROR, compact('file', 'line', 'severity'), 'php' );
+   return !Config::app('debug.active');
 });
 
 set_exception_handler(function (Throwable $e) {
-   Logger::log('php', 'EXCEPTION', $e->getMessage(), [
-      'file'  => $e->getFile(),
-      'line'  => $e->getLine(),
-      'trace' => $e->getTraceAsString(),
-   ]);
+   Logger::exception($e);
+   if (Config::app('debug.active')) {
+      echo "<pre>{$e}</pre>";
+   }
 });
 
 register_shutdown_function(function () {
    $error = error_get_last();
-   if ($error && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR])) {
-      Logger::log('php', 'FATAL', $error['message'], $error);
+   if (!$error) {
+      return;
+   }
+   if (in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR])) {
+      Logger::log($error['message'], LogLevel::FATAL, $error, 'php');
+      if (Config::app('debug.active')) {
+         echo "<pre>" . print_r($error, true) . "</pre>";
+      }
    }
 });

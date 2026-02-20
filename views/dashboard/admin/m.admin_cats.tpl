@@ -3,7 +3,7 @@
 {/if}
 {if $tsAct == '' || $tsAct == 'editar' || $tsAct == 'nueva'}
 <script>
-$(() => {
+document.addEventListener('DOMContentLoaded', function () {
    /* {if $tsAct == ''} */
    new Sortable(document.getElementById('cats_orden'), {
       animation: 150,
@@ -17,83 +17,82 @@ $(() => {
       }
    });
    /* {/if} */
-   $('#cat_img').on('change', () => {
-      $('#c_icon').css({ 
-         "background": $("#cat_img option:selected").css('background') 
-      })
+   $('#c_img').on('change', function () {
+      const icon = $(this).val();
+      $('#c_icon').css({
+         background: "url('{$tsRoutes.assets.images}/icons/cat/" + icon + "') no-repeat center center",
+         backgroundSize: '16px'
+      });
    });
-})
+});
 </script>
 {/if}
 <h1 class="text-xl font-semibold mb-4">Administrar Categor&iacute;as</h1>
 <div class="rounded border bg-white dark:bg-surface p-4 shadow-sm">
-   {if $tsSave}<div class="mensajes ok">Tus cambios han sido guardados.</div>{/if}
+   {include "dashboard/Alert.tpl" text="Tus cambios han sido guardados" color="green" show=$tsSave}
    {if $tsAct == ''}
-      {if !$tsSave}<div class="mensajes error">Puedes cambiar el orden de las categor&iacute;as tan s&oacute;lo con arrastrarlas con el puntero.</div>{/if}
-      <table cellpadding="0" cellspacing="0" border="0" width="500" align="center" class="admin_table">
-         <thead>
-          	<th colspan="3" style="text-align:left; padding-left:7px;">Categor&iacute;as</th>
-         </thead>
-         <tbody id="cats_orden">
-            {foreach from=$tsConfig.categorias item=c}
-               <tr id="{$c.cid}" data-id="{$c.cid}">
-                  <td width="30">{$c.c_orden}</td>
-                  <td style="text-align:left; padding-left:20px; background:url({$tsConfig.cat}/{$c.c_img}) no-repeat 2px center;"><b><u>{$c.c_nombre}</u></b></td>
-                  <td class="admin_actions" width="100">
-                     <a href="{$tsConfig.url}/admin/cats?act=editar&cid={$c.cid}&t=cat"><img src="{$tsRoutes.tema.images}/icons/editar.png" title="Editar Categor&iacute;a"/></a>
-                     <a href="{$tsConfig.url}/admin/cats?act=borrar&cid={$c.cid}&t=cat"><img src="{$tsRoutes.tema.images}/icons/close.png" title="Borrar Categor&iacute;a"/></a>
-                  </td>
-               </tr>
-            {/foreach}
-         </tbody>
-      </table>
-      <hr />
-      <input type="button" onclick="location.href = '{$tsConfig.url}/admin/cats?act=nueva&t=cat'" value="Agregar Nueva Categor&iacute;a" class="mBtn btnOk" style="margin-left:280px;"/>
-      <input type="button" style="cursor:pointer;" onclick="location.href = '{$tsConfig.url}/admin/cats?act=change'" value="Mover Posts" class="btn_g">									
-	{elseif $tsAct == 'editar'}
-      <form action="" method="post" autocomplete="off">
+      {if !$tsSave}
+         {include "dashboard/Alert.tpl" text="Puedes cambiar el orden de las categor&iacute;as tan s&oacute;lo con arrastrarlas con el puntero." color="orange" show=true}
+      {/if}
+      <div class="overflow-x-auto rounded-md border bg-white dark:bg-surface shadow-sm">
+         <table class="min-w-full border-collapse text-sm">
+               {include "dashboard/table/Thead.tpl" fields=[
+                  "Orden",
+                  "Imagen",
+                  "Nombre",
+                  "Slug",
+                  "Privado",
+                  "Acciones"
+               ]}
+            <tbody class="divide-y dark:divide-gray-700" id="cats_orden">
+               {foreach from=$tsCategories item=c}
+                  <tr class="hover:bg-gray-50 dark:hover:bg-surface-alt transition-colors" id="{$c.cid}" data-id="{$c.cid}">
+                     <td class="px-3 py-2 text-gray-600 dark:text-gray-400" width="30">{$c.c_orden}</td>
+                     <td class="px-3 py-2"><img src="{$tsRoutes.assets.images}/icons/cat/{$c.c_img}" alt="{$c.c_nombre}"></td>
+                     <td class="px-3 py-2 font-bold">{$c.c_nombre}</td>
+                     <td class="px-3 py-2">{$c.c_seo}</td>
+                     <td class="px-3 py-2"><span class="material-symbols-outlined text-sm">lock{if $c.c_privada == 0}_open_right{/if}</span></td>
+                     <td class="px-3 py-2">
+                        <div class="flex justify-center gap-2">
+                           {include "dashboard/table/Action.tpl" action="cats?act=editar&cid={$c.cid}" title="Editar Categor&iacute;a" icon="edit"}
+                           {include "dashboard/table/Action.tpl" action="cats?act=borrar&cid={$c.cid}" title="Borrar Categor&iacute;a" icon="delete"}
+                        </div>
+                     </td>
+                  </tr>
+               {/foreach}
+            </tbody>
+         </table>
+      </div>
+
+      <div class="flex space-x-4 py-4">
+         <a href="{$tsConfig.url}/admin/cats?act=nueva" class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90"><span class="material-symbols-outlined text-sm">add</span> Agregar Nueva Categor&iacute;a</a>
+
+         <a href="{$tsConfig.url}/admin/cats?act=change" class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90"><span class="material-symbols-outlined text-sm">sync_alt</span> Mover Posts</a>
+      </div>							
+	{elseif $tsAct == 'editar' || $tsAct == 'nueva'}
+      <form method="post" autocomplete="off" class="space-y-6">
          <fieldset class="rounded-lg border border-gray-200 dark:border-gray-700 p-6 bg-white dark:bg-surface shadow-sm">
-            <legend>Editar</legend>
-            <dl>
-               <dt><label for="cat_name">Nombre de la categor&iacute;a:</label></dt>
-               <dd><input type="text" id="cat_name"name="c_nombre" value="{$tsCat.c_nombre}" /></dd>
-            </dl>
-            <dl>
-               <dt><label for="cat_img">Icono de la categor&iacute;a:</label></dt>
-               <dd>
-                  <img src="{$tsRoutes.tema.images}/space.gif" style="background:url({$tsConfig.cat}/{$tsCat.c_img}) no-repeat left center;" width="16" height="16" id="c_icon"/>
-                  <select name="c_img" id="cat_img" style="width:164px">
-                     {foreach from=$tsIcons key=i item=img}
-                        <option value="{$img}" style="padding:2px 20px 0; background:#FFF url({$tsConfig.cat}/{$img}) no-repeat left center;"{if $tsCat.c_img == $img} selected{/if}>{$img}</option>
-                     {/foreach}
+
+            {include file="dashboard/Legend.tpl" text="{if $tsAct == 'nueva'}Agregar nueva{else}Editar{/if} categoria"}
+
+            {include "dashboard/Alert.tpl" text="Si deseas m&aacute;s iconos para las categor&iacute;as debes subirlos al directorio: {$tsRoutes.assets.images}/cat/" color="orange" show=true}
+
+            {include "dashboard/FormGroup.tpl" id="c_nombre" label="Nombre de la categor&iacute;a" required=true name="c_nombre" value=$tsCat.c_nombre}
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-start py-2 mb-3">
+               <label for="c_img" class="font-medium text-gray-700 dark:text-gray-300">Icono de la categor&iacute;a</label>
+               <div class="md:col-span-2 flex items-center">
+                  <div style="background:url({$tsRoutes.assets.images}/icons/cat/{if $tsCat.c_img == ''}book.png{else}{$tsCat.c_img}{/if}) no-repeat center center;background-size:16px;display:block;width:16px;height:16px;margin-right:10px;" id="c_icon"></div>
+                  <select name="c_img" id="c_img" class="rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-surface px-3 py-2 text-sm focus:ring-2 focus:ring-primary" style="width: 160px;">
+                     {html_options values=$tsIcons output=$tsIcons selected=$tsCat.c_img}
                   </select>
-               </dd>
-            </dl>
-            <p><input type="submit" name="save" value="Guardar cambios" class="btn_g"/  ></p>
+               </div>
+            </div>
+
+            {include "dashboard/FormGroup.tpl" type="radio" id="c_privada" label="La categor&iacute;a es..." name="c_privada" checked=$tsCat.c_privada labels=["P&uacute;blica", "Privada"] values=[0,1]}
+
+            {include "dashboard/Button.tpl" submit_text="{if $tsAct == 'nueva'}Crear categoria{else}Guardar cambios{/if}"}
          </fieldset>
-      </form>
-   {elseif $tsAct == 'nueva'}
-      <div class="mensajes error">Si deseas m&aacute;s iconos para las categor&iacute;as debes subirlos al directorio: {$tsConfig.url}/files/images/cat/</div>
-      <form action="" method="post" autocomplete="off">
-         <fieldset class="rounded-lg border border-gray-200 dark:border-gray-700 p-6 bg-white dark:bg-surface shadow-sm">
-            <legend>Nueva</legend>
-            <dl>
-                <dt><label for="cat_name">Nombre de la categor&iacute;a:</label></dt>
-                <dd><input type="text" id="cat_name" name="c_nombre" value="" /></dd>
-            </dl>
-            <dl>
-               <dt><label for="cat_img">Icono de la categor&iacute;a:</label></dt>
-               <dd>
-                  <img src="{$tsRoutes.tema.images}/space.gif" width="16" height="16" id="c_icon"/>
-                  <select name="c_img" id="cat_img" style="width:164px">
-                     {foreach from=$tsIcons key=i item=img}
-                   	<option value="{$img}" style="padding:2px 20px 0; background:#FFF url({$tsConfig.cat}/{$img}) no-repeat left center;">{$img}</option>
-                   {/foreach}
-                   </select>
-               </dd>
-            </dl>
-            <p><input type="submit" name="save" value="Crear Categor&iacute;a" class="btn_g"/></p>
-         </fieldset> 
       </form>
    {elseif $tsAct == 'borrar'}
       {if $tsError}<div class="mensajes error">{$tsError}</div>{/if}

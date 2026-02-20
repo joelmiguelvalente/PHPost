@@ -1,0 +1,49 @@
+.filterFull {
+	grid-template-columns: 200px 1fr;
+}
+.users {
+	grid-template-columns: repeat(2, 1fr);
+}
+.box form {
+	.title {
+		font-weight: 600;
+		font-size: 1rem;
+	}
+}
+.filters {
+	label {
+		display: block;
+		&.active {
+			font-weight: 600;
+		}
+	}
+}
+.users .user {
+	h4 {
+		padding: .325rem;
+		margin: 0;
+		border-bottom: 1px solid var(--color-border);
+	}
+	.box-content {
+		--avatar: 80px;
+		grid-template-columns: var(--avatar) 1fr;
+		grid-template-areas: 'avatar info' 'mensaje mensaje';
+		grid-template-rows: 1fr auto;
+		.avatarBox {
+			grid-area: avatar;
+			width: var(--avatar);
+			height: var(--avatar);
+		}
+		.infoBox {
+			grid-area: info;
+			line-height: 1.75rem;
+			font-size: 0.8rem;
+		}
+		.message {
+			grid-area: mensaje;
+			padding: 0.325rem;
+			font-size: 0.85rem;
+			font-style: italic;
+		}
+	}
+}

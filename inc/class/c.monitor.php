@@ -13,13 +13,13 @@ if (!defined('TS_HEADER')) {
 }
 
 require_once TS_UTILS . '/Avatar.php';
-require_once TS_UTILS . '/Paginator.php';
 require_once TS_HELPERS . '/UrlHelper.php';
 
 class tsMonitor {
 	
 	protected tsCore $Core;
 	protected tsUser $User;
+	protected Avatar $Avatar;
 	protected UrlHelper $UrlHelper;
 
 	/**
@@ -48,9 +48,9 @@ class tsMonitor {
 	 * @access public
 	 * @info COMO MOSTRAREMOS LAS NOTIFICACIONES -> AJAX/NORMAL
 	 **/
-	 public $show_type = 1;
+	public $show_type = 1;
 
-	 private const NOTIF_FOLLOW = 4;
+	private const NOTIF_FOLLOW = 4;
 
 	/*
 		constructor()
@@ -58,13 +58,14 @@ class tsMonitor {
 	public function __construct(tsCore $Core, tsUser $User) {
 		$this->Core = $Core;
 		$this->User = $User;
+		$this->Avatar = new Avatar;
 		$this->UrlHelper = new UrlHelper($Core);
 		// VISITANTE?
 		if($this->User->is_member === 0) return false;
 		// NOTIFICACIONES
-		$this->notificaciones = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', "SELECT COUNT(not_id) AS total FROM u_monitor WHERE user_id = {$this->User->uid} AND not_menubar > 0"))['total'];
+		$this->notificaciones = DB::value("SELECT COUNT(not_id) FROM u_monitor WHERE user_id = :uid AND not_menubar > 0", ['uid' => $this->User->uid]);
 		// AVISOS
-		$this->avisos = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', "SELECT COUNT(av_id) AS total FROM u_avisos WHERE user_id = {$this->User->uid} AND av_read = 0"))['total'];
+		$this->avisos = DB::value("SELECT COUNT(av_id) FROM u_avisos WHERE user_id = :uid AND av_read = 0", ['uid' => $this->User->uid]);
 	}
 
 	/**
@@ -104,14 +105,19 @@ class tsMonitor {
 	*/
 	public function setAviso(int $userId = 0, string $subject = '(sin asunto)', string $body = '', int $type = 0): bool {
 		# VERIFICAMOS QUE SE PUEDA ENVIAR EL AVISO
-		$data = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', "SELECT user_baneado FROM u_miembros WHERE user_id = $userId LIMIT 1"));
+		$data = DB::fetch("SELECT user_baneado FROM u_miembros WHERE user_id = :uid LIMIT 1", ['uid' => $userId]);
 		# NO PODEMOS ENVIAR A UN USUARIO BANEADO
 		if((int)$data['user_baneado'] === 1) return true;
 		# INSERTAMOS EL AVISO
 		$subject = $this->Core->setSecure($subject);
 		$body = $this->Core->setSecure($body);
-		$time = time();
-		return (db_exec([__FILE__, __LINE__], 'query', "INSERT INTO u_avisos (user_id, av_subject, av_body, av_date, av_type) VALUES ($userId, '$subject', '$body', $time, $type)"));
+		return (DB::insert('u_avisos', [
+			'user_id' => $userId,
+			'av_subject' => $subject,
+			'av_body' => $body,
+			'av_date' => time(),
+			'av_type' => $type
+		]));
 	}
 
 	/**
@@ -122,7 +128,17 @@ class tsMonitor {
 	 * @info OBTIENE LOS MENSAJES Y ALERTAS DEL USUARIO
 	 */
 	public function getAvisos(): array {
-		return result_array(db_exec([__FILE__, __LINE__], 'query', 'SELECT * FROM u_avisos WHERE user_id = ' . $this->User->uid));
+		return DB::fetchAll("SELECT * FROM u_avisos WHERE user_id = :uid", ['uid' => $this->User->uid]);
+	}
+
+	private function getAviso(int $avId, bool $isString = true): array|string|bool {
+		# OBTENEMOS
+		$data = DB::fetch('SELECT av_id, user_id FROM u_avisos WHERE av_id = :aid', ['aid' => $avId]);
+		# RETURN
+		if(empty($data['av_id']) || (int)$data['user_id'] !== $this->User->uid && !$this->User->is_admod) {
+			return $isString ? 'El aviso no existe' : false;
+		}
+		return $data;
 	}
 
 	/**
@@ -133,13 +149,8 @@ class tsMonitor {
 	 * @info ONTIENE UN AVISO
 	 */
 	public function readAviso(int $avId = 0): array|string {
-		# OBTENEMOS
-		$data = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', 'SELECT * FROM u_avisos WHERE av_id = ' . $avId));
-		# RETURN
-		if(empty($data['av_id']) || (int)$data['user_id'] !== $this->User->uid && !$this->User->is_admod) {
-			return 'El aviso no existe';
-		}
-		db_exec([__FILE__, __LINE__], 'query', 'UPDATE u_avisos SET av_read = 1 WHERE av_id = ' . $avId);
+		$data = $this->getAviso($avId);
+		DB::update('u_avisos', ['av_read' => 1], 'av_id = :id', ['id' => $avId]);
 		$this->avisos = $this->avisos - 1;
 		return $data; 
 	}
@@ -152,13 +163,8 @@ class tsMonitor {
 	 * @info ELIMINA UN AVISO
 	 */
 	public function delAviso(int $avId = 0): bool {
-		# OBTENEMOS
-		$data = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', 'SELECT user_id FROM u_avisos WHERE av_id = ' . $avId));
-		# RETURN
-		if(empty($data['user_id']) || (int)$data['user_id'] !== $this->User->uid && !$this->User->is_admod) { 
-			return false;
-		}
-		db_exec([__FILE__, __LINE__], 'query', 'DELETE FROM u_avisos WHERE av_id = ' . $avId);
+		$this->getAviso($avId, false);
+		DB::delete('u_avisos', 'av_id = :aid', ['aid' => $avId]);
 		return true;
 	}
 
@@ -182,22 +188,34 @@ class tsMonitor {
 			if(empty($allow)) return true;
 			// VERIFICAR CUANTAS NOTIFICACIONES DEL MISMO TIPO Y EN POCO TIEMPO TENEMOS
 			$tiempo = $time - 3600; //  HACE UNA HORA
-			$not_data = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', "SELECT not_id FROM u_monitor WHERE user_id = $userId AND obj_uno = $objUno AND obj_dos = $objDos AND not_type = $type AND not_date > $tiempo AND not_menubar > 0 ORDER BY not_id DESC LIMIT 1"));
+			$not_data = DB::fetch("SELECT not_id FROM u_monitor WHERE user_id = :uid AND obj_uno = :ouno AND obj_dos = :odos AND not_type = :type AND not_date > :time AND not_menubar > 0 ORDER BY not_id DESC LIMIT 1", ['uid' => $userId, 'ouno' => $objUno, 'odos' => $objDos, 'type' => $type, 'time' => $tiempo]);
 			// COMPROBAR LIMITE DE NOTIFICACIONES
-			$data = result_array(db_exec([__FILE__, __LINE__], 'query', "SELECT not_id FROM u_monitor WHERE user_id = $userId ORDER BY not_id DESC"));
+			$data = DB::fetchAll("SELECT not_id FROM u_monitor WHERE user_id = :uid ORDER BY not_id DESC", ['uid' => $userId]);
 			$ntotal = count($data ?? 0);
 			$delid = (int)($data[(int)$ntotal - 1]['not_id']); // ID DE ULTIMA NOTIFICACION
 			// ELIMINAR NOTIFICACIONES?
 			$max = (int)$this->Core->settings['c_max_nots'];
 			if($ntotal > $max) {
-				db_exec([__FILE__, __LINE__], 'query', "DELETE FROM u_monitor WHERE user_id = $userId ORDER BY not_id ASC LIMIT 1 OFFSET $max");
+				DB::delete('u_monitor', "user_id = :uid ORDER BY not_id ASC LIMIT 1 OFFSET :max", ['uid' => $userId, 'max' => $max]);
 			}
 			// ACTUALIZAMOS / INSERTAMOS
 			if(!empty($not_data['not_id']) && $type !== self::NOTIF_FOLLOW) {
-				if(db_exec([__FILE__, __LINE__], 'query', "UPDATE u_monitor SET obj_user = $objUser, not_date = $time, not_total = not_total + 1 WHERE not_id = {$not_data['not_id']}"))
+				if(DB::raw("UPDATE u_monitor SET obj_user = :user, not_date = :time, not_total = not_total + 1 WHERE not_id = :nid", [
+					'user' => $objUser,
+					'time' => $time,
+					'nid' => $not_data['not_id']
+				]))
 				return true;
 			} else {
-				if(db_exec([__FILE__, __LINE__], 'query', "INSERT INTO u_monitor (user_id, obj_user, obj_uno, obj_dos, obj_tres, not_type, not_date) VALUES ($userId, $objUser, $objUno, $objDos, $objTres, $type, $time"))
+				if(DB::insert('u_monitor', [
+					'user_id' => $userId,
+					'obj_user' => $objUser,
+					'obj_uno' => $objUno,
+					'obj_dos' => $objDos,
+					'obj_tres' => $objTres,
+					'not_type' => $type,
+					'not_date' => $time
+				]))
 				return true;   
 			}
 		}
@@ -210,7 +228,7 @@ class tsMonitor {
 	 * @return void
 	 * @info Envia notificaciones a los usuarios que siguen a un post o usuario.
 	*/
-	public function setFollowNotificacion(int $notType = 0, int $fType = 0, int $userId = 0, int $objUno = 0, int $objDos = 0, array $excluir = []): bool {
+	public function setFollowNotificacion(int $notType = 0, int $fType = 0, int $userId = 0, int $objUno = 0, int $objDos = 0, array $excluir = []):bool {
 		# TIPO DE FOLLOW USER o POST
 		$fType = match($fType) {
 			1 => $userId,
@@ -218,7 +236,7 @@ class tsMonitor {
 			default => $fType
 		};
 		# BUSCAMOS LOS Q SIGAN A ESTE POST/ USER
-		$data = result_array(db_exec([__FILE__, __LINE__], 'query', "SELECT f_user FROM u_follows WHERE f_id = $fType AND f_type = $fType"));
+		$data = DB::fetchAll("SELECT f_user FROM u_follows WHERE f_id = :fid AND f_type = :type", ['fid' => $fType, 'type' => $fType]);
 		//
 		foreach($data as $key => $val) {
 			// A CADA USUARIO LE NOTIFICAMOS SI NO ESTA EN LAS EXCLUSIONES
@@ -238,7 +256,7 @@ class tsMonitor {
 	 * @info NOTIFICA CUANDO ALGUIEN RESPONDE UNA PUBLICACION EN UN MURO
 	 */
 	public function setMuroRepost(int $pubId, int $pUser, int $pUserPub): void {
-		$data = result_array(db_exec([__FILE__, __LINE__], 'query', "SELECT c_user FROM u_muro_comentarios WHERE pub_id = $pubId AND c_user NOT IN ({$this->User->uid}, $pUser)"));
+		$data = DB::fetchAll("SELECT c_user FROM u_muro_comentarios WHERE pub_id = :pid AND c_user NOT IN (:uid, :puser)", ['pid' => $pubId, 'uid' => $this->User->uid, 'puser' => $pUser]);
 		// ENVIAMOS NOTIFICACION A LOS QUE HAYAN COMENTADO
 		$enviados = [];
 		foreach($data as $key => $val){
@@ -407,7 +425,7 @@ class tsMonitor {
 			'style'  => $this->monitor[$noType]['css'],
 			'date'   => $data['not_date'],
 			'user'   => $data['usuario'],
-			'avatar' => (new Avatar)->use((int)$data['obj_user']),
+			'avatar' => $this->Avatar->get((int)$data['obj_user']),
 			'total'  => (int)$data['not_total'],
 		];
 	}
@@ -436,15 +454,21 @@ class tsMonitor {
 	 * @info RETORNA LAS ORACIONES A MOSTRAR EN EL MONITOR
 	*/
 	private function makeOracion(array $data): array {
-		$Avatar = new Avatar;
-		# LOCALES
 		$showType  = ($this->show_type === 1);
+		$noType    = (int)$data['not_type'];
+		if (!isset($this->monitor[$noType])) {
+			throw new RuntimeException("Tipo de monitor inválido: {$noType}");
+		}
+		$monitor = $this->monitor[$noType] ?? [];
+		$lnText = $monitor['ln_text'] ?? null;
+		if (is_array($lnText)) {
+			$lnText = $lnText[$data['obj_dos'] - 1] ?? null;
+		}
+		$txt_extra = ($showType || !$lnText) ? '' : " {$lnText}";
+		$message   = $lnText;
+		# LOCALES
 		$url 		  = $this->Core->settings['url'];
-		$urlImages = $this->Core->route('tema:images');
-		$noType 	  = (int)$data['not_type'];
-		$txt_extra = $showType ? '' : " {$this->monitor[$noType]['ln_text']}";
-		$message	  = $this->monitor[$noType]['ln_text'];
-		$message	  = is_array($message) ? $message[$data['obj_dos']-1] : $message;
+		$urlImages = $this->Core->route('assets:images');
 		//
 		$oracion = $this->baseOracion($data, $noType);
 		# CON UN SWITCH ESCOGEMOS QUE ORACION CONSTRUIR
@@ -548,15 +572,15 @@ class tsMonitor {
 			break;
 			// 15|16|17 $this->buildMedalAction($oracion, $data, $noType);
 			case 15:
-				$oracion['text'] = "Recibiste una nueva <span title=\"{$data['m_title']}\"><strong>medalla</strong> <img src=\"{$urlImages}/icons/med/{$data['m_image']}_16.png\"/></span>";
+				$oracion['text'] = "Recibiste una nueva <span title=\"{$data['m_title']}\"><strong>medalla</strong> <img class=\"item-image\" src=\"{$urlImages}/icons/med/{$data['m_image']}_32.png\"/></span>";
 			break;
 			case 16:
 				$urlPost = $this->makeUrlOracion('post', $data);
-				$oracion['text'] = "Tu <a href=\"{$urlPost}\" title=\"{$data['post_title']}\"><strong>post</strong></a> tiene una nueva <span title=\"{$data['m_title']}\"><strong>medalla</strong> <img src=\"{$urlImages}/icons/med/{$data['m_image']}_16.png\"/></span>";
+				$oracion['text'] = "Tu <a href=\"{$urlPost}\" title=\"{$data['post_title']}\"><strong>post</strong></a> tiene una nueva <span title=\"{$data['m_title']}\"><strong>medalla</strong> <img class=\"item-image\" src=\"{$urlImages}/icons/med/{$data['m_image']}_32.png\"/></span>";
 			break;
 			case 17:
 				$urlFoto = $this->makeUrlOracion('foto', $data);
-				$oracion['text'] = "Tu <a href=\"{$urlFoto}\" title=\"{$data['f_title']}\"><strong>foto</strong></a> tiene una nueva <span title=\"{$data['m_title']}\"><strong>medalla</strong> <img src=\"{$urlImages}/icons/med/{$data['m_image']}_16.png\"/></span>";
+				$oracion['text'] = "Tu <a href=\"{$urlFoto}\" title=\"{$data['f_title']}\"><strong>foto</strong></a> tiene una nueva <span title=\"{$data['m_title']}\"><strong>medalla</strong> <img class=\"item-image\" src=\"{$urlImages}/icons/med/{$data['m_image']}_32.png\"/></span>";
 			break;
 		}
 		# RETORNAMOS
@@ -582,7 +606,7 @@ class tsMonitor {
 
 	private function checkFollowFlood(int $objectId): ?string {
 		$flood = $this->Core->antiFlood(false, 'follow');
-		if (strlen($flood) <= 1) {
+		if (strlen((string)$flood) <= 1) {
 			return null;
 		}
 		$message = str_replace('0: ', '', $flood);
@@ -595,12 +619,16 @@ class tsMonitor {
 	}
 
 	private function insertFollow(array $ctx): bool {
-	   $time = time();
-	   return (bool) db_exec([__FILE__, __LINE__], 'query', "INSERT INTO u_follows (f_user, f_id, f_type, f_date) VALUES ({$this->User->uid}, {$ctx['objectId']}, {$ctx['type']}, {$time})");
+	   return (bool) DB::insert('u_follows', [
+	   	'f_user' => $this->User->uid, 
+	   	'f_id' => $ctx['objectId'], 
+	   	'f_type' => $ctx['type'], 
+	   	'f_date' => time()
+	   ]);
 	}
 
 	private function countFollows(array $ctx): int {
-	   $row = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', "SELECT COUNT(follow_id) AS total FROM u_follows WHERE f_id = {$ctx['objectId']} AND f_type = {$ctx['type']}"));
+	   $row = DB::fetch("SELECT COUNT(follow_id) AS total FROM u_follows WHERE f_id = :object AND f_type = :type", ['object' => $ctx['objectId'], 'type' => $ctx['type']]);
 	   return (int) $row['total'];
 	}
 
@@ -611,21 +639,21 @@ class tsMonitor {
 	 * @return string
 	 * @info MANEJA EL SEGUIR USUARIO/POST
 	*/
-	public function setFollow(): string {
+	public function setFollow() {
 		global $tsActividad;
-
+		// objectId = user_id, post_id, etc
 		$ctx = $this->resolveFollowContext();
 		if ($error = $this->checkFollowFlood($ctx['objectId'])) {
 			return $error;
 		}
 		if ($this->User->uid === $ctx['objectId'] && $ctx['type'] === 1) {
-			return "1-{$ctx['objectId']}-0-No puedes seguirte a ti mismo.";
+			return "0-{$ctx['objectId']}-0-No puedes seguirte a ti mismo.";
 		}
 		if ($this->followExists($ctx)) {
-			return "2-{$ctx['objectId']}-0";
+			return "2-{$ctx['objectId']}-0-Ya lo est&aacute;s siguiendo.";
 		}
 		if (!$this->insertFollow($ctx)) {
-			return "1-{$ctx['objectId']}-0-No se pudo completar la acci&oacute;n.";
+			return "0-{$ctx['objectId']}-0-No se pudo completar la acci&oacute;n.";
 		}
 		if ($ctx['notifyUser'] > 0) {
 			$this->setNotificacion((int)$ctx['notType'], (int)$ctx['notifyUser'], $this->User->uid);
@@ -633,7 +661,7 @@ class tsMonitor {
 		$total = $this->countFollows($ctx);
 		$acType = ($ctx['type'] === 1) ? 8 : 7;
 		$tsActividad->setActividad($acType, (int)$ctx['objectId']);
-		return "0-{$ctx['objectId']}-{$total}";
+		return "1-{$ctx['objectId']}-{$total}";
 	}
 
 	/**
@@ -693,7 +721,7 @@ class tsMonitor {
 		$data['pages'] = $pages;
 		$data['data'] = result_array(db_exec([__FILE__, __LINE__], 'query', "{$query} ORDER BY f.f_date DESC LIMIT {$pages['limit']}"));
 		if($type === 'seguidores') {
-			foreach($dato as $key => $val) {
+			foreach($data['data'] as $key => $val) {
 				$siguiendo = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', "SELECT follow_id FROM u_follows WHERE f_user = $userId AND f_id = {$val['user_id']} AND f_type = 1"));
 				$val['follow'] = empty($siguiendo['follow_id']) ? 0 : 1;
 				$data['data'][] = $val;
@@ -759,9 +787,10 @@ class tsMonitor {
 	 */
 	private function allowNotifi(int $type, int $userId) {
 		# CONSULTAMOS
-		$data = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', "SELECT c_monitor FROM u_portal WHERE user_id = $userId LIMIT 1"));
+		$data = DB::fetch("SELECT c_monitor FROM u_portal WHERE user_id = :uid LIMIT 1", ['uid' => $userId]);
+		//var_dump($data);
 		# PROSESAMOS
-		$filtro = 'f'.$type;
+		$filtro = "f{$type}";
 		$filtros = explode(',', $data['c_monitor']);
 		# VERIFICAMOS
 		return (is_array($filtros) AND in_array($filtro, $filtros)) ? false : true;

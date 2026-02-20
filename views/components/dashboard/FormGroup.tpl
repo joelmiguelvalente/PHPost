@@ -4,11 +4,13 @@
    	id
    	label
    	helper
+      type
    	required (bool)
 
    Input
    	name
    	group
+      type
    	value
 *}
 
@@ -27,7 +29,7 @@
     			{include file="dashboard/Check.tpl" type="radio" name=$name value=$val checked=$checked label=$labels.$i}
     		{/foreach}
     	{else}
-    		{include file="dashboard/Input.tpl" name=$id id=$id value=$value|default:'' disabled=$disabled|default:false}
+    		{include file="dashboard/Input.tpl" type=$type name=$id id=$id value=$value|default:'' disabled=$disabled|default:false}
   		{/if}
   	</div>
 </div>

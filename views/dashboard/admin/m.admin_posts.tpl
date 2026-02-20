@@ -1,45 +1,55 @@
-                                <div class="boxy-title">
-								   <h3>Administrar Posts</h3>
-								</div>
-								<div id="res" class="boxy-content" style="position:relative">
-								{if $tsAct == ''}
-								{if !$tsAdminPosts.data}
-								<div class="phpostAlfa">No hay posts.</div>
-								{else}
-								<table cellpadding="0" cellspacing="0" border="0" class="admin_table" width="100%" align="center">
-									<thead>
-										<th>ID</th>
-										<th>T&iacute;tulo</th>
-										<th>Autor</th>
-										<th>Fecha</th>
-										<th><a class="qtip" title="Ordenar por estado ascendente" href="{$tsConfig.url}/admin/posts?o=e&m=a"><</a> Estado <a class="qtip" title="Ordenar por estado descendente" href="{$tsConfig.url}/admin/posts?o=e&m=d">></a></th>
-										<th id="moreinfo"><a class="qtip" title="Ordenar por IP ascendente" href="{$tsConfig.url}/admin/posts?o=ip&m=a"><</a> IP <a class="qtip" title="Ordenar por IP descendente" href="{$tsConfig.url}/admin/posts?o=ip&m=d">></a></th>
-										<th>Acciones <a id="actionsee" onclick="$('#actionsee').slideUp( 120, 'easeInOutElastic'); $('.right').fadeOut('slow').css('width', '920px').slideDown( 1700, 'easeInOutElastic'); $('.left').slideUp( 1500, 'easeInOutElastic'); $('#moreinfo').slideDown('fast'); "><img src="{$tsRoutes.tema.images}/icons/details.png" width="14px" height="14px" title="M&aacute;s informaci&oacute;n" /></a></th>
-									</thead>
-									<tbody>
-										{foreach from=$tsAdminPosts.data item=p}
-										<tr id="post_{$p.post_id}">
-											<td>{$p.post_id}</td>
-											<td><a href="{$tsConfig.url}/posts/{$p.c_seo}/{$p.post_id}/{$p.post_title|seo}.html" target="_blank">{$p.post_title|truncate:30}</a></td>
-											<td><a href="{$tsConfig.url}/perfil/{$p.user_name}" class="hovercard" uid="{$p.user_id}">{$p.user_name}</a></td>
-											<td>{$p.post_date|hace:true}</td>
-											<td id="status_post_{$p.post_id}">{if $p.post_status == 3}<font color="grey">Oculto</font>{elseif $p.post_status == 2}<font color="red">Eliminado</font>{elseif $p.post_status == 1}<font color="purple">En revisi&oacute;n</font>{else}<font color="green">Activo</font>{/if}</td>
-   										    <td id="moreinfo1_2"><a href="{$tsConfig.url}/moderacion/buscador/1/1/{$p.post_ip}" class="geoip" target="_blank">{$p.post_ip}</a></td>
-											<td class="admin_actions">
-												<a href="{$tsConfig.url}/posts/editar/{$p.post_id}"><img src="{$tsRoutes.tema.images}/icons/editar.png" title="Editar Post" /></a>
-												{if $p.post_status == 2}
-													<a href="#" onclick="admin.posts.borrar({$p.post_id}); return false"><img src="{$tsRoutes.tema.images}/icons/close.png" title="Borrar Post permanentemente" /></a>
-												{else}
-													<a href="#" onclick="mod.posts.borrar({$p.post_id}, 'posts', null); return false;"><img src="{$tsRoutes.tema.images}/icons/close.png" title="Borrar Post" /></a>
-												{/if}
-											</td>
-										</tr>
-										{/foreach}
-									</tbody>
-									<tfoot>
-										<td colspan="7">P&aacute;ginas: {$tsAdminPosts.pages}</td>
-									</tfoot>
-								</table>
-								{/if}
-								{/if}
-                                </div>
+<h1 class="text-xl font-semibold mb-4">Administrar Posts</h1>
+<div class="rounded border bg-white dark:bg-surface p-4 shadow-sm">
+   
+   {if $tsAct == ''}
+		{if !$tsAdminPosts.data}
+			{include "dashboard/Alert.tpl" text="No hay posts." color="orange" show=true}
+		{else}
+			<div class="overflow-x-auto rounded-md border bg-white dark:bg-surface shadow-sm">
+				<table class="min-w-full border-collapse text-sm">					
+					{include "dashboard/table/Thead.tpl" fields=[
+						"ID",
+						"T&iacute;tulo",
+						"Autor",
+						"Fecha",
+						'<a class="qtip" title="Ordenar por estado ascendente" href="{$tsConfig.url}/admin/posts?order=estado&modo=asc"><</a> Estado <a class="qtip" title="Ordenar por estado descendente" href="{$tsConfig.url}/admin/posts?order=estado&modo=desc">></a>',
+						'<a class="qtip" title="Ordenar por IP ascendente" href="{$tsConfig.url}/admin/posts?o=ip&modo=asc"><</a> IP <a class="qtip" title="Ordenar por IP descendente" href="{$tsConfig.url}/admin/posts?o=ip&modo=desc">></a>',
+						"Acciones"
+					]}
+					<tbody class="divide-y dark:divide-gray-700">
+						{foreach from=$tsAdminPosts.data item=p}
+							<tr class="hover:bg-gray-50 dark:hover:bg-surface-alt transition-colors" id="post_{$p.post_id}">
+								<td class="px-3 py-2 text-gray-600 dark:text-gray-400">{$p.post_id}</td>
+								<td class="px-3 py-2"><a href="{$tsConfig.url}/posts/{$p.c_seo}/{$p.post_id}/{$p.post_title|seo}.html" target="_blank">{$p.post_title|truncate:30}</a></td>
+								<td class="px-3 py-2"><a href="{$tsConfig.url}/perfil/{$p.user_name}" class="hovercard" uid="{$p.user_id}">{$p.user_name}</a></td>
+								<td class="px-3 py-2">{$p.post_date|hace:true}</td>
+								<td class="px-3 py-2" id="status_post_{$p.post_id}">
+									<span class="inline-flex rounded-full
+									{if $p.post_status == 3} bg-purple-100 text-purple-800
+									{elseif $p.post_status == 2} bg-red-100 text-red-800
+									{elseif $p.post_status == 1} bg-orange-100 text-orange-800
+									{else} bg-green-100 text-green-800
+									{/if} px-2 py-0.5 text-xs font-medium">{if $p.post_status == 3}Oculto{elseif $p.post_status == 2}Eliminado{elseif $p.post_status == 1}En revisi&oacute;n{else}Activo{/if}</span>
+								</td>
+   							<td class="px-3 py-2" id="moreinfo1_2">
+   								<a href="{$tsConfig.url}/moderacion/buscador/1/1/{$p.post_ip}" target="_blank">{$p.post_ip}</a>
+   							</td>
+								<td class="px-3 py-2">
+									<div class="flex justify-center gap-2">
+										{include "dashboard/table/Action.tpl" action="posts/editar/{$p.post_id}" title="Editar Post" icon="edit"}
+										{if $p.post_status == 2}
+											{include "dashboard/table/Action.tpl" action="posts.borrar({$p.post_id})" type="button" title="Borrar Post permanentemente" icon="delete"}
+										{else}
+											{include "dashboard/table/Action.tpl" action="moderacion.posts.borrar({$p.post_id}, 'posts', null)" type="button" title="Borrar Post" icon="delete"}
+										{/if}
+									</div>
+								</td>
+							</tr>
+						{/foreach}
+					</tbody>
+					{include "dashboard/table/Tfoot.tpl" span=7 pages=$tsAdminPosts.pages}
+				</table>
+			</div>
+		{/if}
+	{/if}
+</div>

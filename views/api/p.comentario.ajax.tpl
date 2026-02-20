@@ -28,13 +28,13 @@
 											<span class="{if $c.c_votos >= 0}positivo{else}negativo{/if}" id="votos_total_{$c.cid}">{if $c.c_votos != 0}{if $c.c_votos >= 0}+{/if}{$c.c_votos}{/if}</span>
 										</div>
 									</li>
-									{if $tsUser->uid != $c.c_user && $c.votado == 0 && ($tsUser->permisos.govpp || $tsUser->permisos.govpn || $tsUser->is_admod)}
-										{if $tsUser->permisos.govpp || $tsUser->is_admod}
+									{if $tsUser->uid != $c.c_user && $c.votado == 0 && ($tsUser->permiso('global.posts.votar_positivo') || $tsUser->permiso('global.posts.votar_negativo') || $tsUser->is_admod)}
+										{if $tsUser->permiso('global.posts.votar_positivo') || $tsUser->is_admod}
 											<li class="icon-thumb-up">
 												<a onclick="comentario.votar({$c.cid},1)"><span class="voto-p-comentario"></span></a>
 											</li>
 										{/if}
-										{if $tsUser->permisos.govpn || $tsUser->is_admod}
+										{if $tsUser->permiso('global.posts.votar_negativo') || $tsUser->is_admod}
 											<li class="icon-thumb-down">
 												<a onclick="comentario.votar({$c.cid},-1)"><span class="voto-n-comentario"></span></a>
 											</li>
@@ -44,16 +44,16 @@
 										<li class="answerCitar">
 											<a onclick="citar_comment({$c.cid}, '{$c.user_name}')" title="Citar"><span class="citar-comentario"></span></a>
 										</li>
-										{if ($c.c_user == $tsUser->uid && $tsUser->permisos.goepc) || $tsUser->is_admod || $tsUser->permisos.moedcopo}
+										{if ($c.c_user == $tsUser->uid && $tsUser->permiso('global.comentarios.editar_propios')) || $tsUser->is_admod || $tsUser->permiso('moderacion.posts.editar_comentarios')}
 											<li>
 												<a onclick="comentario.editar({$c.cid}, 'show')" title="Editar comentario"><span class="{if $c.c_user == $tsUser->uid}editar{else}moderar{/if}-comentario"></span></a>
 											</li>
 										{/if}
-										{if ($c.c_user == $tsUser->uid && $tsUser->permisos.godpc) || $tsUser->is_admod || $tsUser->permisos.moecp}
+										{if ($c.c_user == $tsUser->uid && $tsUser->permiso('global.comentarios.eliminar_propios')) || $tsUser->is_admod || $tsUser->permiso('moderacion.posts.eliminar_comentarios')}
 											<li class="iconDelete">
 												<a onclick="borrar_com({$c.cid}, {$c.c_user}, {$c.c_post_id})" title="Borrar"><span class="borrar-comentario"></span></a>
 											</li>
-											{if $tsUser->is_admod || $tsUser->permisos.moaydcp}
+											{if $tsUser->is_admod || $tsUser->permiso('moderacion.posts.revision')}
 												<li class="iconHide">
 													<a onclick="ocultar_com({$c.cid}, {$c.c_user});" title="{if $c.c_status == 1}Mostrar/Ocultar{else}Ocultar/Mostrar{/if}"><span class="moderar-comentario"></span></a>
 												</li>

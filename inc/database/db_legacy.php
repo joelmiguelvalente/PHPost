@@ -24,14 +24,16 @@ function db_exec() {
 	$db = Database::instance();
 
 	if (is_array($info)) {
-		if (!$tsUser->is_admod && Config::app('app.debug')) {
+		if (!$tsUser->is_admod && Config::app('debug.active')) {
 			$info[0] = explode('\\', $info[0]);
 		}
 
+		// var_dump($info[0]);
+		$file_value = is_array($info[0]) ? end($info[0]) : basename($info[0]);
 		$info = [
-			'file'  => ($tsUser->is_admod || Config::app('app.debug')) ? $info[0] : end($info[0]),
-			'line'  => $info[1] ?? null,
-			'query' => $data,
+		   'file'  => ($tsUser->is_admod || Config::app('debug.active')) ? $info[0] : $file_value,
+		   'line'  => $info[1] ?? null,
+		   'query' => $data,
 		];
 	} else {
 		$data = $type;
@@ -56,7 +58,7 @@ function db_exec() {
 	} catch (Throwable $e) {
 		if (
 			!$tsAjax &&
-			Config::app('app.debug') &&
+			Config::app('debug.active') &&
 			($info['file'] || $info['line'] || ($info['query'] && $tsUser->is_admod))
 		) {
 			show_error('Error en consulta SQL.', 'db', $info + ['error' => $e->getMessage()]);
@@ -65,7 +67,6 @@ function db_exec() {
 		return false;
 	}
 }
-
 
 function result_array(mysqli_result $result): array {
 	$rows = [];

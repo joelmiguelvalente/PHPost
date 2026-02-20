@@ -8,35 +8,24 @@
 
 declare(strict_types=1);
 
-/**
- * Inicializamos variable
- * 
- * $tsPage  = Plantilla para mostrar con este archivo.
- * $tsLevel = Nivel de acceso a esta pagina (ver faqs).
- * $tsAjax  = La respuesta sera por ajax si/no.
- */
-
-$tsPage  = "login";
-$tsLevel = 1; 
-$tsAjax  = (!isset($_GET['ajax']) && empty($_GET['ajax']));
-
 require_once dirname(__DIR__, 2) . "/header.php";
 $tsTitle = "{$tsCore->settings['titulo']} - {$tsCore->settings['slogan']}";
 
 /**
- * En caso de problemas la variable cambia
-*/
-$tsContinue = true;  // CONTINUAR EL SCRIPT
+ * Inicializamos variable
+ */
 
-/**
- * Verificamos el nivel de acceso
-*/
-$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
-if (!$tsLevelMsg) {
-   $tsPage = 'aviso';
-   $tsAjax = 0;
+$ctx = Controller::page('login')->guest();
+// sincronizamos
+$ctx->exportLegacy();
+
+$tsLevelMsg = $tsCore->setLevel($ctx->getLevel(), true);
+if (is_array($tsLevelMsg)) {
+   $ctx->changePage('aviso');
+   $ctx->stop();
    $smarty->assign("tsAviso", $tsLevelMsg);
-   $tsContinue = false;
+   // sincroniza nuevamente
+   $ctx->exportLegacy();
 }
 
 if($tsUser->is_member) {
@@ -44,15 +33,9 @@ if($tsUser->is_member) {
    die;
 }
 
-/**
- * Si no hay problemas, continuamos
-*/
-if ($tsContinue) {
-
-}
-
+if($ctx->continue()) {}
 
 if($tsAjax) {
 	$smarty->assign("tsTitle", $tsTitle);
-   require_once dirname(__DIR__, 2) . "/footer.php";
+   require_once TS_ROOT . "/footer.php";
 }

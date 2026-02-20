@@ -3,23 +3,23 @@
 		<h2>{$tsMensajes.msg.mp_subject}</h2>
 	</div>
 	<div class="mpUser">
-		<span class="info">Entre <a href="{$tsConfig.url}/perfil/{$tsUser->nick}">T&uacute;</a> y <a href="{$tsConfig.url}/perfil/{$tsMensajes.ext.user}">{$tsMensajes.ext.user}</a></span>
+		<span class="info">Entre <a href="{$tsConfig.url}/@{$tsUser->nick}">T&uacute;</a> y <a href="{$tsConfig.url}/@{$tsMensajes.ext.user}">{$tsMensajes.ext.user}</a></span>
 	</div>
 	<ul class="mpHistory" id="historial">
 		{if $tsMensajes.res}{foreach from=$tsMensajes.res item=mp}
 		<li>
 			<div class="main clearBoth">
-				<a href="{$tsConfig.url}/perfil/{$mp.user_name}" class="autor-image"><img src="{$tsRoutes.storage.avatar}/avatar_{$mp.user_id}.webp" /></a>
+				<a href="{$tsConfig.url}/@{$mp.user_name}" class="autor-image"><img src="{$tsRoutes.storage.avatar}/avatar_{$mp.user_id}.webp" /></a>
 				<div class="mensaje">
 					<div class="rbody">
-					<div><a href="{$tsConfig.url}/perfil/{$mp.user_name}" class="autor-name">{$mp.user_name}</a> {if $tsUser->is_admod}<a href="{$tsConfig.url}/moderacion/buscador/1/1/{$mp.mr_ip}"><span class="mp-date">{$mp.mr_ip}</span></a> <br />{/if} <span class="mp-date">{$mp.mr_date|fecha}</span></div>
+					<div><a href="{$tsConfig.url}/@{$mp.user_name}" class="autor-name">{$mp.user_name}</a> {if $tsUser->is_admod}<a href="{$tsConfig.url}/moderacion/buscador/1/1/{$mp.mr_ip}"><span class="mp-date">{$mp.mr_ip}</span></a> <br />{/if} <span class="mp-date">{$mp.mr_date|fecha}</span></div>
 					<div>{$mp.mr_body|nl2br}</div>
 					</div>
 				</div>
 			</div>
 		</li>
 		{/foreach}{else}
-		<li class="emptyData">No se pudieron cargar los mensajes.</li>
+		<li class="alert-empty">No se pudieron cargar los mensajes.</li>
 		{/if}
 	</ul>
 	{if $tsUser->is_admod || ($tsMensajes.msg.mp_del_to == 0 && $tsMensajes.msg.mp_del_from == 0 && $tsMensajes.ext.can_read == 1)}
@@ -31,7 +31,7 @@
 			</div>
 		</div>
 	{else}
-		<li class="emptyData">Un participante abandon&oacute; la conversaci&oacute;n o no tienes permiso para responder</li>
+		<li class="alert-empty">Un participante abandon&oacute; la conversaci&oacute;n o no tienes permiso para responder</li>
 	{/if}
 </div>
 <div class="mpOptions">

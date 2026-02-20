@@ -95,7 +95,7 @@ var fotos = {
     				case '1': //OK
     						$('#no-comments').hide();
     						$('#mensajes').append(h.substring(3));
-                            $('.form').html('<div class="emptyData">Tu comentario fue agregado correctamente :)</div>');
+                            $('.form').html('<div class="alert-empty">Tu comentario fue agregado correctamente :)</div>');
     						// SUMAMOS
     						var ncomments = parseInt($('#ncomments').text());
     						$('#ncomments').text(ncomments + 1);

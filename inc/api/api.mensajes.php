@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name ajax.mensajes.php
+ * @name api.mensajes.php
  * @author PHPost Team
  * @copyright 2026
  */
@@ -13,11 +13,11 @@ if (!defined('TS_HEADER')) {
 }
 
 const ACTIONS = [
-   'mensajes-validar' => ['nivel' => 2, 'template' => '', 'ajax' => false],
-   'mensajes-enviar' => ['nivel' => 2, 'template' => '', 'ajax' => false],
+   'mensajes-validar' 	=> ['nivel' => 2, 'template' => '', 'ajax' => false],
+   'mensajes-enviar' 	=> ['nivel' => 2, 'template' => '', 'ajax' => false],
    'mensajes-respuesta' => ['nivel' => 2, 'template' => 'resp', 'ajax' => true],
-   'mensajes-lista' => ['nivel' => 2, 'template' => 'lista', 'ajax' => true],
-   'mensajes-editar' => ['nivel' => 2, 'template' => '', 'ajax' => false]
+   'mensajes-lista' 		=> ['nivel' => 2, 'template' => 'lista', 'ajax' => true],
+   'mensajes-editar' 	=> ['nivel' => 2, 'template' => '', 'ajax' => false]
 ];
 
 if (!array_key_exists($action, ACTIONS)) {
@@ -56,5 +56,3 @@ switch($action){
 		echo $tsMP->editMensajes();
 	break;
 }
-
-$_GET['ts'] = true;

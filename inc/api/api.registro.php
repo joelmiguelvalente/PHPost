@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name ajax.registro.php
+ * @name api.registro.php
  * @author PHPost Team
  * @copyright 2026
  */
@@ -39,7 +39,7 @@ if(!$tsLevelMsg) {
 }
 	
 // CLASE
-require_once dirname(__DIR__, 1) . '/class/c.registro.php';
+require_once TS_CLASS . '/c.registro.php';
 $tsRegistro = new tsRegistro($tsCore, $tsUser);
 	
 // CODIGO
@@ -49,8 +49,8 @@ switch($action) {
 			$tsAjax = true;
 			echo "0: El registro de nuevas cuentas en <strong>{$tsCore->settings['titulo']}</strong> est&aacute; desactivado.";
 		} else {
-			$tsPaises = require_once dirname(__DIR__, 1) . "/extras/Paises.php";
-			$tsMeses = require_once dirname(__DIR__, 1) . "/extras/Meses.php";
+			$tsPaises = require_once TS_EXTRA . "/Paises.php";
+			$tsMeses = require_once TS_EXTRA . "/Meses.php";
 			
 			// SOLO MENORES DE 100 AÑOS xD Y MAYORES DE...
 			$minAge = (int)$tsCore->settings['c_allow_edad'];
@@ -71,11 +71,10 @@ switch($action) {
 		echo $tsRegistro->checkUserEmail();
 	break;
 	case 'registro-geo':
-		$tsEstados = require TS_EXTRA . '/geodata.php';
+		$tsEstados = require TS_EXTRA . "/geodata.php";
 		$pais = trim($_GET['pais_code'] ?? '');
-		
 		if ($pais === '') {
-		   echo '0: El campo <b>pais_code</b> es requerido para esta operación';
+		   echo '0: El campo <strong>pais_code</strong> es requerido para esta operación';
 		   return;
 		}
 		if (!isset($tsEstados[$pais]) || !is_array($tsEstados[$pais])) {

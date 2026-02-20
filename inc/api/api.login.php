@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name ajax.login.php
+ * @name api.login.php
  * @author PHPost Team
  * @copyright 2026
  */
@@ -54,7 +54,10 @@ switch($action){
 			else {
 				$tsPage = "aviso";
 				$tsAjax = 0;
-				$tsAviso = array('titulo' => 'Error al activar tu cuenta', 'mensaje' => 'El c&oacute;digo de validaci&oacute;n es incorrecto.');
+				$tsAviso = [
+					'titulo' => 'Error al activar tu cuenta', 
+					'mensaje' => 'El c&oacute;digo de validaci&oacute;n es incorrecto.'
+				];
 				//
 				$smarty->assign("tsAviso",$tsAviso);
 			}

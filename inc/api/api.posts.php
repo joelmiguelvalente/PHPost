@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name ajax.posts.php
+ * @name api.posts.php
  * @author PHPost Team
  * @copyright 2026
  */
@@ -40,27 +40,20 @@ if(!$tsLevelMsg) {
 }
 
 if(in_array($action, ['posts-genbus', 'posts-preview'])) {
-	require_once dirname(__DIR__, 1) . "/class/c.agregar.php";
+	require_once TS_CLASS . "/c.agregar.php";
 	$tsAgregar = new tsAgregar($tsCore, $tsUser);
 }
-if($action === 'posts-last-comentarios') {
-	require_once dirname(__DIR__, 1) . "/class/c.comentarios.php";
-	$tsComentarios = new tsComentarios($tsCore, $tsUser);
-}
 
-require_once dirname(__DIR__, 1) . "/class/c.posts.php";
+require_once TS_CLASS . "/c.posts.php";
 $tsPosts = new tsPosts($tsCore, $tsUser);
 
 // CODIGO
 switch($action){
 	case 'posts-genbus':
-		$do = htmlspecialchars($_GET['do']);
-		$query = $tsCore->setSecure($_POST['q']);
-		if($do === 'search'){
-			$smarty->assign("tsPosts", $tsAgregar->simiPosts($query));   
-		} elseif($do === 'generador'){
-			$smarty->assign("tsTags", $tsAgregar->genTags($query));
-		}
+		$query = $tsCore->setSecure(trim($_GET['query'] ?? $_POST['query'] ?? ''));
+		$do = trim($_GET['do'] ?? '');
+		if($do === 'search') $smarty->assign("tsPosts", $tsAgregar->simiPosts($query));
+		else $smarty->assign("tsTags", $tsAgregar->genTags($query));
 		$smarty->assign("tsDo", $do);
 	break;
 	case 'posts-preview':
@@ -76,6 +69,8 @@ switch($action){
 		echo $tsPosts->votarPost();
 	break;
 	case 'posts-last-comentarios':
+		require_once TS_CLASS . "/c.comentarios.php";
+		$tsComentarios = new tsComentarios($tsCore, $tsUser);
 		$smarty->assign("tsComments", $tsComentarios->getLastComentarios());
 	break;
 }

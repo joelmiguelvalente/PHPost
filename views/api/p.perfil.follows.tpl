@@ -24,6 +24,6 @@
         </li>
     </ul>
     {else}
-    <div class="emptyData">{if $tsType == 'seguidores'}No tiene seguidores{else}No sigue usuarios{/if}</div>
+    <div class="alert-empty">{if $tsType == 'seguidores'}No tiene seguidores{else}No sigue usuarios{/if}</div>
     {/if}    
 {if $tsHide != 'true'}</div>{/if}

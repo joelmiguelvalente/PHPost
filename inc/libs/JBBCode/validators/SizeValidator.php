@@ -1,24 +1,25 @@
 <?php
 
 namespace JBBCode\validators;
-
-require_once dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'InputValidator.php';
-
+require_once TS_LIBS . '/JBBCode/InputValidator.php';
 /**
  * Un InputValidator para valores de tamaño de texto válidos
  *
  * @author Kmario19
  * @since Jul 2015
+ * @update Miguel92 - 2026
  */
 class SizeValidator implements \JBBCode\InputValidator {
 
     /**
-     * Retorna true si $input es un número
+     * Validates numeric size values > 0
      *
-     * @param $input numero para validar
+     * @param mixed $input
+     * @return bool
      */
-    public function validate($input) {
-        return is_numeric($input) && $input > 0;
+    public function validate($input): bool {
+        // is_numeric() ya cubre strings numéricos, floats, etc
+        return is_numeric($input) && (float) $input > 0;
     }
 
 }

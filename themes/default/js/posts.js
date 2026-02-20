@@ -1,378 +1,221 @@
-/* Eliminar Comentario */
-function borrar_com(comid, autor, postid, gew){
-	mydialog.close();
-   if(!postid) var postid = queryParam('postid');
-	if(!gew) {
-		mydialog.show();
-		mydialog.title('Borrar Comentarios');
-		mydialog.body('&#191;Quiere eliminar este comentario?');
-		mydialog.buttons(true, true, 'S&iacute;', 'borrar_com(' + comid + ', ' + autor + ', ' + postid + ', 1)', true, false, true, 'No', 'close', true, true);
-		mydialog.center();
-	} else {
-      $('#loading').fadeIn(250);
-      $.ajax({
-			type: 'POST',
-			url: route.url +'/comentario-borrar.php',
-			data: ['comid=' + comid, 'autor=' + autor, 'postid=' + postid].join('&'),
-			success: h => {
-				switch(h.charAt(0)){
-					case '0': //Error
-						mydialog.alert('Error', h.substring(3));
-					break;
-					case '1':
-						// RESTAMOS
-						$('#ncomments').text(parseInt($('#ncomments').text()) - 1);
-						// $('#div_cmnt_' + comid).slideUp( 1500, 'easeInOutElastic');
-						$('#div_cmnt_' + comid).slideUp('normal', () => $(this).remove());
-	               $('#loading').fadeOut(350);
-					break;
-				}
-			},
-			error: function(){
-				mydialog.error_500("borrar_com('"+comid+"')");
-	         $('#loading').fadeOut(350);
-			}
-		});
-	}
+const showMessage = (message) => {
+	const $mensajeElement = $('.post-metadata .mensajes').addClass((status === 0 ? 'error' : 'ok')).html(message).slideDown();
+	// Hacer scroll hasta el elemento de mensaje después de mostrarlo
+   setTimeout(() => {
+      $mensajeElement[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+   }, 100);
 }
-/* Ocultar Comentario */
-function ocultar_com(comid, autor, postid){
-	mydialog.close();
-   $('#loading').fadeIn(250);
-	$.ajax({
-		type: 'POST',
-		url: route.url +'/comentario-ocultar.php',
-		data: 'comid=' + comid + '&autor=' + autor + '&post_id=' + postid + queryParam('postid'),
-		success: function(h){
-			switch(h.charAt(0)){
-				case '0': //Error
-					mydialog.alert('Error', h.substring(3));
-				break;
-				case '1':
-					$('#comentario_' +comid).css('opacity', 1);
-					$('#pp_' +comid).css('opacity', 0.5);
-				break;
-				case '2':
-					$('#comentario_' +comid).css('opacity', 0.5);
-					$('#pp_' +comid).css('opacity', 1);
-				break;
-			}
-         $('#loading').fadeOut(350);
-		},
-		error: () => mydialog.error_500("borrar_com('"+comid+"')")
-	});
-}
-/* Borrar Post */
-function borrar_post(aceptar){
-	if(!aceptar){
-		mydialog.show();
-		mydialog.title('Borrar Post');
-		mydialog.body('&iquest;Seguro que deseas borrar este post?');
-		mydialog.buttons(true, true, 'SI', 'borrar_post(1)', true, false, true, 'NO', 'close', true, true);
-		mydialog.center();
-		return;
-	} else if(aceptar==1) {
-		mydialog.show();
-		mydialog.title('Borrar Post');
-		mydialog.body('Te pregunto de nuevo... &iquest;Seguro que deseas borrar este post?');
-		mydialog.buttons(true, true, 'SI', 'borrar_post(2)', true, false, true, 'NO', 'close', true, true);
-		mydialog.center();
+const borrarComentario = (comid, autor, postid, next) => {
+	if(!next)  {
+		let body = (next === 0) ? '&iquest;Seguro que deseas borrar este post?' : 'Te pregunto de nuevo... &iquest;Seguro que deseas borrar este post?';
+		dialog.ease('Borrar Comentarios', '&#191;Quiere eliminar este comentario?', 'Si, borrar', borrarComentario(comid, autor, postid, next))
 		return;
 	}
-	mydialog.procesando_inicio('Eliminando...', 'Borrar Post');
-   $('#loading').fadeIn(250);
-	$.ajax({
-		type: 'POST',
-		url: route.url + '/posts-borrar.php',
-		data: gget('postid', true),
-		success: h => {
-			switch(h.charAt(0)){
-				case '0': //Error
-					mydialog.alert('Error', h.substring(3));
-				break;
-				case '1':
-					mydialog.alert('Post Borrado', h.substring(3), true);
-				break;
-			}
-         $('#loading').fadeOut(350);
-		},
-		error: function(){
-			mydialog.error_500("borrar_post(2)");
-         $('#loading').fadeOut(350);
-		},
-		complete: function(){
-			mydialog.procesando_fin();
-         $('#loading').fadeOut(350);
+	dialog.loading('Espere por favor...', 'Borrando Post');
+	let params = `comid=${comid}&autor=${autor}${queryParam('postid')}`;
+	api('comentario-borrar.php', params, response => {
+		const { status, message } = $.parseResponse(response);
+		if(status === 0) {
+			dialog.alert('Error', message);
+		} else if(stauts === 1) {
+			$('#ncomments').text(parseInt($('#ncomments').text()) - 1);
+			$('#div_cmnt_' + comid).slideUp('normal', () => $(this).remove());
 		}
+	}, {
+	   error: ({ xhr, status, error }) => {
+	   	dialog.reintentar(borrarComentario(comid, autor, postid, true));
+	   }
 	});
 }
-/* Votar post */
-var votar_post_votado = false;
-function show_votar_post(force_hide){
-	if(votar_post_votado) return;
-	if(!force_hide && $('.post-metadata .dar_puntos').css('display') == 'none') $('.post-metadata .dar_puntos').show();
-	else $('.post-metadata .dar_puntos').hide();
+
+/* Ocultar Comentario */
+const ocultarComentario = (comid, autor, postid) => {
+	let params = `comid=${comid}&autor=${autor}${queryParam('postid')}`;
+	api('comentario-ocultar.php', params, response => {
+   	const { status, message } = $.parseResponse(response);
+   	if(status === 0) {
+   		dialog.alert('Error', message);
+   	} else if (status >= 1) {
+   		$('#comentario_' +comid).css('opacity', (status === 1 ? 1 : .5));
+			$('#pp_' +comid).css('opacity', (status === 1 ? .5 : 1));
+   	}
+	}, {
+	   error: ({ xhr, status, error }) => {
+	   	dialog.reintentar(ocultarComentario(comid, autor, postid, true));
+	   }
+	});
 }
-function votar_post(puntos){
-	if(votar_post_votado) return;
-   if(puntos == null || isNaN(puntos) != false || puntos < 1) {
-		mydialog.alert('Error', 'Debe introducir n&uacute;meros');
+
+const borrarPost = (next = 0) => {
+	if(next <= 1)  {
+		let body = (next === 0) ? '&iquest;Seguro que deseas borrar este post?' : 'Te pregunto de nuevo... &iquest;Seguro que deseas borrar este post?';
+		dialog.ease('Borrar Post', body, 'Si, borrar', borrarPost(next + 1))
+		return;
+	}
+	dialog.loading('Espere por favor...', 'Borrando Post');
+	api('posts-borrar.php', queryParam('postid', true), response => {
+		const { status, message } = $.parseResponse(response);
+		const title = status === 1 ? 'Post borrado...' : 'Error';
+		dialog.alert(title, message);
+	}, {
+	   error: ({ xhr, status, error }) => {
+	   	dialog.reintentar(borrarPost(2));
+	   }
+	});
+}
+
+/* Votar post */
+let isVoted = false;
+const showVoteForce = force_hide => {
+	if(isVoted) return;
+	let state = (!force_hide && darPuntos.css('display') === 'none');
+	$('.post-metadata .dar_puntos')[(state ? 'show' : 'hide')]();
+}
+const votarPost = (puntos = 0) => {
+	if(isVoted) return;
+   if(puntos < 1) {
+		dialog.alert('Error', 'Debe introducir n&uacute;meros');
       return false;
    }
-	votar_post_votado = true;
-   $('#loading').fadeIn(250);
-	$.ajax({
-		type: 'POST',
-		url: route.url + '/posts-votar.php',
-		data: 'puntos=' + puntos + queryParam('postid'),
-		success: function(h){
-			show_votar_post(true);
-			$('.dar-puntos').slideUp();
-			switch(h.charAt(0)){
-				case '0': //Error
-					$('.post-metadata .mensajes').addClass('error').html(h.substring(3)).slideDown();
-				break;
-				case '1': //OK
-					$('.post-metadata .mensajes').addClass('ok').html(h.substring(3)).slideDown();
-					$('#puntos_post').html(number_format(parseInt($('#puntos_post').html().replace(".", "")) + parseInt(puntos), 0, ',', '.'));
-				break;
-			}
-          $('#loading').fadeOut(350);
-		},
-		error: function(){
-			votar_post_votado = false;
-			mydialog.error_500("votar_post('"+puntos+"')");
-         $('#loading').fadeOut(350);
+	isVoted = true;
+   api('posts-votar.php', 'puntos=' + puntos + queryParam('postid'), response => {
+		const { status, message } = $.parseResponse(response);
+   	showVoteForce(true);
+   	$('.dar-puntos').slideUp();
+   	showMessage(message);
+		if(status === 1) {
+			const $puntos = $('#puntosPost');
+			let number = $puntos.html().replace(".", "");
+			$puntos.html(number_format(parseInt(number) + parseInt(puntos), 0, ',', '.'));
+			return;
 		}
+	}, {
+	   error: ({ xhr, status, error }) => {
+			isVoted = false;
+	   	dialog.reintentar(votarPost(puntos));
+	   }
 	});
 }
 /* Agregar post a favoritos */
-var add_favoritos_agregado = false;
-function add_favoritos(){
-	if(add_favoritos_agregado) return;
-	if(!queryParam('key')){
-		mydialog.alert('Login', 'Tienes que estar logueado para realizar esta operaci&oacute;n');
+var isFavorite = false;
+const addFavorite = () =>{
+	if(isFavorite) return;
+	if(!queryParam('userkey')) {
+		dialog.alert('Login', 'Tienes que estar logueado para realizar esta operaci&oacute;n');
 		return;
 	}
-	add_favoritos_agregado = true;
-   $('#loading').fadeIn(250);
-	$.ajax({
-		type: 'POST',
-		url: route.url + '/favoritos-agregar.php',
-		data: gget('postid', true),
-		success: function(h){
-			switch(h.charAt(0)){
-				case '0': //Error
-					$('.post-metadata .mensajes').addClass('error').html(h.substring(3)).slideDown();
-				break;
-				case '1': //OK
-					$('.post-metadata .mensajes').addClass('ok').html(h.substring(3)).slideDown();
-					$('.favoritos_post').html(number_format(parseInt($('.favoritos_post').html().replace(".", "")) + 1, 0, ',', '.'));
-				break;
-			}
-         $('#loading').fadeOut(350);
-		},
-		error: function(){
-			add_favoritos_agregado = false;
-			mydialog.error_500("add_favoritos()");
-         $('#loading').fadeOut(250);
+	isFavorite = true;
+   api('favoritos-agregar.php', queryParam('postid', true), response => {
+		const { status, message } = $.parseResponse(response);
+   	showMessage(message);
+		if(status === 1) {
+			const $puntos = $('.favoritos_post');
+			let number = $puntos.html().replace(".", "");
+			$puntos.html(number_format(parseInt(number) + 1, 0, ',', '.'));
+			return;
 		}
+	}, {
+	   error: ({ xhr, status, error }) => {
+			isFavorite = false;
+	   	dialog.reintentar(addFavorite());
+	   }
 	});
 }
-/* Wysibb para los comentarios */
-function dejar_un_comentario(){
-   //Editor de posts comentarios
-   if($('#body_comm').length && !$('.wysibb-texarea').length){
-      $('#body_comm').removeAttr('onblur onfocus class style title').css('height', '80').html('').wysibb({ buttons: "smilebox,|,bold,italic,underline,strike,sup,sub,|,img,video,link" });
-   }
-}
-/* extras */
-function emoticones(){ 
-	var winpops=window.open(route.url + "/emoticones.php","","width=180px,height=500px,scrollbars,resizable");
-}
+
 /* COMENTARIOS */
-var comentario = {
+const comentario = {
    /* VARIABLES */
    cache: {},
    cargado: false,
    /* FUNCIONES */
-   cargar: function(postid, page, autor){
-      // GIF
-		$('#com_gif').show();
+   cargar(postid, page, autor) {
+   	const $comentarios = $('#comentarios');
+		$('#commentsLoads').show();
 		//$.scrollTo('#comentarios-container', 250);
-		$('div#comentarios').css('opacity', 0.4)
+		$comentarios.css('opacity', 0.4)
 		// COMPRVAMOS CACHE
-      if(typeof comentario.cache['c_' + page] == 'undefined') {
-         $('#loading').fadeIn(250);                                     
-    		$.ajax({
-    			type: 'POST',
-    			url: route.url + '/comentario-ajax.php?page=' + page,
-    			data: 'postid=' + postid + '&autor=' + autor,
-    			success: function(h){
-    			   // CACHE
-               comentario.cache['c_' + page] = h;
-               // CARGAMOS
-   				$('#comentarios').html(h);
-               // PAGINAS
-    				comentario.set_pages(postid, page, autor);
-    				$('#loading').fadeOut(350);
-    			}                                                 
-    		});
+      if(typeof comentario.cache[`c_${page}`] === 'undefined') {
+         api(`comentario-ajax.php?page=${page}`, { postid, autor }, response => {
+				comentario.cache['comments_page_' + page] = response;
+				$comentarios.html(response);
+				comentario.setPages(postid, page, autor);
+			});
       } else {
-         $('#comentarios').html(comentario.cache['c_' + page]);
-         $('.paginadorCom').html(comentario.cache['p_' + page]);
-         $('#com_gif').hide();
-         $('div#comentarios').css('opacity', 1);
+         $comentarios.html(comentario.cache[`comments_page_${page}`]);
+         $('.paginadorCom').html(comentario.cache[`page_${page}`]);
+         $('#commentsLoads').hide();
+         $comentarios.css('opacity', 1);
       }
    },
-   set_pages: function(postid, page, autor){
-    	var total = parseInt($('#ncomments').text());
-    	//
-      $('#loading').fadeIn(250);                                 
-    	$.ajax({
-    		type: 'POST',
-    		url: route.url + '/comentario-pages.php?page=' + page,
-    		data: 'postid=' + postid + '&autor=' + autor + '&total=' + total,
-    		success: function(h){
-    		   comentario.cache['p_' + page] = h;
-   			$('.paginadorCom').html(h);
-            $('#com_gif').hide();
-				$('div#comentarios').css('opacity', 1);
-            $('#loading').fadeOut(350);                                      
-    		}
+   setPages(postid, page, autor) {
+    	const total = parseInt($('#ncomments').text());
+    	api(`comentario-pages.php?page=${page}`, { postid, autor, total }, response => {
+    		comentario.cache[`p_${page}`] = response;
+   		$('.paginadorCom').html(response);
+         $('#commentsLoads').hide();
+			$('div#comentarios').css('opacity', 1);
+         $('#loading').fadeOut(350);   
     	});
 	},
    // NUEVO COMENTARIO
-   nuevo: function(mostrar_resp, comentarionum){
-      // EVITAR FLOOD
-      $('#btnsComment').attr({'disabled':'disabled'});
-      //
-    	var textarea = $('#body_comm');
-    	var text = textarea.bbcode();
+   nuevo(mostrar_resp) {
+      $('#btnsComment').attr({ disabled: 'disabled' });
+    	const textarea = $('#body_comm');
+    	const comentario = textarea.bbcode();
       // VACIO o DEFAULT
-    	if(text == '' || text == textarea.attr('title')) {
+      const limit = (comentario.length > 1500);
+    	if(comentario === '' || limit) {
     		textarea.focus();
+    		if(limit) dialog.alert("Tu comentario no puede ser mayor a 1500 caracteres.");
          $('#btnsComment').removeAttr('disabled');
-    		return;
-    	} else if(text.length > 1500) {
-    		alert("Tu comentario no puede ser mayor a 1500 caracteres.");
-    		textarea.focus();
-            $('#btnsComment').removeAttr('disabled');
     		return;
     	}
       // IMAGEN
     	$('.miComentario #gif_cargando').show();
-    	var auser = $('#auser_post').val();
-      $('#loading').fadeIn(250);                                 
-    	$.ajax({
-    		type: 'POST',
-    		url: route.url + '/comentario-agregar.php',
-    		data: 'comentario=' + encodeURIComponent(text) + '&postid=' + queryParam('postid') + '&mostrar_resp=' + mostrar_resp + '&auser=' + auser,
-    		success: function(h){
-    			switch(h.charAt(0)){
-    				case '0': //Error
-    					$('.miComentario .error').html(h.substring(3)).show('slow');
-                  $('#btnsComment').removeAttr('disabled');
-    				break;
-    				case '1': //OK
-						$("#nuevos").slideUp(1);
-    					$('#preview').remove();
-						$('#nuevos').html(h.substring(3)).slideDown('slow', function () {
-							$('#no-comments').hide('slow');
-							$('.miComentario').html('<div class="emptyData">Tu comentario fue agregado correctamente :)</div>');
-						});
-    					$('#ncomments').text(parseInt($('#ncomments').text()) + 1);
-               break;
-    			}
-            $('#loading').fadeOut(350);                                 
-    			//
-    			$('.miComentario #gif_cargando').hide();
-            mydialog.close();
-    		}
-  	   });
-   },
-   // VISTA PREVIA DEL COMENTARIO
-   preview: function(id, type){
-    	var textarea = (type == 'new') ? $('#' + id) : $('#edit-comment-' + id);
-    	var text = (type == 'new') ? textarea.bbcode() : textarea.val();
-      var btn_text = (type == 'new') ? 'Enviar comentario' : 'Guardar';
-      var btn_fn = (type == 'new') ? "comentario.nuevo('true')" : 'comentario.editar(' + id + ', \'send\')';
-    	if(text == '' || text == textarea.attr('title')) {
-    		textarea.focus();
-    		return;
-    	} else if(text.length > 1500) {
-    		alert("Tu comentario no puede ser mayor a 1500 caracteres.");
-    		textarea.focus();
-    		return;
-    	}
-    	var auser = $('#auser_post').val();
-    	$('.miComentario #gif_cargando').show();
-		mydialog.class_aux = 'preview';
-		mydialog.show(true);
-		mydialog.title('...');
-		mydialog.body('Cargando vista previa....<br><br><img src="' + global_data.img + 'images/loading_bar.gif">');
-      mydialog.center();
-       //
-      $('#loading').fadeIn(250);                 
-    	$.ajax({
-    		type: 'POST',
-    		url: route.url + '/comentario-preview.php?type=' + type,
-    		data: 'comentario=' + encodeURIComponent(text) + '&auser=' + auser,
-    		success: function(h){
-    		  switch(h.charAt(0)){
-               case '0': //Error
-    					if(type == 'new') $('.miComentario .error').html(h.substring(3)).show('slow');
-                  else  {
-                     $('#edit-error-' + id).css('color','red').html(h.substring(3));
-                     mydialog.close();
-                  }
-                 	$('.miComentario #gif_cargando').hide();
-    				break;
-               case '1': //OK
-                   //
-						mydialog.body(h.substring(3));
-						mydialog.buttons(true, true, btn_text, btn_fn, true, true, true, 'Cancelar', 'close', true, false);
-                  mydialog.center();
-                  //
-                  $('.miComentario #gif_cargando').hide();
-                  $('.miComentario .error').html('');
-               break;
-            }
-            $('#loading').fadeOut(350);                                 
-            mydialog.center();
-    		}
-    	});
+    	const auser = $('#auser_post').val();
+    	let params = $.param({ comentario, mostrar_resp, auser });
+    	params += queryParam('postid');
+      api('comentario-agregar.php', params, response => {
+      	const { status, message } = $.parseResponse(response);
+      	if(status === 0) {
+    			$('.miComentario .error').html(message).show('slow');
+            $('#btnsComment').removeAttr('disabled');
+            return;
+         }
+			$("#nuevos").slideUp(1);
+    		$('#preview').remove();
+			$('#nuevos').html(message).slideDown('slow', () => {
+				$('#no-comments').hide('slow');
+				$('.miComentario').html('<div class="alert-empty">Tu comentario fue agregado correctamente :)</div>');
+			});
+			let total = parseInt($('#ncomments').text());
+    		$('#ncomments').text(total + 1);
+    		$('.miComentario #gif_cargando').hide();
+          
+      })
    },
    // VOTAR COMENTARIO
-   votar: function(cid, voto){
-      var voto_tag = $('#votos_total_' + cid)
-    	var total_votos = parseInt(voto_tag.text());
-      total_votos = (isNaN(total_votos)) ? 0 : total_votos;
+   votar(cid, voto) {
       // FIX
-      voto = (voto == 1) ? 1 : -1;
-      //
-      $('#loading').fadeIn(250); 
-    	$.ajax({
-    		type: 'POST',
-    		url: route.url + '/comentario-votar.php',
-    		data: 'voto=' + voto + '&cid=' + cid + '&postid=' + queryParam('postid'),
-    		success: function(h){
-    			switch(h.charAt(0)){
-    				case '0': //Error
-    					mydialog.alert("Error al votar",h.substring(3));
-    				break;
-    				case '1': //OK
-    					total_votos = total_votos + voto;
-                  if(total_votos > 0) total_votos = '+' + total_votos; 
-    					var klass = (total_votos < 0) ? 'negativo' : 'positivo'; // CLASS
-                  $('#ul_cmt_' + cid + ' > .numbersvotes').show();
-    					voto_tag.text(total_votos).removeClass('positivo, negativo').addClass(klass);
-    					$('#ul_cmt_' + cid).find('.icon-thumb-up, .icon-thumb-down').hide();
-    				break;
-    			}
-    			$('#loading').fadeOut(350); 
-    		}
-    	});	
+      voto = (voto === 1) ? 1 : -1;
+      const votoTotalCid = $('#votos_total_' + cid)
+    	let totalVotos = parseInt(votoTotalCid.text());
+      totalVotos = (isNaN(totalVotos)) ? 0 : totalVotos;
+      let params = $.param({ voto, cid, });
+      params += queryParam('postid');
+      api('comentario-votar.php', params, response => {
+      	const { status, message } = $.parseResponse(response);
+      	if(status === 0) {
+      		dialog.alert("Error al votar", message);
+      		return;
+      	}
+    		totalVotos = totalVotos + voto;
+         if(totalVotos > 0) totalVotos = '+' + totalVotos; 
+    		const newClass = (totalVotos < 0) ? 'negativo' : 'positivo'; // CLASS
+    		votoTotalCid.text(totalVotos).removeClass('positivo negativo').addClass(newClass);
+         $(`#ul_cmt_${cid} > .numbersvotes`).show();
+    		$(`#ul_cmt_${cid}`).find('.icon-thumb-up, .icon-thumb-down').hide();
+      });	
    },
    // CITAR
    citar: function(id, nick){
@@ -421,25 +264,107 @@ var comentario = {
   	}
 }
 /* BBCode */
-function spoiler(obj){
-    $(obj).toggleClass('show').parent().next().slideToggle();
-}
-/* EMOTICONOS */
-function moreEmoticons(margin){
-    var emos = $('#emoticons');
-    //
-    $('#loading').fadeIn(250); 
-	$.ajax({
-		type: 'GET',
-		url: route.url + '/emoticones.php',
-		data: 'ts=false',
-		success: function(h){
-		    if(margin) $(emos).css({marginTop : '1em'})
-		    $(emos).append(h);
-            $('#moreemofn').hide();
-            $('#loading').fadeOut(350); 
-		}
-	});   
+const spoiler = obj => $(obj).toggleClass('show').parent().next().slideToggle();
+
+function toggleState($btn, action, postId) {
+   const currentState = $btn.data('currentState') === 1;
+   const newText = (action === 'sticky') ? (currentState ? 'Poner Sticky' : 'Quitar Sticky') : (!currentState ? 'Abrir Post' : 'Cerrar Post');
+   $btn.html(newText);
+   $btn.data('currentState', currentState ? 0 : 1);
+   moderacion.reboot(postId, 'posts', action, false);
 }
 
-$(document).ready(() => dejar_un_comentario())
+const followUserPost = (obj, follow = 'Usuario') => {
+	const currentId = obj.data('id');
+	const actions = obj.data('action').split('_');
+	let isFollow = (parseInt(obj.data('follow')) === 1);
+	const nextText = isFollow ? 'Seguir ' + follow : 'Dejar de seguir';
+	// Actualiza el valor en memoria y en el DOM
+	obj.data('follow', isFollow ? 0 : 1).attr({ 
+		'data-follow': isFollow ? 0 : 1, 
+		'title': nextText 
+	}).toggleClass('follow unfollow', (isFollow ? 'unfollow' : 'follow'));
+	notifica.follow({
+	   action: actions[0],
+	   type: actions[1],
+	   id: currentId,
+	   fn: (follow === 'Usuario' ? notifica.userInPostHandle : notifica.inPostHandle),
+	   obj: obj
+	});
+}
+
+$(() => {
+	$('#body_comm').css({ height: 80 }).html('').wysibb({ 
+		buttons: "smilebox,|,bold,italic,underline,strike,sup,sub,|,image,video,link" 
+	});
+
+	// Seguir o dejar de seguir usuarios
+	$('#followUser').on('click', function() {
+		followUserPost($(this));
+	});
+
+	$('#followPost').on('click', function() {
+		followUserPost($('#followPost span'), 'Post');
+	});
+
+	$('#postFavorito').on('click', function() {
+		const $this = $(this);
+		const action = $this.data('action');
+		const reload = $this.data('reload');
+		if (action) {
+			// Usuario logueado - ejecuta la acción
+			if(action === 'addFavorite') {
+				addFavorite();
+			} else {
+				console.warn('Acción desconocida:', action);
+			}
+		} else if (reload) {
+			// Usuario no logueado - redirige al login con redirect
+			window.location.href = reload;
+		}
+	});
+
+   $('.action-btn').on('click', function(e) {
+      e.preventDefault();
+      const $btn = $(this);
+      const action = $btn.data('action');
+      const postId = $btn.data('postId');
+      switch (action) {
+         case 'sticky':
+         case 'openclosed':
+            toggleState($btn, action, postId);
+         break;
+         case 'delete':
+            const isOwnPost = $btn.closest('[data-is-author]').data('isAuthor');
+            if (isOwnPost) {
+               borrar_post();
+            } else {
+               moderacion.posts.borrar(postId, 'posts', null);
+            }
+         break;
+         case 'ocultar':
+            moderacion.posts.ocultar(postId);
+         break;
+         case 'denuncia':
+         	const postTitle = $btn.data('title');
+         	const postUsername = $btn.data('username');
+         	console.log(postId, postTitle, postUsername)
+            denuncia.nueva('post', postId, postTitle, postUsername);
+         break;
+     		default:
+         break;
+      }
+      // Toggle UI para "Ocultar"
+      const targetId = $btn.data('toggleTarget');
+      if (targetId) {
+         const $target = $('#' + targetId);
+         $target.slideToggle();
+         if ($btn.hasClass('des_approve')) {
+            $btn.fadeOut();
+         }
+      }
+   });
+   $('.dar-puntos > .puntuar > input[type=button]').on('click', () => 
+   	votarPost(parseInt($('input#points').val()))
+   );
+});

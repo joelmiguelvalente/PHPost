@@ -8,37 +8,30 @@
 
 declare(strict_types=1);
 
-/**
- * Inicializamos variable
- * 
- * $tsPage  	= Plantilla para mostrar con este archivo.
- * $tsLevel 	= Nivel de acceso a esta pagina (ver faqs).
- * $tsAjax  	= La respuesta sera por ajax si/no.
- * $tsContinue	= Continuar con la ejecución
- */
-
-$tsPage  = "mensajes";
-$tsLevel = 2; 
-$tsAjax  = (!isset($_GET['ajax']) && empty($_GET['ajax']));
-$tsContinue = true;
-
 require_once dirname(__DIR__, 2) . "/header.php";
 $tsTitle = "{$tsCore->settings['titulo']} - {$tsCore->settings['slogan']}";
 	
-// VERIFICAMOS EL NIVEL DE ACCESO ANTES CONFIGURADO
-$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
-if(!$tsLevelMsg){	
-	$tsPage = 'aviso';
-	$tsAjax = 0;
-	$smarty->assign("tsAviso",$tsLevelMsg);
-	//
-	$tsContinue = false;
+/**
+ * Inicializamos variable
+ */
+
+$ctx = Controller::page('mensajes')->members();
+// sincronizamos
+$ctx->exportLegacy();
+
+$tsLevelMsg = $tsCore->setLevel($ctx->getLevel(), true);
+if (is_array($tsLevelMsg)) {
+   $ctx->changePage('aviso');
+   $ctx->stop();
+   $smarty->assign("tsAviso", $tsLevelMsg);
+   // sincroniza nuevamente
+   $ctx->exportLegacy();
 }
 
-$unread = !isset($_GET['qt']);
-if($tsContinue){
+if($ctx->continue()) {
 
-	$action = htmlspecialchars(trim($_GET['action'] ?? ''));
+	$unread = !isset($_GET['qt']);
+	$action = trim($_GET['action'] ?? '');
 
 	switch($action){
 		case '':
@@ -57,14 +50,14 @@ if($tsContinue){
 			$smarty->assign("tsMensajes",$tsMP->readMensaje());
 		break;
 		case 'avisos':
-			$aId = (int)($_GET['aid'] ?? 0);
-			$dId = (int)($_GET['did'] ?? 0);
-			if($aId === 0 && $dId === 0) {
+			$aid = (int)($_GET['aid'] ?? 0);
+			$did = (int)($_GET['did'] ?? 0);
+			if($aid === 0 && $did === 0) {
 				$smarty->assign("tsMensajes", $tsMonitor->getAvisos());
-			} elseif($aId !== 0 && $dId === 0) {
-				$smarty->assign("tsMensaje", $tsMonitor->readAviso($aId));
-			} elseif($aId === 0 && $dId !== 0) {
-				if($tsMonitor->delAviso($dId)) {
+			} elseif($aid !== 0 && $did === 0) {
+				$smarty->assign("tsMensaje", $tsMonitor->readAviso($aid));
+			} elseif($aid === 0 && $did !== 0) {
+				if($tsMonitor->delAviso($did)) {
 					$tsCore->redirectTo($tsCore->settings['url'].'/mensajes/avisos/');
 				}
 			}
@@ -78,5 +71,5 @@ if($tsContinue){
 
 if($tsAjax) {
 	$smarty->assign("tsTitle", $tsTitle);
-   require_once dirname(__DIR__, 2) . "/footer.php";
+   require_once TS_ROOT . "/footer.php";
 }
