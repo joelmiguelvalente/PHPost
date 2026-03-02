@@ -4,7 +4,8 @@
 
 # Storage completo
 /storage/
-
+/temp/
+	
 # Themes: ignorar todos menos "default"
 themes/*
 !themes/default/

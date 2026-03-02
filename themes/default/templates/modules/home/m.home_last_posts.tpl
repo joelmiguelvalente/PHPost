@@ -2,7 +2,7 @@
 	<div class="box-header">
 		<span class="box_txt">&Uacute;ltimos posts en {$tsConfig.titulo}</span>
 		<div class="box_icon">
-			<a href="{$tsConfig.url}/rss/ultimos-post"><span class="systemicons sRss" style="position:relative;z-index:87"></span></a>
+			<a href="{$tsConfig.url}/rss/ultimos-post" title="&Uacute;ltimos posts en {$tsConfig.titulo}"><span class="systemicons sRss" alt="RSS" style="position:relative;z-index:87"></span></a>
 		</div>
 	</div>
 	<div class="box-content" style="padding:0">

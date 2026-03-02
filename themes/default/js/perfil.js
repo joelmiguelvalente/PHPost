@@ -187,6 +187,7 @@ const muro = {
 			api(`muro-stream.php?do=check&type=${settings.type}`, { url }, response => {
 				const { status, message } = $.parseResponse(response);
 				if(status === 0) {
+					muro.stream.adjuntando(false);
 					dialog.alert('Error al publicar', message);
 					inputContent.attr('disabled', '');
 					return;
@@ -579,6 +580,7 @@ $(() => {
 		const action = $this.data('action');
 		let type 	 = $this.data('type') ?? '';
 		let adjunto  = $this.data('adjunto') ?? '';
+		console.log(action, type, adjunto, $this)
 		muro[action](type, adjunto, $this);
 	});
 });

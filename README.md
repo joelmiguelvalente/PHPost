@@ -1,5 +1,7 @@
 License: MIT
 
+![GitHub repo size](https://img.shields.io/github/repo-size/joelmiguelvalente/PHPost?style=flat)
+
 # PHPost 2026
 PHPost Risus es un sistema de compartimiento de enlaces que permite crear un sitio web similar a Taringa!
 

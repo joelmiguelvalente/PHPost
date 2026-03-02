@@ -26,7 +26,7 @@
 						<div class="mvm p-2">
 							{if $p.p_type == 2}
 								<span role="button" data-action="loadAtta" data-type="foto" data-adjunto="{$p.adj_url}" class="uiPhoto block">
-									<img class="rounded ratio 1x1" style="max-width:200px!important;" src="{$p.adj_image}"/>
+									{include "blocks/Image.tpl" alt="Imagen del perfil de {$p.user_name}" src=$p.adj_image class="rounded ratio 1x1"}
 								</span>
 							{elseif $p.p_type == 3}
 								<a href="{$p.adj_url}" class="uiLink block" title="{$p.adj_title}" rel="external" target="_blank">

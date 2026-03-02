@@ -10,9 +10,11 @@ declare(strict_types=1);
 //
 define('TS_STORAGE', dirname(__DIR__, 1) . '/storage');
 require_once __DIR__ . '/backend.php';
+
 ?>
+
 <!DOCTYPE html>
-<html data-install="default">
+<html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -30,7 +32,7 @@ require_once __DIR__ . '/backend.php';
 					<img src="./logo.png" title="Logo antiguo de PHPost" />
 				</a>
 			</h1>
-			<h2>Programa de instalaci&oacute;n: <span><?= Config::app('app.name') ?></span></h2>
+			<h2>Programa de instalaci&oacute;n: <span><?= Config::app('app.name') ?> v<?= Config::app('app.version') ?></span></h2>
 		</header>
 		<div class="content">
 			<div class="col_right">

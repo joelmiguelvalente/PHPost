@@ -1,0 +1,107 @@
+<?php
+
+/**
+ * @name c.visitas.php
+ * @author PHPost Team
+ * @copyright 2026
+ */
+
+declare(strict_types=1);
+
+if (!defined('TS_HEADER')) {
+	exit('No se permite el acceso directo al script');
+}
+
+class tsVisitas {
+
+	private int $userID;
+	private string $IP;
+
+	public function __construct(
+		protected tsCore $Core, 
+		protected tsUser $User
+	) {
+		//
+		$this->userID = (int)$this->User->uid;
+		$this->IP = (new IP)->executeIP();
+	}
+
+	/**
+	 * @access private
+	 * @param int
+	 * @return int
+	 */
+	private function isVisited(int $id, int $type = 1): int {
+		$ip = "`ip` LIKE '$this->IP'";
+		$like = $this->User->is_member ? "(`user` = {$this->userID} OR $ip)" : $ip;
+		$visitado = db_exec('num_rows', db_exec([__FILE__, __LINE__], 'query', "SELECT id FROM `w_visitas` WHERE `for` = $id AND `type` = $type AND $like LIMIT 1"));
+		return $visitado;
+	}
+
+	private function addView(int $id, int $type = 1): void {
+		$time = time();
+		db_exec([__FILE__, __LINE__], 'query', "INSERT INTO w_visitas (`user`, `for`, `type`, `date`, `ip`) VALUES ({$this->userID}, $id, $type, $time, '{$this->IP}')");
+	}
+
+	private function updateViewPost(int $id): void {
+		$sql = (!$this->User->is_member) ? "" : " AND post_user != {$this->User->uid}";
+		db_exec([__FILE__, __LINE__], 'query', "UPDATE p_posts SET post_hits = post_hits + 1 WHERE post_id = $id $sql");
+	}
+
+	public function updateViews(int $id, int $type = 1): int {
+		$time = time();
+		$visitado = $this->isVisited((int)$id, (int)$type);
+		if(($this->User->is_member AND $visitado === 0 AND $this->userID !== $id) || 
+			((int)$this->Core->settings['c_hits_guest'] === 1 AND !$this->User->is_member AND !$visitado)
+		) {
+			$this->addView((int)$id, (int)$type);
+			if($type === 2) {
+				$this->updateViewPost((int)$id);
+			}
+		} else {
+			$forId = ($type === 2) ? $id : $this->userID;
+			$whereUser = '';
+			if ($type === 2 && $this->User->is_member) {
+			   $whereUser = "AND `user` = {$this->userID}";
+			}
+			db_exec([__FILE__, __LINE__], 'query', "UPDATE `w_visitas` SET `date` = $time, ip = '{$this->IP}' WHERE `for` = $forId AND `type` = $type $whereUser");
+		}
+		return $visitado;
+	}
+
+	public function updateViewsGuest(int $visitado, int $id, int $type = 1): void {
+		if((int)$this->Core->settings['c_hits_guest'] === 1 AND !$this->User->is_member AND !$visitado) {
+			$this->addView((int)$id, (int)$type);
+			$this->updateViewPost((int)$id);
+		}
+	}
+
+	public function getLastViews(int $id, int $type = 1): array {
+		$query = "SELECT v.*, u.user_id, u.user_name FROM w_visitas AS v LEFT JOIN u_miembros AS u ON v.user = u.user_id WHERE v.for = {$id} AND v.type = {$type} AND v.user > 0 ORDER BY v.date DESC LIMIT 10";
+		return result_array(db_exec([__FILE__, __LINE__], 'query', $query));
+	}
+
+	# Es más para el portal que visitas, solo post
+	public function addViewPortal(int $id): void {
+		if((int)$this->Core->settings['c_allow_portal'] === 1 AND $this->User->is_member) {
+			$data = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', "SELECT last_posts_visited as visited FROM u_portal WHERE user_id = {$this->User->uid} LIMIT 1"));
+			//
+			$visited = [];
+			if ($data && !empty($data['visited'])) {
+			   $visited = json_decode($data['visited'], true);
+			   if (!is_array($visited)) {
+			      $visited = [];
+			   }
+			}
+			// mantener máximo 10
+			$visited = array_slice($visited, -9);
+			if (!in_array($id, $visited, true)) {
+			   $visited[] = $id;
+			}
+			//
+			$visited = json_encode($visited);
+			db_exec([__FILE__, __LINE__], 'query', "UPDATE u_portal SET last_posts_visited = '$visited' WHERE user_id = {$this->User->uid}");
+		}
+	}
+
+}

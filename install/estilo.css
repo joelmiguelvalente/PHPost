@@ -1,13 +1,11 @@
 :root {
 	--body-bg: #E4E4E4;
-}
-[data-install] {
 	--color-rgb: rgba(var(--color-base-triplet), 1);
    --color: rgb(var(--color-base-triplet));
    --color-hover: color-mix(in srgb, var(--color) 90%, black 10%);
    --color-active: color-mix(in srgb, var(--color) 80%, black 20%);
+	--color-base-triplet: 0, 120, 160;
 }
-[data-install="default"] {--color-base-triplet: 0, 120, 160;}
 
 *, *::after, *::before {
 	margin: 0;

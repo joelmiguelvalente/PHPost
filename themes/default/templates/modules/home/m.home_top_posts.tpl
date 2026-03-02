@@ -1,8 +1,8 @@
 <div id="topsPostBox" class="box">
 	<div class="box-header">
-		<span class="box_txt">TOPs posts <a class="size9" href="{$tsConfig.url}/top/">(Ver m&aacute;s)</a></span>
+		<span class="box_txt">TOPs posts <a class="size9" href="{$tsConfig.url}/top/" title="TOPs posts">(Ver m&aacute;s)</a></span>
 		<div class="box_icon">
-			<a href="{$tsConfig.url}/rss/top-post-semana"><span class="systemicons sRss"></span></a>
+			<a href="{$tsConfig.url}/rss/top-post-semana" title="RSS | TOPs posts"><span class="systemicons sRss"></span></a>
 		</div>
 	</div>
 	<div class="box-filter">

@@ -21,13 +21,13 @@
 	--color-text-muted: #6b7280;
 	--color-border: #dcdfe3;
 
-	--color-primary: #1a73e8;
+	--color-primary: #0A5DCB;
 	--color-primary-contrast: #ffffff;
 
-	--color-success: #1e8e3e;
-	--color-danger: #d93025;
-	--color-warning: #f9ab00;
-	--color-info: #1b9bd7;
+	--color-success: #0e6b28;
+	--color-danger: #D32318;
+	--color-warning: #E29E08;
+	--color-info: #1188D4;
 	--color-secondary: #5f6368;
 
 	--color-hover: color-mix(in srgb, currentColor 85%, #000);
@@ -95,7 +95,6 @@ picture {
 	width: 100%;
 	height: 100%;
 	border-radius: .325rem;
-	background: var(--color-surface-alt);
 	display: block;
 	overflow: hidden;
 	* {
@@ -1170,7 +1169,7 @@ hr {
 	vertical-align:top;
 }
 .icons {
-	background:url('./images/big2v1.png?1.0') no-repeat scroll left top;
+	background:url('./images/big2v1.webp') no-repeat scroll left top;
 	display: block;
 	width: 1rem;
 	height: 1rem;
@@ -1208,7 +1207,7 @@ hr {
 .icons.unfollow {background-position: 0 -1384px;}
 
 .icon-medallas, .listado-content .medalla {
-	background-image: url('./images/sprite-notification.png');
+	background-image: url('./images/sprite-notification.webp');
 	display:block;
 	height:16px;
 	width:16px;
@@ -1237,7 +1236,7 @@ hr {
 .medalla-great-user-big {background-position: -19px -271px }
 .medalla-moderador-big {background-position: -19px -236px }
 .icon-noti {
-	background-image: url('./images/sprite-notification.png');
+	background-image: url('./images/sprite-notification.webp');
 	background-repeat: no-repeat;
 	display:block;
 	font-size:12px;
@@ -1261,7 +1260,7 @@ hr {
 .systemicons {
 	width: 1rem;
 	height: 1rem;
-	background-image: url('./images/big2v1.png');
+	background-image: url('./images/big2v1.webp');
 	background-repeat: no-repeat;
 	display:block;
 	&.rango0 {background-position: 0 -110px;} 
@@ -1374,13 +1373,13 @@ hr {
 }
 /* SUBMENU */
 .subMenu {
-	background: #007394;
+	background: #034e63;
 	font-size: 12px;
 	font-weight: bold;
 	color: #CCC;
 	.tabsMenu {
 		.tabsItem {
-			background: #338fa9;
+			background: #12657d;
 			border-top-left-radius: .325rem;
 			border-top-right-radius: .325rem;
 			a {

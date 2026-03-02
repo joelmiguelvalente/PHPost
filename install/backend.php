@@ -14,8 +14,8 @@ if(file_exists(dirname(__DIR__, 1) . '/.lock')) {
 	header("Location: ../");
 }
 //
-require_once dirname(__DIR__, 1) . '/inc/config/Config.php';
-require_once dirname(__DIR__, 1) . '/inc/utils/Extras.php';
+require_once dirname(__DIR__, 1) . '/config/Config.php';
+require_once dirname(__DIR__, 1) . '/src/Utils/Extras.php';
 require_once __DIR__ . '/connection.php';
 $Extras = new Extras;
 
@@ -25,7 +25,7 @@ ini_set('log_errors', 1);
 ini_set('error_log', __DIR__ . '/install-error.log');
 error_reporting(E_ALL);
 
-session_save_path(__DIR__ . '/../sessions');
+# session_save_path(__DIR__ . '/../sessions');
 session_start();
 
 $stepsNames = [
@@ -170,7 +170,7 @@ switch ($step) {
 					}
 				}
 				# Guardamos los datos de conexión
-				$fileconfig = dirname(__DIR__, 1) . "/inc/config/Config.Database{$localUse}.php";
+				$fileconfig = dirname(__DIR__, 1) . "/config/Config.Database{$localUse}.php";
 				$config = str_replace(['dbhost', 'dbuser', 'dbpass', 'dbname'], $db, file_get_contents($fileconfig));
 				file_put_contents($fileconfig, $config);
 				# CARGAMOS LAS TABLAS
@@ -209,6 +209,7 @@ switch ($step) {
 			'smtppass' => $_POST['smtppass'] ?? '',
 			'smtpname' => trim($_POST['smtpname'] ?? '')
 		];
+		
 		if(isset($_POST['omitir'])) {
 			header("Location: ./index.php?step=datos_sitio");
 			die;
@@ -240,7 +241,7 @@ switch ($step) {
 
 			if($next) {
 				# Guardamos los datos
-				$fileconfig = dirname(__DIR__, 1) . "/inc/config/Config.Mailer{$localUse}.php";
+				$fileconfig = dirname(__DIR__, 1) . "/config/Config.Mailer{$localUse}.php";
 				$config = str_replace(['smtphost', 'smtpuser', 'smtppass', 'smtpname'], $phpmailer, file_get_contents($fileconfig));
 				file_put_contents($fileconfig, $config);
 				header("Location: ./index.php?step=datos_sitio");
@@ -352,12 +353,17 @@ switch ($step) {
 					$message = 'Las contrase&ntilde;as no coinciden.';
 					$next = false;
 				}
-				require_once dirname(__DIR__, 1) . '/inc/utils/PasswordHandler.php';
+				require_once dirname(__DIR__, 1) . '/src/Utils/PasswordHandler.php';
 				$Password = new PasswordHandler;
 				// GENERAR KEY
 				$key = $Password->create($user['user_password']);
 				$fecha = time();
-				$Connection = new InstallerDB(Config::db('hostname'), Config::db('username'), Config::db('password'), Config::db('database'));
+				$Connection = new InstallerDB(
+					Config::db('hostname'), 
+					Config::db('username'), 
+					Config::db('password'), 
+					Config::db('database')
+				);
 
 				if($Connection->exists("SELECT 1 FROM u_miembros WHERE user_id = ? OR user_rango = ? LIMIT 1", [1, 1])) {
 					$message = 'No se puede registrar, ya existe un administrador.';
@@ -385,10 +391,10 @@ switch ($step) {
 						'stats_time_upgrade'		=> time()
 					];
 					$Connection->update('w_stats', $data, 'stats_no = ?', [1]);
-					define('TS_STORAGE', dirname(__DIR__, 1) . '/inc/storage/');
-					require_once dirname(__DIR__, 1) . '/inc/utils/Avatar.php';
+					
+					require_once dirname(__DIR__, 1) . '/src/Utils/Avatar.php';
 					$tsCore = new stdClass();
-					$Avatar = new Avatar("{$url}inc/storage/avatar/", true);
+					$Avatar = new Avatar("{$url}storage/avatar/", true);
 					$Avatar->ensure(1, $user['user_name']);
 
 					// DAMOS BIENVENIDA POR CORREO
@@ -406,7 +412,12 @@ switch ($step) {
 		checkedStep('bienvenida');
 
 		// DATOS DE CONEXION
-		$Connection = new InstallerDB(Config::db('hostname'), Config::db('username'), Config::db('password'), Config::db('database'));
+		$Connection = new InstallerDB(
+			Config::db('hostname'), 
+			Config::db('username'), 
+			Config::db('password'), 
+			Config::db('database')
+		);
 		//
 		$data = $Connection->selectOne("SELECT url FROM w_configuracion WHERE phpost_id = ?", [1]);
 		// Abrir el archivo en modo de escritura ("w")

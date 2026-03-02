@@ -313,7 +313,7 @@ let debug = false;
 				},
 				kbd : {
 					title: "Teclas",
-					buttonHTML: '<span class="newicon i-code"></span>',
+					buttonHTML: '<span class="wysibb-icon wysibb-icon-kbd"></span>',
 					onlyClearText: true,
 					transform : {
 						'<kbd class="slug">{SELTEXT}</kbd>':"[kbd]{SELTEXT}[/kbd]"
@@ -525,12 +525,12 @@ let debug = false;
 				},
 				fullscreen: {
 					title: "Maximizar",
-					buttonHTML: '<span class="newicon i-fullscreen"></span>',
+					buttonHTML: '<span class="wysibb-icon wysibb-icon-fullscreen"></span>',
 					cmd: toFullScreen
 				},
 				removeformat: {
 					title: "Eliminar formato",
-					buttonHTML: '<span class="fonticon ve-tlb-removeformat1">\uE00f</span>',
+					buttonHTML: '<span class="wysibb-icon wysibb-icon-removeformat"></span>',
 					excmd: "removeFormat"
 				}
 			},
@@ -1287,7 +1287,7 @@ let debug = false;
 		    },this));
 		},
 		buildSelect: function(container,bn,opt) {
-			var $btn = $('<div class="wysibb-toolbar-btn wbb-select wbb-'+bn+'">').appendTo(container).append(this.strf('<span class="btn-inner wysibb-icon wysibb-icon-table"></span><ins class="caret-down"></ins>',opt)).append(this.strf('<span class="btn-tooltip">{title}<ins/></span>',{title:opt.title}));  
+			var $btn = $('<div class="wysibb-toolbar-btn wbb-select wbb-'+bn+'">').appendTo(container).append(this.strf('<span class="btn-inner wysibb-icon wysibb-icon-'+bn+'"></span><ins class="caret-down"></ins>',opt)).append(this.strf('<span class="btn-tooltip">{title}<ins/></span>',{title:opt.title}));  
 			var $sblock = $('<div class="wbb-list">').appendTo($btn);
 			var $sval = $btn.find("span.val");
 			

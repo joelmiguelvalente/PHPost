@@ -169,10 +169,10 @@ span.negativo {
 #pp_copyright {
 	padding:12px; 
 	text-align:center; 
-	color:#444;
+	color: #222;
 }
 #pp_copyright a {
-	color:#777;
+	color:#444;
 }
 
 .form-line {

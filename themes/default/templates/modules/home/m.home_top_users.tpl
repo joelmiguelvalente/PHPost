@@ -1,8 +1,8 @@
 <div id="topsUserBox" class="box">
 	<div class="box-header">
-		<span class="box_txt">TOPs usuarios <a class="size9" href="{$tsConfig.url}/top/usuarios/">(Ver m&aacute;s)</a></span>
+		<span class="box_txt">TOPs usuarios <a class="size9" href="{$tsConfig.url}/top/usuarios/" title="TOPs usuarios">(Ver m&aacute;s)</a></span>
 		<div class="box_icon">
-			<a href="{$tsConfig.url}/rss/top-usuarios-semana"><span class="systemicons sRss"></span></a>
+			<a href="{$tsConfig.url}/rss/top-usuarios-semana" title="RSS | TOPs usuarios"><span class="systemicons sRss"></span></a>
 		</div>
 	</div>
 	<div class="box-filter">

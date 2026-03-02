@@ -1,0 +1,42 @@
+.searchFil .head {
+	padding: 0.5rem;
+	h3 {
+		margin: 0;
+	}
+}
+.searchWith {
+	.search-item {
+		display: block;
+		padding: .325rem;
+		&.active {
+			font-weight: 600;
+			background: rgba(0, 0, 0, .2);
+		}
+	}
+}
+.buscador-columns {
+	display: grid;
+	grid-template-columns: 250px 1fr;
+	gap: 1rem;
+	.group {
+		padding: 0.5rem;
+		margin-bottom: 0.5rem;
+		input, select {
+			display: block;
+			width: 100%;
+			box-sizing: border-box;
+			padding: 0.325rem;
+		}
+	}
+}
+.buscador-content {
+	padding: 1rem;
+}
+.empty {
+	text-align: center;
+	display: block;
+	margin: 0;
+	padding: 1rem 0;
+	background: #6661;
+	border-radius: .325rem;
+}

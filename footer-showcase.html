@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Footer Showcase — 6 Diseños</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,700;1,400&family=Syne:wght@700;800&family=Figtree:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: 'DM Sans', sans-serif; background: #e8eaed; }
+a { text-decoration: none; color: inherit; }
+ul { list-style: none; }
+img { display: block; max-width: 100%; }
+::selection { background: #dbeafe; color: #0A5DCB; }
+
+/* ── PAGE HEADER ── */
+.page-header {
+  background: #0f1117;
+  color: #fff;
+  text-align: center;
+  padding: 4rem 1.5rem 3.5rem;
+  position: relative;
+  overflow: hidden;
+}
+.page-header::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 70% 60% at 50% 100%, rgba(10,93,203,.25) 0%, transparent 70%);
+}
+.page-header h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 800;
+  letter-spacing: -.04em;
+  margin-bottom: .75rem;
+  position: relative;
+}
+.page-header p {
+  color: #6b7280;
+  font-size: .95rem;
+  max-width: 500px;
+  margin: 0 auto;
+  line-height: 1.6;
+  position: relative;
+}
+
+/* ── SECTION LABELS ── */
+.section-wrap { margin-bottom: 3px; }
+.section-label {
+  background: #e8eaed;
+  padding: 2rem 2rem 1.25rem;
+  display: flex; align-items: center; gap: .875rem; flex-wrap: wrap;
+}
+.section-num {
+  font-family: 'DM Mono', monospace;
+  font-size: .7rem; font-weight: 500;
+  background: #1a1d21; color: #fff;
+  padding: .2rem .55rem; border-radius: 4px;
+}
+.section-name { font-weight: 700; font-size: 1rem; color: #1a1d21; }
+.section-desc { font-size: .78rem; color: #6b7280; margin-left: auto; }
+
+/* ── SOCIAL ICONS (shared) ── */
+.social-link {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; border-radius: 9999px;
+  transition: all .2s ease;
+  flex-shrink: 0;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: #e8eaed; }
+::-webkit-scrollbar-thumb { background: #c4c7cc; border-radius: 9999px; }
+
+
+/* ════════════════════════════════════════════
+   FOOTER 1 — MEGA FOOTER
+   4 columnas · Logo + desc · Links · Redes
+   Fondo negro profundo con detalles sutiles
+   ════════════════════════════════════════════ */
+.f1 {
+  background: #0d0f14;
+  color: #9ca3af;
+  font-family: 'DM Sans', sans-serif;
+  position: relative;
+  overflow: hidden;
+}
+.f1::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(10,93,203,.6) 30%, rgba(17,136,212,.8) 50%, rgba(10,93,203,.6) 70%, transparent);
+}
+.f1-top {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 4rem 2rem 3rem;
+  display: grid;
+  grid-template-columns: 1.8fr 1fr 1fr 1fr;
+  gap: 3rem;
+}
+.f1-brand-logo {
+  display: flex; align-items: center; gap: .625rem;
+  font-family: 'Syne', sans-serif;
+  font-size: 1.35rem; font-weight: 800;
+  color: #fff; letter-spacing: -.03em;
+  margin-bottom: 1rem;
+}
+.f1-brand-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: #0A5DCB;
+  box-shadow: 0 0 16px rgba(10,93,203,.8);
+  flex-shrink: 0;
+}
+.f1-brand-desc {
+  font-size: .83rem; line-height: 1.7; color: #6b7280;
+  margin-bottom: 1.5rem;
+}
+.f1-social { display: flex; gap: .5rem; }
+.f1-social .social-link {
+  background: rgba(255,255,255,.06);
+  color: #6b7280;
+  border: 1px solid rgba(255,255,255,.06);
+}
+.f1-social .social-link:hover {
+  background: rgba(10,93,203,.2);
+  color: #fff;
+  border-color: rgba(10,93,203,.4);
+}
+.f1-col-title {
+  font-size: .7rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .1em;
+  color: #fff; margin-bottom: 1.25rem;
+}
+.f1-links { display: flex; flex-direction: column; gap: .625rem; }
+.f1-link {
+  font-size: .83rem; color: #6b7280;
+  transition: color .15s;
+  display: flex; align-items: center; gap: .375rem;
+}
+.f1-link::before {
+  content: '';
+  width: 0; height: 1px;
+  background: #0A5DCB;
+  transition: width .2s ease;
+  flex-shrink: 0;
+}
+.f1-link:hover { color: #e5e7eb; }
+.f1-link:hover::before { width: 12px; }
+.f1-bottom {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.25rem 2rem;
+  border-top: 1px solid rgba(255,255,255,.06);
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 1rem; flex-wrap: wrap;
+}
+.f1-copy { font-size: .78rem; color: #4b5563; }
+.f1-bottom-links { display: flex; gap: 1.5rem; }
+.f1-bottom-link { font-size: .78rem; color: #4b5563; transition: color .15s; }
+.f1-bottom-link:hover { color: #9ca3af; }
+.f1-badge {
+  display: inline-flex; align-items: center; gap: .375rem;
+  background: rgba(10,93,203,.15); border: 1px solid rgba(10,93,203,.3);
+  border-radius: 9999px; padding: .2rem .75rem;
+  font-size: .7rem; font-weight: 600; color: #60a5fa;
+}
+@media (max-width: 900px) {
+  .f1-top { grid-template-columns: 1fr 1fr; gap: 2rem; }
+}
+@media (max-width: 560px) {
+  .f1-top { grid-template-columns: 1fr; gap: 1.75rem; padding: 2.5rem 1.25rem; }
+  .f1-bottom { flex-direction: column; align-items: flex-start; padding: 1.25rem; }
+  .f1-bottom-links { flex-wrap: wrap; gap: .875rem; }
+}
+
+
+/* ════════════════════════════════════════════
+   FOOTER 2 — MINIMAL LIGHT
+   Fondo blanco, ultra limpio.
+   Una sola fila con newsletter inline.
+   ════════════════════════════════════════════ */
+.f2 {
+  background: #fff;
+  border-top: 1px solid #e5e7eb;
+  font-family: 'Figtree', sans-serif;
+}
+.f2-top {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 3rem 2rem 2.5rem;
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 4rem;
+  align-items: start;
+}
+.f2-brand { }
+.f2-logo {
+  font-size: 1.15rem; font-weight: 700; color: #111;
+  letter-spacing: -.025em; margin-bottom: .5rem;
+  display: flex; align-items: center; gap: .375rem;
+}
+.f2-logo-sq {
+  width: 22px; height: 22px; border-radius: 5px;
+  background: #111;
+  display: flex; align-items: center; justify-content: center;
+}
+.f2-tagline { font-size: .82rem; color: #9ca3af; line-height: 1.5; }
+.f2-nav-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+}
+.f2-nav-title {
+  font-size: .72rem; font-weight: 700;
+  color: #111; text-transform: uppercase;
+  letter-spacing: .08em; margin-bottom: 1rem;
+}
+.f2-nav-links { display: flex; flex-direction: column; gap: .5rem; }
+.f2-nav-link {
+  font-size: .83rem; color: #6b7280;
+  transition: color .15s;
+}
+.f2-nav-link:hover { color: #111; }
+.f2-bottom {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.25rem 2rem;
+  border-top: 1px solid #f3f4f6;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 1rem; flex-wrap: wrap;
+}
+.f2-copy { font-size: .78rem; color: #9ca3af; }
+.f2-social { display: flex; gap: .375rem; }
+.f2-social .social-link {
+  background: #f3f4f6; color: #6b7280;
+}
+.f2-social .social-link:hover { background: #111; color: #fff; }
+@media (max-width: 768px) {
+  .f2-top { grid-template-columns: 1fr; gap: 2rem; padding: 2rem 1.25rem; }
+  .f2-nav-grid { grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+  .f2-bottom { padding: 1.25rem; }
+}
+@media (max-width: 400px) {
+  .f2-nav-grid { grid-template-columns: 1fr; }
+}
+
+
+/* ════════════════════════════════════════════
+   FOOTER 3 — NEWSLETTER HERO
+   Mitad superior: CTA de suscripción grande
+   Mitad inferior: links + copy en franja oscura
+   ════════════════════════════════════════════ */
+.f3 { font-family: 'DM Sans', sans-serif; }
+.f3-cta {
+  background: linear-gradient(135deg, #0A5DCB 0%, #083fa0 60%, #0e1a3a 100%);
+  padding: 5rem 2rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.f3-cta::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+.f3-cta-label {
+  display: inline-flex; align-items: center; gap: .5rem;
+  background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2);
+  border-radius: 9999px; padding: .3rem 1rem;
+  font-size: .75rem; font-weight: 600; color: rgba(255,255,255,.85);
+  margin-bottom: 1.5rem; position: relative;
+}
+.f3-cta h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.75rem, 4vw, 2.75rem);
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: .875rem;
+  position: relative;
+  letter-spacing: -.02em;
+  line-height: 1.2;
+}
+.f3-cta p {
+  color: rgba(255,255,255,.65);
+  font-size: .9rem;
+  max-width: 420px;
+  margin: 0 auto 2rem;
+  line-height: 1.6;
+  position: relative;
+}
+.f3-form {
+  display: flex; gap: .5rem;
+  max-width: 440px; margin: 0 auto;
+  position: relative;
+}
+.f3-input {
+  flex: 1;
+  height: 48px;
+  background: rgba(255,255,255,.1);
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 10px;
+  color: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-size: .875rem;
+  padding: 0 1rem;
+  outline: none;
+  transition: all .15s;
+  backdrop-filter: blur(10px);
+}
+.f3-input::placeholder { color: rgba(255,255,255,.4); }
+.f3-input:focus { background: rgba(255,255,255,.15); border-color: rgba(255,255,255,.4); }
+.f3-btn {
+  height: 48px; padding: 0 1.5rem;
+  background: #fff; color: #0A5DCB;
+  border: none; border-radius: 10px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: .875rem; font-weight: 700;
+  cursor: pointer; white-space: nowrap;
+  transition: all .15s;
+  flex-shrink: 0;
+}
+.f3-btn:hover { background: #f0f7ff; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,.2); }
+.f3-links {
+  background: #0d0f14;
+  padding: 2rem;
+}
+.f3-links-inner {
+  max-width: 1100px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 1.5rem;
+}
+.f3-logo-small {
+  font-family: 'Syne', sans-serif;
+  font-size: .95rem; font-weight: 800;
+  color: #fff; letter-spacing: -.02em;
+}
+.f3-bottom-links { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+.f3-bottom-link { font-size: .78rem; color: #4b5563; transition: color .15s; }
+.f3-bottom-link:hover { color: #9ca3af; }
+.f3-social { display: flex; gap: .375rem; }
+.f3-social .social-link {
+  background: rgba(255,255,255,.06); color: #6b7280;
+  border: 1px solid rgba(255,255,255,.07);
+}
+.f3-social .social-link:hover { background: rgba(10,93,203,.25); color: #fff; }
+@media (max-width: 560px) {
+  .f3-cta { padding: 3rem 1.25rem; }
+  .f3-form { flex-direction: column; }
+  .f3-input, .f3-btn { width: 100%; }
+  .f3-links-inner { flex-direction: column; gap: 1rem; }
+  .f3-bottom-links { gap: 1rem; }
+}
+
+
+/* ════════════════════════════════════════════
+   FOOTER 4 — EDITORIAL
+   Tipografía grande como protagonista.
+   Nombre de marca como elemento gráfico.
+   ════════════════════════════════════════════ */
+.f4 {
+  background: #f7f5f0;
+  font-family: 'Figtree', sans-serif;
+  border-top: 2px solid #e8e4dc;
+}
+.f4-inner {
+  max-width: 1200px; margin: 0 auto;
+  padding: 4rem 2rem 0;
+}
+.f4-top {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  padding-bottom: 3rem;
+  border-bottom: 1px solid #e8e4dc;
+}
+.f4-left { }
+.f4-eyebrow {
+  font-size: .7rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .12em;
+  color: #9ca3af; margin-bottom: .875rem;
+}
+.f4-heading {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  color: #1a1209; line-height: 1.25;
+  margin-bottom: 1.25rem;
+  letter-spacing: -.02em;
+}
+.f4-heading em { font-style: italic; color: #7c6f52; }
+.f4-desc { font-size: .875rem; color: #7c6f52; line-height: 1.7; max-width: 360px; margin-bottom: 2rem; }
+.f4-btn {
+  display: inline-flex; align-items: center; gap: .625rem;
+  background: #1a1209; color: #f7f5f0;
+  padding: .75rem 1.5rem;
+  border-radius: 9999px;
+  font-size: .85rem; font-weight: 600;
+  transition: all .2s ease;
+  border: 2px solid #1a1209;
+}
+.f4-btn:hover { background: transparent; color: #1a1209; }
+.f4-right {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 2rem; align-content: start;
+}
+.f4-col-title {
+  font-size: .7rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .1em;
+  color: #b5a98a; margin-bottom: 1rem;
+}
+.f4-col-links { display: flex; flex-direction: column; gap: .625rem; }
+.f4-col-link {
+  font-size: .85rem; color: #5c5144;
+  transition: color .15s;
+  display: flex; align-items: center; gap: .375rem;
+}
+.f4-col-link:hover { color: #1a1209; }
+/* Giant brand name */
+.f4-wordmark {
+  padding: 2rem 0 1.5rem;
+  overflow: hidden;
+}
+.f4-wordmark-text {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(4rem, 12vw, 9rem);
+  font-weight: 700;
+  color: transparent;
+  -webkit-text-stroke: 1px #d4cfc6;
+  letter-spacing: -.04em;
+  line-height: .9;
+  white-space: nowrap;
+  user-select: none;
+  opacity: .5;
+}
+.f4-bottom {
+  border-top: 1px solid #e8e4dc;
+  padding: 1.25rem 2rem;
+  max-width: 1200px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 1rem;
+}
+.f4-copy { font-size: .78rem; color: #b5a98a; }
+.f4-social { display: flex; gap: .375rem; }
+.f4-social .social-link {
+  background: #ede9e0; color: #7c6f52;
+}
+.f4-social .social-link:hover { background: #1a1209; color: #f7f5f0; }
+@media (max-width: 768px) {
+  .f4-top { grid-template-columns: 1fr; gap: 2.5rem; padding: 2.5rem 0; }
+  .f4-inner { padding: 3rem 1.25rem 0; }
+  .f4-bottom { padding: 1.25rem; }
+  .f4-wordmark-text { font-size: clamp(3rem, 14vw, 6rem); }
+}
+
+
+/* ════════════════════════════════════════════
+   FOOTER 5 — APP / PRODUCTO
+   Compact, centrado, redes destacadas.
+   Fondo con gradiente sutil y blur.
+   ════════════════════════════════════════════ */
+.f5 {
+  background: #0a0c10;
+  font-family: 'DM Sans', sans-serif;
+  position: relative;
+  overflow: hidden;
+}
+.f5::before {
+  content: '';
+  position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 600px; height: 300px;
+  background: radial-gradient(ellipse, rgba(10,93,203,.18) 0%, transparent 70%);
+  pointer-events: none;
+}
+.f5-inner {
+  max-width: 700px; margin: 0 auto;
+  padding: 4rem 2rem 3rem;
+  text-align: center;
+  position: relative;
+}
+.f5-logo {
+  display: inline-flex; align-items: center; gap: .625rem;
+  font-family: 'Syne', sans-serif;
+  font-size: 1.3rem; font-weight: 800;
+  color: #fff; letter-spacing: -.03em;
+  margin-bottom: 1rem;
+}
+.f5-logo-icon {
+  width: 32px; height: 32px; border-radius: 9px;
+  background: linear-gradient(135deg, #0A5DCB, #22d3ee);
+  display: flex; align-items: center; justify-content: center;
+}
+.f5-tagline {
+  font-size: .875rem; color: #4b5563;
+  line-height: 1.6; max-width: 380px;
+  margin: 0 auto 2.5rem;
+}
+.f5-links {
+  display: flex; justify-content: center; flex-wrap: wrap; gap: .25rem;
+  margin-bottom: 2.5rem;
+}
+.f5-link {
+  padding: .375rem .875rem;
+  font-size: .8rem; font-weight: 500; color: #4b5563;
+  border-radius: 8px;
+  transition: all .15s;
+}
+.f5-link:hover { color: #fff; background: rgba(255,255,255,.07); }
+.f5-sep { color: #1f2937; display: flex; align-items: center; }
+.f5-social {
+  display: flex; justify-content: center; gap: .5rem;
+  margin-bottom: 2.5rem;
+}
+.f5-social .social-link {
+  background: rgba(255,255,255,.05);
+  color: #4b5563;
+  border: 1px solid rgba(255,255,255,.06);
+  transition: all .2s ease;
+}
+.f5-social .social-link:hover {
+  background: rgba(10,93,203,.2);
+  color: #60a5fa;
+  border-color: rgba(10,93,203,.3);
+  transform: translateY(-2px);
+}
+.f5-divider {
+  height: 1px; background: rgba(255,255,255,.05);
+  margin-bottom: 1.5rem;
+}
+.f5-bottom {
+  display: flex; align-items: center; justify-content: center;
+  gap: 1.5rem; flex-wrap: wrap;
+}
+.f5-copy { font-size: .75rem; color: #374151; }
+.f5-badge {
+  display: inline-flex; align-items: center; gap: .375rem;
+  font-size: .7rem; color: #374151;
+}
+.f5-dot { width: 6px; height: 6px; border-radius: 50%; background: #22c55e; }
+@media (max-width: 480px) {
+  .f5-inner { padding: 3rem 1.25rem 2rem; }
+  .f5-links { gap: 0; }
+  .f5-sep { display: none; }
+}
+
+
+/* ════════════════════════════════════════════
+   FOOTER 6 — SPLIT / ASIMÉTRICO
+   Izquierda: grande con tagline impactante
+   Derecha: columnas de links + redes
+   Divider diagonal visual
+   ════════════════════════════════════════════ */
+.f6 {
+  background: #111318;
+  font-family: 'DM Sans', sans-serif;
+  position: relative;
+}
+.f6-main {
+  max-width: 1200px; margin: 0 auto;
+  padding: 5rem 2rem 4rem;
+  display: grid;
+  grid-template-columns: 1.2fr 1.6fr;
+  gap: 5rem;
+  align-items: start;
+}
+/* Left */
+.f6-left { }
+.f6-logo {
+  display: flex; align-items: center; gap: .5rem;
+  font-family: 'Syne', sans-serif;
+  font-size: 1rem; font-weight: 800;
+  color: rgba(255,255,255,.4); letter-spacing: -.02em;
+  margin-bottom: 2rem;
+}
+.f6-headline {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  font-weight: 800;
+  letter-spacing: -.04em;
+  line-height: 1.05;
+  margin-bottom: 1.5rem;
+}
+.f6-headline span { color: #fff; }
+.f6-headline .accent {
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(255,255,255,.25);
+}
+.f6-desc {
+  font-size: .85rem; color: #4b5563; line-height: 1.7;
+  margin-bottom: 2rem; max-width: 320px;
+}
+.f6-cta-row { display: flex; align-items: center; gap: 1rem; }
+.f6-cta-btn {
+  display: inline-flex; align-items: center; gap: .5rem;
+  background: #0A5DCB; color: #fff;
+  padding: .7rem 1.5rem;
+  border-radius: 10px;
+  font-size: .85rem; font-weight: 600;
+  transition: all .2s ease;
+  border: none; cursor: pointer;
+}
+.f6-cta-btn:hover { background: #083fa0; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(10,93,203,.4); }
+.f6-cta-link {
+  font-size: .82rem; color: #4b5563; transition: color .15s;
+  display: flex; align-items: center; gap: .375rem;
+}
+.f6-cta-link:hover { color: #9ca3af; }
+/* Right */
+.f6-right {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  padding-top: 1rem;
+}
+.f6-col-label {
+  font-size: .68rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .1em;
+  color: rgba(255,255,255,.2); margin-bottom: 1.25rem;
+}
+.f6-col-links { display: flex; flex-direction: column; gap: .7rem; }
+.f6-col-link {
+  font-size: .83rem; color: #374151;
+  transition: color .2s; display: flex; align-items: center; gap: .375rem;
+}
+.f6-col-link:hover { color: #9ca3af; }
+.f6-col-link .arrow {
+  opacity: 0; transform: translateX(-4px);
+  transition: all .2s ease;
+  font-size: .7rem;
+}
+.f6-col-link:hover .arrow { opacity: 1; transform: translateX(0); }
+/* Bottom bar */
+.f6-bar {
+  border-top: 1px solid rgba(255,255,255,.05);
+  padding: 1.25rem 2rem;
+  max-width: 1200px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 1rem;
+}
+.f6-copy { font-size: .75rem; color: #1f2937; }
+.f6-social { display: flex; gap: .5rem; }
+.f6-social .social-link {
+  background: rgba(255,255,255,.04); color: #374151;
+  border: 1px solid rgba(255,255,255,.06);
+}
+.f6-social .social-link:hover {
+  background: rgba(255,255,255,.08); color: #9ca3af;
+  border-color: rgba(255,255,255,.12);
+}
+.f6-status {
+  display: flex; align-items: center; gap: .5rem;
+  font-size: .75rem; color: #374151;
+}
+.f6-status-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 8px rgba(34,197,94,.5);
+}
+@media (max-width: 960px) {
+  .f6-main { grid-template-columns: 1fr; gap: 3rem; padding: 3.5rem 1.5rem 3rem; }
+  .f6-right { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 560px) {
+  .f6-right { grid-template-columns: repeat(2, 1fr); }
+  .f6-bar { padding: 1.25rem; }
+  .f6-cta-row { flex-direction: column; align-items: flex-start; }
+}
+@media (max-width: 360px) {
+  .f6-right { grid-template-columns: 1fr; }
+}
+
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>6 Variantes de Footer</h1>
+  <p>Responsive, listos para producción. Cada uno tiene un carácter visual distinto y usa las clases de <code>estilo.css</code>.</p>
+</div>
+
+<!-- SVG icons defs (reutilizables) -->
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="ic-twitter" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.253 5.622L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z"/></svg>
+  <symbol id="ic-instagram" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".8" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="ic-linkedin" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></symbol>
+  <symbol id="ic-github" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></symbol>
+  <symbol id="ic-youtube" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></symbol>
+  <symbol id="ic-rss" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1" fill="currentColor" stroke="none"/></symbol>
+</svg>
+
+
+<!-- ══════════════════════════════
+     FOOTER 1 — MEGA FOOTER
+══════════════════════════════ -->
+<div class="section-wrap">
+  <div class="section-label">
+    <span class="section-num">01</span>
+    <span class="section-name">Mega Footer</span>
+    <span class="section-desc">4 columnas · Links con hover underline · Negro profundo</span>
+  </div>
+
+  <footer class="f1">
+    <div class="f1-top">
+
+      <!-- Columna 1: Brand -->
+      <div>
+        <div class="f1-brand-logo">
+          <span class="f1-brand-dot"></span>
+          Forolibre
+        </div>
+        <p class="f1-brand-desc">La comunidad más activa de habla hispana para tecnología, ciencia y cultura digital. Más de 2 millones de posts y contando.</p>
+        <div class="f1-social">
+          <a href="#" class="social-link" aria-label="Twitter"><svg width="15" height="15"><use href="#ic-twitter"/></svg></a>
+          <a href="#" class="social-link" aria-label="Instagram"><svg width="15" height="15"><use href="#ic-instagram"/></svg></a>
+          <a href="#" class="social-link" aria-label="LinkedIn"><svg width="15" height="15"><use href="#ic-linkedin"/></svg></a>
+          <a href="#" class="social-link" aria-label="GitHub"><svg width="15" height="15"><use href="#ic-github"/></svg></a>
+          <a href="#" class="social-link" aria-label="YouTube"><svg width="15" height="15"><use href="#ic-youtube"/></svg></a>
+        </div>
+      </div>
+
+      <!-- Columna 2 -->
+      <div>
+        <div class="f1-col-title">Comunidad</div>
+        <div class="f1-links">
+          <a href="#" class="f1-link">Últimas discusiones</a>
+          <a href="#" class="f1-link">Usuarios top</a>
+          <a href="#" class="f1-link">Foros por categoría</a>
+          <a href="#" class="f1-link">Ranking semanal</a>
+          <a href="#" class="f1-link">Eventos</a>
+        </div>
+      </div>
+
+      <!-- Columna 3 -->
+      <div>
+        <div class="f1-col-title">Recursos</div>
+        <div class="f1-links">
+          <a href="#" class="f1-link">Guía de inicio</a>
+          <a href="#" class="f1-link">API pública</a>
+          <a href="#" class="f1-link">Documentación</a>
+          <a href="#" class="f1-link">Centro de ayuda</a>
+          <a href="#" class="f1-link">Blog oficial</a>
+        </div>
+      </div>
+
+      <!-- Columna 4 -->
+      <div>
+        <div class="f1-col-title">Empresa</div>
+        <div class="f1-links">
+          <a href="#" class="f1-link">Acerca de</a>
+          <a href="#" class="f1-link">Prensa</a>
+          <a href="#" class="f1-link">Trabaja con nosotros</a>
+          <a href="#" class="f1-link">Anunciá con nosotros</a>
+          <a href="#" class="f1-link">Contacto</a>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="f1-bottom">
+      <span class="f1-copy">© 2025 Forolibre S.R.L. · Todos los derechos reservados.</span>
+      <div class="f1-bottom-links">
+        <a href="#" class="f1-bottom-link">Privacidad</a>
+        <a href="#" class="f1-bottom-link">Términos</a>
+        <a href="#" class="f1-bottom-link">Cookies</a>
+        <a href="#" class="f1-bottom-link">Accesibilidad</a>
+      </div>
+      <span class="f1-badge">
+        <span style="width:6px;height:6px;border-radius:50%;background:#22c55e;flex-shrink:0"></span>
+        Todos los sistemas operativos
+      </span>
+    </div>
+  </footer>
+</div>
+
+
+<!-- ══════════════════════════════
+     FOOTER 2 — MINIMAL LIGHT
+══════════════════════════════ -->
+<div class="section-wrap">
+  <div class="section-label">
+    <span class="section-num">02</span>
+    <span class="section-name">Minimal Light</span>
+    <span class="section-desc">Blanco · 3 columnas de links · Ultra limpio</span>
+  </div>
+
+  <footer class="f2">
+    <div class="f2-top">
+
+      <div class="f2-brand">
+        <div class="f2-logo">
+          <div class="f2-logo-sq">
+            <svg width="12" height="12" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          </div>
+          MediaHub
+        </div>
+        <p class="f2-tagline">La plataforma para descubrir, guardar y compartir contenido que realmente importa.</p>
+      </div>
+
+      <div class="f2-nav-grid">
+        <div>
+          <div class="f2-nav-title">Producto</div>
+          <div class="f2-nav-links">
+            <a href="#" class="f2-nav-link">Características</a>
+            <a href="#" class="f2-nav-link">Precios</a>
+            <a href="#" class="f2-nav-link">Changelog</a>
+            <a href="#" class="f2-nav-link">Roadmap</a>
+          </div>
+        </div>
+        <div>
+          <div class="f2-nav-title">Soporte</div>
+          <div class="f2-nav-links">
+            <a href="#" class="f2-nav-link">Documentación</a>
+            <a href="#" class="f2-nav-link">Guías</a>
+            <a href="#" class="f2-nav-link">Estado</a>
+            <a href="#" class="f2-nav-link">Comunidad</a>
+          </div>
+        </div>
+        <div>
+          <div class="f2-nav-title">Legal</div>
+          <div class="f2-nav-links">
+            <a href="#" class="f2-nav-link">Privacidad</a>
+            <a href="#" class="f2-nav-link">Términos</a>
+            <a href="#" class="f2-nav-link">Cookies</a>
+            <a href="#" class="f2-nav-link">Licencias</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="f2-bottom">
+      <span class="f2-copy">© 2025 MediaHub Inc. Hecho con ♥ en Buenos Aires.</span>
+      <div class="f2-social">
+        <a href="#" class="social-link" aria-label="Twitter"><svg width="15" height="15"><use href="#ic-twitter"/></svg></a>
+        <a href="#" class="social-link" aria-label="Instagram"><svg width="15" height="15"><use href="#ic-instagram"/></svg></a>
+        <a href="#" class="social-link" aria-label="LinkedIn"><svg width="15" height="15"><use href="#ic-linkedin"/></svg></a>
+        <a href="#" class="social-link" aria-label="GitHub"><svg width="15" height="15"><use href="#ic-github"/></svg></a>
+      </div>
+    </div>
+  </footer>
+</div>
+
+
+<!-- ══════════════════════════════
+     FOOTER 3 — NEWSLETTER HERO
+══════════════════════════════ -->
+<div class="section-wrap">
+  <div class="section-label">
+    <span class="section-num">03</span>
+    <span class="section-name">Newsletter Hero</span>
+    <span class="section-desc">CTA grande · Gradiente azul · Barra de links minimal</span>
+  </div>
+
+  <footer class="f3">
+    <div class="f3-cta">
+      <div class="f3-cta-label">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4" stroke="white" stroke-width="1.5"/><circle cx="5" cy="5" r="1.5" fill="white"/></svg>
+        Newsletter semanal
+      </div>
+      <h2>Las mejores discusiones,<br>directo a tu bandeja.</h2>
+      <p>Resúmenes curados de los mejores posts de la semana. Sin spam, sin ruido. Solo lo que realmente vale la pena leer.</p>
+      <div class="f3-form">
+        <input type="email" class="f3-input" placeholder="tu@email.com">
+        <button class="f3-btn">Suscribirme →</button>
+      </div>
+    </div>
+
+    <div class="f3-links">
+      <div class="f3-links-inner">
+        <span class="f3-logo-small">Forolibre</span>
+        <div class="f3-bottom-links">
+          <a href="#" class="f3-bottom-link">Privacidad</a>
+          <a href="#" class="f3-bottom-link">Términos</a>
+          <a href="#" class="f3-bottom-link">Contacto</a>
+          <a href="#" class="f3-bottom-link">Ayuda</a>
+        </div>
+        <div class="f3-social">
+          <a href="#" class="social-link"><svg width="14" height="14"><use href="#ic-twitter"/></svg></a>
+          <a href="#" class="social-link"><svg width="14" height="14"><use href="#ic-instagram"/></svg></a>
+          <a href="#" class="social-link"><svg width="14" height="14"><use href="#ic-youtube"/></svg></a>
+          <a href="#" class="social-link"><svg width="14" height="14"><use href="#ic-rss"/></svg></a>
+        </div>
+      </div>
+    </div>
+  </footer>
+</div>
+
+
+<!-- ══════════════════════════════
+     FOOTER 4 — EDITORIAL
+══════════════════════════════ -->
+<div class="section-wrap">
+  <div class="section-label">
+    <span class="section-num">04</span>
+    <span class="section-name">Editorial</span>
+    <span class="section-desc">Sepia/cream · Playfair Display · Wordmark gigante decorativo</span>
+  </div>
+
+  <footer class="f4">
+    <div class="f4-inner">
+      <div class="f4-top">
+
+        <div class="f4-left">
+          <div class="f4-eyebrow">Desde 2015</div>
+          <h2 class="f4-heading">Ideas que <em>perduran</em><br>en el tiempo.</h2>
+          <p class="f4-desc">Una comunidad construida sobre conversaciones de fondo. Sin algoritmos que distorsionen, sin trends vacíos. Solo ideas que valen la pena.</p>
+          <a href="#" class="f4-btn">
+            Conocer más
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </a>
+        </div>
+
+        <div class="f4-right">
+          <div>
+            <div class="f4-col-title">Explorar</div>
+            <div class="f4-col-links">
+              <a href="#" class="f4-col-link">Portada</a>
+              <a href="#" class="f4-col-link">Destacados</a>
+              <a href="#" class="f4-col-link">Archivo</a>
+              <a href="#" class="f4-col-link">Autores</a>
+            </div>
+          </div>
+          <div>
+            <div class="f4-col-title">Comunidad</div>
+            <div class="f4-col-links">
+              <a href="#" class="f4-col-link">Foros</a>
+              <a href="#" class="f4-col-link">Eventos</a>
+              <a href="#" class="f4-col-link">Newsletter</a>
+              <a href="#" class="f4-col-link">Podcast</a>
+            </div>
+          </div>
+          <div>
+            <div class="f4-col-title">Institución</div>
+            <div class="f4-col-links">
+              <a href="#" class="f4-col-link">Nosotros</a>
+              <a href="#" class="f4-col-link">Contacto</a>
+              <a href="#" class="f4-col-link">Prensa</a>
+              <a href="#" class="f4-col-link">Empleo</a>
+            </div>
+          </div>
+          <div>
+            <div class="f4-col-title">Redes</div>
+            <div class="f4-social" style="display:flex;gap:.375rem;margin-top:.125rem">
+              <a href="#" class="social-link" style="background:#ede9e0;color:#7c6f52;width:34px;height:34px;border-radius:8px"><svg width="14" height="14"><use href="#ic-twitter"/></svg></a>
+              <a href="#" class="social-link" style="background:#ede9e0;color:#7c6f52;width:34px;height:34px;border-radius:8px"><svg width="14" height="14"><use href="#ic-instagram"/></svg></a>
+              <a href="#" class="social-link" style="background:#ede9e0;color:#7c6f52;width:34px;height:34px;border-radius:8px"><svg width="14" height="14"><use href="#ic-linkedin"/></svg></a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Wordmark decorativo -->
+      <div class="f4-wordmark">
+        <div class="f4-wordmark-text">Forolibre</div>
+      </div>
+    </div>
+
+    <div class="f4-bottom">
+      <span class="f4-copy">© 2025 Forolibre. Todos los derechos reservados.</span>
+      <div style="display:flex;gap:1.25rem">
+        <a href="#" style="font-size:.75rem;color:#b5a98a;transition:color .15s">Privacidad</a>
+        <a href="#" style="font-size:.75rem;color:#b5a98a;transition:color .15s">Términos</a>
+      </div>
+    </div>
+  </footer>
+</div>
+
+
+<!-- ══════════════════════════════
+     FOOTER 5 — APP / CENTRADO
+══════════════════════════════ -->
+<div class="section-wrap">
+  <div class="section-label">
+    <span class="section-num">05</span>
+    <span class="section-name">App Centrado</span>
+    <span class="section-desc">Negro · Logo central · Redes con hover elevado · Compact</span>
+  </div>
+
+  <footer class="f5">
+    <div class="f5-inner">
+
+      <a href="#" class="f5-logo">
+        <div class="f5-logo-icon">
+          <svg width="16" height="16" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        Pulse App
+      </a>
+
+      <p class="f5-tagline">Monitoreo en tiempo real para equipos modernos. Simple, rápido y confiable.</p>
+
+      <div class="f5-links">
+        <a href="#" class="f5-link">Producto</a>
+        <span class="f5-sep">·</span>
+        <a href="#" class="f5-link">Precios</a>
+        <span class="f5-sep">·</span>
+        <a href="#" class="f5-link">Documentación</a>
+        <span class="f5-sep">·</span>
+        <a href="#" class="f5-link">Blog</a>
+        <span class="f5-sep">·</span>
+        <a href="#" class="f5-link">Changelog</a>
+        <span class="f5-sep">·</span>
+        <a href="#" class="f5-link">Empleo</a>
+      </div>
+
+      <div class="f5-social">
+        <a href="#" class="social-link" aria-label="Twitter"><svg width="16" height="16"><use href="#ic-twitter"/></svg></a>
+        <a href="#" class="social-link" aria-label="GitHub"><svg width="16" height="16"><use href="#ic-github"/></svg></a>
+        <a href="#" class="social-link" aria-label="LinkedIn"><svg width="16" height="16"><use href="#ic-linkedin"/></svg></a>
+        <a href="#" class="social-link" aria-label="YouTube"><svg width="16" height="16"><use href="#ic-youtube"/></svg></a>
+        <a href="#" class="social-link" aria-label="RSS"><svg width="16" height="16"><use href="#ic-rss"/></svg></a>
+      </div>
+
+      <div class="f5-divider"></div>
+
+      <div class="f5-bottom">
+        <span class="f5-copy">© 2025 Pulse Technologies Inc.</span>
+        <span class="f5-badge">
+          <span class="f5-dot"></span>
+          Operativo al 100%
+        </span>
+        <div style="display:flex;gap:1.25rem">
+          <a href="#" style="font-size:.72rem;color:#374151;transition:color .15s">Privacidad</a>
+          <a href="#" style="font-size:.72rem;color:#374151;transition:color .15s">Términos</a>
+        </div>
+      </div>
+
+    </div>
+  </footer>
+</div>
+
+
+<!-- ══════════════════════════════
+     FOOTER 6 — SPLIT ASIMÉTRICO
+══════════════════════════════ -->
+<div class="section-wrap">
+  <div class="section-label">
+    <span class="section-num">06</span>
+    <span class="section-name">Split Asimétrico</span>
+    <span class="section-desc">Oscuro · Headline impactante izquierda · Links + CTA · Flecha animada</span>
+  </div>
+
+  <footer class="f6">
+    <div class="f6-main">
+
+      <!-- Left: big headline -->
+      <div class="f6-left">
+        <div class="f6-logo">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          NovaTech
+        </div>
+        <h2 class="f6-headline">
+          <span>Construí el</span><br>
+          <span class="accent">futuro</span><br>
+          <span>con nosotros.</span>
+        </h2>
+        <p class="f6-desc">Herramientas de desarrollo para equipos que no quieren límites. APIs, dashboards e integraciones que escalan con vos.</p>
+        <div class="f6-cta-row">
+          <a href="#" class="f6-cta-btn">
+            Empezar gratis
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </a>
+          <a href="#" class="f6-cta-link">
+            Ver demo
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Right: link columns -->
+      <div class="f6-right">
+        <div>
+          <div class="f6-col-label">Plataforma</div>
+          <div class="f6-col-links">
+            <a href="#" class="f6-col-link">API Gateway <span class="arrow">→</span></a>
+            <a href="#" class="f6-col-link">Dashboards <span class="arrow">→</span></a>
+            <a href="#" class="f6-col-link">Integraciones <span class="arrow">→</span></a>
+            <a href="#" class="f6-col-link">CLI <span class="arrow">→</span></a>
+            <a href="#" class="f6-col-link">SDK <span class="arrow">→</span></a>
+          </div>
+        </div>
+        <div>
+          <div class="f6-col-label">Developers</div>
+          <div class="f6-col-links">
+            <a href="#" class="f6-col-link">Documentación <span class="arrow">→</span></a>
+            <a href="#" class="f6-col-link">Referencia API <span class="arrow">→</span></a>
+            <a href="#" class="f6-col-link">GitHub <span class="arrow">→</span></a>
+            <a href="#" class="f6-col-link">Changelog <span class="arrow">→</span></a>
+            <a href="#" class="f6-col-link">Status <span class="arrow">→</span></a>
+          </div>
+        </div>
+        <div>
+          <div class="f6-col-label">Empresa</div>
+          <div class="f6-col-links">
+            <a href="#" class="f6-col-link">Acerca de <span class="arrow">→</span></a>
+            <a href="#" class="f6-col-link">Blog <span class="arrow">→</span></a>
+            <a href="#" class="f6-col-link">Carreras <span class="arrow">→</span></a>
+            <a href="#" class="f6-col-link">Prensa <span class="arrow">→</span></a>
+            <a href="#" class="f6-col-link">Contacto <span class="arrow">→</span></a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="f6-bar">
+      <span class="f6-copy">© 2025 NovaTech S.A. · Buenos Aires, Argentina</span>
+      <div class="f6-status">
+        <span class="f6-status-dot"></span>
+        Todos los sistemas operativos
+      </div>
+      <div class="f6-social">
+        <a href="#" class="social-link"><svg width="14" height="14"><use href="#ic-twitter"/></svg></a>
+        <a href="#" class="social-link"><svg width="14" height="14"><use href="#ic-github"/></svg></a>
+        <a href="#" class="social-link"><svg width="14" height="14"><use href="#ic-linkedin"/></svg></a>
+        <a href="#" class="social-link"><svg width="14" height="14"><use href="#ic-youtube"/></svg></a>
+      </div>
+    </div>
+  </footer>
+</div>
+
+</body>
+</html>

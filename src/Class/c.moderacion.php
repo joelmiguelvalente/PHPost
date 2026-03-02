@@ -1,0 +1,573 @@
+<?php if ( ! defined('TS_HEADER')) exit('No se permite el acceso directo al script');
+/**
+ * Modelo para el control de las funciones de la moderación
+ *
+ * @name    c.moderacion.php
+ * @author  PHPost Team
+ */
+class tsMod {
+
+   public function __construct(
+      protected tsCore $Core, 
+      protected tsUser $User
+   ) {
+   }
+
+   # Obtenemos todos los moderadores
+   public function getMods() {
+      return DB::fetchAll("SELECT user_id, user_name, user_email FROM u_miembros WHERE user_rango = 2 ORDER BY user_id");
+   }
+
+   # Obtenemos las denuncias posts|fotos|mps|users
+   public function getDenuncias($type = 'posts') {
+      # Tipo de denuncia
+      switch ($type) {
+         case 'posts':
+            $sentencia = 'SUM(r.d_total) AS total, p.post_id, p.post_title, p.post_status, c.c_nombre, c.c_seo, c.c_img FROM w_denuncias AS r LEFT JOIN p_posts AS p ON r.obj_id = p.post_id LEFT JOIN p_categorias AS c ON p.post_category = c.cid WHERE r.d_type = \'post\' AND p.post_status < 2 ';
+         break;
+         case 'fotos':
+            $sentencia = 'SUM(r.d_total) AS total,  f.foto_id, f.f_title, f.f_status, u.user_id, u.user_name FROM w_denuncias AS r LEFT JOIN f_fotos AS f ON r.obj_id = f.foto_id LEFT JOIN u_miembros AS u ON f.f_user = u.user_id  WHERE d_type = \'foto\' && f.f_status < 2 GROUP BY r.obj_id';
+         break;
+         case 'users':
+            $sentencia = 'SUM(d_total) AS total, u.user_name FROM w_denuncias AS r LEFT JOIN u_miembros AS u ON r.obj_id = u.user_id WHERE d_type = \'usuario\' AND u.user_baneado = 0';
+         break;
+         case 'mps':
+            $sentencia = 'm.mp_id, m.mp_to, m.mp_from, m.mp_subject, m.mp_preview, m.mp_date FROM w_denuncias AS r LEFT JOIN u_mensajes AS m ON r.obj_id = m.mp_id WHERE d_type = \'mensaje\'';
+         break;
+      }
+      $data = DB::fetchAll("SELECT r.obj_id, $sentencia GROUP BY r.obj_id ORDER BY total DESC, MAX(r.d_date) DESC");
+      return $data;
+   }
+   # Obtener la denuncia
+   public function getDenuncia($type = 'posts') {
+      // VARIABLES
+      $obj = htmlspecialchars(intval($_GET['obj']));
+      // TIPO DE DENUNCIA
+      switch ($type) {
+         case 'posts':
+            $d_type = 'post';
+            $query = 'SELECT p.post_id, p.post_title, p.post_status, c.c_nombre, c.c_seo, c.c_img, u.user_name FROM p_posts AS p LEFT JOIN p_categorias AS c ON p.post_category = c.cid LEFT JOIN u_miembros AS u ON p.post_user = u.user_id WHERE p.post_id = '.$obj;
+         break;
+         case 'fotos':
+             $d_type = 'foto';
+             $query = 'SELECT f.foto_id, f.f_title, f.f_status, u.user_name FROM f_fotos AS f LEFT JOIN u_miembros AS u ON f.f_user = u.user_id WHERE f.foto_id = '.$obj;
+         break;
+         case 'users':
+            $d_type = 'usuario';
+            $query = 'SELECT user_id, user_name FROM u_miembros WHERE user_id = '.$obj;
+         break;
+         case 'mps':
+            $d_type = 'mensaje';
+            // AQUÍ LA CONSULTA	PARA MOSTRAR LOS DENUNCIANTES Y OTROS DATOS (?
+            $query = 'SELECT user_id, user_name FROM u_miembros WHERE user_id = '.$obj;
+         break;
+
+      }
+      // CARGAMOS AL ARRAY...
+      $data['data'] = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', $query . ' LIMIT 1'));
+      // DENUNCIAS
+      $data['denun'] = result_array(db_exec([__FILE__, __LINE__], 'query', "SELECT d.*, u.user_id, u.user_name FROM w_denuncias AS d LEFT JOIN u_miembros AS u ON d.d_user = u.user_id WHERE d.obj_id = {$obj} AND d.d_type = '{$d_type}'"));
+      //
+      return $data;
+   }
+   # Obtenemos el contenido
+   public function getContenido() {
+      //
+      $texto = $this->Core->setSecure($_GET['texto']);
+      $tipo = intval($_GET['t']);
+      $metodo = intval($_GET['m']);
+      if (empty($texto) || empty($texto)) $this->Core->redirectTo($this->Core->settings['url'] . '/moderacion/buscador');
+
+      $met = ($metodo === 1) ? "LIKE '%{$texto}%'" : " = '{$texto}'";
+      # MURO
+      $data['muro'] = result_array(db_exec([__FILE__, __LINE__], 'query', 'SELECT m.pub_id, m.p_user, m.p_user_pub, m.p_ip, m.p_date, m.p_body, u.user_id, u.user_name FROM u_muro AS m LEFT JOIN u_miembros AS u ON m.p_user_pub = u.user_id WHERE '.($tipo === 1 ? 'm.p_ip' : 'm.p_body').' '.$met));
+      # USUARIOS
+      $data['usuarios'] = result_array(db_exec([__FILE__, __LINE__], 'query', 'SELECT user_id, user_name, user_last_ip, user_lastlogin, user_lastactive FROM u_miembros WHERE '.($tipo == 1 ? 'user_last_ip' : 'user_name').' '.$met.' ORDER BY user_lastactive DESC'));
+      # POSTS
+      $data['posts'] = result_array(db_exec([__FILE__, __LINE__], 'query', 'SELECT p.post_id, p.post_user, p.post_title, p.post_date, p.post_ip, u.user_name, c.c_nombre, c.c_seo, c.c_img FROM p_posts AS p LEFT JOIN u_miembros AS u ON p.post_user = u.user_id LEFT JOIN p_categorias AS c ON c.cid = p.post_category WHERE ' .($tipo == 1 ? 'p.post_ip ' . $met . '' : 'p.post_title ' . $met . ' OR p.post_body '.$met)));
+      # FOTOS
+      $data['fotos'] = result_array(db_exec([__FILE__, __LINE__], 'query', 'SELECT f.foto_id, f.f_title, f.f_user, f.f_date, f.f_ip, u.user_name FROM f_fotos AS f LEFT JOIN u_miembros AS u ON f.f_user = u.user_id WHERE ' .($tipo == 1 ? 'f.f_ip ' . $met . '' : 'f.f_title ' . $met .' OR f.f_description ' . $met)));
+      # POSTS COMENTARIOS
+      $data['p_comentarios'] = result_array(db_exec([__FILE__, __LINE__], 'query', 'SELECT u.user_id, u.user_name, c.* FROM p_comentarios AS c LEFT JOIN u_miembros AS u ON u.user_id = c.c_user WHERE ' .($tipo == 1 ? 'c.c_ip ' . $met . '' : 'c.c_user ' . $met . ' OR c.c_body ' . $met)));
+      # FOTOS COMENTARIOS
+      $data['f_comentarios'] = result_array(db_exec([__FILE__, __LINE__], 'query', 'SELECT u.user_id, u.user_name, f.* , c.* FROM f_comentarios AS c LEFT JOIN u_miembros AS u ON u.user_id = c.c_user LEFT JOIN f_fotos AS f ON f.foto_id = c.c_foto_id WHERE ' .($tipo == 1 ? 'c.c_ip ' . $met . '' : 'c.c_user ' . $met . ' OR c.c_body ' . $met)));
+      # COUNTS
+      $data['m_total'] = empty($data['muro']) ? 0 : count($data['muro']);
+      $data['u_total'] = empty($data['usuarios']) ? 0 : count($data['usuarios']);
+      $data['p_total'] = empty($data['posts']) ? 0 : count($data['posts']);
+      $data['f_total'] = empty($data['fotos']) ? 0 : count($data['fotos']);
+      $data['c_p_total'] = empty($data['p_comentarios']) ? 0 : count($data['p_comentarios']);
+      $data['c_f_total'] = empty($data['f_comentarios']) ? 0 : count($data['f_comentarios']);
+      //
+      $data['contenido'] = $texto;
+      $data['metodo'] = $metodo;
+      $data['tipo'] = $tipo;
+      //
+      return $data;
+   }
+   # Vista preliminar
+   public function getPreview($pid) {
+      $data = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', 'SELECT `post_title`, `post_body` FROM `p_posts` WHERE `post_id` = '.$pid.' LIMIT 1'));
+      return [
+         'titulo' => $data['post_title'], 
+         'cuerpo' => $this->Core->parseBBCode($data['post_body'])
+      ];
+   }
+   /**
+    * @name rebootPost()
+    * @access public
+    * @param int
+    * @return string
+   */
+   public function rebootPost($pid) {
+      $pid = intval($pid);
+      if ($this->User->is_admod || $this->User->permiso('moderacion.denuncias.posts')) {
+         // PRIMERO COMPROBAMOS SI ESTÁ OCULTO
+         $datos = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', 'SELECT post_id, post_status FROM p_posts WHERE post_id = '.$pid.' LIMIT 1'));
+         if ($datos['post_status'] === 3) {
+            if (!db_exec([__FILE__, __LINE__], 'query', 'DELETE FROM `w_historial` WHERE `pofid` = '.$pid.' && `type` = 1 && `action` = 3')) return '0: No se pudo restaurar el post.';
+         } else {
+            //BORRAMOS LA DENUNCIAS
+            if (!db_exec([__FILE__, __LINE__], 'query', 'DELETE FROM `w_denuncias` WHERE `obj_id` = '.$pid.' AND `d_type` = \'post\'')) return '0: No se pudo restaurar el post.';
+         }
+         // REGRESAMOS EL POST
+         if (db_exec([__FILE__, __LINE__], 'query', 'UPDATE `p_posts` SET `post_status` = 0 WHERE `post_id` = '.$pid.'')) {
+            db_exec([__FILE__, __LINE__], 'query', 'UPDATE `w_stats` SET `stats_posts` = stats_posts + 1 WHERE `stats_no` = 1');
+            return '1: El post ha sido restaurado.';
+         } else return '0: No se pudo restaurar el post.';
+      } else return '0: No sigas haciendo el rid&iacute;culo';
+   }
+   public function OcultarPost($pid, $razon) {
+      $pid = intval($pid);
+      if ($this->User->is_admod || $this->User->permiso('moderacion.posts.ocultar')) {
+         if (!db_exec('num_rows', db_exec([__FILE__, __LINE__], 'query', 'SELECT post_id FROM p_posts WHERE post_id = '.$pid.' && post_status = 3'))) {
+            if (db_exec([__FILE__, __LINE__], 'query', 'UPDATE p_posts SET post_status = 3 WHERE post_id = '.$pid)) {
+               if (db_exec([__FILE__, __LINE__], 'query', 'INSERT INTO `w_historial` (`pofid`, `action`, `type`, `mod`, `reason`, `date`, `mod_ip`) VALUES ('.$pid.', 3, 1, '.$this->User->uid.', \''.$razon.'\', '.time().', \''.$_SERVER['REMOTE_ADDR'].'\')')) {
+                  db_exec([__FILE__, __LINE__], 'query', 'UPDATE `w_stats` SET `stats_posts` = stats_posts - 1 WHERE `stats_no` = 1');
+                  return '1: El post ha sido ocultado.';
+               } else return '0: No se pudo registrar la acci&oacute;n.';
+            } else return '0: No se pudo ocultar el post.';
+         } else return '0: El post... ya est&aacute; oculto.';
+      } else return '0: No contin&ueacute;s por aqu&iacute;.';
+   }
+   /**
+    * @name rebootMps()
+    * @access public
+    * @param int
+    * @return string
+   */
+   public function rebootMps($mid) {
+      $mid = intval($mid);
+      if ($this->User->is_admod || $this->User->permiso('moderacion.denuncias.cancelar.mensajes')) {
+         $rows = db_exec('num_rows', db_exec([__FILE__, __LINE__], 'query', 'SELECT obj_id FROM w_denuncias WHERE obj_id = '.$mid.' AND `d_type` = 2'));
+         if ($rows && $this->User->is_admod) $canview = true;
+         //BORRAMOS LA DENUNCIA
+         if (db_exec([__FILE__, __LINE__], 'query', 'DELETE FROM `w_denuncias` WHERE `obj_id` = '.$mid.' AND `d_type` = \'mensaje\'')) {
+            db_exec([__FILE__, __LINE__], 'query', 'UPDATE `u_mensajes` SET mp_del_to = 0, mp_del_from = \'0\' WHERE `mp_id` = '.$mid);
+            return '1: Denuncia eliminada';
+         } else return '0: No se pudo eliminar la denuncia';
+      } else return '0: No contin&uacute;e por aqu&iacute;.';
+   }
+   /**
+    * @name rebootFoto()
+    * @access public
+    * @param int
+    * @return string
+   */
+   public function rebootFoto($fid) {
+      $fid = intval($fid);
+      if ($this->User->is_admod || $this->User->permiso('moderacion.denuncias.cancelar.fotos')) {
+         $rows = db_exec('num_rows', db_exec([__FILE__, __LINE__], 'query', 'SELECT obj_id FROM w_denuncias WHERE obj_id = '.$fid.' AND `d_type` = \'foto\''));
+         if ($rows && $this->User->is_admod) $canview = true;
+         //BORRAMOS LA DENUNCIA
+         if (db_exec([__FILE__, __LINE__], 'query', 'DELETE FROM `w_denuncias` WHERE `obj_id` = '.$fid.' AND `d_type` = \'foto\'')) {
+            db_exec([__FILE__, __LINE__], 'query', 'UPDATE `f_fotos` SET f_status= \'0\' WHERE `foto_id` = '.$fid);
+            return '1: Denuncia eliminada';
+         } else return '0: No se pudo eliminar la denuncia';
+      } else return '0: No contin&uacute;e por aqu&iacute;.';
+   }
+   /**
+    * @name deletePost($pid)
+    * @access public
+    * @param int
+    * @return string
+   */
+   public function deletePost($pid) {
+      global $tsCore, $tsMonitor, $tsUser;
+      $pid = intval($pid);
+      if ($this->User->is_admod || $this->User->permiso('moderacion.posts.eliminar')) {
+         // RAZON
+         $razon = $this->Core->setSecure($_POST['razon']);
+         $razon_desc = $this->Core->setSecure($_POST['razon_desc']);
+         $razon_db = ($razon != 13) ? $razon : $razon_desc;
+         //
+         if (db_exec([__FILE__, __LINE__], 'query', 'UPDATE `p_posts` SET `post_status` = 2 WHERE `post_id` = '.$pid)) {
+            // ELIMINAR DENUNCIAS
+            db_exec([__FILE__, __LINE__], 'query', 'DELETE FROM `w_denuncias` WHERE `obj_id` = '.$pid.' AND `d_type` = \'post\'');
+            // ENVIAR AVISO
+            $query = db_exec([__FILE__, __LINE__], 'query', 'SELECT p.post_user, p.post_title, p.post_body, p.post_tags, p.post_category, u.user_name, u.user_email FROM p_posts AS p LEFT JOIN u_miembros AS u ON p.post_user = u.user_id WHERE p.post_id = '.$pid.' LIMIT 1');
+            $data = db_exec('fetch_assoc', $query);
+            // RAZON
+            if (is_numeric($razon_db)) {
+               require_once TS_EXTRA . "/datos.php";
+               $razon_db = $tsDenuncias['posts'][$razon_db];
+            }
+            db_exec([__FILE__, __LINE__], 'query', 'UPDATE `w_stats` SET `stats_posts` = stats_posts - 1 WHERE `stats_no` = 1');
+            //AGREGAMOS A BORRADORES si se ha marcado la casilla
+            if ($_POST['send_b'] == 'yes') {
+               db_exec([__FILE__, __LINE__], 'query', 'INSERT INTO `p_borradores` (b_user, b_date, b_title, b_body, b_tags, b_category, b_status, b_causa) VALUES (\'' .$data['post_user'] . '\', \'' . time() . '\', \'' . $data['post_title'] . '\', \'' . $data['post_body'] . '\', \'' . $data['post_tags'] . '\', \'' . $data['post_category'] . '\', \'1\', \'' . $razon_db . '\')');
+               // AVISO
+               $aviso = 'Hola <b>' . $data['user_name'] . "</b>\n\n Lamento contarte que tu post titulado <b>" . $data['post_title'] . "</b> ha sido eliminado.\n\n Causa: <b>" . $razon_db . "</b>\n\n Te recomendamos leer el <a href=\"" . $this->Core->settings['url'] . "/pages/protocolo/\">Protocolo</a> para evitar futuras sanciones.\n\n Muchas gracias por entender!";
+               $status = $tsMonitor->setAviso($data['post_user'], 'Post eliminado', $aviso, 1);
+               //mail($data['user_email'], 'Post eliminado', $aviso);
+               $status = $this->setHistory('borrar', 'post', $pid);
+               if ($status == true) return '1: El post ha sido eliminado.';
+            }
+         }
+         return '0: El post NO pudo ser eliminado.';
+      } else return '0: No deber&iacute;as continuar con esto.';
+   }
+   /**
+    * @name deleteMps($pid)
+    * @access public
+    * @param int
+    * @return string
+   */
+   public function deleteMps($mid) {
+      global $tsCore, $tsMonitor, $tsUser;
+      $mid = intval($mid);
+      if ($this->User->is_admod || $this->User->permiso('moderacion.denuncias.aceptar_mensajes')) {
+         // ENVIAR AVISO
+         if ($query = db_exec([__FILE__, __LINE__], 'query', 'SELECT m.mp_from, m.mp_subject, u.user_name FROM u_mensajes AS m LEFT JOIN u_miembros AS u ON m.mp_from = u.user_id WHERE m.mp_id = \'' . (int)$mid . '\' LIMIT 1')) {
+            $data = db_exec('fetch_assoc', $query);
+            // AVISO
+            $aviso = 'Hola <b>' . $data['user_name'] . "</b>\n\n Le informo de que el mensaje privado <b>" . $data['mp_subject'] . "</b> ha sido eliminado.\n\n Te recomendamos leer el <a href=\"" . $this->Core->settings['url'] . "/pages/protocolo/\">Protocolo</a> para evitar futuras sanciones.\n\n Muchas gracias por entender!";
+            $status = $tsMonitor->setAviso($data['mp_from'], 'Mensaje eliminado', $aviso, 1);
+            // ELIMINAR DENUNCIAS
+            db_exec([__FILE__, __LINE__], 'query', 'DELETE FROM `w_denuncias` WHERE `obj_id` = \'' . (int)$mid . '\' AND `d_type` = \'mensaje\'');
+            //LOS MPS SE ELIMINARAN DE LA LISTA DE MPS DEL USUARIO, PERO NO SE BORRARÁN.
+            db_exec([__FILE__, __LINE__], 'query', 'UPDATE `u_mensajes` SET mp_del_to = \'1\', mp_del_from = \'1\' WHERE `mp_id` = \'' . (int)$mid . '\'');
+            // ELIMINAR MPS (Si quiere elimninarlos en vez de ocultarlos, descomente las dos siguientes líneas y comente la anterior "UPDATE")
+            //db_exec([__FILE__, __LINE__], 'query', 'DELETE FROM `u_respuestas` WHERE `mp_id` = \''.$mid.'\'');
+            //db_exec([__FILE__, __LINE__], 'query', 'DELETE FROM `u_mensajes`   WHERE `mp_id` = \''.$mid.'\'');
+            //
+            return '1: El mensaje ha sido eliminado.';
+         }
+         return '0: El mensaje NO pudo ser eliminado.';
+      } else return '0: No deber&iacute;as continuar con esto.';
+   }
+   public function deleteFoto($fid) {
+      global $tsCore, $tsMonitor, $tsUser;
+      if ($this->User->is_admod || $this->User->permiso('moderacion.fotos.eliminar')) {
+         // RAZON
+         $razon = $this->Core->setSecure($_POST['razon']);
+         $razon_desc = $this->Core->setSecure($_POST['razon_desc']);
+         $razon_db = ($razon != 8) ? $razon : $razon_desc;
+         //
+         if (db_exec([__FILE__, __LINE__], 'query', 'UPDATE `f_fotos` SET `f_status` = 2 WHERE `foto_id` = ' . $fid)) {
+            db_exec([__FILE__, __LINE__], 'query', 'UPDATE `w_stats` SET `stats_fotos` = stats_fotos - 1 WHERE `stats_no` = 1');
+            if ($data['f_user'] != $this->User->uid) {
+               // ENVIAR AVISO
+               $data = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', 'SELECT f.f_user, f.f_title, u.user_name FROM f_fotos AS f LEFT JOIN u_miembros AS u ON f.f_user = u.user_id WHERE f.foto_id = \'' . (int)$fid . '\' LIMIT 1'));
+               // RAZON
+               if (is_numeric($razon_db)) {
+                  require_once TS_EXTRA . "/datos.php";
+                  $razon_db = $tsDenuncias['fotos'][$razon_db];
+               }
+               // AVISO
+               $aviso = 'Hola <b>' . $data['user_name'] . "</b>\n\n Lamento contarte que tu foto titulada <b>" . $data['f_title'] . "</b> ha sido eliminada.\n\n Causa: <b>" . $razon_db . "</b>\n\n Te recomendamos leer el <a href=\"" . $this->Core->settings['url'] . "/pages/protocolo/\">Protocolo</a> para evitar futuras sanciones.\n\n Muchas gracias por entender!";
+               $status = $tsMonitor->setAviso($data['f_user'], 'Foto eliminada', $aviso, 1);
+            }
+            // ELIMINAR DENUNCIAS
+            db_exec([__FILE__, __LINE__], 'query', 'DELETE FROM `w_denuncias` WHERE `obj_id` = \'' . $fid . '\' AND `d_type` = \'foto\'');
+            $this->setHistory('borrar', 'foto', $fid);
+            return '1: La foto ha sido eliminada.';
+         }
+         return '0: La foto NO pudo ser eliminada.';
+      } else return '0: No deber&iacute;as continuar con esto.';
+   }
+   /**
+    * @name setSticky
+    * @access public
+    * @param $post_id
+    * @return string
+    * @info Pone sticky un post
+   */
+   public function setSticky(int $post_id = 0) {
+      //
+      if ($this->User->is_admod || $this->User->permiso('moderacion.posts.fijar')) {
+         $data = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', 'SELECT `post_sticky` FROM `p_posts` WHERE `post_id` = \'' . (int) $post_id . '\' LIMIT 1'));
+         // COMPROBAMOS
+         if ($data['post_sticky'] == 1) {
+            db_exec([__FILE__, __LINE__], 'query', 'UPDATE `p_posts` SET `post_sticky` = \'0\' WHERE `post_id` = \'' . (int) $post_id . '\'');
+            return '1: El post fue quitado de la home.';
+         } else {
+            db_exec([__FILE__, __LINE__], 'query', 'UPDATE `p_posts` SET `post_sticky` = \'1\' WHERE `post_id` = \'' . (int) $post_id . '\'');
+            return '1: El post fue puesto como fijo en la web.';
+         }
+      } else return '0: Creo que no deber&iacute;as continuar con esto';
+   }
+   /**
+    * @name setOpenClosed
+    * @access public
+    * @param $post_id
+    * @return string
+    * @info Abre o Cierra un post.
+   */
+   public function setOpenClosed($post_id) {
+      //
+      if ($this->User->is_admod || $this->User->permiso('moderacion.posts.abrir_cerrar')) {
+         $data = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', 'SELECT `post_block_comments` FROM `p_posts` WHERE `post_id` = \'' . (int) $post_id . '\' LIMIT 1'));
+         // COMPROBAMOS
+         if ($data['post_block_comments'] == 1) {
+            return (db_exec([__FILE__, __LINE__], 'query', 'UPDATE `p_posts` SET `post_block_comments` = 0 WHERE `post_id` = '.$post_id)) ? '1: El post fue abierto.' : '0: Hubo un error al abrir el post';
+         } else {
+            return (db_exec([__FILE__, __LINE__], 'query', 'UPDATE `p_posts` SET `post_block_comments` = 1 WHERE `post_id` = '.$post_id)) ? '1: El post fue cerrado.' : '0: Hubo un error al cerrar el post';
+         }
+      } else return '0: Creo que no deber&iacute;as hacer esto';
+   }
+   /**
+    * @name getSuspendidos
+    * @access public
+    * @param
+    * @return array
+    * @info OBTIENE LOS USUARIOS SUSPENDIDOS
+   */
+   public function getSuspendidos() {
+      #
+      if ($this->User->is_admod || $this->User->permiso('moderacion.usuarios.ver_baneados')) {
+         $max = 20; // MAXIMO A MOSTRAR
+         $limit = $this->Core->setPageLimit($max, true);
+         //FILTROS
+         $order = ($_GET['o'] == 'inicio') ? 's.susp_date' : ($_GET['o'] == 'fin' ? 's.susp_termina' : ($_GET['o'] == 'mod' ? 's.susp_mod' : 's.susp_id'));
+
+         $met = ($_GET['m'] == 'a') ? 'ASC' : 'DESC';
+         $data['bans'] = result_array(db_exec([__FILE__, __LINE__], 'query', 'SELECT s.*, u.user_name FROM u_suspension AS s LEFT JOIN u_miembros AS u ON s.user_id = u.user_id WHERE 1 ORDER BY ' . $order . ' ' . $met . ' LIMIT ' . $limit));
+         // PAGINAS
+         list($total) = db_exec('fetch_row', db_exec([__FILE__, __LINE__], 'query', 'SELECT COUNT(*) FROM u_suspension WHERE user_id > \'0\''));
+         $data['pages'] = $this->Core->pageIndex($this->Core->settings['url'] . "/moderacion/banusers?o=" . $_GET['o'] . "&m=" . $_GET['m'] . "", $_GET['s'], $total, $max);
+         //
+      }
+      //
+      return $data;
+   }
+   /**
+    * @name banUser
+    * @access public
+    * @param int
+    * @return string
+    * @info PARA SUSPENDER A UN USUARIO
+   */
+   public function banUser($user_id) {
+      # GLOBALES
+      global $tsUser, $tsCore;
+      # LOCALES
+      $b_time = $this->Core->setSecure($_POST['b_time']);
+      $b_cant = empty($_POST['b_cant']) ? 1 : $_POST['b_cant'];
+      $b_causa = $this->Core->setSecure($_POST['b_causa']);
+      $b_times = [0, 1, 3600, 86400]; // HORA, DIA
+      # NO INTENTO BANEARME?
+      if ($user_id == $this->User->uid) return '0: Si quieres abandonar la web, m&aacute;ndale un mp al admin';
+      # NO ES HORARIO VÁLIDO?
+      if ($b_cant < 1 || !is_numeric($b_cant)) return '0: Debe introducir en n&uacute;meros una cantidad superior a 60 minutos (1)';
+      # COMPROBAMOS RANGOS
+      $data = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', 'SELECT `user_rango`, `user_baneado` FROM `u_miembros` WHERE `user_id` = \'' . (int)$user_id . '\' LIMIT 1'));
+      if ($data['user_baneado'] == 0) {
+         # Y SI QUIERO SUSPENDER A UN ADMIN o MOD?
+         if (($this->User->is_admod < $data['user_rango'] && $this->User->is_admod > 0) || ($this->User->permiso('moderacion.usuarios.suspender') && $data['user_rango'] >= 2)) {
+            // TIEMPO
+            $ahora = time();
+            $termina = ($b_cant * $b_times[$b_time]);
+            $termina = ($b_time >= 2) ? ($ahora + $termina) : $termina;
+            $MyIP = (new IP)->getIP();
+            // ACTUALIZAMOS
+            db_exec([__FILE__, __LINE__], 'query', 'UPDATE `u_miembros` SET `user_baneado` = \'1\' WHERE `user_id` = \'' . (int)$user_id . '\'');
+            if (db_exec([__FILE__, __LINE__], 'query', 'INSERT INTO `u_suspension` (`user_id`, `susp_causa`, `susp_date`, `susp_termina`, `susp_mod`, `susp_ip`) VALUES (\'' . (int)$user_id . '\', \'' . $b_causa . '\', \'' . (int)$ahora . '\',  \'' . (int)$termina . '\', \'' . $this->User->uid . '\', \'' . $MyIP . '\')')) {
+               // ELIMINAR DENUNCIAS
+               db_exec([__FILE__, __LINE__], 'query', 'DELETE FROM `w_denuncias` WHERE `obj_id` = \'' . (int)$user_id . '\' AND `d_type` = \'usuario\'');
+               // RESTAR USUARIO EN ESTADÍSTICAS
+               db_exec([__FILE__, __LINE__], 'query', 'UPDATE `w_stats` SET `stats_miembros` = stats_miembros - \'1\' WHERE `stats_no` = \'1\'');
+               // RETORNAR
+               if ($b_time < 2) {
+                  $rdate = ($b_time == 0) ? 'Indefinidamente' : 'Permanentemente';
+               } else $rdate = '</b>hasta el <b>' . date("d/m/Y H:i:s", $termina);
+               //
+               return '1: Usuario suspendido <b>' . $rdate . '</b>';
+            }
+            return '0: El usuario no pudo ser suspendido';
+         } else return '0: No puedes suspender a usuarios de tu mismo rango o superior al tuyo.';
+      } else return '0: Este usuario ya fue suspendido';
+   }
+   /**
+    * @name rebootUser
+    * @access public
+    * @param int
+    * @return string
+    * @info ELIMINA LAS DENUNCIAS DEL USUARIO O LE QUITA UNA SUSPENSION
+   */
+   public function rebootUser($user_id, $type = 'unban') {
+      # GLOBALES
+      if ($this->User->is_admod || $this->User->permiso('moderacion.usuarios.desbanear')) {
+         # PRIMERO BORRAMOS LA DENUNCIAS
+         db_exec([__FILE__, __LINE__], 'query', 'DELETE FROM `w_denuncias` WHERE `obj_id` = \'' . (int)$user_id . '\' AND `d_type` = \'usuario\'');
+         // HAY QUE QUITAR LA SUSPENSION?
+         if ($type == 'unban') {
+            $data = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', 'SELECT `susp_mod` FROM `u_suspension` WHERE `user_id` = \'' . (int)$user_id . '\''));
+            //
+            if (empty($data)) return '0: El usuario no est&aacute; suspendido.';
+            //
+            if ($this->User->is_admod == 1 || $data['susp_mod'] == $this->User->uid) {
+               db_exec([__FILE__, __LINE__], 'query', 'DELETE FROM `u_suspension` WHERE `user_id` = \'' . (int)$user_id . '\'');
+               db_exec([__FILE__, __LINE__], 'query', 'UPDATE `u_miembros` SET `user_baneado` = \'0\' WHERE `user_id` = \'' . (int)$user_id . '\'');
+               db_exec([__FILE__, __LINE__], 'query', 'UPDATE `w_stats` SET `stats_miembros` = stats_miembros + \'1\' WHERE `stats_no` = \'1\'');
+               return '1: El usuario fue reactivado y ahora podr&aacute; seguir activo en la web.';
+            } else return '0: S&oacute;lo puedes quitar la suspensi&oacute;n a los usuarios que t&uacute; suspendiste.';
+         }
+         //
+         return '1: Las denuncias fueron eliminadas.';
+      } else return '0: Creo que no deber&iacute;as hacer esto';
+   }
+   /**
+    * @name deletePost
+    * @access public
+    * @param int
+    * @return string
+   */
+   public function setHistory($action, $type, $data) {
+      global $tsUser, $tsMonitor, $tsCore;
+      //
+               $MyIP = (new IP)->getIP();
+      if ($type == 'post') {
+         switch ($action) {
+            case 'borrar':
+               // RAZON
+               $razon = $this->Core->setSecure($_POST['razon']);
+               $razon_desc = $this->Core->setSecure($_POST['razon_desc']);
+               $razon_db = ($razon != 13) ? $razon : $razon_desc;
+               // DATOS
+               $post = db_exec('fetch_assoc',db_exec([__FILE__, __LINE__], 'query', 'SELECT `post_id`, `post_body`, `post_title`, `post_user`, `post_category` FROM `p_posts` WHERE `post_id` = \'' .(int)$data . '\' LIMIT 1'));
+               // INSERTAR
+               if ($post['post_user'] != $this->User->uid)
+                  db_exec([__FILE__, __LINE__], 'query', 'INSERT INTO w_historial (`pofid`, `action`, `type`, `mod`, `reason`, `date`, `mod_ip`) VALUES (\'' .(int)$post['post_id'] . '\', \'2\', \'1\', \'' . $this->User->uid . '\', \'' .$razon_db . '\', \'' . time() . '\', \'' .$_SERVER['REMOTE_ADDR'] . '\')');
+               return true;
+            break;
+            // EDITAR
+            case 'editar':
+               $aviso = 'Hola <b>' . $this->User->getUserName($data['autor']) . "</b>\n\n Te informo que tu post <b>" . $data['title'] . "</b> ha sido editado por <a href=\"#\" class=\"hovercard\" uid=\"" . $this->User->uid . "\">" . $this->User->nick . "</a>\n\n Causa: <b>" . $data['razon'] . "</b>\n\n \n\n Te recomendamos leer el <a href=\"" . $this->Core->settings['url'] . "/pages/protocolo/\">protocolo</a> para evitar futuras sanciones.\n\n Muchas gracias por entender!";
+               $tsMonitor->setAviso($data['autor'], 'Post editado', $aviso, 2);
+               db_exec([__FILE__, __LINE__], 'query', 'INSERT INTO `w_historial` (`pofid`, `action`, `type`, `mod`, `reason`, `date`, `mod_ip`) VALUES (\'' .(int)$data['post_id'] . '\', \'1\', \'1\', \'' . $this->User->uid . '\', \'' . $data['razon'] .'\', \'' . time() . '\', \'' . $MyIP . '\')');
+               return 1;
+            break;
+         }
+      } elseif ($type == 'foto') {
+         // DATOS
+         $foto = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', 'SELECT `foto_id`, `f_description`, `f_title`, `f_user` FROM `f_fotos` WHERE `foto_id` = \'' . (int)$data . '\' LIMIT 1'));
+         switch ($action) {
+            case 'borrar':
+               // RAZON
+               $razon = $this->Core->setSecure($_POST['razon']);
+               $razon_desc = $this->Core->setSecure($_POST['razon_desc']);
+               $razon_db = ($razon != 8) ? $razon : $razon_desc;
+               // INSERTAR
+               db_exec([__FILE__, __LINE__], 'query', 'INSERT INTO w_historial (`pofid`, `action`, `type`, `mod`, `reason`, `date`, `mod_ip`) VALUES (\'' .(int)$foto['foto_id'] . '\', \'2\', \'2\', \'' . $this->User->uid . '\', \'' .$this->Core->setSecure($razon_db) . '\', \'' . time() . '\', \'' .$this->Core->setSecure($MyIP) . '\')');
+               return true;
+            break;
+         }
+      }
+   }
+   public function getPospelera() {
+      global $tsUser, $tsCore;
+      //
+      $max = 20; // MAXIMO A MOSTRAR
+      $limit = $this->Core->setPageLimit($max, true);
+      // PAGINAS
+      list($total) = db_exec('fetch_row', db_exec([__FILE__, __LINE__], 'query', 'SELECT COUNT(*) FROM p_posts AS p LEFT JOIN u_miembros AS u ON u.user_id = p.post_user LEFT JOIN w_historial AS h ON h.pofid = p.post_id LEFT JOIN p_categorias AS c ON c.cid = p.post_category  WHERE h.type = 1 AND h.action = 2'));
+      
+      $data['pages'] = $this->Core->pageIndex($this->Core->settings['url'] . "/moderacion/pospelera?", $_GET['s'], $total, $max);
+      //
+      $query = db_exec([__FILE__, __LINE__], 'query', 'SELECT u.user_id, u.user_name, h.*, p.post_id, p.post_title, c.c_seo, c.c_nombre FROM p_posts AS p LEFT JOIN u_miembros AS u ON u.user_id = p.post_user LEFT JOIN w_historial AS h ON h.pofid = p.post_id LEFT JOIN p_categorias AS c ON c.cid = p.post_category  WHERE h.type = 1 AND h.action = 2 AND p.post_status = 2 LIMIT ' . $limit);
+      // DENUNCIAS
+      require_once TS_EXTRA . "/datos.php";
+      //
+      while ($row = db_exec('fetch_assoc', $query)) {
+         $row['mod_name'] = $this->User->getUserName($row['mod']);
+         $row['reason'] = (is_numeric($row['reason'])) ? $tsDenuncias['posts'][$row['reason']] :
+         $this->Core->setSecure($row['reason']);
+         $data['datos'][] = $row;
+      }
+      //
+      return $data;
+   }
+   public function getFopelera() {
+      global $tsUser, $tsCore;
+      //
+      $max = 20; // MAXIMO A MOSTRAR
+      $limit = $this->Core->setPageLimit($max, true);
+      // PAGINAS
+      list($total) = db_exec('fetch_row', db_exec([__FILE__, __LINE__], 'query', 'SELECT COUNT(*) FROM f_fotos AS f LEFT JOIN u_miembros AS u ON u.user_id = f.f_user LEFT JOIN w_historial AS h ON h.pofid = f.foto_id WHERE h.type = 2 AND h.action = 2 AND f.f_status = 2'));
+      $data['pages'] = $this->Core->pageIndex($this->Core->settings['url'] . "/moderacion/fopelera?", $_GET['s'], $total, $max);
+      //
+      $query = db_exec([__FILE__, __LINE__], 'query', 'SELECT u.user_id, u.user_name, h.*, f.foto_id, f.f_title, f.f_user FROM f_fotos AS f LEFT JOIN u_miembros AS u ON u.user_id = f.f_user LEFT JOIN w_historial AS h ON h.pofid = f.foto_id WHERE h.type = 2 AND h.action = 2 AND f.f_status = 2 LIMIT ' . $limit);
+      // DENUNCIAS
+      include TS_EXTRA . "datos.php";
+      //
+      while ($row = db_exec('fetch_assoc', $query)) {
+         $row['mod_name'] = $this->User->getUserName($row['mod']);
+         $row['reason'] = (is_numeric($row['reason'])) ? $tsDenuncias['fotos'][$row['reason']] :
+         $this->Core->setSecure($row['reason']);
+         //
+         $data['datos'][] = $row;
+      }
+      //
+      return $data;
+   }
+   public function getComentariosD() {
+      global $tsUser, $tsCore;
+      //
+      $max = 20; // MAXIMO A MOSTRAR
+      $limit = $this->Core->setPageLimit($max, true);
+      // PAGINAS
+      list($total) = db_exec('fetch_row', db_exec([__FILE__, __LINE__], 'query', 'SELECT COUNT(*) FROM p_comentarios AS c LEFT JOIN u_miembros AS u ON u.user_id = c.c_user WHERE c.c_status = 1'));
+      $data['pages'] = $this->Core->pageIndex($this->Core->settings['url'] . "/moderacion/comentarios?", $_GET['s'], $total, $max);
+      //
+      $data['datos'] = result_array(db_exec([__FILE__, __LINE__], 'query', 'SELECT u.user_id, u.user_name, c.cid, c.c_user, c.c_post_id, c.c_date, c.c_body, c.c_ip, p.post_id, p.post_title, cat.c_seo, cat.c_nombre FROM p_comentarios AS c LEFT JOIN p_posts AS p ON c.c_post_id = p.post_id LEFT JOIN p_categorias AS cat ON cat.cid = p.post_category  LEFT JOIN u_miembros AS u ON u.user_id = c.c_user WHERE c.c_status = 1 ORDER BY c.c_date DESC LIMIT ' . $limit));
+      //
+      return $data;
+   }
+   public function getPostsD() {
+      global $tsUser, $tsCore;
+      //
+      $max = 20; // MAXIMO A MOSTRAR
+      $limit = $this->Core->setPageLimit($max, true);
+      // PAGINAS
+      list($total) = db_exec('fetch_row',db_exec([__FILE__, __LINE__], 'query', 'SELECT COUNT(*) FROM p_posts AS p LEFT JOIN u_miembros AS u ON u.user_id = p.post_user WHERE p.post_status = 3'));
+      $data['pages'] = $this->Core->pageIndex($this->Core->settings['url'] . "/moderacion/revposts?", $_GET['s'], $total, $max);
+      //
+      $data['datos'] = result_array(db_exec([__FILE__, __LINE__], 'query', 'SELECT u.user_id, u.user_name, h.*, p.post_id, p.post_title, c.c_seo, c.c_nombre FROM p_posts AS p LEFT JOIN w_historial AS h ON h.pofid = p.post_id LEFT JOIN p_categorias AS c ON c.cid = p.post_category LEFT JOIN u_miembros AS u ON u.user_id = h.mod  WHERE h.type = 1 AND h.action = 3 AND p.post_status = 3 LIMIT ' . $limit));
+      //
+      return $data;
+   }
+   /**
+    * @name getHistory()
+    * @access public
+    * @param
+    * @return array
+   */
+   public function getHistory($type) {
+      global $tsUser, $tsCore;
+      //
+      $query = ($type == 1) ? 
+      'SELECT u.user_id, u.user_name, h.*, p.post_id, p.post_title FROM p_posts AS p LEFT JOIN u_miembros AS u ON u.user_id = p.post_user LEFT JOIN w_historial AS h ON h.pofid = p.post_id WHERE h.type = 1' : 
+      'SELECT u.user_id, u.user_name, h.*, f.foto_id, f.f_title, f.f_user FROM f_fotos AS f LEFT JOIN u_miembros AS u ON u.user_id = f.f_user LEFT JOIN w_historial AS h ON h.pofid = f.foto_id WHERE h.type = 2';
+      // DENUNCIAS
+      require_once TS_EXTRA . "/datos.php";
+      while ($row = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', $query .' ORDER BY h.id DESC LIMIT 20'))) {
+         $row['mod_name'] = $this->User->getUserName($row['mod']);
+         $row['reason'] = (is_numeric($row['reason'])) ? $tsDenuncias['posts'][$row['reason']] :
+         $this->Core->setSecure($row['reason']);
+         $data[] = $row;
+      }
+      //
+      return $data;
+   }
+}

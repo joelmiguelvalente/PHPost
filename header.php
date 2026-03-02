@@ -17,7 +17,7 @@ declare (strict_types = 1);
 defined('TS_HEADER') OR define('TS_HEADER', TRUE);
 
 define('BASEPATH', realpath(__DIR__));
-require_once BASEPATH . '/inc/config/Config.Paths.php';
+require_once BASEPATH . '/config/Config.Paths.php';
 require_once TS_CONFIG . '/Config.php';
 require_once TS_CONFIG . '/Config.Session.php';
 require_once TS_CONFIG . '/Config.Errors.php';
@@ -107,6 +107,8 @@ $smarty->assign('tsNots', $tsMonitor->notificaciones);
 
 // Mensajes
 $smarty->assign('tsMPs', $tsMP->mensajes);
+
+$smarty->assign('tsDescription', Config::app('app.description'));
 
 /**
  * Si hay alguna IP bloqueada por el Moderador/Administrador,

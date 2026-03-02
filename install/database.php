@@ -613,7 +613,7 @@ $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `w_denuncias` (
   `d_extra` TEXT DEFAULT NULL,
   `d_razon` TINYINT NOT NULL,
   `d_total` SMALLINT NOT NULL DEFAULT 1,
-  `d_type` ENUM('post','mensaje','usuario','foto') NOT NULL DEFAULT '',
+  `d_type` ENUM('post','mensaje','usuario','foto') NOT NULL DEFAULT 'post',
   `d_user` INT NOT NULL,
   `obj_id` INT NOT NULL,
   INDEX idx_type (d_type),

@@ -42,59 +42,59 @@ LimitRequestBody 10485760
 RewriteRule ^$ index.php?do=home [QSA,L]
 RewriteRule ^pagina([0-9]+)$ index.php?page=$1 [QSA,L]
 RewriteRule ^index.php$ index.php?do=home [QSA,L]
-RewriteRule ^cuenta.php$ inc/php/cuenta.php [QSA,L]
-RewriteRule ^cuenta/([A-Za-z0-9_-]+)$ inc/php/cuenta.php?accion=$1 [QSA,L]
+RewriteRule ^cuenta.php$ src/php/cuenta.php [QSA,L]
+RewriteRule ^cuenta/([A-Za-z0-9_-]+)$ src/php/cuenta.php?accion=$1 [QSA,L]
 
 # AGREGAR O EDITAR POST
-RewriteRule ^(agregar|editar)$ inc/php/agregar.php?action=$1 [QSA,L]
+RewriteRule ^(agregar|editar)$ src/php/agregar.php?action=$1 [QSA,L]
 
 #PERFIL
-RewriteRule ^(perfil/|@)([A-Za-z0-9_-]+)$ inc/php/perfil.php?user=$2 [QSA,L]
-RewriteRule ^(perfil/|@)([A-Za-z0-9_-]+)/$ inc/php/perfil.php?user=$2 [QSA,L]
-RewriteRule ^(perfil/|@)([A-Za-z0-9_-]+)/([0-9]+)$ inc/php/perfil.php?user=$2&pid=$3 [QSA,L]
+RewriteRule ^(perfil/|@)([A-Za-z0-9_-]+)$ src/php/perfil.php?user=$2 [QSA,L]
+RewriteRule ^(perfil/|@)([A-Za-z0-9_-]+)/$ src/php/perfil.php?user=$2 [QSA,L]
+RewriteRule ^(perfil/|@)([A-Za-z0-9_-]+)/([0-9]+)$ src/php/perfil.php?user=$2&pid=$3 [QSA,L]
 
 # PORTAL
 RewriteRule ^mi/$ index.php?do=portal [QSA,L]
 
 # POSTS (2026)
-RewriteRule ^posts/$ inc/php/posts.php?do=posts [QSA,L]
-RewriteRule ^posts/pagina([0-9]+)$ inc/php/posts.php?do=posts&page=$1 [QSA,L]
-RewriteRule ^posts/([A-Za-z0-9_-]+)$ inc/php/posts.php?do=posts&cat=$1 [QSA,L]
-RewriteRule ^posts/([A-Za-z0-9_-]+)/pagina([0-9]+)$ inc/php/posts.php?do=posts&cat=$1&page=$2 [QSA,L]
-RewriteRule ^posts/([A-Za-z0-9_-]+)/([0-9]+)/(.*).html$ inc/php/posts.php?do=posts&cat=$1&id=$2&title=$3 [QSA,L]
-RewriteRule ^p/([0-9]+)$ inc/php/posts.php?do=posts&id=$1 [QSA,L]
+RewriteRule ^posts/$ src/php/posts.php?do=posts [QSA,L]
+RewriteRule ^posts/pagina([0-9]+)$ src/php/posts.php?do=posts&page=$1 [QSA,L]
+RewriteRule ^posts/([A-Za-z0-9_-]+)$ src/php/posts.php?do=posts&cat=$1 [QSA,L]
+RewriteRule ^posts/([A-Za-z0-9_-]+)/pagina([0-9]+)$ src/php/posts.php?do=posts&cat=$1&page=$2 [QSA,L]
+RewriteRule ^posts/([A-Za-z0-9_-]+)/([0-9]+)/(.*).html$ src/php/posts.php?do=posts&cat=$1&id=$2&title=$3 [QSA,L]
+RewriteRule ^p/([0-9]+)$ src/php/posts.php?do=posts&id=$1 [QSA,L]
 
 # FOTOS
-RewriteRule ^fotos/([A-Za-z0-9_-]+).php$ inc/php/fotos.php?action=$1 [QSA,L]
-RewriteRule ^fotos/([A-Za-z0-9_-]+)$ inc/php/fotos.php?action=album&user=$1 [QSA,L]
-RewriteRule ^fotos/([A-Za-z0-9_-]+)/([0-9]+)$ inc/php/fotos.php?action=album&user=$1&page=$2 [QSA,L]
-RewriteRule ^fotos/([A-Za-z0-9_-]+)/([0-9]+)/([A-Za-z0-9_-]+).html$ inc/php/fotos.php?action=ver&user=$1&fid=$2 [QSA,L]
+RewriteRule ^fotos/([A-Za-z0-9_-]+).php$ src/php/fotos.php?action=$1 [QSA,L]
+RewriteRule ^fotos/([A-Za-z0-9_-]+)$ src/php/fotos.php?action=album&user=$1 [QSA,L]
+RewriteRule ^fotos/([A-Za-z0-9_-]+)/([0-9]+)$ src/php/fotos.php?action=album&user=$1&page=$2 [QSA,L]
+RewriteRule ^fotos/([A-Za-z0-9_-]+)/([0-9]+)/([A-Za-z0-9_-]+).html$ src/php/fotos.php?action=ver&user=$1&fid=$2 [QSA,L]
 
 # ADMIN
-RewriteRule ^admin/afs/editar/([0-9]+)$ inc/php/admin.php?action=afs&act=editar&aid=$1 [QSA,L]
-RewriteRule ^admin/medals/editar/([0-9]+)$ inc/php/admin.php?action=medals&act=editar&mid=$1 [QSA,L]
-RewriteRule ^admin/medals/nueva inc/php/admin.php?action=medals&act=nueva [QSA,L]
-RewriteRule ^admin/news/editar/([0-9]+)$ inc/php/admin.php?action=news&act=editar&nid=$1 [QSA,L]
-RewriteRule ^admin/news/nueva inc/php/admin.php?action=news&act=nuevo [QSA,L]
+RewriteRule ^admin/afs/editar/([0-9]+)$ src/php/admin.php?action=afs&act=editar&aid=$1 [QSA,L]
+RewriteRule ^admin/medals/editar/([0-9]+)$ src/php/admin.php?action=medals&act=editar&mid=$1 [QSA,L]
+RewriteRule ^admin/medals/nueva src/php/admin.php?action=medals&act=nueva [QSA,L]
+RewriteRule ^admin/news/editar/([0-9]+)$ src/php/admin.php?action=news&act=editar&nid=$1 [QSA,L]
+RewriteRule ^admin/news/nueva src/php/admin.php?action=news&act=nuevo [QSA,L]
 
 # MODERACIÓN
-RewriteRule ^moderacion/buscador/([0-2]+)/([0-2]+)/(.*)$ inc/php/moderacion.php?action=buscador&act=search&m=$1&t=$2&texto=$3 [QSA,L]
+RewriteRule ^moderacion/buscador/([0-2]+)/([0-2]+)/(.*)$ src/php/moderacion.php?action=buscador&act=search&m=$1&t=$2&texto=$3 [QSA,L]
 # AllowEncodedSlashes NoDecode
 
 # RECUPERAR PASS Y VALIDAR CUENTA
-RewriteRule ^(password|validar)/(.+)/([0-9]+)/(.+)$ inc/php/password.php?hash=$1&type=$2&email=$3
+RewriteRule ^(password|validar)/(.+)/([0-9]+)/(.+)$ src/php/password.php?hash=$1&type=$2&email=$3
 
 #HISTORIAL DE MODERACIÓN
-RewriteRule ^mod-history/([A-Za-z0-9_-]+)/ inc/php/mod-history.php?ver=$1 [QSA,L]
+RewriteRule ^mod-history/([A-Za-z0-9_-]+)/ src/php/mod-history.php?ver=$1 [QSA,L]
 
 # --------------------
 # Generic fallbacks
 # --------------------
-RewriteRule ^([A-Za-z0-9_-]+).php$ inc/api/index.php?action=$1 [QSA,L]
-RewriteRule ^([A-Za-z0-9_-]+)/$ inc/php/$1.php [QSA,L]
-RewriteRule ^([A-Za-z0-9_-]+)/([A-Za-z0-9_-]+)$ inc/php/$1.php?action=$2 [QSA,L]
-RewriteRule ^([A-Za-z0-9_-]+)/([A-Za-z0-9_-]+)/$ inc/php/$1.php?action=$2 [QSA,L]
-RewriteRule ^([A-Za-z0-9_-]+)/([A-Za-z0-9_-]+)/([0-9]+)$ inc/php/$1.php?action=$2&id=$3 [QSA,L]
+RewriteRule ^([A-Za-z0-9_-]+).php$ src/api/index.php?action=$1 [QSA,L]
+RewriteRule ^([A-Za-z0-9_-]+)/$ src/php/$1.php [QSA,L]
+RewriteRule ^([A-Za-z0-9_-]+)/([A-Za-z0-9_-]+)$ src/php/$1.php?action=$2 [QSA,L]
+RewriteRule ^([A-Za-z0-9_-]+)/([A-Za-z0-9_-]+)/$ src/php/$1.php?action=$2 [QSA,L]
+RewriteRule ^([A-Za-z0-9_-]+)/([A-Za-z0-9_-]+)/([0-9]+)$ src/php/$1.php?action=$2&id=$3 [QSA,L]
 
 # --------------------
 # Configuración, templates, logs
