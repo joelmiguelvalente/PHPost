@@ -33,4 +33,27 @@ class Extras {
 		return strtolower($text);
 	}
 
+	/**
+	 * Limpia BBCode y HTML, y trunca al número de caracteres indicado.
+	 * Usar en lugar de: strip_tags($row['p_descripcion'])
+	 *
+	 * @param string $text      Texto crudo (puede tener BBCode y/o HTML)
+	 * @param int    $maxLength Máximo de caracteres (0 = sin límite)
+	 */
+	public function cleanText(string $text, int $maxLength = 0): string {
+	   // 1. BBCode con contenido: [b]texto[/b] → texto
+	   $text = preg_replace('/\[([a-z]+)[^\]]*\](.*?)\[\/\1\]/is', '$2', $text);
+	   // 2. BBCode sin cierre: [hr], [img=...], etc. → vacío
+	   $text = preg_replace('/\[([a-z]+)[^\]]*\]/i', '', $text);
+	   // 3. HTML
+	   $text = strip_tags($text);
+	   // 4. Espacios múltiples y saltos de línea
+	   $text = trim(preg_replace('/\s+/', ' ', $text));
+	   // 5. Truncar
+	   if ($maxLength > 0 && mb_strlen($text) > $maxLength) {
+	   	$text = mb_substr($text, 0, $maxLength) . '…';
+	   }
+	   return $text;
+	}
+
 }

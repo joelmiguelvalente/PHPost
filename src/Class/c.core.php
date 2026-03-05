@@ -17,6 +17,7 @@ require_once TS_EXTRA . '/bbcode.inc.php';
 class tsCore {
 	 
 	public array $settings;
+	public int $uid;
 
 	public function __construct() {
 		// CARGANDO CONFIGURACIONES
@@ -151,7 +152,8 @@ class tsCore {
 	 * @return array
 	*/
 	public function getTema(): array {
-		$data = DB::fetch("SELECT tid, t_name, t_path, t_copy FROM w_temas WHERE t_path = :tema LIMIT 1", ['tema' => $this->settings['tema']]);
+		$data = DB::fetch("SELECT tema FROM w_configuracion WHERE phpost_id = :tema LIMIT 1", ['tema' => 1]);
+		$data['t_path'] = isset($_SESSION['theme_path']) ? $_SESSION['theme_path'] : $data['tema'];
 		$data['t_url'] = "{$this->settings['url']}/themes/{$data['t_path']}";
 		return $data;
 	}

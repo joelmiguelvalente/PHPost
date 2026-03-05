@@ -1,4 +1,13 @@
 {if $tsComments.num > 0}
+	<ul class="comment-list" id="comment-list" role="list">
+		{foreach from=$tsComments.data item=c}
+			{include "comentario/comentario-item.tpl" reply=false}
+		{/foreach}
+	</ul>
+{else}
+	<div id="no-comments">Este post no tiene comentarios, S&eacute; el primero!</div>
+{/if}
+{*if $tsComments.num > 0}
 	{foreach from=$tsComments.data item=c}
 		<div id="div_cmnt_{$c.cid}" class="{if $tsPost.autor == $c.c_user}especial1{elseif $c.c_user == $tsUser->uid}especial3{/if}">
 			<span id="citar_comm_{$c.cid}" style="display:none">{$c.c_body}</span>
@@ -76,5 +85,5 @@
    {/foreach}
 {else}
 	<div id="no-comments">Este post no tiene comentarios, S&eacute; el primero!</div>
-{/if}
+{/if*}
 <div id="nuevos"></div>

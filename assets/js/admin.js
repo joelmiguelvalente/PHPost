@@ -32,35 +32,12 @@ const noticias = nid => {
 }
 
 const tema = {
-	usar(tid) {
-		api('/tema-usar.php', { tid }, response => {
+	usar(path) {
+		api('tema-usar.php', { path }, response => {
 	      const { status, message } = $.parseResponse(response);
 	      dialog.alert((status === 0 ? 'Error' : 'Bien'), message, status === 1);
 			return;
 		})
-	},
-	nuevo(next = false) {
-		if(!next) {
-			dialog.init({ 
-        		title: 'Instalar nuevo theme',
-        		body: '<label for="path" class="font-medium text-gray-700 dark:text-gray-300">Nombre del theme</label><input type="text" id="path" name="path" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-surface px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Nombre del theme" />',
-		      buttons: {
-		         confirm: { text: 'Instalar', action: () => tema.nuevo(true) }
-		      }
-		   });
-        	return;
-      } else {
-	      const input = $('#path').val();
-	      if(input === '') {
-	      	dialog.alert('Error', 'No puede estar vacio');
-				return;
-	      }
-	      api('tema-nuevo.php', { path: input }, response => {
-	      	const { status, message } = $.parseResponse(response);
-	      	dialog.alert((status === 0 ? 'Error' : 'Bien'), message, status === 1);
-				return;
-	      });
-	   }
 	}
 }
 

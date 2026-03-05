@@ -38,6 +38,7 @@ if($ctx->continue()) {
 	//
 	require_once TS_CLASS . "/c.cuenta.php";
 	$tsCuenta = new tsCuenta($tsCore, $tsUser);
+	$Themes = new Themes;
 
 	if(empty($action)) {
 		require_once TS_EXTRA . "/datos.php";
@@ -57,6 +58,7 @@ if($ctx->continue()) {
 		$smarty->assign("tsMenuCuenta", [
 			'' => 'Cuenta',
 			'perfil' => 'Perfil', 
+			'apariencia' => 'Apariencia',
          'block' => 'Bloqueados',
          'clave' => 'Cambiar Clave',
          'nick' => 'Cambiar Nick',
@@ -74,8 +76,10 @@ if($ctx->continue()) {
 		$smarty->assign("tsMeses",		$tsMeses);
       // BLOQUEOS
       $smarty->assign("tsBlocks", $tsCuenta->loadBloqueos());
-        
-	} elseif($action === 'save'){
+      $smarty->assign("tsThemes", $Themes->getAllThemes());
+      $smarty->assign("tsThemeCurrent", $Themes->getUserThemeUse((int)$tsUser->uid));
+
+	} elseif($action === 'save') {
 		echo json_encode($tsCuenta->savePerfil());
 	}
 }

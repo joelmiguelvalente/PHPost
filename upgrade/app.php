@@ -34,7 +34,7 @@ if (strpos($script_path, $base_path_real) !== 0) {
 }
 
 // Cargar configuraciones de forma segura
-$config_paths_file = BASEPATH . '/inc/config/Config.Paths.php';
+$config_paths_file = BASEPATH . '/config/Config.Paths.php';
 if (!file_exists($config_paths_file) || !is_readable($config_paths_file)) {
    exit('Configuration not available');
 }

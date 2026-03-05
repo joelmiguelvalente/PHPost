@@ -63,8 +63,8 @@ class BBCode {
 	public function bbcodeAllow(): array {
 		return [
 			'url', 'b', 'i', 'u', 's', 'font', 'size', 'color', 
-			'img', 'align', 'spoiler', 'code', 'quote', 'video', 
-			'hr', 'sub', 'sup', 'image', 'item', 'list', 'kbd',
+			'align', 'spoiler', 'code', 'quote', 'video', 
+			'sub', 'sup', 'image', 'item', 'list', 'kbd',
 			'table', 'thead', 'tbody', 'th', 'td', 'tr',  
 			'notice', 'info', 'warning', 'error', 'success', 
 			'highlight', 'mention', 'badge', 'diff', 'divider'
@@ -116,7 +116,9 @@ class BBCode {
 		$this->text = preg_replace("/\[swf=(http|https)?(\:\/\/)?www\.youtube\.com\/watch\?v([A-z0-9=\-]+?)\]/i", "[video]$1$2www.youtube.com/watch?v$3[/video]", $this->text);
 
 		$this->text = preg_replace("/\[swf\=(.+?)\]/i", "[swf]$1[/swf]", $this->text);
-      //$this->text = preg_replace("/\[img\=(.+?)\]/i", "[img]$1[/img]", $this->text);
+      $this->text = preg_replace("/\[hr\]/i", "[divider]", $this->text);
+      $this->text = preg_replace("/\[img\=(.+?)\]/i", "[image]$1[/image]", $this->text);
+      $this->text = preg_replace("/\[img\](.+?)\[\/img\]/i", "[image]$1[/image]", $this->text);
 
 		$this->text = str_replace('&#039;', '\'', $this->text);
 	}

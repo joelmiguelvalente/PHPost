@@ -2,7 +2,7 @@ function desactivate(next = false) {
 	if(next) {
 		const param = $.param({ validar: true });
 		$('#loading').fadeIn(250); 
-		$.post(`${route.url}/cuenta-desactivar.php`, param, response => {
+		api(`cuenta-desactivar.php`, param, response => {
 			const { status, message } = $.parseResponse(response);
 			dialog.toast({
 				type: (status ? 'success' : 'danger'),
@@ -39,7 +39,6 @@ const cuenta = {
 		$('#loading').slideDown(250);
 		const formData = $("form[name=editarcuenta]").serialize();
 		$.post(`${route.url}/cuenta-guardar.php`, formData, response => {
-			console.log(response)
 			const { status, message } = $.parseResponse(response);
 			dialog.toast({
 				type: (status ? 'success' : 'danger'),
@@ -49,5 +48,23 @@ const cuenta = {
 				position: 'top-right'
 			});
 		});
+	}
+}
+const apariencia = {
+	theme() {
+		const theme = $("select[name=theme]").val();
+		api('cuenta-cambiar-tema.php', { skin: theme }, response => {
+			const { status, message } = $.parseResponse(response);
+			dialog.toast({
+				type: (status ? 'success' : 'danger'),
+				title: 'Cambiar tema',
+				message: message,
+				duration: 4000,
+				position: 'top-right'
+			});
+			if(status === 1) {
+				setTimeout(() => location.reload(), 1500);
+			}
+		})
 	}
 }

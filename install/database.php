@@ -148,9 +148,10 @@ $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `p_comentarios` (
   `c_votos_pos` INT NOT NULL DEFAULT 0,
   `c_votos_neg` INT NOT NULL DEFAULT 0,
   `c_status` INT NOT NULL DEFAULT 0,
-  `c_answer` INT NOT NULL DEFAULT 0,
+  `c_level` TINYINT(1) NOT NULL DEFAULT 0,
   `c_answer_cid` INT NOT NULL DEFAULT 0,
   `c_ip` VARBINARY(45) DEFAULT NULL,
+  INDEX idx_answer (c_answer_cid),
   INDEX idx_post (c_post_id),
   INDEX idx_user (c_user)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
@@ -169,6 +170,7 @@ $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `p_posts` (
   `post_category` INT DEFAULT 0,
   `post_title` VARCHAR(120) DEFAULT '',
   `post_body` TEXT NULL,
+  `post_excerpt` VARCHAR(200) DEFAULT '',
   `post_user` INT DEFAULT 0,
   `post_cache` INT DEFAULT 0,
   `post_comments` BIGINT DEFAULT 0,
@@ -308,6 +310,7 @@ $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `u_miembros_sets` (
   `user_id` INT PRIMARY KEY,
   `user_avatares` TEXT NULL,
   `user_chat` INT NOT NULL DEFAULT 0,
+  `user_theme` CHAR(40) NOT NULL DEFAULT 'default',
   `user_cover` TEXT NULL,
   `user_double_secret` TEXT NULL, /* user_secret_2fa */
   `user_portada` VARCHAR(255) DEFAULT NULL,

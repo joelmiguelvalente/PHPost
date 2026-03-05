@@ -394,8 +394,8 @@ switch ($step) {
 					
 					require_once dirname(__DIR__, 1) . '/src/Utils/Avatar.php';
 					$tsCore = new stdClass();
-					$Avatar = new Avatar("{$url}storage/avatar/", true);
-					$Avatar->ensure(1, $user['user_name']);
+					$Avatar = new Avatar("{$url}/storage/avatar/", true);
+					$Avatar->ensure(1, $user['user_name'], '#D6030B');
 
 					// DAMOS BIENVENIDA POR CORREO
 					mail($user['user_email'], 'Su comunidad ya puede ser usada', '<html><head><title>Su nueva comunidad Link Sharing est&aacute; lista!</title></head><body><p>Estas son sus credenciales de acceso:</p><p>Usuario: ' . $user['user_name'] . '</p><p>Contrase&ntilde;a: ' . $user['user_password'] . '</p><br />Gracias por usar <a href="https://github.com/joelmiguelvalente/PHPost"><b>PHPost Risus</b></a> para compartir enlaces :)</body></html>', 'Content-type: text/html; charset=iso-8859-15');

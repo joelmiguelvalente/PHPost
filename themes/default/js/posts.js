@@ -122,147 +122,6 @@ const addFavorite = () =>{
 	});
 }
 
-/* COMENTARIOS */
-const comentario = {
-   /* VARIABLES */
-   cache: {},
-   cargado: false,
-   /* FUNCIONES */
-   cargar(postid, page, autor) {
-   	const $comentarios = $('#comentarios');
-		$('#commentsLoads').show();
-		//$.scrollTo('#comentarios-container', 250);
-		$comentarios.css('opacity', 0.4)
-		// COMPRVAMOS CACHE
-      if(typeof comentario.cache[`c_${page}`] === 'undefined') {
-         api(`comentario-ajax.php?page=${page}`, { postid, autor }, response => {
-				comentario.cache['comments_page_' + page] = response;
-				$comentarios.html(response);
-				comentario.setPages(postid, page, autor);
-			});
-      } else {
-         $comentarios.html(comentario.cache[`comments_page_${page}`]);
-         $('.paginadorCom').html(comentario.cache[`page_${page}`]);
-         $('#commentsLoads').hide();
-         $comentarios.css('opacity', 1);
-      }
-   },
-   setPages(postid, page, autor) {
-    	const total = parseInt($('#ncomments').text());
-    	api(`comentario-pages.php?page=${page}`, { postid, autor, total }, response => {
-    		comentario.cache[`p_${page}`] = response;
-   		$('.paginadorCom').html(response);
-         $('#commentsLoads').hide();
-			$('div#comentarios').css('opacity', 1);
-         $('#loading').fadeOut(350);   
-    	});
-	},
-   // NUEVO COMENTARIO
-   nuevo(mostrar_resp) {
-      $('#btnsComment').attr({ disabled: 'disabled' });
-    	const textarea = $('#body_comm');
-    	const comentario = textarea.bbcode();
-      // VACIO o DEFAULT
-      const limit = (comentario.length > 1500);
-    	if(comentario === '' || limit) {
-    		textarea.focus();
-    		if(limit) dialog.alert("Tu comentario no puede ser mayor a 1500 caracteres.");
-         $('#btnsComment').removeAttr('disabled');
-    		return;
-    	}
-      // IMAGEN
-    	$('.miComentario #gif_cargando').show();
-    	const auser = $('#auser_post').val();
-    	let params = $.param({ comentario, mostrar_resp, auser });
-    	params += queryParam('postid');
-      api('comentario-agregar.php', params, response => {
-      	const { status, message } = $.parseResponse(response);
-      	if(status === 0) {
-    			$('.miComentario .error').html(message).show('slow');
-            $('#btnsComment').removeAttr('disabled');
-            return;
-         }
-			$("#nuevos").slideUp(1);
-    		$('#preview').remove();
-			$('#nuevos').html(message).slideDown('slow', () => {
-				$('#no-comments').hide('slow');
-				$('.miComentario').html('<div class="alert-empty">Tu comentario fue agregado correctamente :)</div>');
-			});
-			let total = parseInt($('#ncomments').text());
-    		$('#ncomments').text(total + 1);
-    		$('.miComentario #gif_cargando').hide();
-          
-      })
-   },
-   // VOTAR COMENTARIO
-   votar(cid, voto) {
-      // FIX
-      voto = (voto === 1) ? 1 : -1;
-      const votoTotalCid = $('#votos_total_' + cid)
-    	let totalVotos = parseInt(votoTotalCid.text());
-      totalVotos = (isNaN(totalVotos)) ? 0 : totalVotos;
-      let params = $.param({ voto, cid, });
-      params += queryParam('postid');
-      api('comentario-votar.php', params, response => {
-      	const { status, message } = $.parseResponse(response);
-      	if(status === 0) {
-      		dialog.alert("Error al votar", message);
-      		return;
-      	}
-    		totalVotos = totalVotos + voto;
-         if(totalVotos > 0) totalVotos = '+' + totalVotos; 
-    		const newClass = (totalVotos < 0) ? 'negativo' : 'positivo'; // CLASS
-    		votoTotalCid.text(totalVotos).removeClass('positivo negativo').addClass(newClass);
-         $(`#ul_cmt_${cid} > .numbersvotes`).show();
-    		$(`#ul_cmt_${cid}`).find('.icon-thumb-up, .icon-thumb-down').hide();
-      });	
-   },
-   // CITAR
-   citar: function(id, nick){
-    	var textarea = $('#body_comm');
-    	textarea.focus();
-    	textarea.val(((textarea.val()!='') ? textarea.val() + '\n' : '') + '[quote=' + nick + ']' + htmlspecialchars_decode($('#citar_comm_'+id).html(), 'ENT_NOQUOTES') + '[/quote]\n');
-        /*
-        var message = $.trim($('#comment-body-'+id).html());
-    		$('.wysibb-texarea').execCommand('quote',{autor: nick, seltext: message});
-        */
-   },
-   // EDITAR
-   editar: function(id, step){
-      switch(step){
-         case 'show':
-            var bbcode = htmlspecialchars_decode($('#citar_comm_'+id).html(), 'ENT_NOQUOTES');
-            var html = '<textarea id="edit-comment-' + id + '" class="textarea-edit autogrow" placeholder="Escribir un comentario...">' + bbcode + '</textarea><br/><input type="button" class="mBtn btnGreen btnEdit" onclick="comentario.preview(\'' + id + '\', \'edit\')" value="Continuar &raquo;"/> <strong id="edit-error-' + id + '"></strong>';
-            $('#comment-body-' + id).html(html);
-            $('#edit-comment-' + id).css('max-height', '300px');
-         break;
-         case 'send':
-            var cid = $('#edit-cid-' + id).val()
-            var comment = $('#edit-comment-' + id).val();
-            $('#loading').fadeIn(250); 
-            $.ajax({
-            	type: 'POST',
-            	url: route.url + '/comentario-editar.php',
-            	data: 'comentario=' + encodeURIComponent(comment) + '&cid=' + id,
-            	success: function(h){
-            		switch(h.charAt(0)){
-            			case '0': //Error
-                        $('#edit-error-' + id).css('color','red').html(h.substring(3));
-            			break;
-            			case '1': //OK
-                        $('#comment-body-' + id).html($('#new-com-html').html());
-                       	var bbcode = htmlspecialchars_decode($('#new-com-bbcode').html(), 'ENT_NOQUOTES');
-                       	$('#citar_comm_'+id).html(bbcode) 
-           				break;
-            		}
-                  $('#loading').fadeOut(350); 
-            		mydialog.close();
-            	}
-            });
-         break;
-      }  
-  	}
-}
 /* BBCode */
 const spoiler = obj => $(obj).toggleClass('show').parent().next().slideToggle();
 
@@ -294,10 +153,6 @@ const followUserPost = (obj, follow = 'Usuario') => {
 }
 
 $(() => {
-	$('#body_comm').css({ height: 80 }).html('').wysibb({ 
-		buttons: "smilebox,|,bold,italic,underline,strike,sup,sub,|,image,video,link" 
-	});
-
 	// Seguir o dejar de seguir usuarios
 	$('#followUser').on('click', function() {
 		followUserPost($(this));
@@ -348,7 +203,6 @@ $(() => {
          case 'denuncia':
          	const postTitle = $btn.data('title');
          	const postUsername = $btn.data('username');
-         	console.log(postId, postTitle, postUsername)
             denuncia.nueva('post', postId, postTitle, postUsername);
          break;
      		default:

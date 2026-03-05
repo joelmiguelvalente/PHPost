@@ -17,13 +17,15 @@ require_once TS_LIBS . '/extensiones/SmartyExtensiones.php';
 
 class tsSmarty extends \Smarty\Smarty {
 
+	protected Themes $Themes;
+
 	private string $cache;
 
 	private string $theme;
 
 	private string $page;
 
-	public $templateError = 't.error.tpl';
+	public string $templateError = 't.error.tpl';
 
 	/**
 	 * Constructor de la clase tsSmarty.
@@ -136,9 +138,10 @@ class tsSmarty extends \Smarty\Smarty {
 	 * Carga todos los directorios utilizados por el tema.
 	 */
 	private function loadAllTemplates(): void {
-		$templates = TS_THEMES . "/{$this->theme}/templates";
+		$theme = isset($_SESSION['theme_path']) ? $_SESSION['theme_path'] : $this->theme;
+		$templates = TS_THEMES . "/{$theme}/templates";
 		$map = array_merge([
-			'tema'        => TS_THEMES . "/{$this->theme}",
+			'tema'        => TS_THEMES . "/{$theme}",
 			'templates'   => $templates
 		], $this->recursiveDirectories($templates), $this->mapDirectories());
 		$this->addTemplateDir($map);

@@ -11,7 +11,7 @@
  * en formato humano (ej: "Hace 3 horas", "2 días").
  *
  * Ejemplos:
- *   {$fecha|hace}          -> 3 horas
+ *   {$fecha|hace}          -> hace 3 horas
  *   {$fecha|hace:true}    -> Hace 3 horas
  *
  * @author   Miguel92
@@ -43,7 +43,7 @@ function smarty_modifier_hace(?int $fecha = null, bool $show = false): string {
       if ($diff >= $seconds) {
          $value = intdiv($diff, $seconds);
          $text = $value === 1 ? $singular : $plural;
-         return $show ? "Hace $value $text" : "$value $text";
+         return $show ? "Hace $value $text" : "hace $value $text";
       }
    }
    return 'instantes';

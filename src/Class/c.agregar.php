@@ -135,6 +135,7 @@ class tsAgregar {
 	private function collectPostData(bool $newPost = true): array {
 		$postData = [
 			'post_title' => $this->Core->parseBadWords($this->normalizeLineBreaks($_POST['title'])),
+			'post_portada' => trim((string)$_POST['portada'] ?? ''),
 			'post_body' => $this->normalizeLineBreaks($_POST['body']),
 			'post_tags' => $this->Core->parseBadWords($this->Core->setSecure($_POST['tags'], true)),
 			'post_category' => (int)$_POST['category'],
@@ -220,6 +221,7 @@ class tsAgregar {
 				'post_category' => $postData['post_category'],
 				'post_title' => $postData['post_title'],
 				'post_body' => $postData['post_body'],
+				'post_portada' => $postData['post_portada'],
 				'post_date' => time(),
 				'post_tags' => $postData['post_tags'],
 				'post_ip' => $this->IP->executeIP(),

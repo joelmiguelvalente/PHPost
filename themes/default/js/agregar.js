@@ -1,17 +1,85 @@
+const setData = () => {
+	return {
+		title:          $('input[name="title"]').val(),
+		portada:        $('input[name="portada"]').val(),
+		body:           $('textarea[name="body"]').bbcode(),
+		tags:           $('input[name="tags"]').val(),
+		category:       $('select[name="category"]').val(),
+		private:        $('input[name="private"]').is(':checked'),
+		block_comments: $('input[name="block_comments"]').is(':checked'),
+		sponsored:      $('input[name="sponsored"]').is(':checked'),
+		visitantes:     $('input[name="visitantes"]').is(':checked'),
+		smileys:        $('input[name="smileys"]').is(':checked'),
+		sticky:         $('input[name="sticky"]').is(':checked')
+	};
+};
+
+function saveToCookie() {
+	const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toUTCString();
+	document.cookie = `post_draft=${encodeURIComponent(JSON.stringify(setData()))}; expires=${expires}; path=/`;
+}
+
+function loadFromCookie() {
+	const match = document.cookie.match(/(?:^|;\s*)post_draft=([^;]*)/);
+	if (!match) return;
+
+	let data;
+	try { data = JSON.parse(decodeURIComponent(match[1])); } catch { return; }
+
+	// Solo restaurar si hay algo útil guardado
+	if (!data.title && !data.body) return;
+
+	const restore = confirm('Se encontró un post sin publicar guardado en el navegador. ¿Querés restaurarlo?');
+	if (!restore) { clearCookie(); return; }
+
+	$('input[name="title"]').val(data.title || '');
+	$('input[name="portada"]').val(data.portada || '');
+	if (data.body) {
+		$('textarea[name="body"]').val(data.body);
+	}
+	$('input[name="tags"]').val(data.tags || '');
+	if (data.category) $('select[name="category"]').val(data.category);
+
+	const checkboxes = ['private', 'block_comments', 'sponsored', 'visitantes', 'smileys', 'sticky'];
+	checkboxes.forEach(name => $(`input[name="${name}"]`).prop('checked', Boolean(data[name])));
+
+	// Reinicializar el editor wysibb con el contenido restaurado (si aplica)
+	if (typeof $.fn.bbcode === 'function') {
+		// Depende de la implementación del editor; ajustar si es necesario
+		$('textarea[name="body"]').trigger('change');
+	}
+}
+
+function clearCookie() {
+	document.cookie = 'post_draft=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/';
+}
+
+// ─── AUTO-SAVE PERIÓDICO ──────────────────────────────────────────────────────
+
+let cookieLastHash = '';
+
+function getCookieHash() {
+	return $('input[name="title"]').val() + '|' + $('textarea[name="body"]').val();
+}
+
+setInterval(() => {
+	const hash = getCookieHash();
+	if (hash !== cookieLastHash && hash !== '|') {
+		cookieLastHash = hash;
+		saveToCookie();
+	}
+}, 10000);
+
+// ─── FUNCIONES ORIGINALES ─────────────────────────────────────────────────────
+
 function countUpperCase(str) {
 	let upper = 0;
 	let letters = 0;
 	for (const char of str) {
-		if (char >= 'A' && char <= 'Z') {
-			upper++;
-			letters++;
-		} else if (char >= 'a' && char <= 'z') {
-			letters++;
-		}
+		if (char >= 'A' && char <= 'Z') { upper++; letters++; }
+		else if (char >= 'a' && char <= 'z') { letters++; }
 	}
-	if (letters === 0) {
-		return 0;
-	}
+	if (letters === 0) return 0;
 	return (upper / letters) * 100;
 }
 
@@ -22,7 +90,7 @@ const setError = (el, message) => {
 	const hasError = Boolean(message);
 	$div.toggleClass('error', hasError);
 	$div.find('.form-helper').html(message || '').toggle(hasError);
-}
+};
 
 function validateRequired() {
 	let valid = true;
@@ -59,9 +127,8 @@ function validateTags() {
 }
 
 function validateBodyLength() {
-	const $textarea = $('textarea[name="body"]'); // elemento real
-	const content   = $textarea.bbcode();            // string BBCode
-
+	const $textarea = $('textarea[name="body"]');
+	const content   = $textarea.bbcode();
 	if (content.length > 65000) {
 		setError($textarea, 'El post es demasiado largo. No debe exceder los 65000 caracteres.');
 		return false;
@@ -71,31 +138,20 @@ function validateBodyLength() {
 }
 
 function buildBorradorParams() {
-	return $.param({
-		title: $('input[name="title"]').val(),
-		body: $('textarea[name="body"]').bbcode(),
-		tags: $('input[name="tags"]').val(),
-		category: $('select[name="category"]').val(),
-		private: $('input[name="private"]').is(':checked') ? 1 : 0,
-		block_comments: $('input[name="block_comments"]').is(':checked') ? 1 : 0,
-		sponsored: $('input[name="sponsored"]').is(':checked') ? 1 : 0,
-		visitantes: $('input[name="visitantes"]').is(':checked') ? 1 : 0,
-		smileys: $('input[name="smileys"]').is(':checked') ? 1 : 0,
-		sticky: $('input[name="sticky"]').is(':checked') ? 1 : 0
-	});
+	return $.param(setData());
 }
 
-let borradorTimeout = null;
+let borradorTimeout  = null;
 let borradorUltGuardado = '';
-let borradorEnabled = true;
+let borradorEnabled  = true;
 
 function enableBorradorSave() {
-	$('#borrador-save').prop('disabled', false).removeClass('disabled');
+	$('input[name=draft]').prop('disabled', false).removeClass('disabled');
 	borradorEnabled = true;
 }
 
 function disableBorradorSave() {
-	$('#borrador-save').prop('disabled', true).addClass('disabled');
+	$('input[name=draft]').prop('disabled', true).addClass('disabled');
 	borradorEnabled = false;
 }
 
@@ -104,23 +160,24 @@ function resetBorradorTimeout(ms) {
 	borradorTimeout = setTimeout(enableBorradorSave, ms);
 }
 
-function save_borrador() {
+function saveBorrador() {
 	if (!borradorEnabled) return;
 	const borradorId = $('input[name="borrador_id"]').val();
 	const url = borradorId ? '/borradores-guardar.php' : '/borradores-agregar.php';
 	let data = buildBorradorParams();
-	if (borradorId) {
-		data += '&borrador_id=' + encodeURIComponent(borradorId);
-	}
+	if (borradorId) data += '&borrador_id=' + encodeURIComponent(borradorId);
+
 	$('#borrador-guardado').text('Guardando...');
 	disableBorradorSave();
 	resetBorradorTimeout(60000);
-	$.post(route.url + url, data, handleBorradorResponse).fail(() => dialog.reintentar('save_borrador()'));
+
+	$.post(route.url + url, data, handleBorradorResponse)
+		.fail(() => dialog.reintentar('saveBorrador()'))
+		.done(() => clearCookie());
 }
 
 function handleBorradorResponse(response) {
 	const { status, message } = $.parseResponse(response);
-
 	if (status === 0) {
 		borradorUltGuardado = message;
 		resetBorradorTimeout(5000);
@@ -130,37 +187,39 @@ function handleBorradorResponse(response) {
 		}
 		borradorUltGuardado = `Guardado a las ${new Date().toLocaleTimeString()} hs.`;
 	}
-
 	$('#borrador-guardado').text(borradorUltGuardado);
 }
 
-let confirmLeave = true;
+let confirmLeave  = true;
 let tagsGenerated = false;
 
 window.onbeforeunload = function () {
 	if (confirmLeave && ($('input[name="title"]').val() || $('textarea[name="body"]').bbcode())) {
+		saveToCookie();
 		return 'Este post no fue publicado y se perderá.';
 	}
 };
 
 const postSave = () => {
+	clearCookie();
 	confirmLeave = false;
 	$('form[name="newpost"]').submit();
-}
+};
 
 $(() => {
 
+	loadFromCookie();
+
 	$('.required').on('keyup change', function () {
-		if ($(this).val().trim()) {
-			setError(this);
-		}
+		if ($(this).val().trim()) setError(this);
 	});
 
 	$('input[name="title"]').on('keyup', validateTitle);
 
 	$('input[name="title"]').on('blur', () => {
 		const param = { query: this.value };
-		$.post(`${route.url}/posts-genbus.php?do=search`, param, response => $('#repost').html(response));
+		$.post(`${route.url}/posts-genbus.php?do=search`, param,
+			response => $('#repost').html(response));
 	});
 
 	$('input[name="tags"]').on('click', function () {
@@ -172,25 +231,20 @@ $(() => {
 	});
 
 	$('input[name="preview"]').on('click', function () {
-
-		if (
-			!validateRequired() ||
-			!validateTitle() ||
-			!validateBodyLength() ||
-			!validateTags()
-		) {
+		if (!validateRequired() || !validateTitle() || !validateBodyLength() || !validateTags()) {
 			return false;
 		}
 		dialog.alert('Vista previa', `Cargando vista previa...<br><br><img src="${route.img}/loading_bar.gif">`);
-
 		const param = { cuerpo: $('textarea[name="body"]').bbcode() };
-
 		$.post(`${route.url}/posts-preview.php?ts=true`, param, response => {
-			dialog.easy($('input[name="title"]').val(), response, 'Publicar post', () => postSave())
+			dialog.easy($('input[name="title"]').val(), response, 'Publicar post', () => postSave());
 		});
 	});
 
-	//Editor de posts
-  	$('textarea[name=body]').css({ height: 400 }).addClass('required').wysibb();
-   
+	$('input[name="publish"]').on('click', () => postSave());
+	$('input[name="draft"]').on('click', () => saveBorrador());
+
+	// Editor de posts
+	$('textarea[name=body]').css({ height: 400 }).addClass('required').wysibb();
+
 });

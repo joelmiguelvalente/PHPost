@@ -19,8 +19,6 @@ require_once TS_UTILS . '/reCaptcha.php';
 
 class tsRegistro {
 
-	;
-	;
 	private string $myIP;
 
 	public function __construct(
@@ -323,6 +321,7 @@ class tsRegistro {
 		} else {
 			# Activamos cuenta directamente!
 			DB::update('u_miembros', ['user_activo' => 1], 'user_id = :id', ['id' => $uid]);
+			# Iniciamos la sesión
 			$this->User->loginUser($tsData['user_nick'], $tsData['user_password'], true);
 			return "1: Bienvenido a <strong>{$this->Core->settings['titulo']}</strong>, Ahora estas registrado y tu cuenta ha sido activada, podr&aacute;s disfrutar de esta comunidad inmediatamente.<br><br>&iexcl;Muchas gracias!";
 		}

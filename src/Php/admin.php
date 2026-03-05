@@ -74,20 +74,7 @@ if($ctx->continue()) {
 	# TEMAS
 	} elseif($action === 'temas') {
    	require_once TS_CLASS . "/c.themes.php";
-		$tsThemes = new tsThemes($tsCore, $tsUser);
-
-		if(empty($act)) $smarty->assign("tsTemas", $tsThemes->getTemas());
-		elseif($act === 'editar'){
-			$smarty->assign("tsTema", $tsThemes->getTema());
-			if(isset($_POST['path']) && !empty($_POST['path'])) {
-				if($tsThemes->saveTema())  $tsCore->redirectAdmin($action);
-			}
-		} elseif($act === 'borrar'){
-			if(!empty($_POST['confirm'])) {
-				if($tsThemes->deleteTema()) $tsCore->redirectAdmin($action);
-			}
-			$smarty->assign("themeName", $_GET['tt']);
-		}
+		$smarty->assign("tsTemas", (new tsThemes($tsCore))->getTemas());
 
    # NOTICIAS
    } elseif($action === 'news') {

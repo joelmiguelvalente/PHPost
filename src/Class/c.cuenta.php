@@ -500,4 +500,17 @@ class tsCuenta {
 	public function loadBloqueos(): array {
 		return DB::fetchAll("SELECT b.*, u.user_name FROM u_miembros AS u LEFT JOIN u_bloqueos AS b ON u.user_id = b.b_auser WHERE b.b_user = :uid", ['uid' => $this->User->uid]);
 	}
+
+	public function cambiarTema(): string {
+		$path = trim($_POST['skin'] ?? 'default');
+		$themes = new Themes;
+		if($path === $themes->getUserThemeUse($this->User->uid)) {
+			return '0: Ya lo tienes en uso';
+		}
+		if(!DB::update('u_miembros_sets', ['user_theme' => $path], 'user_id = :uid', ['uid' => $this->User->uid])) {
+			return '0: No se pudo cambiar el theme';
+		}
+		$_SESSION['theme_path'] = $path;
+		return '1: Cambiado exitosamente';
+	}
 }

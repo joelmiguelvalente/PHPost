@@ -69,9 +69,9 @@ switch($action){
 			$tsComment = $tsComentarios->newComentario();
 			$smarty->assign("tsType",'new');
 			//
-			if(is_array($tsComment)) $smarty->assign("tsComment",$tsComment);
+			if(is_array($tsComment)) $smarty->assign("tsComment", $tsComment);
 			else die($tsComment);
-		} elseif($do == 'fotos'){
+		} elseif($do === 'fotos'){
 		   //
 		   $tsComment = $tsFotos->newComentario();
 			if(is_array($tsComment)) $smarty->assign("tsComment",$tsComment);
@@ -103,9 +103,9 @@ switch($action){
 	break;
 	case 'comentario-votar':
 		//<--
-		if(empty($do)){
+		if(empty($do)) {
 			echo $tsComentarios->votarComentario();
-		} elseif($do == 'fotos'){
+		} elseif($do === 'fotos'){
 			//
 			echo $tsFotos->votarFoto();
 		}

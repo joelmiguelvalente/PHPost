@@ -1,12 +1,11 @@
 <h1 class="text-xl font-semibold mb-4">Administrar Temas</h1>
-<div class="rounded border bg-white dark:bg-surface p-4 shadow-sm">
+<div class="rounded border">
 	{include "dashboard/Alert.tpl" text="Tus cambios han sido guardados." color="green" show=$tsSave}
 	
 	{if $tsAct == ''}
 		<div class="overflow-x-auto rounded-md border bg-white dark:bg-surface shadow-sm">
 			<table class="min-w-full border-collapse text-sm">
 				{include "dashboard/table/Thead.tpl" fields=[
-					"ID",
 					"Vista previa",
 					"Nombre",
 					"Creado por",
@@ -16,10 +15,9 @@
 				<tbody class="divide-y dark:divide-gray-700">
 					{foreach from=$tsTemas item=tema}
 						<tr class="hover:bg-gray-50 dark:hover:bg-surface-alt transition-colors">
-							<td class="px-3 py-2">{$tema.tid}</td>
 							<td class="px-3 py-2 text-gray-600 dark:text-gray-400">
 								<picture class="block shadow-sm rounded-lg" style="width:180px;height:100px;">
-									<img src="{$tsRoutes.tema.images}/favicon.png" loading="lazy" data-src="{$tema.t_screen}" style="object-fit:cover;" class="w-full h-full" />
+									<img src="{$tsRoutes.tema.images}/favicon.png" loading="lazy" data-src="{$tsConfig.url}{$tema.t_screen}" style="object-fit:cover;" class="w-full h-full" />
 								</picture>
 							</td>
 							<td class="px-3 py-2">{$tema.t_name}</td>
@@ -29,12 +27,8 @@
 							</td>
 							<td class="px-3 py-2">
 								<div class="flex justify-center gap-2">
-									{include "dashboard/table/Action.tpl" action="temas?act=editar&tid={$tema.tid}" title="Editar este tema" icon="edit"}
 									{if $tsConfig.tema.t_path != $tema.t_path}
-										{include "dashboard/table/Action.tpl" action="tema.usar({$tema.tid})" title="Usar este tema" icon="library_add_check" type="button"}
-										{if $tema.tid != 1}
-											{include "dashboard/table/Action.tpl" action="temas?act=borrar&tid={$tema.tid}&tt={$tema.t_name}" title="Borrar este tema" icon="delete"}
-										{/if}
+										{include "dashboard/table/Action.tpl" action="tema.usar('{$tema.t_path}')" title="Usar este tema" icon="library_add_check" type="button"}
 									{/if}
 								</div>
 							</td>

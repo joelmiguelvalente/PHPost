@@ -37,7 +37,7 @@ class tsComentarios {
 	*/
 	public function getLastComentarios() {
 		$admod = $this->getAdmodConditions('cm', true);
-		$query = DB::fetchAll("SELECT cm.cid, cm.c_status, u.user_name, u.user_activo, u.user_baneado, p.post_id, p.post_title, p.post_status, c.c_seo FROM p_comentarios AS cm LEFT JOIN u_miembros AS u ON cm.c_user = u.user_id LEFT JOIN p_posts AS p ON p.post_id = cm.c_post_id LEFT JOIN p_categorias AS c ON c.cid = p.post_category $admod ORDER BY cid DESC LIMIT 10");
+		$query = DB::fetchAll("SELECT cm.cid, cm.c_status, u.user_id, u.user_name, u.user_activo, u.user_baneado, p.post_id, p.post_title, p.post_status, c.c_seo FROM p_comentarios AS cm LEFT JOIN u_miembros AS u ON cm.c_user = u.user_id LEFT JOIN p_posts AS p ON p.post_id = cm.c_post_id LEFT JOIN p_categorias AS c ON c.cid = p.post_category $admod ORDER BY cid DESC LIMIT 10");
 		return $query;
 	}
 
@@ -66,30 +66,55 @@ class tsComentarios {
    }
 
    public function getComentarios(int $postId): array {
-      $admodConditions = $this->getAdmodConditions();
-      // Paginación
-      $limit = (int)$this->Core->settings['c_max_com'];
-      $start = $this->Paginator->setPageLimit($limit);
+	   $admodConditions = $this->getAdmodConditions();
+	   $limit = (int)$this->Core->settings['c_max_com'];
+	   $start = $this->Paginator->setPageLimit($limit);
 
-      $commentsQuery = "SELECT u.user_name, u.user_activo, u.user_baneado, c.* FROM u_miembros AS u LEFT JOIN p_comentarios AS c ON u.user_id = c.c_user WHERE c.c_post_id = :post_id $admodConditions ORDER BY c.cid LIMIT $start";
-      $comments = DB::fetchAll($commentsQuery, ['post_id' => $postId]);
-      // Conteo de comentarios
-      $countQuery = "SELECT COUNT(*) as total FROM p_comentarios c LEFT JOIN u_miembros u ON c.c_user = u.user_id WHERE c.c_post_id = :post_id $admodConditions";
-      $total = (int)DB::fetch($countQuery, ['post_id' => $postId])['total'];
-      // Procesamiento de comentarios
-      $processedComments = array_map(fn($comment) => $this->processComment($comment), $comments);
-	   $blockValue = 0;
-	   if (!empty($processedComments)) {
-	      // Tomar el valor del ÚLTIMO comentario (como hacía el código original)
-	      $lastComment = end($processedComments);
-	      $blockValue = $lastComment['blocked'] ? 1 : 0;
+	   // Solo traemos comentarios raíz para la paginación
+	   $commentsQuery = "SELECT u.user_id, u.user_name, u.user_activo, u.user_baneado, c.* FROM u_miembros AS u LEFT JOIN p_comentarios AS c ON u.user_id = c.c_user WHERE c.c_post_id = :post_id AND c.c_level = 0 $admodConditions ORDER BY c.cid LIMIT $start";
+	   $comments = DB::fetchAll($commentsQuery, ['post_id' => $postId]);
+
+	   // Conteo solo de raíz
+	   $countQuery = "SELECT COUNT(*) as total FROM p_comentarios c LEFT JOIN u_miembros u ON c.c_user = u.user_id WHERE c.c_post_id = :post_id AND c.c_level = 0 $admodConditions";
+	   $total = (int)DB::fetch($countQuery, ['post_id' => $postId])['total'];
+	   if (empty($comments)) {
+	      return ['num' => $total, 'data' => [], 'block' => 0];
 	   }
+	   // IDs de los comentarios raíz para traer sus respuestas
+	   $rootIds = array_column($comments, 'cid');
+	   $placeholders = [];
+		$rootParams = ['post_id' => $postId];
+		foreach ($rootIds as $i => $id) {
+		   $key = "rid_$i";
+		   $placeholders[] = ':' . $key;
+		   $rootParams[$key] = $id;
+		}
+		$inClause = implode(',', $placeholders);
+
+	   // Traer TODAS las respuestas (nivel 1 y 2) de estos comentarios raíz
+	   $repliesQuery = "SELECT u.user_id, u.user_name, u.user_activo, u.user_baneado, c.* FROM u_miembros AS u LEFT JOIN p_comentarios AS c ON u.user_id = c.c_user WHERE c.c_post_id = :post_id AND c.c_level > 0 AND c.c_answer_cid IN ($inClause) $admodConditions ORDER BY c.cid ASC";
+	   $replies = DB::fetchAll($repliesQuery, $rootParams);
+	   // Agrupar respuestas por c_answer_cid
+	   $repliesMap = [];
+	   foreach ($replies as $reply) {
+	      $reply = $this->processComment($reply);
+	      $repliesMap[$reply['c_answer_cid']][] = $reply;
+	   }
+	   // Procesar comentarios raíz e inyectar sus respuestas
+	   $processedComments = [];
+	   foreach ($comments as $comment) {
+	      $processed = $this->processComment($comment);
+	      $processed['replies'] = $repliesMap[$comment['cid']] ?? [];
+	      $processedComments[] = $processed;
+	   }
+	   $lastComment = end($processedComments);
+	   $blockValue = $lastComment['blocked'] ? 1 : 0;
 	   return [
 	      'num' => $total,
 	      'data' => $processedComments,
 	      'block' => $blockValue
 	   ];
-   }
+	}
 
 	private function cleanComment(): string {
 	   // Límite de 1500 caracteres (soporte UTF-8 completo)
@@ -106,50 +131,68 @@ class tsComentarios {
 		newComentario()
 	*/
 	public function newComentario(): array|string {
-		global $tsActividad;
-		$postId = (int)($_POST['postid'] ?? 0);
-		/* DE QUIEN ES EL POST */
-		$data = DB::fetch("SELECT post_user, post_block_comments FROM p_posts WHERE post_id = :pid LIMIT 1", ['pid' => $postId]);
-		$comentario = $this->cleanComment();
-		$most_resp = isset($_POST['mostrar_resp']) ? true : false;
-		$fecha = time();
-		//
-		if(!$data['post_user']) {
-			return '0: El post no existe.';
-		}
-		if ((int)$data['post_block_comments'] === 1 && (int)$data['post_user'] !== $this->User->uid && (!$this->User->is_admod || !$this->User->permiso('moderacion.posts.comentarios_cerrado'))) {
-		   return '0: El post se encuentra cerrado y no se permiten comentarios.';
-		}
-		if(!$this->User->is_admod && $this->User->permiso('global.posts.comentar') === false) {
-			return '0: No deber&iacute;as hacer estas pruebas.';
-		}
-		// ANTI FLOOD
-		$this->Core->antiFlood();
-		$MyIP = (new IP)->getIP();
-		if(!DB::insert('p_comentarios', [
-			'c_post_id' => $postId,
-			'c_user' => $this->User->uid,
-			'c_date' => $fecha,
-			'c_body' => $comentario,
-			'c_ip' => $MyIP
-		])) {
-			return '0: Ocurri&oacute; un error int&eacute;ntalo m&aacute;s tarde.';
-		}
-		$cid = DB::insertId();
-		//SUMAMOS A LAS ESTADÍSTICAS
-		DB::increment('w_stats', 'stats_comments', 'stats_no = :sid', ['sid' => 1]);
-		DB::increment('p_posts', 'post_comments', 'post_id = :pid', ['pid' => $postId]);
-		DB::increment('u_miembros', 'user_comentarios', 'user_id = :uid', ['uid' => $this->User->uid]);
-		// NOTIFICAR SI FUE CITADO Y A LOS QUE SIGUEN ESTE POST, DUEÑO
-		$this->quoteNoti((int)$postId, (int)$data['post_user'], (int)$cid, $comentario);
-		// ACTIVIDAD
-		$tsActividad->setActividad(5, $postId);
-		// array(comid, comhtml, combbc, fecha, autor_del_post)
-		if($most_resp) {
-			return [$cid, $this->Core->parseBadWords($this->Core->parseBBCode($comentario), true), $comentario, $fecha, $_POST['auser'], '', $MyIP
-			];
-		}
-		return '1: Tu comentario fue agregado satisfactoriamente.';
+	   global $tsActividad;
+	   $postId    = (int)($_POST['postid'] ?? 0);
+	   $parentId  = (int)($_POST['parent_cid'] ?? 0); // cid del comentario que se responde
+	   $most_resp = isset($_POST['mostrar_resp']);
+	   $fecha     = time();
+
+	   $data = DB::fetch("SELECT post_user, post_block_comments FROM p_posts WHERE post_id = :pid LIMIT 1", ['pid' => $postId]);
+	   $comentario = $this->cleanComment();
+	   if (!$data['post_user']) return '0: El post no existe.';
+	   if (str_starts_with($comentario, '0:')) return $comentario;
+
+	   if ((int)$data['post_block_comments'] === 1 && (int)$data['post_user'] !== $this->User->uid && (!$this->User->is_admod || !$this->User->permiso('moderacion.posts.comentarios_cerrado'))) {
+	      return '0: El post se encuentra cerrado y no se permiten comentarios.';
+	   }
+	   if (!$this->User->is_admod && $this->User->permiso('global.posts.comentar') === false) {
+	      return '0: No deber&iacute;as hacer estas pruebas.';
+	   }
+
+	   // Determinar nivel si es respuesta
+	   $level = 0;
+	   $answerCid = 0;
+	   if ($parentId > 0) {
+	      $parent = DB::fetch("SELECT cid, c_level, c_answer_cid FROM p_comentarios WHERE cid = :cid AND c_post_id = :pid", [
+	         'cid' => $parentId,
+	         'pid' => $postId
+	      ]);
+	      if (!$parent) return '0: El comentario al que intentas responder no existe.';
+	      if ((int)$parent['c_level'] === 0) {
+	         $level = 1;
+	         $answerCid = $parentId;
+	      } else {
+	         $level = 2;
+	         $answerCid = (int)$parent['c_answer_cid']; // siempre el raíz
+	      }
+	   }
+	   $this->Core->antiFlood();
+	   $MyIP = (new IP)->getIP();
+
+	   if (!DB::insert('p_comentarios', [
+	      'c_post_id'    => $postId,
+	      'c_user'       => $this->User->uid,
+	      'c_date'       => $fecha,
+	      'c_body'       => $comentario,
+	      'c_level'      => $level,
+	      'c_answer_cid' => $answerCid,
+	      'c_ip'         => $MyIP
+	   ])) {
+	      return '0: Ocurri&oacute; un error int&eacute;ntalo m&aacute;s tarde.';
+	   }
+
+	   $cid = DB::insertId();
+	   DB::increment('w_stats', 'stats_comments', 'stats_no = :sid', ['sid' => 1]);
+	   DB::increment('p_posts', 'post_comments', 'post_id = :pid', ['pid' => $postId]);
+	   DB::increment('u_miembros', 'user_comentarios', 'user_id = :uid', ['uid' => $this->User->uid]);
+
+	   $this->quoteNoti((int)$postId, (int)$data['post_user'], (int)$cid, $comentario);
+	   $tsActividad->setActividad(5, $postId);
+
+	   if ($most_resp) {
+	      return [$cid, $this->Core->parseBadWords($this->Core->parseBBCode($comentario), true), $comentario, $fecha, $_POST['auser'], '', $MyIP];
+	   }
+	   return '1: Tu comentario fue agregado satisfactoriamente.';
 	}
 
 	/*
@@ -294,15 +337,15 @@ class tsComentarios {
 	/*
 		votarComentario()
 	*/
-	public function votarComentario(){
-		global $tsMonitor, $tsActividad;
-   	// Sanitización SEGURA de parámetros
-   	$cid = (int)($_POST['cid'] ?? 0);
-   	$postId = (int)($_POST['postid'] ?? 0);
-   	$votoVal = (isset($_POST['voto']) && $_POST['voto'] === '1') ? 1 : 0; 
+	public function votarComentario() {
+		$comID = (int)($_POST['cid'] ?? 0);
+		$postID = (int)($_POST['postid'] ?? 0);
+		$comType = ($_POST['type'] === 'like');
+		$type = 'c_votos_' . ($comType ? 'pos' : 'neg');
+		$increment = true;
    	// Verificación CORRECTA de permisos (sin redundancias)
    	$permiso = $this->User->is_admod;
-   	$globalPermiso = ($votoVal === 1) ? 'positivo' : 'negativo';
+   	$globalPermiso = $comType ? 'positivo' : 'negativo';
    	if (!$permiso) {
    	   $permiso = $this->User->permiso("global.posts.votar_{$globalPermiso}");
    	}
@@ -310,7 +353,7 @@ class tsComentarios {
    	   return '0: No tienes permiso para votar ' . $globalPermiso;
    	}
    	// Verificar existencia del comentario y autor
-	   $comentario = DB::fetch("SELECT c_user FROM p_comentarios WHERE cid = :cid", ['cid' => $cid]);
+	   $comentario = DB::fetch("SELECT c_user FROM p_comentarios WHERE cid = :cid", ['cid' => $comID]);
 	   if (!$comentario) {
 	      return '0: El comentario no existe';
 	   }
@@ -318,32 +361,58 @@ class tsComentarios {
 	   if ($comentario['c_user'] === $this->User->uid) {
 	      return '0: No puedes votar tu propio comentario';
 	   }
-	   // Verificar voto duplicado con EXISTS (más eficiente)
-	   $yaVoto = DB::exists("SELECT 1 FROM p_votos WHERE tid = :tid AND tuser = :tuser AND type = 2", [
-	      'tid' => $cid,
-	      'tuser' => $this->User->uid
-	   ]);
-	   if ($yaVoto) {
-	      return '0: Ya has votado este comentario';
-	   }
+	   // 
+	   // Buscar si ya existe un voto (cualquier tipo)
+		$votoExistente = DB::fetch("SELECT type_vote FROM p_votos WHERE tid = :tid AND tuser = :tuser AND type = 2", [
+		   'tid' => $comID,
+		   'tuser' => $this->User->uid
+		]);
+
+		if (!$votoExistente) {
+		   $increment = true;
+		   $cambioVoto = false;
+		} elseif ((int)$votoExistente['type_vote'] === (int)$comType) {
+		   $increment = false;
+		   $cambioVoto = false;
+		} else {
+		   $increment = true;
+		   $cambioVoto = true;
+		}
+
+		return $this->votarComentarioAccion($type, $comType, (int)$comentario['c_user'], $increment, $cambioVoto, $comID, $postID);
+	}
+
+	private function votarComentarioAccion(string $type, bool $comType, int $user, bool $increment, bool $cambioVoto, int $comID, int $postID) {
+		global $tsMonitor, $tsActividad;
+		$typeAnterior = 'c_votos_' . ($comType ? 'neg' : 'pos');
 	   // TRANSACCIÓN COMPLETA para atomicidad
 	   DB::begin();
 	   try {
 	      // Lógica CORRECTA de votos (contadores separados)
-	      $column = ($votoVal === 1) ? 'c_votos_pos' : 'c_votos_neg';
-	      DB::update('p_comentarios', [$column => DB::raw($column.' + 1')], 'cid = :cid', ['cid' => $cid]);
-	      // Insertar voto con binding seguro
-	      DB::insert('p_votos', ['tid' => $cid, 'tuser' => $this->User->uid, 'type' => 2, 'voto' => $votoVal]);
-	      // Actualizar puntos SOLO para votos positivos (y con transacción)
-	      if ($votoVal === 1 && (int)$this->Core->settings['c_allow_sump'] === 1) {
-	         DB::update('u_miembros', ['user_puntos' => DB::raw('user_puntos + 1')], 'user_id = :uid',  ['uid' => $comentario['c_user']]);
-	         $this->subirRango($comentario['c_user']);
-	      }
-	      // Notificaciones DENTRO de la transacción (coherencia)
-	      $tsMonitor->setNotificacion(8, $comentario['c_user'], $this->User->uid, $postId, $cid, $votoVal);
-	      $tsActividad->setActividad(6, $postId, $votoVal);
+	      if ($increment) {
+		        DB::increment('p_comentarios', $type, 'cid = :cid', ['cid' => $comID]);
+		        if ($cambioVoto) {
+		            // Revertir el contador del voto anterior
+		            DB::decrement('p_comentarios', $typeAnterior, 'cid = :cid', ['cid' => $comID]);
+		            // Actualizar el voto existente en lugar de insertar
+		            $typeVoteValue = $comType ? 1 : 0;
+		            DB::update('p_votos', ['type_vote' => $typeVoteValue], 'tid = :tid AND tuser = :tuser AND type = 2', ['tid' => $comID, 'tuser' => $this->User->uid]
+		            );
+		        } else {
+		            DB::insert('p_votos', [
+		               'tid' => $comID, 
+		               'tuser' => $this->User->uid, 
+		               'type' => 2, 
+		               'type_vote' => (int)$comType,
+		               'date' => time()
+		            ]);
+		        }
+		    } else {
+		      DB::decrement('p_comentarios', $type, 'cid = :cid', ['cid' => $comID]);
+		      DB::delete('p_votos', 'tid = :tid AND tuser = :tuser AND type = 2', ['tid' => $comID, 'tuser' => $this->User->uid]);
+		   }
 	      DB::commit();
-	      return '1: Gracias por tu voto';
+	      return ($increment) ? '1: Gracias por tu voto' : '0: Voto eliminado';
 	   } catch (Exception $e) {
 	      DB::rollback();
 	      return '0: Error al votar: ' . $e->getMessage();

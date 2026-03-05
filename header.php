@@ -31,6 +31,7 @@ set_time_limit(300);
 require_once TS_UTILS . "/Paginator.php";
 require_once TS_UTILS . "/IP.php";
 require_once TS_UTILS . "/Extras.php";
+require_once TS_UTILS . "/Themes.php";
 
 require_once TS_EXTRA . '/functions.php';
 

@@ -140,6 +140,7 @@ class tsUser {
 		$this->nick = $this->info['user_name'];
 		$this->uid = (int) $this->info['user_id'];
 		$this->is_banned = (int) $this->info['user_baneado'];
+		$_SESSION['theme_path'] = !isset($_SESSION['theme_path']) ? 'default' : $_SESSION['theme_path'];
 		// Avatar
 		$this->avatar = (new Avatar)->get((int) $this->uid);
 		$time = time();

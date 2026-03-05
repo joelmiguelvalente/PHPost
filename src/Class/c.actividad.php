@@ -83,7 +83,7 @@ class tsActividad {
 		if ($ntotal >= (int) $this->Core->settings['c_max_acts']) {
 			DB::delete('u_actividad', 'ac_id = :acid', ['acid' => $delid]);
 		}
-		# SE HACE UN CONTEO PROGRESIVO SI HACE ESTA ACCON MAS DE 1 VEZ AL DIA
+		# SE HACE UN CONTEO PROGRESIVO SI HACE ESTA ACCION MAS DE 1 VEZ AL DIA
 		if ($acType === 5) {
 			$data = DB::fetch("SELECT `ac_id`, `ac_date` FROM `u_actividad` WHERE user_id = :uid AND obj_uno = :obj AND ac_type = :type LIMIT 1", ['uid' => $this->User->uid, 'obj' => $objUno, 'type' => $acType]);
 			//

@@ -14,7 +14,8 @@ if (!defined('TS_HEADER')) {
 
 const ACTIONS = [
    'cuenta-desactivar' => ['nivel' => 2, 'template' => '', 'ajax' => false],
-   'cuenta-guardar' => ['nivel' => 2, 'template' => '', 'ajax' => false]
+   'cuenta-guardar' => ['nivel' => 2, 'template' => '', 'ajax' => false],
+   'cuenta-cambiar-tema' => ['nivel' => 2, 'template' => '', 'ajax' => false]
 ];
 
 if (!array_key_exists($action, ACTIONS)) {
@@ -46,5 +47,8 @@ switch($action) {
 	break;
 	case 'cuenta-guardar':
 		echo $tsCuenta->savePerfil();
+	break;
+	case 'cuenta-cambiar-tema':
+		echo $tsCuenta->cambiarTema();
 	break;
 }
