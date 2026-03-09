@@ -20,17 +20,12 @@ final class AdminHelper {
    CONST EXTENSIONS = ["jpg", "png", "gif", "bmp", "svg"];
 
 	public function optionsRange(array $post): string {
-	   $perms = Permissions::DEFINITIONS;
-
-	   foreach ($perms as $key => $default) {
-	      if (!array_key_exists($key, $post)) {
-	         continue;
-	      }
-	      $perms[$key] = (is_bool($default)) ? ($post[$key] === 'on') : (int)$post[$key];
-	   }
-
-	   return json_encode($perms, JSON_THROW_ON_ERROR);
-	}
+      $perms = Permissions::DEFINITIONS;
+      foreach (Permissions::fieldMap() as $field => $meta) {
+         $perms[$meta['code']] = ($meta['type'] === 'bool') ? isset($post[$field]) : (int)($post[$field] ?? 0);
+      }
+      return json_encode($perms, JSON_THROW_ON_ERROR);
+   }
 
 	/** 
     * Agregamos esta función ya que se repite 2 veces,

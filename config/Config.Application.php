@@ -51,7 +51,7 @@ final class ConfigApplication extends AbstractConfig
 				// 1 - E_ALL
 				// 2 - E_ALL & ~E_WARNING & ~E_NOTICE & ~E_DEPRECATED
 				// 3 - 0
-				'level' => file_exists(dirname(__DIR__, 1)."/.local") ? 1 : 0,
+				'level' => file_exists(dirname(__DIR__, 1)."/.local") ? 1 : 3,
 				'active' => ($APP_ENV === 'development' && file_exists(dirname(__DIR__, 1)."/.local")),
 				'logs' 	=> 'always',
 			],

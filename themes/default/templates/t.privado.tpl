@@ -1,35 +1,32 @@
 {include "main_header.tpl"}
-<div class="post-deleted post-privado clearbeta">
-	<div class="content-splash">
-		<h3>{if $tsType == 'post'}Este post es privado, s&oacute;lo los usuarios registrados de {$tsConfig.titulo} pueden acceder.{else}Registrate en {$tsConfig.titulo}{/if}</h3>
-        {if $tsType == 'post'}Pero no te preocupes, tambi&eacute;n puedes formar parte de nuestra gran familia. <a title="Reg&iacute;strate!" href="{$tsConfig.url}/registro/"><b>Reg&iacute;strate!</b></a>{/if}
-				<div class="reg-login">
-			<div class="login-panel">
-				<h4>...O identif&iacute;cate</h4>
-				<div class="login_cuerpo"  style="float:left;">
-					<span class="gif_cargando floatR" id="login_cargando"></span>
-					<div id="login_error"></div>
-					<form action="javascript:login_ajax('registro-logueo')" id="login-registro-logueo" method="POST">
-						<input type="hidden" value="/registro" name="redirect">
-						<label>Usuario</label>
-						<input type="text" tabindex="20" class="ilogin" id="nickname" name="nick" maxlength="64"/>
-						<label>Contrase&ntilde;a</label>
-						<input type="password" tabindex="21" class="ilogin" id="password" name="pass" maxlength="64"/>
-						<input type="submit" tabindex="22" title="Entrar" value="Entrar" class="mBtn btnOk"/>
-						<div style="color: #666; padding:5px;font-weight: normal; display:none" class="floatR">
-							<input type="checkbox"> Recordarme?
-						</div>
-					</form>
-					<div class="login_footer">
-						<a tabindex="23" href="#" onclick="remind_password();">&iquest;Olvidaste tu contrase&ntilde;a?</a> o <a tabindex="23" href="#" onclick="resend_validation();">&iquest;Quieres activar tu cuenta?</a>
-					</div>
+{load file=['login'] type="js" cache=true}
+	<div class="privado-content">
+		<div class="privado-login flex justify-center items-center flex-col">
+			<h3>{if $tsType == 'post'}Este post es privado, s&oacute;lo los usuarios registrados de {$tsConfig.titulo} pueden acceder.{else}Registrate en {$tsConfig.titulo}{/if}</h3>
+        	{if $tsType == 'post'}<p>Pero no te preocupes, tambi&eacute;n puedes formar parte de nuestra gran familia. <a title="Reg&iacute;strate!" href="{$tsConfig.url}/registro/">Reg&iacute;strate!</a></p>{/if}
+			<div class="py-4 text-center display-message p-8" style="display:none;"></div>
+			<form method="POST" class="flex flex-col gap-3" id="LoginForm">
+				<div class="form-group">
+					<label class="form-label" for="username">Usuario o Correo Electrónico</label>
+					<input class="form-control" placeholder="JohnDoe / johndoe@example.com" name="username" id="username" type="text"/>
+					<span data-label="username" class="form-helper"></span>
 				</div>
-				<div style="float:right;width:210px;font-size:13px;border: 5px solid rgb(195, 0, 20); background: none repeat scroll 0% 0% rgb(247, 228, 221); color: rgb(195, 0, 20); padding: 8px; margin: 10px 0;">
-					<strong>&iexcl;Atenci&oacute;n!</strong>
-					<br>Antes de ingresar tus datos asegurate que la URL de esta p&aacute;gina pertenece a <strong>{$tsConfig.titulo}</strong>
+				<div class="form-group">
+					<label class="form-label" for="password">Contraseña</label>
+					<input class="form-control" placeholder="••••••••" name="password" id="password" type="password"/>
+					<span data-label="password" class="form-helper"></span>
 				</div>
+				<input name="remember" id="remember" type="hidden" value="true" />
+				<!-- Login Button -->
+				<button class="btn btn-primary" id="btn-login">Ingresar</button>
+			</form>
+		</div>
+		<div class="privado-atencion flex justify-center items-center flex-col">
+			<img src="{$tsRoutes.tema.images}/private-post.gif" alt="Post privado">
+			<div class="privado-atencion-card">
+				<h4 class="block">&iexcl;Atenci&oacute;n!</h4>
+				<p>Antes de ingresar tus datos asegurate que la URL de esta p&aacute;gina pertenece a <strong>{$tsConfig.titulo}</strong></p>
 			</div>
 		</div>
 	</div>
-</div>
 {include "main_footer.tpl"}

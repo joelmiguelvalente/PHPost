@@ -44,11 +44,23 @@ if($ctx->continue()) {
 	switch($action){
 		case 'posts':
 			$smarty->assign("tsTops", $tsTops->getTopPosts($fecha, $cat));
+			$boxes = [
+				'puntos' 	=> ['txt' => 'puntos', 'count' => 'post_puntos', 'icon' => 'puntos'],
+				'favoritos' => ['txt' => 'favoritos', 'count' => 'post_favoritos', 'icon' => 'favoritos'],
+				'comments'  => ['txt' => 'comentado', 'count' => 'post_comments', 'icon' => 'comentarios'],
+				'seguidores'  => ['txt' => 'seguidores', 'count' => 'post_seguidores', 'icon' => 'follow']
+			];
 		break;
 		case 'usuarios':
 			$smarty->assign("tsTops", $tsTops->getTopUsers($fecha, $cat));
+			$boxes = [
+				'puntos' 	=> ['txt' => 'puntos', 'icon' => 'puntos'],
+				'seguidores' => ['txt' => 'seguidores', 'icon' => 'follow'],
+				'medallas'  => ['txt' => 'medallas', 'icon' => 'medallas']
+			];
 		break;
 	}
+	$smarty->assign("tsBoxes", $boxes);
 }
 
 if($tsAjax) {

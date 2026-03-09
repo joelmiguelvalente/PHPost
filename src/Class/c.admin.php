@@ -16,8 +16,7 @@ require_once TS_HELPERS . '/AdminHelper.php';
 require_once TS_CLASS . '/c.emails.php';
 
 class tsAdmin {
-   
-   
+
    protected Paginator $Paginator;
 
    # Cantidad de objeto a mostrar
@@ -37,13 +36,13 @@ class tsAdmin {
     * Obtenemos a todos los administradores
    */
    public function getAdmins(): array {
-      return result_array(db_exec([__FILE__, __LINE__], 'query', 'SELECT `user_id`, `user_name` FROM `u_miembros` WHERE user_rango = 1 ORDER BY user_id'));
+      return DB::fetchAll("SELECT user_id, user_name FROM u_miembros WHERE user_rango = 1 ORDER BY user_id");
    }
    /**
     * Obtenemos fundación y acutalización
    */
    public function getInst(): array {
-      $data = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', 'SELECT stats_time_foundation as foundation, stats_time_upgrade as upgrade FROM `w_stats` WHERE stats_no = 1'));
+      $data = DB::fetch("SELECT stats_time_foundation as foundation, stats_time_upgrade as upgrade FROM w_stats WHERE stats_no = :stats", ['stats' => 1]);
       return $data;
    }
    /**
@@ -59,7 +58,7 @@ class tsAdmin {
          'timezone' => date_default_timezone_get(),
       ];
       // Database
-      $row = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', 'SELECT VERSION() AS v'));
+      $row = DB::fetch('SELECT VERSION() AS v');
       $data['database'] = [
          'engine' => 'mysql',
          'version' => $row['v'] ?? null,
@@ -89,9 +88,7 @@ class tsAdmin {
     * @return bool
    */   
    public function saveConfig(string $table = 'w_configuracion', string $id = 'phpost_id'): bool {
-      $columnas = $this->Core->buildSqlSet($_POST);
-      $update = "UPDATE {$table} SET {$columnas} WHERE {$id} = 1";
-      return (db_exec([__FILE__, __LINE__], "query", $update));
+      return (DB::update($table, $_POST, "$id = :id", ['id' => 1]) === 0);
    }
    
    /**
@@ -101,21 +98,17 @@ class tsAdmin {
     * ------------------------------ 
    */
    public function saveAds() {
-      /**
-       * Podria ser un riesgo de seguridad no limpiar estas variables? 
-       * no lo creo pues cuando definimos el nivel de acceso solo 
-       * pueden entrar administradores.
-      */
-      $publicidades = $this->Core->buildSqlSet([
-         'ads_300' => $this->Core->setSecure(html_entity_decode($_POST['ads_300'])),
-         'ads_468' => $this->Core->setSecure(html_entity_decode($_POST['ads_468'])),
-         'ads_160' => $this->Core->setSecure(html_entity_decode($_POST['ads_160'])),
-         'ads_728' => $this->Core->setSecure(html_entity_decode($_POST['ads_728'])),
-         'ads_search' => $this->Core->setSecure($_POST['ads_search'])
-      ]);
+      $publicidades = [];
+      $ads = ['300','468','160','728'];
+      foreach($ads as $ad) {
+         $key = "ads_$ad";
+         $publicidades[$key] = $this->Core->setSecure(html_entity_decode($_POST[$key]));
+      }
+      $publicidades['ads_search'] = $this->Core->setSecure($_POST['ads_search']);
       # Guardamos los datos en la base
-      if (db_exec([__FILE__, __LINE__], 'query', 'UPDATE `w_configuracion` SET '.$publicidades.' WHERE phpost_id = 1')) return true;
+      if (DB::update('w_configuracion', $publicidades, "phpost_id = :id", ['id' => 1])) return true;
    }
+
    /**
     * ------------------------------
     * CATEGORIAS
@@ -133,188 +126,66 @@ class tsAdmin {
       # Obtenemos lista con el nuevo orden
       $nuevo_orden = 1;
       foreach (explode(',', $_POST["cats"]) as $orden) {
-         db_exec([__FILE__, __LINE__], 'query', "UPDATE p_categorias SET c_orden = ".$nuevo_orden." WHERE cid = ".$orden);
+         DB::update('p_categorias', ['c_orden' => $nuevo_orden], "cid = :id", ['id' => $orden]);
          array_push($ordenado, $nuevo_orden);
          $nuevo_orden++;
       }
    }
+
    public function getCat() {
-      # Obtenemos la ID de la categoría
-      $cid = intval($_GET['cid']);
-      # Obtenemos la información
-      $data = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', 'SELECT cid, c_orden, c_nombre, c_seo, c_img FROM p_categorias WHERE cid = '.$cid.' LIMIT 1'));
-      # Retornamos los daots
+      $cid = (int)($_GET['cid'] ?? 0);
+      $data = DB::fetch("SELECT * FROM p_categorias WHERE cid = :id LIMIT 1", ['id' => $cid]);
       return $data;
    }
+
    public function saveCat() {
-      # Obtenemos la ID de la categoría
-      $cid = intval($_GET['cid']);
+      $cid = (int)($_GET['cid'] ?? 0);
       //
       $nombre = $this->Core->setSecure($this->Core->parseBadWords($_POST['c_nombre']));
-      $categoria = $this->Core->buildSqlSet([
-         "nombre" => $nombre,
-         "seo" => $this->Core->setSEO($nombre),
-         "img" => $this->Core->setSecure($this->Core->parseBadWords($_POST['c_img'])),
-      ], 'c_');
+      $categoria = [
+         "c_nombre" => $nombre,
+         "c_seo" => $this->Core->setSEO($nombre),
+         "c_img" => $this->Core->setSecure($this->Core->parseBadWords($_POST['c_img'])),
+      ];
       # Guardamos en la tabla
-      if (db_exec([__FILE__, __LINE__], 'query', 'UPDATE `p_categorias` SET '.$categoria.' WHERE cid = ' . $cid)) return true;
+      if (DB::update('p_categorias', $categoria, "cid = :id", ['id' => $cid])) return true;
    }
+
    public function MoveCat() {
-      $new = intval($_POST['newcid']);
-      if (db_exec([__FILE__, __LINE__], 'query', 'UPDATE `p_posts` SET post_category = '.$new.' WHERE post_category = ' . intval($_POST['oldcid']))) return true;
+      $new = (int)($_POST['newcid'] ?? 0);
+      $old = (int)($_POST['oldcid'] ?? 0);
+      if (DB::update('p_categorias', ['post_category' => $new], "post_category = :old", ['old' => $old])) return true;
    }
+
    public function newCat() {
       # Valores
-      $c_nombre = $this->Core->setSecure($this->Core->parseBadWords($_POST['c_nombre']));
-      $c_seo = $this->Core->setSEO($c_nombre);
-      $c_img = $this->Core->setSecure($this->Core->parseBadWords($_POST['c_img']));
+      $nombre = $this->Core->setSecure($this->Core->parseBadWords($_POST['c_nombre']));
       # Orden
-      $orden = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', 'SELECT COUNT(cid) AS total FROM p_categorias'));
-      $orden = $orden['total'] + 1;
+      $orden = DB::fetch('SELECT COUNT(cid) AS total FROM p_categorias');
+      $orden = (int)$orden['total'] + 1;
       # Insertamos los datos
-      if (db_exec([__FILE__, __LINE__], 'query', 'INSERT INTO `p_categorias` (`c_orden`, `c_nombre`, `c_seo`, `c_img`) VALUES ('.$orden.', \''.$c_nombre.'\',\''.$c_seo.'\', \''.$c_img.'\')')) return true;
+      $insert = DB::insert('p_categorias', [
+         'c_orden' => $orden, 
+         'c_nombre' => $nombre,
+         'c_seo' => $this->Core->setSEO($nombre),
+         'c_img' => $this->Core->setSecure($this->Core->parseBadWords($_POST['c_img']))
+      ]);
+      if ($insert) return true;
    }
+
    public function delCat() {
-      //
-      $cid = intval($_GET['cid']);
-      $ncid = intval($_POST['ncid']);
+      $cid = (int)($_GET['cid'] ?? 0);
+      $ncid = (int)($_POST['ncid'] ?? 0);
       // MOVER
-      if (!empty($ncid) && $ncid > 0) {
-         if (db_exec([__FILE__, __LINE__], 'query', 'UPDATE `p_posts` SET post_category = '.$ncid.' WHERE post_category = ' . $cid)) {
-            if (db_exec([__FILE__, __LINE__], 'query', 'DELETE FROM `p_categorias` WHERE cid = ' . $cid)) return true;
-         // SI LLEGÓ HASTA AQUI HUBO UN ERROR.
-         } else return 'Lo sentimos ocurri&oacute; un error, pongase en contacto con PHPost.';
-      } else return 'Antes de eliminar una categor&iacute;a debes elegir a donde mover sus subcategor&iacute;as.';
-   }
-   /**
-    * ------------------------------
-    * RANGOS
-    * getRangos() :: Obtenemos todos los rangos
-    * getRango() :: Obtenemos el rango por ID
-    * getRangoUsers() :: Obtenemos rangos de usuarios
-    * saveRango() :: Guardamos los datos del rango
-    * newRango() :: Creamos un nuevo rango
-    * delRango() :: Eliminamos el rango
-    * SetDefaultRango() :: Rango predeterminado
-    * ------------------------------ 
-   */
-   public function getRangos() {
-      // RANGOS SIN PUNTOS
-      $query = db_exec([__FILE__, __LINE__], 'query', 'SELECT * FROM u_rangos ORDER BY rango_id, r_cant');
-      // ARMAR ARRAY
-      while ($row = db_exec('fetch_assoc', $query)) {
-         $extra = unserialize($row['r_allows']);
-         $data[$row['r_type'] == 0 ? 'regular' : 'post'][$row['rango_id']] = array(
-            'id' => $row['rango_id'],
-            'name' => $row['r_name'],
-            'color' => $row['r_color'],
-            'imagen' => $row['r_image'],
-            'cant' => $row['r_cant'],
-            'max_points' => $extra['gopfp'],
-            'user_puntos' => $extra['gopfd'],
-            'type' => $row['r_type'],
-            'num_members' => 0
-         );
+      if (empty($ncid) && $ncid === 0) {
+         return 'Antes de eliminar una categor&iacute;a debes elegir a donde mover sus categor&iacute;as.';
       }
-      db_exec('free_result', $query);
-      // NUMERO DE USUARIOS EN CADA RANGO
-      if (!empty($data['post'])) {
-         $query = db_exec([__FILE__, __LINE__], 'query', "SELECT user_rango AS ID_GROUP, COUNT(user_id) AS num_members FROM u_miembros WHERE user_rango IN (" . implode(', ', array_keys($data['post'])) . ") GROUP BY user_rango");
-         while ($row = db_exec('fetch_assoc', $query)) $data['post'][$row['ID_GROUP']]['num_members'] += $row['num_members'];
-         db_exec('free_result', $query);
+      if(!DB::update('p_categorias', ['post_category' => $ncid], "post_category = :cid", ['cid' => $cid])) {
+         return 'Lo sentimos ocurri&oacute; un error.';
       }
-      // NUMERO DE USUARIOS EN RANGOS REGULARES
-      if (!empty($data['regular'])) {
-         $query = db_exec([__FILE__, __LINE__], 'query', "SELECT user_rango AS ID_GROUP, COUNT(*) AS num_members FROM u_miembros WHERE user_rango IN (" . implode(', ', array_keys($data['regular'])) . ") GROUP BY user_rango");
-         while ($row = db_exec('fetch_assoc', $query)) $data['regular'][$row['ID_GROUP']]['num_members'] += $row['num_members'];
-         db_exec('free_result', $query);
-      }
-      //
-      return $data;
+      if (DB::delete('p_categorias', 'cid = :cid', ['cid' => $cid])) return true;
    }
-   public function getRango() {
-      # Obtenemos la ID
-      $id = intval($_GET['rid']);
-      # Obtenemos datos
-      $data = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', 'SELECT * FROM u_rangos WHERE rango_id = \'' . $id .'\' LIMIT 1'));
-      # Deserializamos
-      $data['permisos'] = unserialize($data['r_allows']);
-      # Retornamos los datos
-      return $data;
-   }
-   public function getRangoUsers() {
-      //
-      $rid = intval($_GET['rid']);
-      $max = 10; // MAXIMO A MOSTRAR
-      // TIPO DE BUSQUEDA
-      $type = $_GET['t'];
-      $where = 'user_rango = ' . $rid;
-      // SELECCIONAMOS
-      $limit = $this->Paginator->setPageLimit($max, true);
-      $data['data'] = result_array(db_exec([__FILE__, __LINE__], 'query', 'SELECT u.user_id, u.user_name, u.user_email, u.user_registro, u.user_lastlogin FROM u_miembros AS u WHERE u.' . $where . ' LIMIT ' . $limit));
-      # Paginamos
-      list($total) = db_exec('fetch_row', db_exec([__FILE__, __LINE__], 'query', 'SELECT COUNT(*) FROM u_miembros WHERE ' . $where));
-      $data['pages'] = $this->Paginator->pageIndex($this->Core->settings['url'] . '/admin/rangos?act=list&rid=' . $rid . '&t=' . $type . '', $_GET['s'] ?? 0, (int)$total, $max);
-      # Retornamos
-      return $data;
-   }
-   public function saveRango() {
-      //
-      $rid = intval($_GET['rid']);
-      $r = [
-         'r_name' => $this->Core->setSecure($this->Core->parseBadWords($_POST['rName'])),
-         'r_color' => $this->Core->setSecure($_POST['rColor']),
-         'r_image' => $this->Core->setSecure($_POST['r_img']),
-         'r_cant' => intval(empty($_POST['global-cantidadrequerida']) ? 0 : $this->Core->setSecure($_POST['global-cantidadrequerida'])),
-         'r_type' => $_POST['global-type'] > 4 ? 0 : $_POST['global-type'],
-         'r_allows' => $this->AdminHelper->optionsRange($_POST)
-      ];
-      //
-      if (empty($r['r_name']))  return 'Debes ingresar el nombre del nuevo rango.';
-      if ($_POST['global-pointsforposts'] > $_POST['global-pointsforday']) return 'El rango no puede dar m&aacute;s puntos de los que tiene al d&iacute;a.';
-      //
-      $columnas = $this->Core->buildSqlSet( $r );
-      // 
-      return (db_exec([__FILE__, __LINE__], 'query', 'UPDATE `u_rangos` SET '.$columnas.' WHERE rango_id = ' . $rid)) ? true : exit( show_error('Error al ejecutar la consulta de la l&iacute;nea '.__LINE__.' de '.__FILE__.'.', 'db') );
-   }
-   public function newRango() {
-      //
-      $r = [
-         'r_name' => $this->Core->setSecure($this->Core->parseBadWords($_POST['rName'])),
-         'r_color' => $this->Core->setSecure($_POST['rColor']),
-         'r_img' => $this->Core->setSecure($_POST['r_img']),
-         'r_cant' => intval(empty($_POST['global-cantidadrequerida']) ? 0 : $this->Core->setSecure($_POST['global-cantidadrequerida'])),
-         'r_type' => intval($_POST['global-type'] > 4 ? 0 : $_POST['global-type']),
-         'r_allows' => $this->AdminHelper->optionsRange($_POST)
-      ];
-      //
-      if (empty($r['r_name'])) return 'Debes ingresar el nombre del nuevo rango.';
-      if ($_POST['global-pointsforposts'] > $_POST['global-pointsforday']) return 'El rango no puede dar m&aacute;s puntos de los que tiene al d&iacute;a.';
-      //
-      if (db_exec([__FILE__, __LINE__], 'query', 'INSERT INTO `u_rangos` (`r_name`, `r_color`, `r_image`, `r_cant`, `r_allows`, `r_type`) VALUES (\'' . $r['r_name'] . '\', \'' . $r['r_color'] . '\', \'' . $r['r_img'] . '\', \'' . $r['r_cant'] . '\', \'' . $r['r_allows'] . '\', \'' . $r['r_type'] . '\')')) return 1;
-   }
-   public function delRango() {
-      //
-      $rid = intval($_GET['rid']);
-      $nid = intval($_POST['new_rango']);
-      //
-      if ($rid > 3) {
-         if (db_exec([__FILE__, __LINE__], 'query', 'UPDATE u_miembros SET user_rango = '.$nid.' WHERE user_rango = ' . $rid )) {
-            if (db_exec([__FILE__, __LINE__], 'query', 'DELETE FROM u_rangos WHERE rango_id = ' . $rid)) return true;
-         }
-      } else return 'No es posible eliminar este rango';
-   }
-   public function SetDefaultRango() {
-      //
-      if($_SERVER['HTTP_REFERER'] == $this->Core->settings['url'].'/admin/rangos?save=true' || $_SERVER['HTTP_REFERER'] == $this->Core->settings['url'].'/admin/rangos') {
-         $rid = intval($_GET['rid']);
-         //
-         $dato = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', 'SELECT rango_id, r_type FROM u_rangos WHERE rango_id = ' .$rid.' LIMIT 1'));
-         if (!empty($dato['rango_id']) && intval($dato['r_type']) == 0) {
-            if (db_exec([__FILE__, __LINE__], 'query', 'UPDATE w_configuracion SET c_reg_rango = '.$rid.' WHERE phpost_id = 1')) return true;
-         } else return 'El rango no existe o no es posible utilizarlo';
-      } else return 'Petici&oacute;n inv&aacute;lida';
-   }
+   
    /**
     * ------------------------------
     * USUARIOS

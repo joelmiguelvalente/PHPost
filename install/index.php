@@ -102,8 +102,8 @@ require_once __DIR__ . '/backend.php';
 								<dd><input type="password" autocomplete="off" id="smtppass" name="smtppass" placeholder="Contraseña de conexion" value="<?= $phpmailer['smtppass'] ?>" /></span></dd>
 							</dl>
 							<dl>
-								<dt><label for="smtpname">SMTP Name:</label></dt>
-								<dd><input type="text" autocomplete="off" id="smtpname" name="smtpname" placeholder="Nombre de remitente" value="<?= $phpmailer['smtpname'] ?>" /></span></dd>
+								<dt><label for="smtpfrom">SMTP From:</label></dt>
+								<dd><input type="email" autocomplete="off" id="smtpfrom" name="smtpfrom" placeholder="Email del remitente" value="<?= $phpmailer['smtpfrom'] ?>" /></span></dd>
 							</dl>
 							<p class="button-group">
 								<input type="submit" name="omitir" class="gbqfb red" value="Omitir"/>

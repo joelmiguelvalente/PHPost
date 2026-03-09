@@ -1,6 +1,7 @@
 #newpost {
+	--sidebar: 300px;
 	display: grid;
-	grid-template-columns: 1fr 300px;
+	grid-template-columns: calc(100% - var(--sidebar)) var(--sidebar);
 	grid-template-rows: 1fr auto;
 	grid-template-areas: 'contenido columna' 'footer footer';
 	gap: .875rem;

@@ -15,7 +15,7 @@ $collection = [
 
 if (!DB::exists($sentence, $collection)) {
    // Ya existe, lo que significa que NO hemos migrado aún
-   DB::query("ALTER TABLE u_miembros_sets ADD user_theme CHAR(40) NOT NULL DEFAULT 'default");
+   DB::query("ALTER TABLE u_miembros_sets ADD user_theme CHAR(40) NOT NULL DEFAULT 'default'");
    if(DB::insert('w_migrations', [ 'migration' => $name,  'executed_at' => $time ])) {
       echo json_encode([
          'success' => true, 

@@ -27,8 +27,8 @@ require_once __DIR__ . '/header.php';
 $doAction = (isset($_GET['do']) && $_GET['do'] === 'portal');
 if((int)$tsCore->settings['c_allow_portal'] && $tsUser->is_member && $doAction) {
 	// Portal/mi
-	require_once __DIR__ . '/src/php/portal.php';
+	require_once __DIR__ . '/src/Php/portal.php';
 } else {
 	// Home
-	require_once __DIR__ . '/src/php/home.php';
+	require_once __DIR__ . '/src/Php/home.php';
 }

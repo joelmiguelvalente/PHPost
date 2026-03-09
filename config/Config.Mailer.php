@@ -67,7 +67,7 @@ final class ConfigMailer extends AbstractConfig
 			/**
 			 * Dirección de correo remitente (From)
 			 */
-			'SMTP_FROM' => 'smtpname',
+			'SMTP_FROM' => 'smtpfrom',
 
 			/**
 			 * Método de cifrado de la conexión

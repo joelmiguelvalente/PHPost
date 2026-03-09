@@ -4,82 +4,82 @@ final class Permissions {
 	
 	public const TREE = [
 		'admin' => [
-         'superadministrador' => ['code' => 'suad', 'type' => 'bool'],
-         'supermoderador'     => ['code' => 'sumo', 'type' => 'bool'],
+         'superadministrador' => ['code' => 'suad', 'type' => 'bool', 'field' => 'superadmin'],
+         'supermoderador' => ['code' => 'sumo', 'type' => 'bool', 'field' => 'supermod'],
       ],
       'moderacion' => [
-      	'panel' => [
-            'acceso' => ['code' => 'moacp', 'type' => 'bool'],
+         'panel' => [
+            'acceso' => ['code' => 'moacp', 'type' => 'bool', 'field' => 'mod-accesopanel'],
          ],
-			'denuncias' => [
+         'denuncias' => [
             'cancelar' => [
-               'fotos'    => ['code' => 'mocdf', 'type' => 'bool'],
-               'mensajes' => ['code' => 'mocdm', 'type' => 'bool'],
-               'posts'    => ['code' => 'mocdp', 'type' => 'bool'],
-               'usuarios' => ['code' => 'mocdu', 'type' => 'bool'],
+               'fotos' => ['code' => 'mocdf', 'type' => 'bool', 'field' => 'mod-cancelardenunciasfotos'],
+               'mensajes' => ['code' => 'mocdm', 'type' => 'bool', 'field' => 'mod-cancelardenunciasmensajes'],
+               'posts' => ['code' => 'mocdp', 'type' => 'bool', 'field' => 'mod-cancelardenunciasposts'],
+               'usuarios' => ['code' => 'mocdu', 'type' => 'bool', 'field' => 'mod-cancelardenunciasusuarios'],
             ],
-            'aceptar_mensajes' => ['code' => 'moadm', 'type' => 'bool'],
+            'aceptar_mensajes' => ['code' => 'moadm', 'type' => 'bool', 'field' => 'mod-aceptardenunciasmensajes'],
          ],
          'usuarios' => [
-            'buscador'          => ['code' => 'moub', 	'type' => 'bool'],
-            'desbanear'         => ['code' => 'modu', 	'type' => 'bool'],
-            'suspender'         => ['code' => 'mosu', 	'type' => 'bool'],
-            'ver_baneados'      => ['code' => 'movub', 	'type' => 'bool'],
-            'ver_desactivados'  => ['code' => 'movcud', 	'type' => 'bool'],
-            'ver_suspendidos'   => ['code' => 'movcus', 	'type' => 'bool'],
+            'buscador' => ['code' => 'moub',   'type' => 'bool', 'field' => 'mod-usarbuscador'],
+            'desbanear' => ['code' => 'modu',   'type' => 'bool', 'field' => 'mod-desbanearusuarios'],
+            'suspender' => ['code' => 'mosu',   'type' => 'bool', 'field' => 'mod-suspenderusuarios'],
+            'ver_baneados' => ['code' => 'movub',  'type' => 'bool', 'field' => 'mod-verusuariosbaneados'],
+            'ver_desactivados' => ['code' => 'movcud', 'type' => 'bool', 'field' => 'mod-vercuentasdesactivadas'],
+            'ver_suspendidos' => ['code' => 'movcus', 'type' => 'bool', 'field' => 'mod-vercuentassuspendidas'],
          ],
          'comentarios' => [
-         	'desaprobados' => ['code' => 'mocc', 'type' => 'bool']
+            'desaprobados' => ['code' => 'mocc', 'type' => 'bool', 'field' => 'mod-contenidocomentarios'],
          ],
          'posts' => [
-            'abrir_cerrar'         => ['code' => 'moayca', 	 'type' => 'bool'],
-            'comentarios_cerrado'  => ['code' => 'mocepc', 	 'type' => 'bool'],
-            'desaprobados'         => ['code' => 'mocp', 	 'type' => 'bool'],
-            'editar'               => ['code' => 'moedpo', 	 'type' => 'bool'],
-            'editar_comentarios'   => ['code' => 'moedcopo', 'type' => 'bool'],
-            'eliminar'             => ['code' => 'moep', 	 'type' => 'bool'],
-            'eliminar_comentarios' => ['code' => 'moecp', 	 'type' => 'bool'],
-            'fijar'                => ['code' => 'most', 	 'type' => 'bool'],
-            'ocultar'              => ['code' => 'moop', 	 'type' => 'bool'],
-            'papelera'             => ['code' => 'morp', 	 'type' => 'bool'],
-            'revision'          	  => ['code' => 'moaydcp',  'type' => 'bool'],
+            'abrir_cerrar' => ['code' => 'moayca',   'type' => 'bool', 'field' => 'mod-abrirycerrarajax'],
+            'comentarios_cerrado' => ['code' => 'mocepc',   'type' => 'bool', 'field' => 'mod-comentarpostcerrado'],
+            'desaprobados' => ['code' => 'mocp',     'type' => 'bool', 'field' => 'mod-contenidoposts'],
+            'editar' => ['code' => 'moedpo',   'type' => 'bool', 'field' => 'mod-editarposts'],
+            'editar_comentarios' => ['code' => 'moedcopo', 'type' => 'bool', 'field' => 'mod-editarcomposts'],
+            'eliminar' => ['code' => 'moep',     'type' => 'bool', 'field' => 'mod-eliminarposts'],
+            'eliminar_comentarios' => ['code' => 'moecp',    'type' => 'bool', 'field' => 'mod-eliminarcomposts'],
+            'fijar' => ['code' => 'most',     'type' => 'bool', 'field' => 'mod-sticky'],
+            'ocultar' => ['code' => 'moop',     'type' => 'bool', 'field' => 'mod-ocultarposts'],
+            'papelera' => ['code' => 'morp',     'type' => 'bool', 'field' => 'mod-reciclajeposts'],
+            'revision' => ['code' => 'moaydcp',  'type' => 'bool', 'field' => 'mod-desyaprobarcomposts'],
          ],
          'fotos' => [
-            'editar'                => ['code' => 'moedfo', 'type' => 'bool'],
-            'eliminar'              => ['code' => 'moef', 	'type' => 'bool'],
-            'eliminar_comentarios'  => ['code' => 'moecf', 	'type' => 'bool'],
-            'papelera'              => ['code' => 'morf', 	'type' => 'bool'],
+         	'editar' => ['code' => 'moedfo', 'type' => 'bool', 'field' => 'mod-editarfotos'],
+         	'eliminar' => ['code' => 'moef',   'type' => 'bool', 'field' => 'mod-eliminarfotos'],
+         	'eliminar_comentarios' => ['code' => 'moecf',  'type' => 'bool', 'field' => 'mod-eliminarcomfotos'],
+         	'papelera' => ['code' => 'morf',   'type' => 'bool', 'field' => 'mod-reficlajefotos'],
          ],
          'muros' => [
-            'eliminar_comentarios'   => ['code' => 'moecm', 'type' => 'bool'],
-            'eliminar_publicaciones' => ['code' => 'moepm', 'type' => 'bool'],
+            'eliminar_comentarios' => ['code' => 'moecm', 'type' => 'bool', 'field' => 'mod-eliminarcommuro'],
+            'eliminar_publicaciones' => ['code' => 'moepm', 'type' => 'bool', 'field' => 'mod-eliminarpubmuro'],
          ],
       ],
       'global' => [
          'posts' => [
-            'comentar'		  => ['code' => 'gopcp',  'type' => 'bool'],
-            'publicar'		  => ['code' => 'gopp',   'type' => 'bool'],
-            'puntuar'		  => ['code' => 'godp',   'type' => 'bool'],
-            'revisar'		  => ['code' => 'gorpap', 'type' => 'bool'],
-            'votar_negativo' => ['code' => 'govpn',  'type' => 'bool'],
-            'votar_positivo' => ['code' => 'govpp',  'type' => 'bool'],
+            'comentar' => ['code' => 'gopcp',  'type' => 'bool', 'field' => 'global-publicarcomposts'],
+            'publicar' => ['code' => 'gopp',   'type' => 'bool', 'field' => 'global-publicarposts'],
+            'puntuar' => ['code' => 'godp',   'type' => 'bool', 'field' => 'global-darpuntos'],
+            'revisar' => ['code' => 'gorpap', 'type' => 'bool', 'field' => 'global-revisarposts'],
+            'votar_negativo' => ['code' => 'govpn',  'type' => 'bool', 'field' => 'global-votarnegapost'],
+            'votar_positivo' => ['code' => 'govpp',  'type' => 'bool', 'field' => 'global-votarposipost'],
          ],
          'comentarios' => [
-            'editar_propios'	 => ['code' => 'goepc', 'type' => 'bool'],
-            'eliminar_propios' => ['code' => 'godpc', 'type' => 'bool'],
+            'editar_propios' => ['code' => 'goepc', 'type' => 'bool', 'field' => 'global-editarpropioscomentarios'],
+            'eliminar_propios' => ['code' => 'godpc', 'type' => 'bool', 'field' => 'global-eliminarpropioscomentarios'],
          ],
          'fotos' => [
-            'publicar'	=> ['code' => 'gopf',  'type' => 'bool'],
-            'comentar'	=> ['code' => 'gopcf', 'type' => 'bool'],
+            'publicar' => ['code' => 'gopf',  'type' => 'bool', 'field' => 'global-publicarfotos'],
+            'comentar' => ['code' => 'gopcf', 'type' => 'bool', 'field' => 'global-publicarcomfotos'],
          ],
          'sistema' => [
-            'modo_mantenimiento' => ['code' => 'govwm', 'type' => 'bool'],
+            'modo_mantenimiento' => ['code' => 'govwm', 'type' => 'bool', 'field' => 'global-vermantenimiento'],
          ],
       ],
       'limites' => [
-         'antiflood'        => ['code' => 'goaf',  'type' => 'int'],
-         'puntos_por_post'  => ['code' => 'gopfp', 'type' => 'int'],
-         'puntos_por_dia'   => ['code' => 'gopfd', 'type' => 'int'],
+         'antiflood' => ['code' => 'goaf',  'type' => 'int', 'field' => 'global-antiflood'],
+         'puntos_por_post' => ['code' => 'gopfp', 'type' => 'int', 'field' => 'global-pointsforposts'],
+         'puntos_por_dia'  => ['code' => 'gopfd', 'type' => 'int', 'field' => 'global-pointsforday'],
       ],
    ];
 
@@ -194,4 +194,23 @@ final class Permissions {
 	   }
 	   return null;
 	}
+
+	/**
+	 * Construye el mapa field => [code, type] recorriendo el TREE
+	 */
+	public static function fieldMap(): array {
+	   $map = [];
+	   $walk = function(array $tree) use (&$walk, &$map) {
+	      foreach ($tree as $node) {
+	         if (isset($node['code'], $node['field'])) {
+	            $map[$node['field']] = ['code' => $node['code'], 'type' => $node['type']];
+	            continue;
+	         }
+	         if (is_array($node)) $walk($node);
+	      }
+	   };
+	   $walk(self::TREE);
+	   return $map;
+	}
+
 }

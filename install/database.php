@@ -775,7 +775,14 @@ $phpost_sql[] = "INSERT INTO `w_migrations` (`id`, `migration`, `executed_at`) V
 (1, 'video_platforms', 1770957195),
 (2, 'categorias', 1770825789),
 (3, 'permisos', 1770409335),
-(4, 'configuracion_registro', 1770409300);";
+(4, 'configuracion_registro', 1770409300),
+(5, 'post_excerpt', 1772591038),
+(6, 'miembro_tema', 1772591048),
+(7, 'configuracion_puntos_ilimitados', 1772591095),
+(8, 'comentarios_votos', 1772591095),
+(9, 'denuncias', 1772601095),
+(10, 'voto_type', 1772738395),
+(11, 'comentarios_level', 1772747280);";
 
 $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `w_video_platforms` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,

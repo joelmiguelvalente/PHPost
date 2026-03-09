@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name agregar.php
+ * @name admin.php
  * @author PHPost Team
  * @copyright 2026
  */
@@ -71,6 +71,15 @@ if($ctx->continue()) {
 			if($tsAdmin->saveConfig('w_registro', 'reg_id')) $tsCore->redirectAdmin($action);
 		}
 
+	} elseif($action === 'phpmailer') {
+		require_once TS_CLASS . '/c.mailer.php';
+		$Mailer = new Mailer();
+
+		$smarty->assign("tsPHPMailer", $Mailer->mailerConfig());
+		if(!empty($_POST['SMTP_HOST'])) {
+			if($Mailer->saveMailerConfig()) $tsCore->redirectAdmin($action);
+		}
+
 	# TEMAS
 	} elseif($action === 'temas') {
    	require_once TS_CLASS . "/c.themes.php";
@@ -92,8 +101,8 @@ if($ctx->continue()) {
 		}
 
 	# PUBLICIDADES
-	} elseif($action === 'ads'){
-		if(!empty($_POST['save'])){
+	} elseif($action === 'ads') {
+		if(!empty($_POST['ads_300']) || !empty($_POST['ads_search'])){
 			if($tsAdmin->saveAds()) $tsCore->redirectAdmin($action);
 		}
 
@@ -267,46 +276,41 @@ if($ctx->continue()) {
 		}
 
 	# RANGOS
-	} elseif($action === 'rangos'){
-			// PORTADA
-			if(empty($act)) {
-				$smarty->assign("tsRangos", $tsAdmin->getRangos());
-			// LISTAR USUARIOS DEPENDIENDO EL RANGO
-			} elseif($act === 'list'){
-				$smarty->assign("tsMembers", $tsAdmin->getRangoUsers());
-			// EDITAR RANGO
-			} elseif($act === 'editar'){
-				if(!empty($_POST['save'])) {
-					if($tsAdmin->saveRango()) $tsCore->redirectTo('/admin/rangos?save=true');
-				} else {
-					$smarty->assign("tsRango", $tsAdmin->getRango());
+	} elseif($action === 'rangos') {
+		require_once TS_CLASS . '/c.rangos.php';
+		$tsRangos = new tsRangos($tsCore, $tsUser);
+		$smarty->assign("tsPredeterminado", $tsCore->reCaptchaConfig('c_reg_rango'));
+		// PORTADA
+		if(empty($act)) {
+			$smarty->assign("tsRangos", $tsRangos->getRangos());
+		// LISTAR USUARIOS DEPENDIENDO EL RANGO
+		} elseif($act === 'list') {
+			$smarty->assign("tsMembers", $tsRangos->getRangoUsers());
+		// EDITAR RANGO | NUEVO RANGO
+		} elseif($act === 'editar' || $act === 'nuevo') {
+			$isEdit = ($act === 'editar');
+			if(!empty($_POST['save'])) {
+				$save = $isEdit ? $tsRangos->saveRango() : $tsRangos->newRango();
+				if($save) $tsCore->redirectAdmin($action);
+				if(!$save && !$isEdit) {
+					$smarty->assign("tsError", $save); 
 					$smarty->assign("tsIcons", $AdminHelper->getExtraIcons('ran'));
-               $smarty->assign("tsType", $_GET['t']);
 				}
-			// NUEVO RANGO
-			} elseif($act === 'nuevo'){
-				if(!empty($_POST['save'])){
-					$save = $tsAdmin->newRango();
-					if($save == 1) $tsCore->redirectTo('/admin/rangos?save=true');
-					else {
-						$smarty->assign("tsError", $save); 
-						$smarty->assign("tsIcons", $AdminHelper->getExtraIcons('ran'));
-					}
-				} else {
-					$smarty->assign("tsIcons", $AdminHelper->getExtraIcons('ran'));
-                    $smarty->assign("tsType", $_GET['t']);
-				}
-			} elseif($act === 'borrar'){
-				if(empty($_POST['save'])){
-					$smarty->assign("tsRangos", $tsAdmin->getAllRangos());
-				}else{
-					if($tsAdmin->delRango()) $tsCore->redirectTo('/admin/rangos?save=true');
-				}
+			} else {
+				if($isEdit) $smarty->assign("tsRango", $tsRangos->getRango());
+				$smarty->assign("tsIcons", $AdminHelper->getExtraIcons('ran'));
+            $smarty->assign("tsType", trim($_GET['type'] ?? 'special'));
 			}
-			// CAMBIAR RANGO PREDETERMINADO DEL REGISTRO
-			elseif($act === 'setdefault'){
-					if($tsAdmin->SetDefaultRango()) $tsCore->redirectTo('/admin/rangos?save=true');
+		} elseif($act === 'borrar'){
+			if(empty($_POST['save'])) {
+				$smarty->assign("tsRangos", $tsRangos->getAllRangos());
+			} else {
+				if($tsRangos->delRango()) $tsCore->redirectAdmin($action);
 			}
+		// CAMBIAR RANGO PREDETERMINADO DEL REGISTRO
+		} elseif($act === 'setdefault'){
+			if($tsRangos->SetDefaultRango()) $tsCore->redirectAdmin($action);
+		}
 	} elseif($action === 'users'){
 	   if(empty($act)) $smarty->assign("tsMembers", $tsAdmin->getUsuarios());
 	   elseif($act === 'show'){

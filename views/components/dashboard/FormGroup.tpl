@@ -23,13 +23,13 @@
   	</label>
   	<div class="{if $type == 'radio'}flex gap-6{else}md:col-span-2{/if}">
   		{if $group}
-    		{include file="dashboard/InputGroup.tpl" name=$id id=$id value=$value|default:'' maxlength=$maxlength|default:2 prefix=$prefix|default:'' suffix=$suffix|default:'' width=$width|default:'w-20'}
+    		{include file="dashboard/InputGroup.tpl" name=$name id=$id value=$value|default:'' maxlength=$maxlength|default:2 prefix=$prefix|default:'' suffix=$suffix|default:'' width=$width|default:'w-20'}
     	{elseif $type == 'radio'}
     		{foreach $values item=val key=i}
     			{include file="dashboard/Check.tpl" type="radio" name=$name value=$val checked=$checked label=$labels.$i}
     		{/foreach}
     	{else}
-    		{include file="dashboard/Input.tpl" type=$type name=$id id=$id value=$value|default:'' disabled=$disabled|default:false}
+    		{include file="dashboard/Input.tpl" type=$type name=$name id=$id value=$value|default:'' disabled=$disabled|default:false}
   		{/if}
   	</div>
 </div>

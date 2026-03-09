@@ -284,3 +284,14 @@ var ad_afiliado = {
       })
    }
 }
+
+$(document).ready(() => {
+
+	$('#newRank span, input[type="button"]#next').on('click', function(e) {
+		e.preventDefault();
+		const target = $(this).data('target');
+		$('#basico, #permisos').hide();
+		$(`#${target}`).show();
+	});
+
+});

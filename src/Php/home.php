@@ -96,6 +96,11 @@ if($ctx->continue()) {
 	$smarty->assign("tsAfiliados", $tsAfiliado->getAfiliados());
 	// DO <= PARA EL MENU
 	$smarty->assign("tsDo", $_GET['do'] ?? '');
+
+	require_once TS_LOGGER . '/LogWidget.php';
+	if ($tsUser->is_admod === 1) {
+	   $smarty->assign('logWidget', LogWidget::getData());
+	}
 }
 
 if($tsAjax) {

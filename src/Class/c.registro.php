@@ -222,36 +222,16 @@ class tsRegistro {
 			return '0: Ocurri&oacute; un error, int&eacute;ntelo de nuevo.';
 		}
 
-		$title = $this->Core->settings['titulo'];
-		$body = <<<ACTIVE
-		<div style="background:#0f7dc1;padding:10px;font-family:Arial, Helvetica,sans-serif;color:#000">
-			<h1 style="color:#FFFFFF; font-weight:bold; font-size:30px;">$title</h1>
-			<div style="background:#FFF;padding:10px;font-size:16px">
-				<h2 style="font-family:Arial, Helvetica,sans-serif;color:#000;font-size:22px">Hola {$tsData['user_nick']}</h2>
-				<p style="font-family:Arial, Helvetica,sans-serif;color:#000">&iexcl;Te damos la bienvenida a $title!</p>
-				<p>Para finalizar con el proceso de registro, confirma tu direcci&oacute;n de email accediendo a <a href="{$this->Core->route('url')}/validar/$pinHash/2/{$tsData['user_email']}">este enlace</a> y luego ingresando este pin <strong>$pin</strong>
-				</p>
-
-				<br /> <br />
-				<p>Posteriormente podr&aacute; acceder con las siguientes credenciales:</p>
-				<p>Usuario: <strong>{$tsData['user_nick']}</strong></p>
-				<p>Contrase&ntilde;a: <strong>{$tsData['user_password']}</strong></p>
-				<hr />
-				<p>Antes de empezar a interactuar con la comunidad, te recomendamos que visites el <a target="_blank" href="{$this->Core->route('url')}/pages/protocolo/">Protocolo</a> del sitio.</p>
-				<p>Esperamos que disfrutes enormemente tu visita.</p>
-				<p>&iexcl;Te damos la bienvenida a Muchas gracias!</p>
-				<p>Staff de $title.</p>		
-				<div style="border-top:#CCC solid 1px;padding:10px 0">
-					<span style="color:#666;font-size:11px">
-						<center>El staff de <strong>$title</strong></center>
-					</span> 
-				</div>
-			</div>
-		</div>
-		ACTIVE;
+		$placeholders = [
+			'USERNAME' => $tsData['user_nick'],
+			'PASSWORD' => $tsData['user_password'],
+			'LINK' => $this->Core->route('url') . "/validar/$pinHash/2/{$tsData['user_email']}",
+			'PIN' => $pin,
+		];
 		// <--
-		$email = new tsEmail($this->Core);
-		$email->sendSignup($tsData['user_email'], 'activate', $bodyHtml) OR die('0: Hubo un error al intentar procesar lo solicitado');
+		$Email = new tsEmail($this->Core);
+		$Email->asunto = 'activate';
+		$Email->sendFast('joelmiguelvalente@gmail.com', $placeholders) OR die('0: Hubo un error al intentar procesar lo solicitado');
 		return "2: Te hemos enviado un correo a <b>$to</b> con los &uacute;ltimos pasos para finalizar con el registro.<br><br>Si en los pr&oacute;ximos minutos no lo encuentras en tu bandeja de entrada, por favor, revisa tu carpeta de correo no deseado, es posible que se haya filtrado.<br><br>&iexcl;Muchas gracias!";	
 	}
 

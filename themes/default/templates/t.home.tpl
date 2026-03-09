@@ -12,6 +12,7 @@
 		<!--Poner aqui mas modulos-->
 	</div>
 	<div id="derecha">
+		{include "widget.logs.tpl"}
 		{if $tsConfig.c_fotos_private && $tsUser->is_member}
 			{include "m.home_fotos.tpl"}
 		{/if}

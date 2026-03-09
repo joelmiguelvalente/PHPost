@@ -297,7 +297,7 @@ class tsPosts {
 		// STATUS
 		$data['status'] = $this->UserHelper->getStatusCode((int)$data['user_lastactive'], (int)$data['user_baneado']);
 		// PAIS
-		$tsPaises = require_once dirname(__DIR__, 1) . "/extras/Paises.php";
+		$tsPaises = require_once TS_EXTRA . "/Paises.php";
 		$userPais = empty($data['user_pais']) ? 'XX' : $data['user_pais'];
 		$data['pais'] = [
 			'icon' => strtolower($userPais),

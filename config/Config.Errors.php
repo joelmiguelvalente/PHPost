@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 require_once TS_LOGGER . '/LogLevel.php';
 require_once TS_LOGGER . '/LoggerFormatter.php';
+require_once TS_LOGGER . '/LogParser.php';
 require_once TS_LOGGER . '/Logger.php';
 
 $level = match(Config::app('debug.level')) {
@@ -21,9 +22,11 @@ $level = match(Config::app('debug.level')) {
 // Reporte de errores
 error_reporting($level);
 
-ini_set('display_errors', Config::app('debug.active'));
+ini_set('display_errors', Config::app('debug.active') ? '1' : '0');
+ini_set('display_startup_errors', Config::app('debug.active') ? '1' : '0');
 ini_set('log_errors', Config::app('debug.logs') === 'always');
 ini_set('html_errors', Config::app('debug.logs') === 'always');
+
 
 if(!is_dir(Config::app('paths.logs'))) {
 	mkdir(Config::app('paths.logs'), 0777);

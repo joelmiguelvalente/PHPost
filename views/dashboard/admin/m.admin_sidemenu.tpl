@@ -10,6 +10,7 @@
 	<div class="sidebar-submenu mt-1 ml-8 space-y-1 hidden">
 		{include "dashboard/aside/Item.tpl" link="configs" label="Configuraci&oacute;n"}
 		{include "dashboard/aside/Item.tpl" link="registro" label="Configuraci&oacute;n del registro"}
+		{include "dashboard/aside/Item.tpl" link="phpmailer" label="Configuraci&oacute;n del phpmailer"}
 		{include "dashboard/aside/Item.tpl" link="temas" label="Temas y apariencia"}
 		{include "dashboard/aside/Item.tpl" link="news" label="Noticias"}
 		{include "dashboard/aside/Item.tpl" link="ads" label="Publicidad"}

@@ -1,9 +1,27 @@
 {include "main_header.tpl"}
-	{include "m.top_sidebar.tpl"}
-   {if $tsAction == 'posts'}
-	  {include "m.top_posts.tpl"}
-   {elseif $tsAction == 'usuarios'}
-      {include "m.top_users.tpl"}
-   {/if}
-   <div style="clear: both;"></div>         
+	<div class="grid gap-3 grid-tops">
+		{include "m.top_sidebar.tpl"}
+		<div class="grid gap-3 subgrid-tops">
+			{if $tsAction == 'posts'}
+				{foreach $tsBoxes key=i item=box}
+					{include "m.top_box.tpl" 
+						header="Top post con m&aacute;s {$box.txt}" 
+						icon="icon-noti {$box.icon}-n" 
+						data=$tsTops.$i 
+						type="posts" 
+						count=$box.count
+					}
+				{/foreach}
+			{elseif $tsAction == 'usuarios'}
+				{foreach $tsBoxes key=i item=box}
+					{include "m.top_box.tpl" 
+						header="Top usuario con m&aacute;s {$box.txt}" 
+						icon="icon-noti {$box.icon}-n" 
+						data=$tsTops.$i 
+						type="users"
+					}
+				{/foreach}
+			{/if}
+		</div>
+	</div>
 {include "main_footer.tpl"}

@@ -24,7 +24,7 @@ require_once TS_CONFIG . '/Config.Errors.php';
 
 date_default_timezone_set(Config::app('localization.timezone'));
 
-// Límite de ejecución
+// LÃ­mite de ejecuciÃ³n
 set_time_limit(300);
 
 // Evitamos llamar al archivo a cada clase
@@ -88,7 +88,7 @@ $smarty->output(false);
 
 /*
  * -------------------------------------------------------------------
- *  Asignación de variables
+ *  AsignaciÃ³n de variables
  * -------------------------------------------------------------------
  */
 // Configuraciones
@@ -113,13 +113,13 @@ $smarty->assign('tsDescription', Config::app('app.description'));
 
 /**
  * Si hay alguna IP bloqueada por el Moderador/Administrador,
- * ejecutamos esta función, en caso contrario no hará nada
+ * ejecutamos esta funciÃ³n, en caso contrario no harÃ¡ nada
  */
 $tsUser->getUserBlacklist();
 
 /**
  * Si hay un usuario baneado por el Moderador/Administrador,
- * ejecutamos esta función, en caso contrario no hará nada
+ * ejecutamos esta funciÃ³n, en caso contrario no harÃ¡ nada
  */
 $banned_data = $tsUser->getUserBanned();
 
@@ -137,7 +137,7 @@ if (!empty($banned_data)) {
 }
 
 /**
- * Si la página esta en modo mantenimiento, ejecutamos la función
+ * Si la pÃ¡gina esta en modo mantenimiento, ejecutamos la funciÃ³n
  */
 $actionOFF = trim($_GET['action'] ?? '');
 if ((int)$tsCore->settings['offline'] === 1 && (!$tsUser->is_admod && !$tsUser->permiso('global.sistema.modo_mantenimiento')) && $actionOFF !== 'login-user') {

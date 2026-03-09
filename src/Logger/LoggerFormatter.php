@@ -14,14 +14,29 @@ if (!defined('TS_HEADER')) {
 
 final class LoggerFormatter {
 
+   private static function severityLabel(int $severity): string {
+      return match($severity) {
+         E_ERROR             => 'E_ERROR (Fatal)',
+         E_WARNING           => 'E_WARNING',
+         E_NOTICE            => 'E_NOTICE',
+         E_DEPRECATED        => 'E_DEPRECATED',
+         E_USER_ERROR        => 'E_USER_ERROR',
+         E_USER_WARNING      => 'E_USER_WARNING',
+         E_USER_NOTICE       => 'E_USER_NOTICE',
+         E_PARSE             => 'E_PARSE',
+         default             => "Unknown ({$severity})"
+      };
+   }
+
    public static function format(LogLevel $level, string $message, array $context = []): string {
-      $date = date('H:i:s | d.m.Y');
-      $output  = "--------------------------------------------------\n";
-      $output  = "Logger by Miguel92\n";
-      $output  = "--------------------------------------------------\n";
-      $output .= "[{$date}]\n";
+      $output  = "===| <SYSTEM_LOGGER /> |===\n";
+      $output .= " > " . date('d.m.y H:i:s') . "\n";
       $output .= "{$level->value}: {$message}\n";
       foreach ($context as $key => $value) {
+         if ($key === 'severity' && is_int($value)) {
+            $output .= "severity: " . self::severityLabel($value) . "\n";
+            continue;
+         }
          if ($key === 'trace') {
             $output .= "trace:\n";
             foreach (explode("\n", (string)$value) as $line) {
@@ -29,8 +44,14 @@ final class LoggerFormatter {
             }
             continue;
          }
+         if ($key === 'file') {
+            $output .= "file: ";
+            $output .= str_replace(TS_ROOT, "..", $value) . "\n";
+            continue;
+         }
          $output .= "{$key}: " . self::normalize($value) . "\n";
       }
+      $output  .= "___________________________________________________\n";
       return $output;
    }
 

@@ -99,6 +99,7 @@ class tsSmarty extends \Smarty\Smarty {
 		$file = match ($page) {
 			'registro', 'login' 	 => 'base.tpl',
 			'admin', 'moderacion' => 'main.tpl',
+			'logs' 			 		 => 'views/output/logs.tpl',
 			'suspension' 			 => 'views/output/suspension.tpl',
 			'mantenimiento' 		 => 'views/output/mantenimiento.tpl',
 			'saliendo' 				 => 'themes/html/saliendo.html',

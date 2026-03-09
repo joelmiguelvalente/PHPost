@@ -33,11 +33,11 @@ if($ctx->continue()) {
 	// Afiliados
 	require_once TS_CLASS . "/c.afiliado.php";
 	require_once TS_CLASS . "/c.posts.php";
+	require_once TS_CLASS . "/c.comentarios.php";
 
-	// Posts Class
-	$tsPosts = new tsPosts($tsCore, $tsUser);
-	// Afiliado Class
 	$tsAfiliado = new tsAfiliado($tsCore, $tsUser);
+	$tsPosts = new tsPosts($tsCore, $tsUser);
+	$tsComentarios = new tsComentarios($tsCore, $tsUser);
 	
 	// Post anterior/siguiente
 	if(isset($_GET['action']) && in_array($_GET['action'], ['next', 'prev', 'random'], true)) {
@@ -48,9 +48,9 @@ if($ctx->continue()) {
 	if(isset($_GET['ref']) && (int)$_GET['ref']) {
 		$tsAfiliado->urlInRef();
 	}
-	
+
 	// Category
-	$category = trim((string)$_GET['cat'] ?? '');
+	$category = trim($_GET['cat'] ?? '');
 
 /*
  * -------------------------------------------------------------------
@@ -60,8 +60,21 @@ if($ctx->continue()) {
 
 	// DATOS DEL POST
 	$tsPost = $tsPosts->getPost();
-	//
-	if($tsPosts->postId !== 0) {
+	// Si el post no existe
+	if($tsPosts->postId === 0) {
+		$tsPage = "post.aviso";
+		$smarty->assign("tsAviso", $tsPost);
+		//
+		$title = explode("-", trim($_GET['title'] ?? ''));
+		// RELACIONADOS
+		$smarty->assign("tsRelated", $tsPosts->getPostsRelatedByTags($title));
+	// Si existe, pero es privado
+	} elseif ($tsPost['post_private'] === 1 && !$tsUser->is_member) {
+		$tsTitle = $tsPost['post_title'].' - '.$tsTitle;
+		$tsPage = "privado";
+		$smarty->assign("tsType", 'post');
+	// Existe y es público
+	} else {
 		// TITULO NUEVO
 		$tsTitle = $tsPost['post_title'].' - '.$tsTitle;
 		// ASIGNAMOS A LA PLANTILLA
@@ -73,38 +86,17 @@ if($ctx->continue()) {
 		// DATOS DEL RANGO DEL PUTEADOR						
 		$smarty->assign("tsPunteador", $tsPosts->getPunteador());
 		// RELACIONADOS
-		$tsRelated = $tsPosts->getPostsRelatedByTags($tsPost['post_tags']);
-		$smarty->assign("tsRelated",$tsRelated);
+		$smarty->assign("tsRelated", $tsPosts->getPostsRelatedByTags($tsPost['post_tags']));
 		// COMENTARIOS
-		/*$tsComments = $tsPosts->getComentarios($tsPost['post_id']);
-		$tsComments = array('num' => $tsComments['num'], 'data' => $tsComments['data']);
-		$smarty->assign("tsComments",$tsComments);*/
+		$smarty->assign("tsComments", $tsComentarios->getLastComentarios());
 		// PAGINAS
 		$total = $tsPost['post_comments'];
 		$tsPages = (new Paginator)->getPages((int)$total, (int)$tsCore->settings['c_max_com']);
 		$tsPages['post_id'] = $tsPost['post_id'];
 		$tsPages['autor'] = $tsPost['post_user'];
 		//
-		$smarty->assign("tsPages",$tsPages);
+		$smarty->assign("tsPages", $tsPages);
 	
-	} else {
-		//
-		if($tsPost[0] == 'privado'){
-			$tsTitle = $tsPost[1].' - '.$tsTitle;
-			$tsPage = "registro";
-		} else {
-			$tsTitle = $tsTitle.' - '.$tsCore->settings['slogan'];
-			//
-			$tsPage = "post.aviso";
-			$tsAjax = 0;
-			$smarty->assign("tsAviso",$tsPost);
-			//
-			$title = str_replace("-",",",$tsCore->setSecure($_GET['title'] ?? ''));
-			$title = explode(",",$title);
-			// RELACIONADOS
-			$tsRelated = $tsPosts->getRelated($title);
-			$smarty->assign("tsRelated",$tsRelated);
-		}
 	}
 }
 
