@@ -63,6 +63,9 @@
 
 	--transition-fast: 0.15s ease;
 	--transition-base: 0.25s ease;
+
+   --accent: #6366f1;
+   --accent-hover: #4f46e5;
 }
 [data-theme="dark"] {
 	--color-bg: #0f1419;
@@ -107,4 +110,71 @@ body {
 .dark .sidebar-link-active {
 	background-color: rgba(76, 141, 255, 0.2);
 	color: #4c8dff;
+}
+.empty { padding: 2rem; text-align: center; color: #64748b; font-size: .875rem; }
+
+/* Tabs */
+.tabs { 
+	border-bottom: 1px solid var(--border); 
+}
+.tab { 
+	padding: .6rem 1.2rem; 
+	font-size: .875rem; 
+	font-weight: 500; 
+	color: #64748b; 
+	cursor: pointer; 
+	border: none; 
+	background: none; 
+	border-bottom: 2px solid transparent; 
+	margin-bottom: -1px; 
+	transition: color .2s, border-color .2s; 
+	&.active { 
+		color: var(--accent); 
+		border-bottom-color: var(--accent); 
+	}
+}
+
+/* Checkbox */
+.tbl input[type="checkbox"] { accent-color: var(--accent); width: 14px; height: 14px; cursor: pointer; }
+/* Select all */
+.select-bar { padding: .6rem 1rem; display: flex; align-items: center; gap: 1rem; font-size: .8rem;  }
+.select-bar span { cursor: pointer; text-decoration: none; font-weight: 500; }
+
+/* Truncatable */
+.trunc-grid { 
+	display: grid; 
+	grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); 
+	gap: 1rem; 
+}
+.trunc-item { 
+	background: #E9E9E9;
+}
+.trunc-item .name { font-size: .85rem; font-weight: 500; }
+.trunc-item .desc { font-size: .72rem; color: #64748b; margin-top: .1rem; }
+
+/* Badges */
+.badge { font-size: .7rem; padding: .2rem .5rem; border-radius: 4px; font-weight: 600; }
+.badge-protected { background: #1e3a5f; color: #93c5fd; }
+.badge-prefix { background: #1a1d2e; color: #64748b; }
+
+/* Prefix group */
+.prefix-header td { 
+	font-size: .75rem; 
+	font-weight: 700; 
+	text-transform: uppercase; 
+	letter-spacing: .06em; 
+	padding: .4rem 1rem; 
+}
+.card { 
+	border-radius: 10px; 
+	overflow: hidden; 
+	margin-bottom: 1.5rem; 
+}
+.card-head { 
+	border-bottom: 1px solid var(--border); 
+	font-size: .8rem; 
+	font-weight: 600; 
+	text-transform: uppercase; 
+	letter-spacing: .05em; 
+	color: #64748b; 
 }

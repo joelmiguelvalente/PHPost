@@ -88,6 +88,8 @@ RewriteRule ^(password|validar)/(.+)/([0-9]+)/(.+)$ src/Php/password.php?hash=$1
 #HISTORIAL DE MODERACIÓN
 RewriteRule ^mod-history/([A-Za-z0-9_-]+)/ src/Php/mod-history.php?ver=$1 [QSA,L]
 
+RewriteRule ^generator/ views/generator.panel.php [QSA,L]
+
 # --------------------
 # Generic fallbacks
 # --------------------

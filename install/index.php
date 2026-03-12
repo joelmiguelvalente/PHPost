@@ -171,7 +171,7 @@ require_once __DIR__ . '/backend.php';
 							
 							<p>Gracias por instalar <strong>PHPost Risus</strong>, ya est&aacute; lista tu nueva comunidad <strong>Link Sharing System</strong>. S&oacute;lo inicia sesi&oacute;n con tus datos y comienza a disfrutar. Ahora no dejes de <a href="<?= Config::app('app.server') ?>" target="_blank"><u>visitarnos</u></a> para estar pendiente de futuras actualizaciones. Recuerda reportar cualquier bug que encuentres, de esta manera todos ganamos.</p><br /><br />
 							
-							<input type="hidden" name="key" value="<?= $key; ?>" />
+							<input type="hidden" name="key" value="1" />
 							<input type="submit" value="Finalizar" class="gbqfb" />
 						<?php endif; ?>
 					</fieldset>

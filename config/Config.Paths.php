@@ -16,6 +16,7 @@ const PATHS = [
    'TS_THEMES'   => BASEPATH . '/themes',
    'TS_VIEWS'    => BASEPATH . '/views',
 	'TS_CONFIG'   => BASEPATH . '/config',
+	'TS_BACKUPS'  => BASEPATH . '/storage/backups',
 	'TS_CLASS' 	  => BASEPATH . '/src/Class',
 	'TS_DATABASE' => BASEPATH . '/src/Database',
 	'TS_EXTRA'    => BASEPATH . '/src/Extras',

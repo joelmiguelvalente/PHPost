@@ -321,7 +321,7 @@ class tsCore {
 	 * @param bool $xss
 	 * @return string
 	 */
-	public function setSecure(string $value, bool $xss = false): string {
+	public function setSecure(string $value = '', bool $xss = false): string {
 		if(empty($value)) return '';
 	   // Normalizar
 	   $value = trim($value);

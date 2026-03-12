@@ -285,6 +285,32 @@ var ad_afiliado = {
    }
 }
 
+function selectAll(formId, state) {
+   $('#' + formId + ' input[type="checkbox"]').prop('checked', state);
+}
+function confirmTruncate(table) {
+	dialog.init({ 
+		title: '⚠ Vaciar tabla',
+		body: `¿Estás seguro que querés vaciar la tabla <strong>${table}</strong>? Esta acción no se puede deshacer.`,
+	   buttons: {
+	      confirm: { text: 'Sí, vaciar', action: () => doTruncate() }
+	   }
+	});
+}
+function doTruncate() {
+   $('#truncate-form').submit();
+}
+
+function doDeleteBackup(filename, id) {
+	api(`dbmanager-delete_backup.php`, { filename }, response => {
+		const { status, message } = $.parseResponse(response);
+	  	dialog.alert((status === 0 ? 'Error' : 'Bien'), message, status === 1);
+	  	if(status === 1) {
+	  		$(`#${id}`).remove();
+	  	}
+	});
+}
+
 $(document).ready(() => {
 
 	$('#newRank span, input[type="button"]#next').on('click', function(e) {
@@ -292,6 +318,24 @@ $(document).ready(() => {
 		const target = $(this).data('target');
 		$('#basico, #permisos').hide();
 		$(`#${target}`).show();
+	});
+
+	$('form[action-type="download"]').on('submit', function() {
+    	setTimeout(() => {
+      	history.replaceState(null, '', window.location.href);
+    	}, 100);
+	});
+
+	$('.bactions button[data-action=delete]').on('click', function() {
+	   const filename = $(this).data('filename');
+	   const id = $(this).data('id');
+		dialog.init({ 
+			title: '⚠ Eliminar backup',
+			body: `¿Estás seguro que quierés eliminar el <strong>${filename}</strong>? Esta acción no se puede deshacer.`,
+		   buttons: {
+		      confirm: { text: 'Sí, eliminar', action: () => doDeleteBackup(filename, id) }
+		   }
+		});
 	});
 
 });

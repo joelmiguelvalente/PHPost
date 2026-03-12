@@ -33,7 +33,7 @@ if (is_array($tsLevelMsg)) {
 }
 
 if(!$tsUser->is_member) {
-	header("Location: {$tsCore->settings['url']}");
+	$tsPage = 'login';
 }
 
 if($ctx->continue()) {
@@ -78,6 +78,63 @@ if($ctx->continue()) {
 		$smarty->assign("tsPHPMailer", $Mailer->mailerConfig());
 		if(!empty($_POST['SMTP_HOST'])) {
 			if($Mailer->saveMailerConfig()) $tsCore->redirectAdmin($action);
+		}
+
+	} elseif($action === 'dbmanager') {
+		require_once TS_CLASS . '/c.dbmanager.php';
+		$DBManager = new tsDBManager;
+		$tablesInfo  = $DBManager->getTablesInfo();
+		$smarty->assign("tsTablesInfo", $tablesInfo);
+
+		$flash = null;
+		$tables = array_map('strval', (array)($_POST['tables'] ?? []));
+		
+		if(empty($act)) {
+			$smarty->assign("tsTablesTotal", array_sum(array_map('count', $tablesInfo)) );
+			if($_SERVER['REQUEST_METHOD'] === 'POST') {
+				$result = $DBManager->createBackup($tables);
+		      $flash  = $result['ok'] ? ['type' => 'success', 'msg' => "Backup creado: <strong>{$result['filename']}</strong> ({$result['size']} KB)"] : ['type' => 'error',   'msg' => $result['message']];
+		      $backupsList = $DBManager->listBackups();
+		      $smarty->assign("tsMessage", $flash);
+		      $smarty->assign("tsSave", true);
+		   }
+		} elseif($act === 'mantenimiento') {
+			$smarty->assign("checkResults", $DBManager->checkTables($tables));
+			if($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] !== 'check') {
+				if($_POST['action'] === 'optimize') {
+			      $results = $DBManager->optimizeTables($tables);
+			      $ok = array_filter($results, fn($v) => $v !== 'error');
+			      $flash = ['type' => 'success', 'msg' => count($ok) . ' tabla(s) optimizada(s).'];
+			   } elseif ($_POST['action'] === 'repair') {
+			      $results = $DBManager->repairTables($tables);
+			      $ok = array_filter($results, fn($v) => $v !== 'error');
+			      $flash = ['type' => 'success', 'msg' => count($ok) . ' tabla(s) reparada(s).'];
+			   }
+		      $smarty->assign("tsMessage", $flash);
+		      $smarty->assign("tsSave", true);
+			}
+		} elseif($act === 'truncar') {
+			$smarty->assign('tsTruncaTables', tsDBManager::TRUNCATABLE_TABLES);
+		} elseif($act === 'historial') {
+			$smarty->assign('backupsList', $DBManager->listBackups());
+			if($_SERVER['REQUEST_METHOD'] === 'POST') {
+	      	$filename = basename($_POST['filename'] ?? '');
+	      	if(!preg_match('/^backup_[\w\-]+\.sql$/', $filename)) {
+	      	   header("Location: {$tsCore->settings['url']}/admin/dbmanager?act=historial");
+	      	   exit;
+	      	}
+	      	$path = TS_BACKUPS . '/' . $filename;
+	      	if (!file_exists($path)) {
+	      	   $smarty->assign("tsMessage", ['type' => 'danger', 'msg' => 'El backup no existe']);
+	      	   return;
+	      	} else {
+	      	   header('Content-Type: application/octet-stream');
+	      	   header('Content-Disposition: attachment; filename="' . $filename . '"');
+	      	   header('Content-Length: ' . filesize($path));
+	      	   readfile($path);
+	      	   exit;
+	      	}
+	    	}
 		}
 
 	# TEMAS

@@ -66,7 +66,7 @@ html {
 body {
 	padding: 0;
 	margin: 0 0 0 0;
-	font: normal normal 400 14px/1.3rem 'Lucida Grande',Tahoma,Arial,Verdana,Sans-Serif;	
+	font: normal normal 400 13px/1.3rem 'Lucida Grande',Tahoma,Arial,Verdana,Sans-Serif;	
 	background: var(--color-bg);
 	overflow-x: hidden;
 }

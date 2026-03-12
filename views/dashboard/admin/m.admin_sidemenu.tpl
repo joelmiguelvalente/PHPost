@@ -3,6 +3,7 @@
    <div class="sidebar-submenu mt-1 ml-8 space-y-1 hidden">
 		{include "dashboard/aside/Item.tpl" label="Centro de Administraci&oacute;n"}
 		{include "dashboard/aside/Item.tpl" link="creditos" label="Soporte y Cr&eacute;ditos"}
+		{include "dashboard/aside/Item.tpl" link="dbmanager" label="DB Manager"}
    </div>
 </div>
 <div class="sidebar-group">

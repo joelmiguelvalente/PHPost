@@ -1,0 +1,112 @@
+#!/usr/bin/env php
+<?php
+
+/**
+ * @name phpost (CLI)
+ * @author PHPost Team
+ * @copyright 2026
+ *
+ * Uso:
+ *   php phpost make:section fotos
+ *   php phpost make:section fotos --api --css --js
+ *   php phpost make:section fotos --api --css --js --theme=miTheme
+ */
+
+declare(strict_types=1);
+
+define('TS_HEADER', true);
+
+// ─── Autodetectar raíz ───────────────────────────────────────────────────────
+$root = dirname(__FILE__);
+if (!file_exists($root . '/src/Utils/Generator.php')) {
+    fwrite(STDERR, "[ERROR] No se encontró src/Utils/Generator.php\n");
+    fwrite(STDERR, "        Asegúrate de ejecutar este comando desde la raíz del proyecto.\n");
+    exit(1);
+}
+require_once $root . '/src/Utils/Generator.php';
+
+// ─── Colores ANSI ────────────────────────────────────────────────────────────
+function c(string $text, string $color): string {
+    $colors = ['green' => '32', 'red' => '31', 'yellow' => '33', 'cyan' => '36', 'gray' => '90'];
+    return "\033[{$colors[$color]}m{$text}\033[0m";
+}
+
+// ─── Ayuda ───────────────────────────────────────────────────────────────────
+function showHelp(): void {
+    echo "\n";
+    echo c("PHPost CLI", 'cyan') . "\n\n";
+    echo "Uso:\n";
+    echo "  php phpost make:section <nombre> [opciones]\n\n";
+    echo "Opciones:\n";
+    echo "  " . c("--api", 'yellow')        . "            Genera src/Api/api.{name}.php\n";
+    echo "  " . c("--css", 'yellow')        . "            Genera themes/{theme}/css/{name}.css\n";
+    echo "  " . c("--js", 'yellow')         . "            Genera themes/{theme}/js/{name}.js\n";
+    echo "  " . c("--theme=nombre", 'yellow'). "       Nombre del theme (por defecto: default)\n\n";
+    echo "Ejemplos:\n";
+    echo "  php phpost make:section videos\n";
+    echo "  php phpost make:section videos --api --css --js\n";
+    echo "  php phpost make:section videos --api --theme=miTheme\n\n";
+}
+
+// ─── Parsear argumentos ──────────────────────────────────────────────────────
+$args    = array_slice($argv, 1);
+$command = $args[0] ?? '';
+$name    = $args[1] ?? '';
+
+if ($command !== 'make:section' || empty($name)) {
+    showHelp();
+    exit(0);
+}
+
+// Opciones
+$options = [
+    'api' => in_array('--api', $args),
+    'css' => in_array('--css', $args),
+    'js'  => in_array('--js',  $args),
+];
+
+// Theme
+$theme = 'default';
+foreach ($args as $arg) {
+    if (str_starts_with($arg, '--theme=')) {
+        $theme = substr($arg, 8);
+    }
+}
+
+// ─── Validar nombre ──────────────────────────────────────────────────────────
+if (!PHPostGenerator::validateName($name)) {
+    fwrite(STDERR, c("[ERROR]", 'red') . " El nombre '$name' no es válido.\n");
+    fwrite(STDERR, "        Solo letras minúsculas, números y guión bajo. Mínimo 2 caracteres.\n");
+    exit(1);
+}
+
+// ─── Ejecutar ────────────────────────────────────────────────────────────────
+echo "\n";
+echo c("PHPost CLI", 'cyan') . " — Generando sección: " . c($name, 'yellow') . "\n";
+echo str_repeat('─', 50) . "\n";
+
+$generator = new PHPostGenerator($name, $options, $root, $theme);
+$result    = $generator->run();
+
+foreach ($result['created'] as $file) {
+    echo c("  ✔ Creado  ", 'green') . $file . "\n";
+}
+foreach ($result['skipped'] as $file) {
+    echo c("  ⚠ Existe  ", 'yellow') . $file . "\n";
+}
+foreach ($result['errors'] as $error) {
+    echo c("  ✘ Error   ", 'red') . $error . "\n";
+}
+
+echo str_repeat('─', 50) . "\n";
+
+$total = count($result['created']);
+$skip  = count($result['skipped']);
+$err   = count($result['errors']);
+
+echo c("  $total archivo(s) creado(s)", 'green');
+if ($skip)  echo c(", $skip omitido(s)", 'yellow');
+if ($err)   echo c(", $err error(es)", 'red');
+echo "\n\n";
+
+exit($err > 0 ? 1 : 0);

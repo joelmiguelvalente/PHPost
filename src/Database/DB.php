@@ -14,7 +14,7 @@ if (!defined('TS_HEADER')) {
 
 final class DB {
 
-	private static function db(): Database {
+	public static function db(): Database {
 		return Database::instance();
 	}
 

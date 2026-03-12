@@ -364,7 +364,7 @@ switch ($step) {
 					Config::db('password'), 
 					Config::db('database')
 				);
-
+				
 				if($Connection->exists("SELECT 1 FROM u_miembros WHERE user_id = ? OR user_rango = ? LIMIT 1", [1, 1])) {
 					$message = 'No se puede registrar, ya existe un administrador.';
 					$next = false;

@@ -110,15 +110,17 @@ final class InstallerDB {
 		return $stmt->affected_rows;
 	}
 
+	public function numRows(string $sql, array $params = []): int {
+		$stmt = $this->query($sql, $params);
+		return $stmt->get_result()->num_rows;
+	}
+
 	/* =========================
 	 * EXISTS
 	 * ========================= */
 	public function exists(string $sql, array $params = []): bool
 	{
-	   $stmt = $this->query($sql, $params);
-	   $stmt->store_result();
-
-	   return $stmt->num_rows > 0;
+	   return $this->numRows($sql, $params) > 0;
 	}
 
 }

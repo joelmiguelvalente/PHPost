@@ -56,7 +56,7 @@ let debug = false;
 			smileConversion:	true,
 			//img upload config 
 			imgupload:			true,
-			img_uploadurl:		route.url + "/inc/extras/wysibbupload.php",
+			img_uploadurl:		route.url + "/src/Extras/wysibbupload.php",
 			img_maxwidth:		800,
 			img_maxheight:		640,
 			//END img upload config 
@@ -186,7 +186,7 @@ let debug = false;
 				            html: '<div id="imguploader"> <form id="fupform" class="upload" action="{img_uploadurl}" method="post" enctype="multipart/form-data" target="fupload"><input type="hidden" name="iframe" value="1"/><input type="hidden" name="idarea" value="'+id+'" /><div class="fileupload"><input id="fileupl" class="file" type="file" name="img" /><button id="nicebtn" class="wbb-button">Elegir una imagen</button> </div> </form> </div><iframe id="fupload" name="fupload" src="about:blank" frameborder="0" style="width:0px;height:0px;display:none"></iframe></div>'
 				         }
 				      ],
-				      onLoad: function() {},
+				      onLoad: this.imgLoadModal,
 				     	onSubmit: function(cmd, opt, queryState) {
 				         // Recoger valores del formulario del modal
 				         var src = this.$modal.find('input[name="SRC"]').val();
@@ -222,11 +222,16 @@ let debug = false;
 				         return false;
 				      }
 				   },
-				   transform : {
-				      '<figure class="bbc-figure" style="width:200px;height:500px;"><img src="{SRC}" alt="{CAPTION}" width="200" height="500" /></figure>': '[image="{CAPTION}" width=200 height=500]{SRC}[/image]',
-				      '<img src="{SRC}" alt="{CAPTION}" />': '[image="{CAPTION}"]{SRC}[/image]',
-				      '<img src="{SRC}" />': '[image]{SRC}[/image]'
-				   }
+				   transform: {
+					   '<img src="{SRC}" />': '[image]{SRC}[/image]',
+					   '<img src="{SRC}" alt="{CAPTION}" />': '[image="{CAPTION}"]{SRC}[/image]',
+					   '<img src="{SRC}" style="width:{WIDTH}px" />': '[image width={WIDTH}]{SRC}[/image]',
+					   '<img src="{SRC}" style="height:{HEIGHT}px" />': '[image height={HEIGHT}]{SRC}[/image]',
+					   '<img src="{SRC}" style="width:{WIDTH}px;height:{HEIGHT}px" />': '[image width={WIDTH} height={HEIGHT}]{SRC}[/image]',
+					   '<img src="{SRC}" alt="{CAPTION}" style="width:{WIDTH}px" />': '[image="{CAPTION}" width={WIDTH}]{SRC}[/image]',
+					   '<img src="{SRC}" alt="{CAPTION}" style="height:{HEIGHT}px" />': '[image="{CAPTION}" height={HEIGHT}]{SRC}[/image]',
+					   '<img src="{SRC}" alt="{CAPTION}" style="width:{WIDTH}px;height:{HEIGHT}px" />': '[image="{CAPTION}" width={WIDTH} height={HEIGHT}]{SRC}[/image]',
+					}
 				},
 				bullist : {
 					title: "Lista de viñetas",
@@ -234,7 +239,7 @@ let debug = false;
 					excmd: 'insertUnorderedList',
 					transform : {
 						'<ul>{SELTEXT}</ul>':"[list]{SELTEXT}[/list]",
-						'<l>{SELTEXT}</li>':"[item]{SELTEXT}[/item]"
+						'<li>{SELTEXT}</li>':"[item]{SELTEXT}[/item]"
 					}
 				},
 				numlist : {
@@ -2783,8 +2788,6 @@ let debug = false;
 							//default input
 							$c.append(this.strf('<div class="wbbm-inp-row"><label>{title}</label><input class="inp-text modal-text" type="text" name="{param}" value="{value}"/></div>',inp));
 						}
-						
-						
 					},this));
 				}
 			},this));
@@ -2903,11 +2906,14 @@ let debug = false;
 			return params;
 		},
 		
-		 
 		//imgUploader
 		imgLoadModal: function() {
 			$.log("imgLoadModal");
-			if (this.options.imgupload===true) {
+			if (!this.options.imgupload) {
+				this.$modal.find(".hastabs").removeClass("hastabs");
+				this.$modal.find("#imguploader").parents(".tab-cont").remove();
+				this.$modal.find(".wbbm-tablist").remove();
+			} else {
 				this.$modal.find("#imguploader").dragfileupload({
 					url: this.strf(this.options.img_uploadurl,this.options),
 					extraParams: {
@@ -2918,7 +2924,6 @@ let debug = false;
 					themeName: this.options.themeName,
 					success: $.proxy(function(data) {
 						this.$txtArea.insertImage(data.image_link,data.thumb_link);
-						
 						this.closeModal();
 						this.updateUI();
 					},this)
@@ -2927,14 +2932,9 @@ let debug = false;
 				this.$modal.find("#fileupl").on("change",function() {
 					$("#fupform").submit();
 				});
-				this.$modal.find("#fupform").on("submit",$.proxy(function(e) {
-					$(e.target).parents("#imguploader").hide().after('<div class="loader"><img src="'+route.assets +'/images/loading.gif" /><br/><br/><span>Cargando</span></div>').parent().css("text-align","center");
+				this.$modal.find("#fupform").on("submit", $.proxy(function(e) {
+					$(e.target).parents("#imguploader").hide().after('<div class="loader"><img src="'+route.assets +'/images/loader.gif" /><br/><br/><span>Cargando</span></div>').parent().css("text-align","center");
 				},this))
-				
-			}else{
-				this.$modal.find(".hastabs").removeClass("hastabs");
-				this.$modal.find("#imguploader").parents(".tab-cont").remove();
-				this.$modal.find(".wbbm-tablist").remove();
 			}
 		},
 		imgSubmitModal: function() {
@@ -2943,11 +2943,13 @@ let debug = false;
 		//DEBUG
 		printObjectInIE: function(obj) {
 			try{
-			$.log(JSON.stringify(obj));
-			}catch(e) {}
+				$.log(JSON.stringify(obj));
+			} catch(e) {}
 		},
-		checkFilter: function(node,filter) {
-			$.log("node: "+$(node).get(0).outerHTML+" filter: "+filter+" res: "+$(node).is(filter.toLowerCase()));
+		checkFilter: function(node, filter) {
+			const node = $(node).get(0).outerHTML;
+			const res = $(node).is(filter.toLowerCase());
+			$.log(`node: ${node} - filter: ${filter} - res: ${res}`);
 		},
 		debug: function(msg) {
 			if (this.options.debug===true) {
@@ -2963,7 +2965,7 @@ let debug = false;
 		
 		//Browser fixes
 		isChrome: function() {
-			return (window.chrome) ? true:false;
+			return (window.chrome);
 		},
 		fixTableTransform: function(html) {
 			if (!html) {return "";}
@@ -3092,11 +3094,11 @@ let debug = false;
 		this.data("wbb").execCommand(command,value);
 		return this.data("wbb");
 	}
-	$.fn.insertImage = function(imgurl,thumburl) {
-		var editor = this.data("wbb");
-		var code = editor.getCodeByCommand('img',{src:imgurl});
-		this.insertAtCursor(code);
-		return editor;
+	$.fn.insertImage = function(imgurl, thumburl) {
+	   var editor = this.data("wbb");
+	   var code = editor.getCodeByCommand('image', {src: imgurl});
+	   this.insertAtCursor(code);
+	   return editor;
 	}
 	$.fn.sync = function() {
 		this.data("wbb").sync();
@@ -3163,6 +3165,7 @@ let debug = false;
 					e.preventDefault();
 					this.$block.removeClass('dragover');
 					var ufile = e.dataTransfer.files[0];
+					
 					if (this.opt.validation && !ufile.name.match(new RegExp(this.opt.validation))) {
 						this.error("La información ingresada no es válida");
 						return false;

@@ -35,6 +35,7 @@ tailwind.config = {
 				"primary": "#1e6fb8", 
 				"background-light": "#f5f6f7", 
 				"background-dark": "#121920", 
+				"warning": "#D07512", 
 				"error": "#dc2626", 
 				"success": "#0FB232", 
 				"secondary": "#D2D2D2" 
