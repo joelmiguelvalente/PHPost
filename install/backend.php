@@ -159,7 +159,18 @@ switch ($step) {
 			if ($isLocal) unset($required['password']);
 			if (in_array('', $required, true)) $message = 'Completa los datos obligatorios para la conexión.';
 			# Comprobamos que todos los datos sean correctos
+			$archivo = dirname(__DIR__, 1) . "/config/Config.Database{$localUse}";
 			try {
+			   // Crear copia de seguridad antes de escribir
+			   $original = "{$archivo}.php";
+
+			   // Solo crear backup si el archivo original existe y es legible
+			   if (file_exists($original) && is_readable($original)) {
+			      if (!copy($original, "{$archivo}.bak.php")) {
+			         throw new Exception("No se pudo crear el archivo de respaldo.");
+			      }
+			   }
+
 				$Connection = new InstallerDB($db['hostname'], $db['username'], $db['password'], $db['database']);
 				# Cargamos todas las tablas para eliminarlas
 				$tables = $Connection->select("SHOW TABLES");
@@ -170,9 +181,9 @@ switch ($step) {
 					}
 				}
 				# Guardamos los datos de conexión
-				$fileconfig = dirname(__DIR__, 1) . "/config/Config.Database{$localUse}.php";
-				$config = str_replace(['dbhost', 'dbuser', 'dbpass', 'dbname'], $db, file_get_contents($fileconfig));
-				file_put_contents($fileconfig, $config);
+				$buscar = ['dbhost', 'dbuser', 'dbpass', 'dbname'];
+				$config = str_replace($buscar, $db, file_get_contents($original));
+				file_put_contents($original, $config);
 				# CARGAMOS LAS TABLAS
 				include_once __DIR__ . '/database.php';
 				$execute = [];
@@ -192,6 +203,12 @@ switch ($step) {
 				$message = 'Lo sentimos, pero ocurrió un problema. Inténtalo nuevamente; borra las tablas que se hayan guardado en tu base de datos: ' . $error;
 				
 			} catch(Exception $e) {
+			   // En caso de error, intentar restaurar el backup si existe
+			   $backup = "{$archivo}.bak.php";
+			   if (file_exists($backup) && is_readable($backup)) {
+			      copy($backup, "{$archivo}.php");
+			      unlink($backup);
+			   }
 				$message = $e->getMessage();
 			}
 		}
@@ -239,9 +256,15 @@ switch ($step) {
 				break;
 			}
 
+			$archivo = dirname(__DIR__, 1) . "/config/Config.Mailer{$localUse}";
 			if($next) {
-				# Guardamos los datos
-				$fileconfig = dirname(__DIR__, 1) . "/config/Config.Mailer{$localUse}.php";
+			   // Guardamos los datos
+			   $fileconfig = "{$archivo}.php";
+			   // Crear copia de seguridad
+			   if (file_exists($fileconfig) && is_readable($fileconfig)) {
+			      copy($fileconfig, "{$archivo}.bak.php");
+			   }
+				// Guardamos los datos
 				$config = str_replace(['smtphost', 'smtpuser', 'smtppass', 'smtpfrom'], $phpmailer, file_get_contents($fileconfig));
 				file_put_contents($fileconfig, $config);
 				header("Location: ./index.php?step=datos_sitio");
