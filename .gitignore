@@ -17,7 +17,7 @@ themes/*
 *.py
 *.zip
 *.lock
-*\.local.*
-*.local.php
+*.local*
+.local*
 sitemap.xml
 inc/config/Config.Database.php
