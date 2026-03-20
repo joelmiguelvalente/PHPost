@@ -1,6 +1,21 @@
 1:
-{if $tsType == 'new'} 
-<div id="div_cmnt_{$tsComment.0}" class="{if $tsComment.4 == $tsUser->uid}especial1{else}especial3{/if}">
+{if $tsType == 'new'}
+    <li class="comment-item{if $tsComment.4 == $tsUser->uid} author{else} owner{/if}" data-comment-id="{$tsComment.0}">
+        <a class="comment-avatar" aria-label="{$tsUser->nick}" href="{$tsConfig.url}/@{$tsUser->nick}">
+            {include "blocks/Avatar.tpl" id=$tsUser->uid size=50 alt="Ver perfil" lazy=true placeholder=false}
+        </a>
+        <div class="comment-body">
+            <div class="comment-bubble">
+                <div class="comment-meta">
+                    <a href="{$tsConfig.url}/@{$tsUser->nick}" class="comment-author">{$tsUser->nick}</a>
+                    <span class="comment-time">{$tsComment.3|hace}</span>
+                </div>
+                <span id="citar_comm_{$tsComment.0}" style="display:none">{$tsComment.2}</span>
+                <p class="comment-text" data-bbcode="{$tsComment.1|nl2br}">{$tsComment.1|nl2br}</p>
+            </div>
+        </div>
+    </li>
+{*<div id="div_cmnt_{$tsComment.0}" class="{if $tsComment.4 == $tsUser->uid}especial1{else}especial3{/if}">
     <span id="citar_comm_{$tsComment.0}" style="display:none">{$tsComment.2}</span>
     <div class="comentario-post clearbeta">
         <div class="avatar-box" style="z-index: 99;">
@@ -60,7 +75,7 @@
             </div>
         </div>
     </div>
-</div>
+</div>*}
 {elseif $tsType == 'edit'}
 <div id="preview" class="box_cuerpo" style="margin: -15px 0 0; font-size:13px; line-height: 1.4em; min-width:300px;max-width: 760px; padding: 12px 20px; overflow-y: auto; text-align: left; border-top:1px solid #CCC">
     <div id="new-com-html">{$tsComment.1|nl2br}</div>

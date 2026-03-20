@@ -90,27 +90,6 @@
 		padding: .5rem;
 	}
 }
-#perfil-foto-bar 
-.perfil-sidebar .title-w {
-}
-.perfil-sidebar .title-w h3 {
-}
-.perfil-sidebar .title-w span {
-}
-.perfil-content .title-w  span {
-}
-.perfil-sidebar {
-}
-.perfil-sidebar li {
-}
-
-.widget {
-}
-.widget .see-more {
-}
-
-.ultimos li.see-more a {
-}
 /*** FOTO BAR ***/
 #perfil-foto-bar .list-fotos {
 	grid-template-columns: repeat(6, 1fr);

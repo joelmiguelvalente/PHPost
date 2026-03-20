@@ -37,7 +37,7 @@ final class ConfigApplication extends AbstractConfig
 				'name'      	=> 'PHPost Risus',
 				'slogan'	   	=> 'Inteligencia recargada 2026',
 				'server'    	=> 'https://discord.gg/StWZtrt2DE',
-				'version'   	=> '3.3.0',
+				'version'   	=> '3.4.36',
 				'status'    	=> $APP_ENV,
 				'description'	=> 'Descubre nuestra plataforma completamente renovada. Actualizaciones constantes, nuevas funcionalidades y experiencia mejorada. En constante evolución para ofrecerte lo mejor.'
 			],

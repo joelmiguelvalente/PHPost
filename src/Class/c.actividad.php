@@ -87,12 +87,12 @@ class tsActividad {
 		if ($acType === 5) {
 			$data = DB::fetch("SELECT `ac_id`, `ac_date` FROM `u_actividad` WHERE user_id = :uid AND obj_uno = :obj AND ac_type = :type LIMIT 1", ['uid' => $this->User->uid, 'obj' => $objUno, 'type' => $acType]);
 			//
-			$hace = $this->makeFecha((int) $data['ac_date']);
-			if ($hace === 'today') {
-				if (DB::increment('u_actividad', 'obj_dos', 'ac_id = :acid', ['acid' => $data['ac_id']])) {
+			if (!empty($data)) {
+				$hace = $this->makeFecha((int) $data['ac_date']);
+				if ($hace === 'today') {
+					DB::increment('u_actividad', 'obj_dos', 'ac_id = :acid', ['acid' => $data['ac_id']]);
 					return true;
 				}
-
 			}
 		}
 		# INSERCION DE DATOS

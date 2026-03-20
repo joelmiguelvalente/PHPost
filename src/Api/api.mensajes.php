@@ -50,7 +50,7 @@ switch($action){
 		$smarty->assign("mp",$tsMP->newRespuesta());
 	break;
 	case 'mensajes-lista':
-		$smarty->assign("tsMensajes",$tsMP->getMensajes(1, false, 'monitor'));
+		$smarty->assign("tsMensajes", $tsMP->getMensajes(1, false, 'monitor'));
 	break;
 	case 'mensajes-editar':
 		echo $tsMP->editMensajes();

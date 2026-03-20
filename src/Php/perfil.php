@@ -79,7 +79,7 @@ if($ctx->continue()) {
 		if($privacidad['muro']['status']) {
 			// CARGAR HISTORIA
 			if(!empty($_GET['pid'])) {
-				$pub_id = $tsCore->setSecure($_GET['pid']);
+				$pub_id = (int)($_GET['pid'] ?? 0);
 				$story = $tsMuro->getStory($pub_id, $tsInfo['user_id']);
 				//
 				if(!is_array($story)) {

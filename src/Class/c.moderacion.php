@@ -23,19 +23,23 @@ class tsMod {
       # Tipo de denuncia
       switch ($type) {
          case 'posts':
-            $sentencia = 'SUM(r.d_total) AS total, p.post_id, p.post_title, p.post_status, c.c_nombre, c.c_seo, c.c_img FROM w_denuncias AS r LEFT JOIN p_posts AS p ON r.obj_id = p.post_id LEFT JOIN p_categorias AS c ON p.post_category = c.cid WHERE r.d_type = \'post\' AND p.post_status < 2 ';
+            $sentencia = 'SUM(r.d_total) AS total, p.post_id, p.post_title, p.post_status, c.c_nombre, c.c_seo, c.c_img FROM w_denuncias AS r LEFT JOIN p_posts AS p ON r.obj_id = p.post_id LEFT JOIN p_categorias AS c ON p.post_category = c.cid WHERE r.d_type = :param AND p.post_status < 2 ';
+            $param = ['param' => 'post'];
          break;
          case 'fotos':
-            $sentencia = 'SUM(r.d_total) AS total,  f.foto_id, f.f_title, f.f_status, u.user_id, u.user_name FROM w_denuncias AS r LEFT JOIN f_fotos AS f ON r.obj_id = f.foto_id LEFT JOIN u_miembros AS u ON f.f_user = u.user_id  WHERE d_type = \'foto\' && f.f_status < 2 GROUP BY r.obj_id';
+            $sentencia = 'SUM(r.d_total) AS total,  f.foto_id, f.f_title, f.f_status, u.user_id, u.user_name FROM w_denuncias AS r LEFT JOIN f_fotos AS f ON r.obj_id = f.foto_id LEFT JOIN u_miembros AS u ON f.f_user = u.user_id  WHERE d_type = :param AND f.f_status < 2 GROUP BY r.obj_id';
+            $param = ['param' => 'foto'];
          break;
          case 'users':
-            $sentencia = 'SUM(d_total) AS total, u.user_name FROM w_denuncias AS r LEFT JOIN u_miembros AS u ON r.obj_id = u.user_id WHERE d_type = \'usuario\' AND u.user_baneado = 0';
+            $sentencia = 'SUM(d_total) AS total, u.user_name FROM w_denuncias AS r LEFT JOIN u_miembros AS u ON r.obj_id = u.user_id WHERE d_type = :param AND u.user_baneado = 0';
+            $param = ['param' => 'usuario'];
          break;
          case 'mps':
-            $sentencia = 'm.mp_id, m.mp_to, m.mp_from, m.mp_subject, m.mp_preview, m.mp_date FROM w_denuncias AS r LEFT JOIN u_mensajes AS m ON r.obj_id = m.mp_id WHERE d_type = \'mensaje\'';
+            $sentencia = 'm.mp_id, m.mp_to, m.mp_from, m.mp_subject, m.mp_preview, m.mp_date FROM w_denuncias AS r LEFT JOIN u_mensajes AS m ON r.obj_id = m.mp_id WHERE d_type = :param';
+            $param = ['param' => 'mensaje'];
          break;
       }
-      $data = DB::fetchAll("SELECT r.obj_id, $sentencia GROUP BY r.obj_id ORDER BY total DESC, MAX(r.d_date) DESC");
+      $data = DB::fetchAll("SELECT r.obj_id, $sentencia GROUP BY r.obj_id ORDER BY total DESC, MAX(r.d_date) DESC", $param);
       return $data;
    }
    # Obtener la denuncia
@@ -125,7 +129,7 @@ class tsMod {
          // PRIMERO COMPROBAMOS SI ESTÁ OCULTO
          $datos = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', 'SELECT post_id, post_status FROM p_posts WHERE post_id = '.$pid.' LIMIT 1'));
          if ($datos['post_status'] === 3) {
-            if (!db_exec([__FILE__, __LINE__], 'query', 'DELETE FROM `w_historial` WHERE `pofid` = '.$pid.' && `type` = 1 && `action` = 3')) return '0: No se pudo restaurar el post.';
+            if (!db_exec([__FILE__, __LINE__], 'query', 'DELETE FROM `w_historial` WHERE `pofid` = '.$pid.' AND `type` = 1 && `action` = 3')) return '0: No se pudo restaurar el post.';
          } else {
             //BORRAMOS LA DENUNCIAS
             if (!db_exec([__FILE__, __LINE__], 'query', 'DELETE FROM `w_denuncias` WHERE `obj_id` = '.$pid.' AND `d_type` = \'post\'')) return '0: No se pudo restaurar el post.';

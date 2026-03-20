@@ -190,7 +190,7 @@ class tsComentarios {
 	   $tsActividad->setActividad(5, $postId);
 
 	   if ($most_resp) {
-	      return [$cid, $this->Core->parseBadWords($this->Core->parseBBCode($comentario), true), $comentario, $fecha, $_POST['auser'], '', $MyIP];
+	      return [$cid, $this->Core->parseBadWords($this->Core->parseBBCode($comentario), true), $comentario, $fecha, $this->User->uid, '', $MyIP];
 	   }
 	   return '1: Tu comentario fue agregado satisfactoriamente.';
 	}

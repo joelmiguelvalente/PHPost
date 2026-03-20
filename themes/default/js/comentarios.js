@@ -67,9 +67,9 @@ const comentario = {
          }
          if (isReply) {
             // Insertar la respuesta debajo del comment-item padre
-            const $parentItem = $(`.comment-item[data-comment-id="${cid}"]`);
+            const $parentItem = $(`.comment-item[data-comment-id="${cid}"] .comment-body`);
             // Si ya existe el contenedor de replies, agregar ahí; si no, crearlo
-            let $repliesContainer = $parentItem.find('.comment-replies');
+            let $repliesContainer = $parentItem.find(`#replies-${cid}`);
             if (!$repliesContainer.length) {
                $parentItem.append('<ul class="comment-replies"></ul>');
                $repliesContainer = $parentItem.find('.comment-replies');
@@ -176,16 +176,20 @@ const comentario = {
       $container.slideDown();
       $btn.addClass('open').attr('aria-expanded', true);
    },
-
    verMasRespuestas(containerId, btn) {
       $(`#${containerId}`).children('li.comment-item:hidden').show();
       $(btn).closest('.replies-more').remove();
    },
    // CITAR
-   citar(id, nick){
-    	var textarea = $('#body_comm');
-    	textarea.focus();
-    	textarea.val(((textarea.val()!='') ? textarea.val() + '\n' : '') + '[quote=' + nick + ']' + htmlspecialchars_decode($('#citar_comm_'+id).html(), 'ENT_NOQUOTES') + '[/quote]\n');
+   citar(id, nick) {
+      const textarea = $('#body_comm');
+      const getText = textarea.val();
+      const content = $(`.comment-item[data-comment-id=${id}] .comment-body .comment-text`).data('bbcode');
+      let text = (getText === '' ? '' : `${getText}\n`) + `[quote=${nick}]${content}[/quote]`;
+      textarea.focus();
+      textarea.val(text);
+
+    	//textarea.val(((textarea.val()!='') ? textarea.val() + '\n' : '') + '[quote=' + nick + ']' + htmlspecialchars_decode($('#citar_comm_'+id).html(), 'ENT_NOQUOTES') + '[/quote]\n');
         /*
         var message = $.trim($('#comment-body-'+id).html());
     		$('.wysibb-texarea').execCommand('quote',{autor: nick, seltext: message});

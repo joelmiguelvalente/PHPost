@@ -17,8 +17,14 @@ require_once TS_UTILS . '/AvatarConfig.php';
 final class tsUpload {
 
 	private const MAX_UPLOAD_SIZE = 6 * 1024 * 1024; // 6MB
-	private const MIN_UPLOAD_SIZE = 2 * 1024 * 1024; // 2MB
-	private const ALLOWED_TYPES = [IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_GIF];
+	private const MIN_UPLOAD_SIZE = 100 * 1024; // 100 KB
+	private const ALLOWED_TYPES = [
+		IMAGETYPE_JPEG, 
+		IMAGETYPE_PNG, 
+		IMAGETYPE_GIF, 
+		IMAGETYPE_WEBP, 
+		IMAGETYPE_AVIF
+	];
 	private const MAX_DIMENSION = 3000;
 
 	/* ==========================================================
@@ -78,19 +84,30 @@ final class tsUpload {
 	private function handleFileUpload(array $file): array
 	{
 		if (empty($file['tmp_name']) || $file['error'] !== UPLOAD_ERR_OK) {
-			return ['error' => 'Archivo inválido'];
+      	return ['error' => 'Archivo inválido'];
+    	}
+
+		$maxMb = self::MAX_UPLOAD_SIZE / 1024 / 1024;
+		$minKb = self::MIN_UPLOAD_SIZE / 1024;
+		$fileKb = round($file['size'] / 1024);
+
+		$str = "El archivo es demasiado %s (%dKB). El %s permitido es %d%s.";
+		if ($file['size'] > self::MAX_UPLOAD_SIZE) {
+		   return ['error' => sprintf($str, 'grande', $fileKb, 'máximo', $maxMb, 'MB')];
 		}
-
-
-		if ($file['size'] > self::MAX_UPLOAD_SIZE || $file['size'] < self::MIN_UPLOAD_SIZE) {
-			$txt = ($file['size'] > self::MAX_UPLOAD_SIZE) ? 'supera el' : 'es inferior del';
-			return ['error' => "El archivo $txt peso(mb) permitido"];
+		if ($file['size'] < self::MIN_UPLOAD_SIZE) {
+		   return ['error' => sprintf($str, 'pequeño', $fileKb, 'mínimo', $minKb, 'KB')];
 		}
 
 		$type = exif_imagetype($file['tmp_name']);
 		if (!in_array($type, self::ALLOWED_TYPES, true)) {
 			return ['error' => 'Formato de imagen no permitido'];
 		}
+
+   	[$w, $h] = getimagesize($file['tmp_name']);
+   	if ($w < 120 || $h < 120) {
+   	   return ['error' => 'La imagen es demasiado pequeña (mínimo 120x120)'];
+   	}
 
 		return $this->storeTempImage(
 			$this->createImageResource($file['tmp_name']),
@@ -159,6 +176,8 @@ final class tsUpload {
 			IMAGETYPE_JPEG => imagecreatefromjpeg($path),
 			IMAGETYPE_PNG  => imagecreatefrompng($path),
 			IMAGETYPE_GIF  => imagecreatefromgif($path),
+			IMAGETYPE_WEBP => imagecreatefromwebp($path),
+			IMAGETYPE_AVIF => imagecreatefromavif($path),
 			default        => null,
 		};
 	}

@@ -31,7 +31,7 @@ if (is_array($tsLevelMsg)) {
 if($ctx->continue()) {
 
 	require_once TS_CLASS . "/c.moderacion.php";
-	$tsMod = new tsMod();
+	$tsMod = new tsMod($tsCore, $tsUser);
 
 	// ACTION
 	$action = trim($_GET['ver'] ?? '');

@@ -5,7 +5,7 @@
             <span class="monac_icons ma_{$noti.style}"></span>
          </div>
          <div class="info">
-            {if $noti.total == 1 && $noti.user != ''}<a href="{$tsConfig.url}/@{$noti.user}" class="dropdown-link" title="{$noti.user}">{$noti.user}</a> {/if}{$noti.text}{if $noti.link} <a title="{$noti.ltit}" class="dropdown-link" href="{$noti.link}">{$noti.ltext}</a>{/if}
+            {if $noti.total == 1 && $noti.user != ''}<a href="{$tsConfig.url}/@{$noti.user}" class="dropdown-link inline-block" title="{$noti.user}">{$noti.user}</a> {/if}{$noti.text}{if $noti.link} <a title="{$noti.ltit}" class="dropdown-link" href="{$noti.link}">{$noti.ltext}</a>{/if}
          </div>
       </div>
    {/foreach}

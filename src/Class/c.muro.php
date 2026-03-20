@@ -29,7 +29,7 @@ class tsMuro {
 		'muro' 				=> ['status' => true, 'message' => ''],
 		'muro_firma' 		=> ['status' => true, 'message' => ''],
 		'mesaje_privado' 	=> ['status' => true, 'message' => ''],
-		'ultimas_visitas' => ['status' => true, 'message' => '']
+		'ultimas_visitas' 	=> ['status' => true, 'message' => '']
 	];
 	
 	public function __construct(
@@ -38,7 +38,7 @@ class tsMuro {
 	) {
 		$this->UrlHelper = new UrlHelper($Core);
 		$this->MuroHelper = new MuroHelper($Core, $User);
-	   $this->myIP = (new IP)->getIP();
+		$this->myIP = (new IP)->getIP();
 	}
 	
 	/**
@@ -451,7 +451,7 @@ class tsMuro {
 	/*
 		getStory()
 	*/
-	public function getStory(int $pubId, int $userId): string {
+	public function getStory(int $pubId, int $userId): string|array {
 		// ELEGIMOS
 		$pub = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', "SELECT p.*, u.user_id, u.user_name FROM u_muro AS p LEFT JOIN u_miembros AS u ON p.p_user_pub = u.user_id WHERE p.pub_id = $pubId LIMIT 1"));
 		// COMPROBAMOS

@@ -232,9 +232,10 @@ const notifica = {
 		let fid = [];
 		let inputs = $('.check-filter input');
 		inputs.map((pos, input) => {
-			if($(input).prop('checked')) fid.push(input.id)
+			if($(input).prop('checked')) fid.push($(input).data('type'))
 		})
-		$.post(`${route.url}/notificaciones-filtro.php`, { fid }).fail(() => console.error('Error al filtrar notificaciones'));  
+		$.post(`${route.url}/notificaciones-filtro.php`, { fid })
+		.fail(() => console.error('Error al filtrar notificaciones'));  
 	},
 	close() {
 		media.close('Monitor', 'mon');
@@ -277,7 +278,7 @@ const mensaje = {
 			mensaje.enviar(1);
 		} else if(parse === 1 || parse === 2) {
 			const msg = parse === 1 ? 'No es posible enviarse mensajes a s&iacute; mismo.' : 'Este usuario no existe. Por favor, verif&iacute;calo.';
-			mensaje.nuevo(mensaje.vars['to'], mensaje.vars['sub'], mensaje.vars['msg'], msg);
+			mensaje.nuevo(mensaje.save.to, mensaje.save.sub, mensaje.save.msg, msg);
 		}   
 	},
 	alert(response) {
@@ -293,44 +294,36 @@ const mensaje = {
 		});
 	},
 	marcar(mid, type, active, mark, obj) {
-		const action = (active === 0) ? 'read' : 'unread';
-		const show = (active === 0) ? 'unread' : 'read';
-		// originalmente era asi mid:type, pero lo separe!
-		const ids = `${mid}:${type}`;
-		mensaje.ajax('editar', `ids=${ids}&act=${action}`, function() {
-			if(mark !== 1) {
-				location.href = route.url + '/mensajes/';
-			}
-			// CAMBIAR ENTRE LEIDO Y NO LEIDO
-			const cid = id.split(':');
-			$('#mp_' + mid)[(action === 'read' ? 'removeClass' : 'addClass')]('unread');
-			//
-			$(obj).parent().find('a').hide();
-			$(obj).parent().find('.' + show).show();
-		
-		});
+	  	const action = (active === 0) ? 'read' : 'unread';
+	  	mensaje.ajax('editar', { ids: `${mid}:${type}`, act: action }, function() {
+	  	   if (mark !== 1) {
+	  	      location.href = route.url + '/mensajes/';
+	  	   }
+	  	   $('#mp_' + mid)[(action === 'read' ? 'removeClass' : 'addClass')]('unread');
+	  	   $(obj).parent().find('span.marcar').hide();
+	  	   $(obj).parent().find('span.marcar.' + (active === 0 ? 'unread' : 'read')).show();
+	  	});
 	},
 	// POST
 	ajax(action, params, fn) {
-		$('#loading').fadeIn(250);
-		$.post(`${route.url}/mensajes-${action}.php`, params, response => {
+		api(`mensajes-${action}.php`, params, response => {
 			fn(response);
-			$('#loading').fadeOut(350);
 		});
 	},
 	// PREPARAR EL ENVIO
 	nuevo(to, sub = '', msg = '', error = '') {
-		Object.assign(mensaje.save, { to, sub, msg, error });
 		dialog.easy('Nuevo mensaje', mensaje.form(), 'Enviar', () => mensaje.enviar(0))
 	},
 	// ENVIAR...
 	enviar(enviar) {
 		// DATOS
-		Object.assign(mensaje.save, {
-			to: $('#msg_to').val(),
-			sub: $('#msg_subject').val(),
-			msg: $('#msg_body').val()
-		});
+		if (enviar === 0) {
+			Object.assign(mensaje.save, {
+				to: $('#msg_to').val(),
+				sub: $('#msg_subject').val(),
+				msg: $('#msg_body').val()
+			});
+		}
 		// COMPROBAR
 		if(enviar === 0) {
 			if(!mensaje.save.to || !mensaje.save.msg) {
@@ -341,6 +334,7 @@ const mensaje = {
 		} else {
 			dialog.loading('Enviando...');
 			mensaje.ajax('enviar', `para=${mensaje.save.to}&asunto=${encodeURIComponent(mensaje.save.sub)}&mensaje=${encodeURIComponent(mensaje.save.msg)}`, mensaje.alert);
+			mensaje.save = {};
 		}
 	},
 	// RESPONDER

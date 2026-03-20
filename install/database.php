@@ -423,6 +423,7 @@ $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `u_muro_likes` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;";
 
 $enum = "ENUM('everyone','registered','followers','following','friends_mutual','friends_any','nobody')";
+$enummp = "ENUM('everyone','registered','followers','following','friends_mutual','friends_any','nobody','off')";
 $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `u_perfil` (
   `user_id` INT PRIMARY KEY,
   `user_dia` TINYINT DEFAULT 0,
@@ -438,7 +439,7 @@ $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `u_perfil` (
   `p_sitio` VARCHAR(255) DEFAULT NULL,
   `p_socials` TEXT DEFAULT NULL,
   `p_privacidad` $enum DEFAULT 'everyone',
-  `p_mensajes_privados` $enum DEFAULT 'everyone',
+  `p_mensajes_privados` $enummp DEFAULT 'everyone',
   `p_publicar_muro` $enum DEFAULT 'everyone',
   `p_muro_visitas` $enum DEFAULT 'everyone',
   `p_total` VARCHAR(54) NOT NULL DEFAULT 'a:6:{i:0;i:5;i:1;i:0;i:2;i:0;i:3;i:0;i:4;i:0;i:5;i:0;}'
@@ -449,7 +450,7 @@ $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `u_portal` (
   `last_posts_visited` TEXT NULL,
   `last_posts_shared` TEXT NULL,
   `last_posts_cats` TEXT NULL,
-  `c_monitor` VARCHAR(255) NOT NULL DEFAULT 'f1,f2,f3,f8,f9,f4,f5,f10,f6,f7,f11,f12,f13,f14,f18,f19,20,f21'
+  `c_monitor` VARCHAR(255) NOT NULL DEFAULT 'f1,f2,f3,f8,f9,f4,f5,f10,f6,f7,f11,f12,f13,f14,f18,f19,f20,f21'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
 
 $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `u_rangos` (

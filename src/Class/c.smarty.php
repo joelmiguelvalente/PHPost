@@ -127,7 +127,7 @@ class tsSmarty extends \Smarty\Smarty {
 		$directories = [
 			'root'		 => TS_ROOT,
 			'auth'		 => TS_VIEWS . '/auth',
-			'api'			 => TS_VIEWS . '/api',
+			'api'		 => TS_VIEWS . '/api',
 			'error'		 => TS_VIEWS . '/error',
 			'components' => TS_VIEWS . '/components',
 			'dashboard'  => TS_VIEWS . '/dashboard',

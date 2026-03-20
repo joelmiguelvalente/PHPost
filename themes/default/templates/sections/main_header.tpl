@@ -50,6 +50,7 @@ const route = {
 <script src="{$tsRoutes.assets.js}/moderacion.js" defer></script>
 {/if}
 {if $tsConfig.c_allow_live}
+<link rel="stylesheet" href="{$tsRoutes.assets.css}/live.css">
 <script src="{$tsRoutes.assets.js}/live.js" defer></script>
 {/if}
 </head>

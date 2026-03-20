@@ -14,10 +14,14 @@
 
 <template id="file-local">
    <div id="drop-region">
-      <input type="file" name="local" id="file-avatar" class="browse-file"/>
-      <div class="drop-message">
-         <p>Arrastra y suelta la imagen o haz clic para subir</p>
-      </div>
+      <label>
+         <input type="file" name="local" id="file-avatar" class="browse-file" accept="image/*"/>
+         <div class="drop-icon">🖼️</div>
+         <div class="drop-message">
+            Arrastrá o hacé clic para subir
+            <span>PNG, JPG, WEBP — máx. 5MB</span>
+         </div>
+      </label>
    </div>
    <button class="avatar-upload btn btn-primary">Subir imagen</button>
 </template>

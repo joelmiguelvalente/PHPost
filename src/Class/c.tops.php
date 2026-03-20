@@ -128,7 +128,7 @@ class tsTops {
 		} else {
 			$onlineCount = (int)DB::value("SELECT COUNT(DISTINCT session_ip) FROM u_sessions WHERE session_time > :t", ['t' => $isOnline]);
 		}
-
+		//
 		if ($onlineCount >= (int)$return['stats_max_online']) {
 			$return['stats_max_online'] = $onlineCount;
 			$return['stats_max_time']   = $time;

@@ -64,12 +64,13 @@ function smarty_function_load(array $params, Smarty\Template $template): string 
 function resolveDependencies(array $files, string $type): array {
 	$dependencyMap = [
 		'js' => [
-			'cuenta'  => ['croppr.min', 'upload.avatar'],
+			'cuenta'  => ['cropper.min', 'upload.avatar'],
 			'agregar' => ['wysibb'],
 			'posts'   => ['denuncias','wysibb'],
 			'perfil'  => ['denuncias','bloquear'],
 		],
 		'css' => [
+			'cuenta'  => ['cropper.min'],
 			'agregar' => ['wysibb'],
 			'posts'   => ['wysibb'],
 		]

@@ -62,7 +62,7 @@ switch($action) {
 		// Al no existir el endpoint genera error 522!
 		//echo $endpoint;
 		if($action === 'feed-version') {
-			$version = 'PHPost 4.3.31';
+			$version = 'PHPost ' . Config::app('app.version');
 			$version_code = $Extras->slugify($version, '_');
 			$time = time();
 			# ACTUALIZAR VERSIÓN
@@ -79,5 +79,5 @@ switch($action) {
          'error' => true,
          'message' => 'Endpoint inválido'
       ], JSON_THROW_ON_ERROR);
-      break;
+   break;
 }

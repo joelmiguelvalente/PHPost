@@ -1,5 +1,5 @@
 const avatarState = {
-	mode: null,           // 'file' | 'url'
+	mode: null,
 	key: null,
 	ext: null,
 	crop: null,
@@ -21,6 +21,7 @@ $changeAvatar.on('click', '.file', function () {
 	const clone = template.content.cloneNode(true);
 
 	$changeAvatar.find('.upload-container').remove();
+	$changeAvatar.css({ 'display': 'block' })
 
 	const container = document.createElement('div');
 	container.className = 'upload-container';
@@ -41,7 +42,7 @@ $changeAvatar.on('keyup', '.browse-url', function () {
 });
 
 $changeAvatar.on('click', '.avatar-upload', async function () {
-	dialog.loading('Cargando...');// lo ejecuta bien
+	dialog.loading('Cargando...');
 	$('.avatar-loading').show();
 	try {
 		const data = new FormData();
@@ -62,7 +63,6 @@ $changeAvatar.on('click', '.avatar-upload', async function () {
 		const json = await rsp.json();
 		if (json.error) {
 			throw json.error;
-			$('.avatar-loading').hide();
 		}
 
 		avatarState.key = json.key;
@@ -73,8 +73,6 @@ $changeAvatar.on('click', '.avatar-upload', async function () {
 	} catch (err) {
 		dialog.alert('Atención', err);
 		$('.avatar-loading').hide();
-	} finally {
-		//
 	}
 });
 
@@ -83,71 +81,109 @@ function loadCropper(key, ext) {
 	avatarState.imageUrl = imgUrl;
 
 	dialog.init({
-      buttonClose: true,
-      title: 'Cortar avatar',
-      body: `<img id="avatar-crop" src="${imgUrl}" />`,
-      buttons: {
-         confirm: {
-            text: 'Cortar',
-            action: () => saveAvatarCrop()
-         },
-         cancel: {
-            text: 'Cerrar',
-            action: 'close'
-         }
-      }
-   });
+		buttonClose: true,
+		title: 'Cortar avatar',
+		body: `
+			<div style="display:flex; gap:1rem; align-items:flex-start;">
+				<div style="flex:1; min-width:0;">
+					<img id="avatar-crop" src="${imgUrl}" style="max-width:100%; display:block;" />
+				</div>
+				<div style="display:flex; flex-direction:column; align-items:center; gap:.5rem;">
+					<span style="font-size:11px; color:#888;">Preview</span>
+					<div style="width:${imageSize}px; height:${imageSize}px; overflow:hidden; border-radius:50%; border:2px solid #ccc;">
+						<div id="avatar-preview" style="width:100%; height:100%;"></div>
+					</div>
+					<div style="width:64px; height:64px; overflow:hidden; border-radius:50%; border:2px solid #ccc;">
+						<div id="avatar-preview-sm" style="width:100%; height:100%;"></div>
+					</div>
+				</div>
+			</div>`,
+		buttons: {
+			confirm: { text: 'Cortar', action: () => saveAvatarCrop() },
+			cancel:  { text: 'Cerrar', action: 'close' }
+		}
+	});
 
-	$('#avatar-crop').on('load', () => {
+	const imgEl = document.getElementById('avatar-crop');
+	if (!imgEl) return;
+
+	// Esperar a que el dialog renderice la imagen
+	$(imgEl).on('load', () => {
 		if (avatarState.croppr) {
 			avatarState.croppr.destroy();
+			avatarState.croppr = null;
 		}
 
-		avatarState.croppr = new Croppr('#avatar-crop', {
+		avatarState.croppr = new Cropper(imgEl, {
 			aspectRatio: 1,
-			maxSize: { width: imageSize, height: imageSize },
-			onCropEnd: data => {
-				console.log(data)
-				avatarState.crop = data;
+			viewMode: 1,
+			preview: '#avatar-preview, #avatar-preview-sm',
+			autoCropArea: 1,      // selecciona el área máxima por defecto
+			movable: true,
+			rotatable: false,     // no necesario para avatares, podés activarlo
+			scalable: false,
+			zoomable: true,
+			zoomOnWheel: true,
+			cropBoxMovable: true,
+			cropBoxResizable: true,
+			crop(event) {
+				avatarState.crop = event.detail;
 			}
 		});
 	});
+
+	// Si la imagen ya estaba cacheada y no dispara 'load'
+	if (imgEl.complete) {
+		$(imgEl).trigger('load');
+	}
 }
 
 async function saveAvatarCrop() {
-	if (!avatarState.crop) {
-		dialog.alert('Atención', 'Debes seleccionar un área');
+	if (!avatarState.croppr) {
+		dialog.alert('Atención', 'El recortador no está listo.');
+		return;
+	}
+
+	// Leer datos actuales aunque el usuario no haya tocado el recuadro
+	const cropData = avatarState.crop ?? avatarState.croppr.getData(true);
+
+	if (!cropData || !cropData.width || !cropData.height) {
+		dialog.alert('Atención', 'Debes seleccionar un área.');
+		return;
 	}
 
 	const data = new FormData();
 	data.append('key', avatarState.key);
 	data.append('ext', avatarState.ext);
-	data.append('x', Math.round(avatarState.crop.x));
-	data.append('y', Math.round(avatarState.crop.y));
-	data.append('w', Math.round(avatarState.crop.width));
-	data.append('h', Math.round(avatarState.crop.height));
+	data.append('x', Math.round(cropData.x));
+	data.append('y', Math.round(cropData.y));
+	data.append('w', Math.round(cropData.width));
+	data.append('h', Math.round(cropData.height));
 
 	try {
+		dialog.loading('Guardando...');
+
 		const rsp = await fetch(`${route.url}/upload-crop.php`, {
 			method: 'POST',
 			body: data
 		});
-		
+
 		const json = await rsp.json();
-		console.log(json)
 		if (json.error !== 'success') throw json.error;
 
+		// Actualizar el avatar visible en la página sin recargar
+		const canvas = avatarState.croppr.getCroppedCanvas({ width: imageSize, height: imageSize });
+		$avatarImg.attr('src', canvas.toDataURL());
+		$('.avatar-loading').hide();
+
 		dialog.init({
-	      buttonClose: true,
-	      title: 'Excelente',
-	      body: 'Avatar actualizado correctamente',
-	      buttons: {
-	         confirm: {
-	            text: 'Aceptar',
-	            action: () => location.reload()
-	         }
-	      }
-	   });
+			buttonClose: true,
+			title: 'Excelente',
+			body: 'Avatar actualizado correctamente.',
+			buttons: {
+				confirm: { text: 'Aceptar', action: () => location.reload() }
+			}
+		});
 
 	} catch (err) {
 		dialog.alert('Atención', err);
@@ -155,9 +191,9 @@ async function saveAvatarCrop() {
 }
 
 function resetAvatarUI() {
-	avatarState.key = null;
-	avatarState.ext = null;
-	avatarState.crop = null;
+	avatarState.key      = null;
+	avatarState.ext      = null;
+	avatarState.crop     = null;
 	avatarState.imageUrl = null;
 
 	if (avatarState.croppr) {
@@ -165,3 +201,15 @@ function resetAvatarUI() {
 		avatarState.croppr = null;
 	}
 }
+
+$changeAvatar.on('dragover dragleave drop', '#drop-region label', function(e) {
+	e.preventDefault();
+	$(this).toggleClass('dragover', e.type === 'dragover');
+	if (e.type === 'drop') {
+		const file = e.originalEvent.dataTransfer.files[0];
+		if (file) {
+			$('.browse-file')[0].files = e.originalEvent.dataTransfer.files;
+			$('.drop-message').html(`${file.name}<span>${(file.size / 1024).toFixed(0)} KB</span>`);
+		}
+	}
+});

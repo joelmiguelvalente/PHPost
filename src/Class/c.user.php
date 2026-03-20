@@ -394,7 +394,7 @@ class tsUser {
 
 	private function fetchUserField(string $selectField, string $whereField, string | int $value): array {
 		$value = is_int($value) ? (int) $value : $this->Core->setSecure($value);
-		return DB::fetch("SELECT $selectField  FROM u_miembros WHERE $whereField = :value LIMIT 1", ['value' => $value]) ?: [];
+		return DB::fetch("SELECT $selectField FROM u_miembros WHERE $whereField = :value LIMIT 1", ['value' => $value]) ?: [];
 	}
 
 	/**

@@ -15,7 +15,7 @@ if (!defined('TS_HEADER')) {
 require_once __DIR__ . '/c.emails.php';
 require_once TS_UTILS . '/Avatar.php';
 require_once TS_UTILS . '/PasswordHandler.php';
-require_once TS_UTILS . '/reCaptcha.php';
+require_once TS_UTILS . '/ReCaptcha.php';
 
 class tsRegistro {
 
@@ -110,7 +110,7 @@ class tsRegistro {
    */
 	private function verifyCaptcha(string $captcha) {
 		// Verificando el captcha
-      $reCaptcha = new reCaptcha($this->Core);  // Usar la misma clave para reCAPTCHA o hCaptcha
+      $reCaptcha = new ReCaptcha($this->Core);  // Usar la misma clave para reCAPTCHA o hCaptcha
 		$reCaptcha->RECAPTCHA_TOKEN = $captcha;  // Token de reCAPTCHA o hCaptcha
 		$reCaptcha->verify_human();
 	}
@@ -118,7 +118,7 @@ class tsRegistro {
 	private function verifyEmailUser(string $username, string $email): ?string {
 		// Validación 
     	if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-      	return '0: El formato del email es inválido.';
+      		return '0: El formato del email es inválido.';
     	}
 		// COMPROBAR NUEVAMENTE QUE EL USUARIO O EMAIL NO SE ENCUENTREN REGISTRADOS
 		$exists = DB::exists("SELECT 1 FROM u_miembros WHERE user_name = :username OR LOWER(user_email) = :email LIMIT 1", [

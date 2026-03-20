@@ -1,129 +1,168 @@
-/* BEEPS */
+#BeeperBox {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 8px;
+    width: 300px;
+    z-index: 9999;
+}
+.UIBeeper_Full {
+    animation: beepIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes beepIn {
+    from { opacity: 0; transform: translateX(-20px) scale(0.96); }
+    to   { opacity: 1; transform: translateX(0) scale(1); }
+}
 .UIBeep {
-    background: #E1E6EE;
-    clear: right;
+    background: #fff;
+    border-radius: 12px;
+    padding: 11px 12px;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    position: relative;
     overflow: hidden;
-    padding: 3px 0;
+    border: 1px solid rgba(0,0,0,0.06);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.05);
+    transition: transform 0.15s, box-shadow 0.15s;
 }
-.UIBeep .blueName {
-    color:#3B5998;
+.UIBeep::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 4px;
+    border-radius: 12px 0 0 12px;
+    background: var(--accent, #7c3aed);
 }
-.UIBeeper {
-    display: none;
+.UIBeep:hover {
+    transform: translateX(3px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
 }
-.UIBeeper .UIBeeper_Full {
-    background-color: #E1E6EE;
-    border: 1px solid #99A8C7;
-    border-radius: 3px 3px 3px 3px;
-    margin: 3px 0;
-    display: none;
+.UIBeep_Avatar {
+    position: relative;
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    margin-left: 4px;
 }
-.UIBeeper .UIBeeper_Full:hover {
-    background-color: #CAD1DE;
+.UIBeep_Avatar img {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
 }
-.UIBeeper .UIBeep_Bottom {
-    padding-bottom: 0;
-}
-.UIBeeper .UIBeep_Top {
-    padding-top: 0;
-}
-.UIBeep .UIBeep_Title_Outgoing {
-    font-weight: bold;
-}
-.UIBeep .undo_link {
-    margin-left: 6px;
-}
-.UIBeeper .UIBeep .UIBeep_Intentional .beeper_x {
-    background: url("http://b.static.ak.fbcdn.net/rsrc.php/v1/zQ/r/HO_GBYmDiTm.gif") no-repeat scroll 0 0 transparent;
-    display: none;
-}
-.UIBeeper .UIBeep .UIBeep_NonIntentional .beeper_x {
-    background: url("http://b.static.ak.fbcdn.net/rsrc.php/v1/zQ/r/HO_GBYmDiTm.gif") no-repeat scroll 0 0 transparent;
-    float: right;
-    height: 16px;
-    margin-top: 6px;
-    visibility: hidden;
+.UIBeep_Icon_Badge {
+    position: absolute;
+    bottom: -2px;
+    right: -4px;
     width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--accent, #7c3aed);
+    border: 2px solid #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
 }
-.UIBeep .beeper_x:hover {
-    background: url("http://static.ak.fbcdn.net/rsrc.php/v1/zj/r/euPl6cXMZbg.gif") no-repeat scroll 0 0 transparent !important;
+.UIBeep_Icon_Badge .monac_icons {
+    font-size: 8px;
+    color: #fff;
+    line-height: 1;
 }
-.UIBeep a.UIBeep_NonIntentional:hover, .UIBeep a.UIBeep_Intentional:hover {
+.UIBeep_Body {
+    flex: 1;
+    min-width: 0;
+}
+.UIBeep_Title {
+    font-size: 13px;
+    color: #1a1a2e;
+    line-height: 1.4;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.UIBeep_Title .uname {
+    font-weight: 500;
+    color: var(--accent-name, #7c3aed);
+}
+.UIBeep_Meta {
+    font-size: 11px;
+    color: #aaa;
+    margin-top: 2px;
+}
+.UIBeep_Preview {
+    font-size: 11.5px;
+    color: #777;
+    margin-top: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.beeper_x {
+    margin-left: auto;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    cursor: pointer;
+    color: #aaa;
+    font-size: 10px;
+    transition: background 0.15s, color 0.15s;
     text-decoration: none;
 }
-.UIBeep_Selected .beeper_x {
-    display: block !important;
-    margin-left: 4px;
-    visibility: visible !important;
+
+.beeper_x:hover {
+    background: #fee2e2;
+    color: #ef4444;
+    border-color: #fecaca;
 }
-.UIBeeper .UIBeep_Selected {
-    background: none repeat scroll 0 0 #CAD1DE;
-}
-.UIBeep_Selected .UIBeep_Icon {
-    margin-right: 2px;
-}
-.UIBeep_Selected .UIBeep_Intentional .UIBeep_Icon img.beeper_icon {
-    display: none;
-}
-.UIBeep_Fading .UIBeep_Title {
-    display: none;
-}
-.UIBeep .UIBeep_Title {
-    padding: 5px 0;
-}
-.UIBeep .UIBeep_Intentional .UIBeep_Title {
-    margin: 0 9px 0 51px;
-}
-.UIBeep .UIBeep_NonIntentional .UIBeep_Title {
-    margin: 0 20px 0 30px;
-}
-.UIBeeper .UIBeep_Intentional .UIBeep_Title {
-    color: #000000;
-    font-size: 11px;
-    line-height: 1.3;
-}
-.UIBeep .UIBeep_Intentional .UIBeep_Pic {
-    float: left;
-    font-size: 1px;
-    margin: 4px 8px;
-    text-align: center;
-}
-.UIBeep .UIBeep_NonIntentional .UIBeep_Icon {
-    float: left;
-    height: 20px;
-    margin: 5px;
-    text-align: center;
-    width: 20px;
-}
-.UIBeep .UIBeep_Intentional .UIBeep_Icon {
-    float: right;
-    height: 20px;
-    margin-right: 5px;
-    margin-top: 5px;
-    text-align: center;
-    width: 20px;
-}
-.UIBeep .UIBeep_Icon img{
-    float: left;
-}
-.UIBeep .UIBeep_Intentional .UIBeep_Pic img.beeper_thumb {
-    height: 35px;
-    width: 35px;
-}
-.UIBeep .UIBeep_Intentional .UIBeep_Pic img.beeper_icon {
-    height: 16px;
-    width: 16px;
-}
-.UIBeeper {
-    bottom: 30px;
-    left: 15px;
+/* Acento por tipo de notificación */
+.beep-star        { --accent: #f59e0b; --accent-name: #d97706; }
+.beep-comment_post{ --accent: #2563eb; --accent-name: #2563eb; }
+.beep-points      { --accent: #10b981; --accent-name: #059669; }
+.beep-follow      { --accent: #7c3aed; --accent-name: #7c3aed; }
+.beep-post        { --accent: #0d9488; --accent-name: #0d9488; }
+.beep-share       { --accent: #8b5cf6; --accent-name: #7c3aed; }
+.beep-blue_ball   { --accent: #3b82f6; --accent-name: #2563eb; }
+.beep-voto_       { --accent: #f97316; --accent-name: #ea580c; }
+.beep-comment_resp{ --accent: #06b6d4; --accent-name: #0891b2; }
+.beep-photo       { --accent: #ec4899; --accent-name: #db2777; }
+.beep-wall_post   { --accent: #64748b; --accent-name: #475569; }
+.beep-w_comment   { --accent: #6366f1; --accent-name: #4f46e5; }
+.beep-w_like      { --accent: #ef4444; --accent-name: #dc2626; }
+.beep-medal       { --accent: #eab308; --accent-name: #ca8a04; }
+/* El nombre usa el color del acento */
+.UIBeep_Title .uname { color: var(--accent-name); font-weight: 500; }
+/* Badge usa el color del acento */
+.UIBeep_Icon_Badge { background: var(--accent); }
+
+#audio-permission-toast {
     position: fixed;
-    width: 300px;
-    z-index: 99;
+    bottom: 20px; 
+    right: 20px; 
+    z-index: 9999;
+    background: var(--color-bg); 
+    color: var(--color-text);
 }
-.UIBeeper .UIBeep_Bottom {
-    border-bottom: medium none;
+.audio-button {
+    color:#fff; 
+    border:none; 
+    padding:6px 12px; 
+    border-radius:4px; 
+    cursor:pointer;
 }
-.UIBeeper .UIBeep .extra_media {
-    margin-top: 4px;
+#audio-yes {
+    background:#4CAF50; 
+}
+#audio-no {
+    background:#888;
 }

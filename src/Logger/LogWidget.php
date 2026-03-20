@@ -61,7 +61,7 @@ final class LogWidget {
             }
 
             // Nivel más grave
-            $currentPriority = $levelPriority[$worstLevel] ?? -1;
+            $currentPriority = $worstLevel !== null ? ($levelPriority[$worstLevel] ?? -1) : -1;
             $newPriority     = $levelPriority[$lvl] ?? 0;
             if ($newPriority > $currentPriority) {
                $worstLevel = $lvl;

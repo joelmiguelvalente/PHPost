@@ -224,26 +224,41 @@ function initLazyLoading() {
    const observer = new IntersectionObserver((entries, self) => {
       entries.forEach((entry) => {
          if (!entry.isIntersecting) return;
-
-         const target = entry.target;
-         const attr = target.localName === 'source' ? 'srcset' : 'src';
-         const value = target.getAttribute(`data-${attr}`);
-
-         if (value) {
-            target[attr] = value;
-            target.removeAttribute(`data-${attr}`);
+         const img = entry.target;
+         // Primero activar todos los <source> del <picture> padre
+         const picture = img.closest('picture');
+         if (picture) {
+            picture.querySelectorAll('source[data-srcset]').forEach(source => {
+               source.srcset = source.getAttribute('data-srcset');
+               source.removeAttribute('data-srcset');
+            });
          }
-
-         self.unobserve(target);
+         // Luego activar el <img> (dispara la evaluación de <picture>)
+         const dataSrc = img.getAttribute('data-src');
+         if (dataSrc) {
+            img.src = dataSrc;
+            img.removeAttribute('data-src');
+         }
+         self.unobserve(img);
       });
    }, { rootMargin: '200px' });
+   // Solo observar el <img>, él arrastra a sus <source>
+   document.querySelectorAll('picture img[data-src]').forEach(function(img) {
+      img.onerror = function () {
+         this.onerror = null;
+         this.src = this.dataset.fallbackPng;
 
-   document.querySelectorAll('picture').forEach(picture => {
-      observer.observe(picture.querySelector('img'));
-      picture.querySelectorAll('source').forEach(s => observer.observe(s));
+         const p = this.closest('picture');
+         if (p) {
+            const sources = p.querySelectorAll('source');
+            if (sources[0]) sources[0].srcset = this.dataset.fallbackAvif;
+            if (sources[1]) sources[1].srcset = this.dataset.fallbackWebp;
+         }
+      };
+      observer.observe(img);
    });
 }
-initLazyLoading()
+initLazyLoading();
 
 // Solo ejecutar si hay bloques pendientes
 if (document.querySelector('[data-bbcode-code]')) {
@@ -251,7 +266,7 @@ if (document.querySelector('[data-bbcode-code]')) {
         // Resaltar solo bloques NO procesados
         document.querySelectorAll('pre code[data-bbcode-code]').forEach(el => {
             if (!el.hasAttribute('data-highlighted')) {
-                hljs.highlightElement(el);
+               hljs.highlightElement(el);
             }
         });
     });
@@ -271,7 +286,7 @@ function loadHighlightJS() {
         script.onload = () => {
             // Asegurar que hljs esté listo
             if (typeof hljs !== 'undefined') {
-                hljs.configure({ ignoreUnescapedHTML: true }); // ⚠️ Clave: evita advertencias
+               hljs.configure({ ignoreUnescapedHTML: true }); // ⚠️ Clave: evita advertencias
             }
             resolve();
         };

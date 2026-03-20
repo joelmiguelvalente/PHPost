@@ -100,7 +100,7 @@ const votarPost = (puntos = 0) => {
 var isFavorite = false;
 const addFavorite = () =>{
 	if(isFavorite) return;
-	if(!queryParam('userkey')) {
+	if(!queryParam('userid')) {
 		dialog.alert('Login', 'Tienes que estar logueado para realizar esta operaci&oacute;n');
 		return;
 	}

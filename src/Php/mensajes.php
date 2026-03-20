@@ -30,7 +30,7 @@ if (is_array($tsLevelMsg)) {
 
 if($ctx->continue()) {
 
-	$unread = !isset($_GET['qt']);
+	$unread = (isset($_GET['qt']) && $_GET['qt'] === 'unread');
 	$action = trim($_GET['action'] ?? '');
 
 	switch($action){

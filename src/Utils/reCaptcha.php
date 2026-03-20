@@ -12,7 +12,7 @@ if (!defined('TS_HEADER')) {
    exit('No se permite el acceso directo al script');
 }
 
-class reCaptcha {
+class ReCaptcha {
    
    public $RECAPTCHA_TOKEN;
 

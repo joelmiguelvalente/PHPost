@@ -232,7 +232,6 @@ span.negativo {
 	padding: 0.325rem;
 }
 .dropdown-content a, .dropdown-link {
-	display: inline-block;
 	padding: 0;
 	color: #333;
 	font-weight: 700!important;
@@ -269,20 +268,15 @@ span.negativo {
 	}
 }
 .dropdown-content[dropdown-open="Mensajes"] {
-	max-height: calc(68px * 4);
 	overflow-y: auto;
 	.dropdown-item {
 		display: block;
 		.dropdown-link {
 			font-weight: 400!important;
-			display: grid;
-			grid-template-columns: 3rem 1fr;
-			gap: .5rem;
-			.dropdown-avatar {
-				width: 3rem;
-				height: 3rem;
-				object-fit: cover;
-				border-radius: 10em;
+			picture {
+				width: 2rem!important;
+				height: 2rem!important;
+				flex-shrink: 0;
 			}
 			.subject {
 				font-weight: 700;

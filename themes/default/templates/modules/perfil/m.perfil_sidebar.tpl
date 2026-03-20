@@ -2,13 +2,13 @@
    <div class="perfil-redes flex justify-start items-center gap-3 mb-3">
       {if $tsInfo.p_sitio}
          <a class="sitio" target="_blank" href="{$tsInfo.p_sitio}" title="Mi sitio">
-            <img height="30" width="30" alt="{$name}" src="{$tsRoutes.assets.images}/redes/icon_site.svg"/>
+            <img height="30" width="30" alt="{$name}" src="{$tsRoutes.assets.images}/redes/site.svg"/>
          </a>
       {/if}
       {foreach $tsRedes key=name item=red}
          {if !empty($tsInfo.p_socials.$name)}
             <a class="sitio {$name}" target="_blank" href="https://{$name}.{if $name == 'twitch'}tv{else}com{/if}/{$tsInfo.p_socials.$name}" title="{$red}">
-               <img height="30" width="30" alt="{$name}" src="{$tsRoutes.assets.images}/redes/icon_{$name}.svg"/>
+               <img height="30" width="30" alt="{$name}" src="{$tsRoutes.assets.images}/redes/{$name}.svg"/>
             </a>
          {/if}
       {/foreach}
@@ -22,7 +22,7 @@
    </div>
    <div class="box-content">
       {if $tsGeneral.m_total}
-         <div style="display: flex;justify-content: flex-start;align-items: flex-start;gap:.5rem;flex-wrap: wrap;">
+         <div class="flex justify-start items-start gap-3" style="flex-wrap: wrap;">
             {foreach from=$tsGeneral.medallas item=m}
                <img src="{$tsRoutes.assets.images}/icons/med/{$m.m_image}_32.png" width="32" height="32" title="{$m.m_title} - {$m.m_description}"/>
             {/foreach}
@@ -42,9 +42,9 @@
    </div>
    <div class="box-content">
       {if $tsGeneral.segs.data}
-         <div style="display: flex;justify-content: flex-start;align-items: flex-start;gap:.5rem;flex-wrap: wrap;">
+         <div class="flex justify-start items-start gap-3" style="flex-wrap: wrap;">
             {foreach from=$tsGeneral.segs.data item=s}
-               <a href="{$tsConfig.url}/@{$s.user_name}" style="display:inline-block;width:2rem;height:2rem;border-radius:10em;overflow:hidden;">
+               <a href="{$tsConfig.url}/@{$s.user_name}" class="block overflow-hidden rounded-full" style="width:2rem;height:2rem;">
                   {include "blocks/Avatar.tpl" id=$s.user_id size=32 alt=$s.user_name lazy=true class="avatar"}
                </a> 
             {/foreach}
@@ -64,9 +64,9 @@
    </div>
    <div class="box-content">
       {if $tsGeneral.sigd.data}
-         <div style="display: flex;justify-content: flex-start;align-items: flex-start;gap:.5rem;flex-wrap: wrap;">
+         <div class="flex justify-start items-start gap-3" style="flex-wrap: wrap;">
             {foreach from=$tsGeneral.sigd.data item=s}
-               <a href="{$tsConfig.url}/@{$s.user_name}" style="display:inline-block;width:2rem;height:2rem;border-radius:10em;overflow:hidden;">
+               <a href="{$tsConfig.url}/@{$s.user_name}" class="block overflow-hidden rounded-full" style="width:2rem;height:2rem;">
                   {include "blocks/Avatar.tpl" id=$s.user_id size=32 alt=$s.user_name lazy=true class="avatar"}
                </a> 
             {/foreach}
@@ -87,9 +87,9 @@
       </div>
       <div class="box-content">
          {if $tsInfo.visitas}
-            <div style="display: flex;justify-content: flex-start;align-items: flex-start;gap:.5rem;flex-wrap: wrap;">
+            <div class="flex justify-start items-start gap-3" style="flex-wrap: wrap;">
                {foreach from=$tsInfo.visitas item=s}
-                  <a href="{$tsConfig.url}/@{$s.user_name}" style="display:inline-block;width:2rem;height:2rem;border-radius:10em;overflow:hidden;">
+                  <a href="{$tsConfig.url}/@{$s.user_name}" class="block overflow-hidden rounded-full" style="width:2rem;height:2rem;">
                      {include "blocks/Avatar.tpl" id=$s.user_id size=32 alt=$s.user_name lazy=true class="avatar"}
                   </a> 
                {/foreach}

@@ -1,4 +1,3 @@
-
 const Copyright = {
 	app: '<span class="powered">Powered by <a href="https://github.com/joelmiguelvalente/PHPost" target="_blank" rel="external" title="Repositorio en github">PHPost V3</a></span>'
 }
@@ -2947,9 +2946,9 @@ let debug = false;
 			} catch(e) {}
 		},
 		checkFilter: function(node, filter) {
-			const node = $(node).get(0).outerHTML;
+			const nodeHTML = $(node).get(0).outerHTML;
 			const res = $(node).is(filter.toLowerCase());
-			$.log(`node: ${node} - filter: ${filter} - res: ${res}`);
+			$.log(`node: ${nodeHTML} - filter: ${filter} - res: ${res}`);
 		},
 		debug: function(msg) {
 			if (this.options.debug===true) {

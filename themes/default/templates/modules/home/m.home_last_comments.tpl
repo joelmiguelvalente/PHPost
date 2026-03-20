@@ -7,7 +7,7 @@
 			</div>
 		</div>
 	</div>
-	<div class="box-content" id="ult_comm" style="height: 330px;">
+	<div class="box-content" id="ult_comm" style="height: 290px;">
 		{include "views/api/p.posts.last-comentarios.tpl"}
 	</div>
 </div>

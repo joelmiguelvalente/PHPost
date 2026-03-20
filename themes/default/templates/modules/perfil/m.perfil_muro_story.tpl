@@ -2,11 +2,7 @@
 {foreach from=$tsMuro.data item=p}
 	<div class="Story grid gap-3" id="pub_{$p.pub_id}">
 		<a href="{$tsConfig.url}/@{$p.user_name}" class="Story_Pic">
-			{if $ajax}
-				<img src="{$tsRoutes.storage.avatar}/user_{$p.p_user}/thumb_avatar.png" alt="{$p.user_name}" width="50" height="50" loading="lazy" decoding="async">
-			{else}
-				{include "blocks/Avatar.tpl" alt=$p.user_name id=$p.p_user size=50}
-			{/if}
+			{include "blocks/Avatar.tpl" alt=$p.user_name id=$p.p_user_pub size=50 placeholder=$ajax}
 		</a>
 		<div class="Story_Content">
 			<div class="Story_Head relative">

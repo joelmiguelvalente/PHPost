@@ -13,24 +13,26 @@ declare(strict_types=1);
 
 define('TS_HEADER', true);
 
-// ─── Bootstrap mínimo ────────────────────────────────────────────────────────
 $root = dirname(__DIR__, 1);
-require_once $root . '/src/Utils/Generator.php';
 
 // ─── Seguridad: solo admin ────────────────────────────────────────────────────
-// Descomenta y adapta esto al sistema de sesión de PHPost:
-// require_once $root . '/header.php';
-// if ($tsUser->is_admin !== 1) { header('Location: /'); exit; }
+require_once $root . '/header.php';
+//
+if ($tsUser->is_admod !== 1) { 
+   header('Location: ../'); 
+   exit; 
+}
+require_once TS_UTILS . '/Generator.php';
 
 // ─── Detectar themes disponibles ─────────────────────────────────────────────
-$themesDir    = $root . '/themes';
+$themesDir    = TS_THEMES;
 $availThemes  = [];
 if (is_dir($themesDir)) {
-    foreach (scandir($themesDir) as $entry) {
-        if ($entry[0] !== '.' && is_dir("$themesDir/$entry")) {
-            $availThemes[] = $entry;
-        }
-    }
+   foreach (scandir($themesDir) as $entry) {
+      if ($entry[0] !== '.' && is_dir("$themesDir/$entry")) {
+         $availThemes[] = $entry;
+      }
+   }
 }
 
 // ─── Procesar formulario ──────────────────────────────────────────────────────
@@ -39,20 +41,20 @@ $posted  = $_SERVER['REQUEST_METHOD'] === 'POST';
 $error   = '';
 
 if ($posted) {
-    $name  = trim($_POST['name']  ?? '');
-    $theme = trim($_POST['theme'] ?? 'default');
-    $options = [
-        'api' => !empty($_POST['api']),
-        'css' => !empty($_POST['css']),
-        'js'  => !empty($_POST['js']),
-    ];
+   $name  = trim($_POST['name']  ?? '');
+   $theme = trim($_POST['theme'] ?? 'default');
+   $options = [
+      'api' => !empty($_POST['api']),
+      'css' => !empty($_POST['css']),
+      'js'  => !empty($_POST['js']),
+   ];
 
-    if (!PHPostGenerator::validateName($name)) {
-        $error = 'El nombre no es válido. Solo letras minúsculas, números y guión bajo. Mínimo 2 caracteres.';
-    } else {
-        $generator = new PHPostGenerator($name, $options, $root, $theme);
-        $result    = $generator->run();
-    }
+   if (!PHPostGenerator::validateName($name)) {
+      $error = 'El nombre no es válido. Solo letras minúsculas, números y guión bajo. Mínimo 2 caracteres.';
+   } else {
+      $generator = new PHPostGenerator($name, $options, $root, $theme);
+      $result    = $generator->run();
+   }
 }
 
 ?>

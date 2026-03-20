@@ -1,61 +1,53 @@
-<?php if ( ! defined('TS_HEADER')) exit('No se permite el acceso directo al script');
+<?php
+
 /**
- * Controlador AJAX
- *
- * @name    ajax.live.php
- * @author  PHPost Team
-*/
-/**********************************\
+ * @name api.github.php
+ * @author PHPost Team
+ * @copyright 2026
+ */
 
-*	(VARIABLES POR DEFAULT)		*
+declare(strict_types=1);
 
-\*********************************/
+if (!defined('TS_HEADER')) {
+	exit('No se permite el acceso directo al script');
+}
 
-	// NIVELES DE ACCESO Y PLANTILLAS DE CADA ACCIÓN
-	$files = array(
-		'live-stream' => array('n' => 2, 'p' => 'stream'),
-	);
+const ACTIONS = [
+   'live-stream' => ['nivel' => 2, 'template' => 'stream', 'ajax' => true]
+];
 
-/**********************************\
+if (!array_key_exists($action, ACTIONS)) {
+   http_response_code(403);
+   exit('Acción inválida');
+}
 
-* (VARIABLES LOCALES ESTE ARCHIVO)	*
+$config = ACTIONS[$action];
 
-\*********************************/
+$tsLevel = $config['nivel'];
+$tsAjax  = (int) $config['ajax'];
+$tsPage  = sprintf('p.live.%s', $config['template']);
 
-	// REDEFINIR VARIABLES
-	$tsPage = 'p.live.'.$files[$action]['p'];
-	$tsLevel = $files[$action]['n'];
-	$tsAjax = empty($files[$action]['p']) ? 1 : 0;
+$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
+if (!$tsLevelMsg) {
+   echo json_encode(['state' => 0, 'data' => 'Sin permisos']);
+   die();
+}
 
-/**********************************\
-
-*	(INSTRUCCIONES DE CODIGO)		*
-
-\*********************************/
-	
-	// DEPENDE EL NIVEL
-	$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
-	if(!$tsLevelMsg) { 
-		echo '0: '.$tsLevelMsg['mensaje']; 
-		die();
-	}
-	// CODIGO
-	switch($action){
-		case 'live-stream':
-			//<---
-            // NOTIFICACIONES
-            if($_POST['nots'] != 'OFF') {
-                $tsStream = $tsMonitor->getNotificaciones(true);
-                $smarty->assign("tsStream", $tsStream);
-            }
-            // MENSAJES
-            if($_POST['mps'] != 'OFF') {
-                $tsMensajes = $tsMP->getMensajes(1, true, 'live'); // Edit: 21/02/2014
-                $smarty->assign("tsMensajes", $tsMensajes);   
-            }
-			//--->
-		break;
-        default:
-            die('0: Este archivo no existe.');
-        break;
-	}
+// CODIGO
+switch($action){
+	case 'live-stream':
+		// NOTIFICACIONES
+		if($_POST['nots'] !== 'OFF') {
+			$tsStream = $tsMonitor->getNotificaciones(true);
+			$smarty->assign("tsStream", $tsStream);
+		}
+		// MENSAJES
+		if($_POST['mps'] !== 'OFF') {
+			$tsMensajes = $tsMP->getMensajes(1, true, 'live');
+			$smarty->assign("tsMensajes", $tsMensajes);   
+		}
+	break;
+	default:
+		die('0: Este archivo no existe.');
+	break;
+}
