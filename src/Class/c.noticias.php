@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name c.noticias.php
+ * @name src/Class/c.noticias.php
  * @author PHPost Team
  * @copyright 2026
  */

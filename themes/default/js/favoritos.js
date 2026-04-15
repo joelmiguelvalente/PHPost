@@ -134,7 +134,7 @@ var favoritos = {
 	   $('#loading').fadeIn(250);
 		$.ajax({
 			type: 'POST',
-			url: route.url + '/favoritos-borrar.php',
+			url: route.url + '/favoritos-borrar',
 			data: 'fav_id=' + fav_id + queryParam('userkey'),
 			success: function(h){
 				switch(h.charAt(0)){
@@ -197,7 +197,7 @@ var favoritos = {
         $('#loading').fadeIn(250);
 		$.ajax({
 			type: 'POST',
-			url: route.url + '/favoritos-agregar.php',
+			url: route.url + '/favoritos-agregar',
 			data: 'postid=' + post_id + '&reactivar=' + fav_date + queryParam('userkey'),
 			success: function(h){
 				switch(h.charAt(0)){
@@ -268,7 +268,7 @@ function sortObject(o){
 $(document).ready(function(){
 	//Guardo el template en una variable
 
-	favoritos.template_favorito = '<tr id="favorito_id___fav_id__"><td><img src="'+ global_data.img +'images/icons/cat/__imagen__" title="__categoria_name__"/></td><td style="text-align:left"><a class="titlePost" title="__titulo__" href="__url__">__titulo__</a></td><td title="__fecha_creado_formato__">__fecha_creado_palabras__</td><td title="__fecha_guardado_formato__">__fecha_guardado_palabras__</td><td class="color_green">__puntos__</td><td>__comentarios__</td><td><a id="change_status" href="" onclick="favoritos.eliminar(__fav_id__, this); return false;"><img src="' + global_data.img + 'images/borrar.png" alt="borrar" title="Borrar Favorito" /></a></td></tr>';
+	favoritos.template_favorito = '<tr id="favorito_id___fav_id__"><td><img src="'+ global_data.img +'images/icons/categories/__imagen__" title="__categoria_name__"/></td><td style="text-align:left"><a class="titlePost" title="__titulo__" href="__url__">__titulo__</a></td><td title="__fecha_creado_formato__">__fecha_creado_palabras__</td><td title="__fecha_guardado_formato__">__fecha_guardado_palabras__</td><td class="color_green">__puntos__</td><td>__comentarios__</td><td><a id="change_status" href="" onclick="favoritos.eliminar(__fav_id__, this); return false;"><img src="' + global_data.img + 'images/borrar.png" alt="borrar" title="Borrar Favorito" /></a></td></tr>';
 	favoritos.template_categoria = '<li id="cat___categoria__"><a href="" onclick="favoritos.active(this); favoritos.categoria = \'__categoria__\'; favoritos.query(); return false;">__categoria_name__</a> (<span class="count">__count__</span>)</li>';
 
 	//Hago conteo inicial

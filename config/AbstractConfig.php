@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * @name config/AbstractConfig.php
+ * @author PHPost Team
+ * @copyright 2026
+ */
+
 declare(strict_types=1);
 
 abstract class AbstractConfig

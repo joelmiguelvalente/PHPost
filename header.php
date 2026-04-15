@@ -17,10 +17,14 @@ declare (strict_types = 1);
 defined('TS_HEADER') OR define('TS_HEADER', TRUE);
 
 define('BASEPATH', realpath(__DIR__));
-require_once BASEPATH . '/config/Config.Paths.php';
+require_once BASEPATH  . '/config/Config.Paths.php';
 require_once TS_CONFIG . '/Config.php';
 require_once TS_CONFIG . '/Config.Session.php';
 require_once TS_CONFIG . '/Config.Errors.php';
+
+# Si no usas PHP 8.5 se ejecuta el archivo
+require_once TS_EXTRAS . '/polyfill.uri.php';
+require_once TS_UTILS . '/Compat.php';
 
 date_default_timezone_set(Config::app('localization.timezone'));
 
@@ -33,7 +37,7 @@ require_once TS_UTILS . "/IP.php";
 require_once TS_UTILS . "/Extras.php";
 require_once TS_UTILS . "/Themes.php";
 
-require_once TS_EXTRA . '/functions.php';
+require_once TS_EXTRAS . '/functions.php';
 
 // Nucleo
 require_once TS_CLASS . '/c.core.php';
@@ -51,7 +55,7 @@ require_once TS_CLASS . '/c.actividad.php';
 require_once TS_CLASS . '/c.mensajes.php';
 
 // Crean requests
-require_once TS_EXTRA . '/QueryString.php';
+require_once TS_EXTRAS . '/QueryString.php';
 
 // Controller para inc/php/...
 require_once TS_UTILS . '/Controller.php';
@@ -83,7 +87,7 @@ define('TS_TEMA', $tsCore->settings['tema']['t_path'] ?? 'default');
 
 // Smarty
 require_once TS_CLASS . '/c.smarty.php';
-$smarty = new tsSmarty();
+$smarty = new tsSmarty;
 $smarty->output(false);
 
 /*

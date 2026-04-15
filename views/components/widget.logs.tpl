@@ -181,8 +181,7 @@
          {if $logWidget.worstLevel}
             <div class="wl-row">
                <span class="wl-label">Nivel</span>
-               <span class="wl-level"
-                     style="color:{$logWidget.worstColor};background:{$logWidget.worstBg}">
+               <span class="wl-level" style="color:{$logWidget.worstColor};background:{$logWidget.worstBg}">
                   {$logWidget.worstIcon} {$logWidget.worstLevel}
                </span>
             </div>

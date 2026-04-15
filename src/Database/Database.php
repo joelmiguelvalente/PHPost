@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name Database.php
+ * @name src/Database/Database.php
  * @author PHPost Team
  * @copyright 2026
  */

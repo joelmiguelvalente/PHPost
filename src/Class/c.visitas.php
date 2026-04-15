@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name c.visitas.php
+ * @name src/Class/c.visitas.php
  * @author PHPost Team
  * @copyright 2026
  */

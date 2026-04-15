@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name c.smarty.php
+ * @name src/Class/c.smarty.php
  * @author PHPost Team
  * @copyright 2026
  */

@@ -29,7 +29,7 @@
     			{include file="dashboard/Check.tpl" type="radio" name=$name value=$val checked=$checked label=$labels.$i}
     		{/foreach}
     	{else}
-    		{include file="dashboard/Input.tpl" type=$type name=$name id=$id value=$value|default:'' disabled=$disabled|default:false}
+    		{include file="dashboard/Input.tpl" type=$type name=$name id=$id value=$value|default:'' disabled=$disabled|default:false onkeypress=$onkeypress}
   		{/if}
   	</div>
 </div>

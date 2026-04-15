@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * @name config/Config.php
+ * @author PHPost Team
+ * @copyright 2026
+ */
+
 declare(strict_types=1);
 
 require_once __DIR__ . '/AbstractConfig.php';
@@ -9,9 +15,9 @@ require_once __DIR__ . '/Config.Mailer.php';
 
 final class Config
 {
-	private static ?ConfigApplication $app = null;
-	private static ?ConfigDatabase $db = null;
-	private static ?ConfigMailer $mail = null;
+	private static ?ConfigApplication $app  = null;
+	private static ?ConfigDatabase 	  $db   = null;
+	private static ?ConfigMailer 	  $mail = null;
 
 	public static function app(string $key, mixed $default = null): mixed
 	{

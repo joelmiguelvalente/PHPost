@@ -70,7 +70,7 @@ class ReCaptcha {
       ]);
 
       $response = json_decode(curl_exec($ch), true);
-      curl_close($ch);
+      Compat::curl_close($ch);
 
       return $response['success'] ?? false;
    }

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name c.comentarios.php
+ * @name src/Class/c.comentarios.php
  * @author PHPost Team
  * @copyright 2026
  */

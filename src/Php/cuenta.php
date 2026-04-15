@@ -41,10 +41,10 @@ if($ctx->continue()) {
 	$Themes = new Themes;
 
 	if(empty($action)) {
-		require_once TS_EXTRA . "/datos.php";
-		$tsMeses = require_once TS_EXTRA . "/Meses.php";
-		$tsPaises = require_once TS_EXTRA . "/Paises.php";
-		$tsEstados = require_once TS_EXTRA . "/geodata.php";
+		require_once TS_EXTRAS . "/datos.php";
+		$tsMeses = require_once TS_EXTRAS . "/Meses.php";
+		$tsPaises = require_once TS_EXTRAS . "/Paises.php";
+		$tsEstados = require_once TS_EXTRAS . "/geodata.php";
 
 		$minAge = (int)$tsCore->reCaptchaConfig('c_allow_edad'); // ej. 16
 		$maxAge = 100;

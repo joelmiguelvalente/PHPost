@@ -42,16 +42,16 @@
 	if($tsLevelMsg != 1) { echo '0: '.$tsLevelMsg['mensaje']; die();}
 	// CLASE
 	require('../class/c.borradores.php');
-	$tsDrafts = new tsDrafts();
+	$tsBorradores = new tsBorradores();
 	// CODIGO
 	switch($action){
 		case 'borradores':
-				$tsBorradores = $tsDrafts->getDrafts();
-				$smarty->assign("tsDrafts",$tsBorradores);
+				$tsBorradores = $tsBorradores->getDrafts();
+				$smarty->assign("tsBorradores",$tsBorradores);
 		break;
 		case 'borradores-get':
 				$_GET['action'] = $_POST['borrador_id'];
-				$tsBorrador = $tsDrafts->getDraft(0);
+				$tsBorrador = $tsBorradores->getDraft(0);
 				echo '1: <div style="text-align:left; padding-left:15px;">
 	<strong>T&iacute;tulo:</strong><br />
 	<input type="text" value="'.$tsBorrador['b_title'].'" style="width:480px" onfocus="this.select()" /><br />
@@ -61,17 +61,17 @@
 		break;
 		case 'borradores-agregar':
 			//<--
-			echo $tsDrafts->newDraft();
+			echo $tsBorradores->newDraft();
 			//-->
 		break;
 		case 'borradores-guardar':
 			//<--
-			echo $tsDrafts->newDraft(true);
+			echo $tsBorradores->newDraft(true);
 			//-->
 		break;
 		case 'borradores-eliminar':
 			//<--
-			echo $tsDrafts->delDraft();
+			echo $tsBorradores->delDraft();
 			//-->
 		break;
 	}

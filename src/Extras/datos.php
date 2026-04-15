@@ -1,6 +1,12 @@
 <?php
 
 /**
+ * @name src/Extras/datos.php
+ * @author PHPost Team
+ * @copyright 2026
+ */
+
+/**
  * Privacidad
 */
 $tsPrivacidad = [

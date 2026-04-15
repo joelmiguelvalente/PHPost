@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name c.medals.php
+ * @name src/Class/c.medals.php
  * @author PHPost Team
  * @copyright 2026
  */

@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * @name src/Extras/geodata.php
+ * @author PHPost Team
+ * @copyright 2026
+ */
+
 return [
 	'XX' => 'Desconocido',
 	'AF' => [

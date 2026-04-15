@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name api.muro.php
+ * @name src/Api/api.muro.php
  * @author PHPost Team
  * @copyright 2026
  */

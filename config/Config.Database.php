@@ -12,7 +12,7 @@
  * Este archivo debe ser incluido una sola vez desde
  * el bootstrap principal de la aplicación.
  *
- * @name      settings.database.php
+ * @name      config/Config.Database.php
  * @author    Miguel92
  * @copyright 2026
  */

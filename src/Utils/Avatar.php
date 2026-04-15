@@ -81,9 +81,9 @@ final class Avatar {
             $filename = $this->variantFilename($variant, $format);
             $this->save($resized, $userDir . $filename, $format);
          }
-         imagedestroy($resized);
+         Compat::imagedestroy($resized);
       }
-      imagedestroy($baseImage);
+      Compat::imagedestroy($baseImage);
    }
 
    private function normalizeHexColor(int|string $color): string {

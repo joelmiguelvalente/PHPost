@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * @name src/Extras/QueryString.php
+ * @author PHPost Team
+ * @copyright 2026
+ */
+
 declare(strict_types=1);
 
 /**

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name c.favoritos.php
+ * @name src/Class/c.favoritos.php
  * @author PHPost Team
  * @copyright 2026
  */

@@ -16,7 +16,7 @@
 					{foreach from=$tsResults.data item=r}
 						<div id="div_{$r.post_id}" class="result-item result-post">
 							<a class="result-title" href="{$tsConfig.url}/posts/{$r.c_seo}/{$r.post_id}/{$r.post_title|seo}.html">
-								<img class="cat-icon" src="{$tsRoutes.assets.images}/icons/cat/{$r.c_img}" alt="{$r.c_nombre}"/>
+								<img class="cat-icon" src="{$tsRoutes.assets.images}/icons/categories/{$r.c_img}" alt="{$r.c_nombre}"/>
 								{$r.post_title}
 							</a>
 							<div class="result-meta">
@@ -52,7 +52,7 @@
 					{foreach from=$tsResults.data item=r}
 						<div id="div_{$r.post_id}" class="result-item result-post">
 							<a class="result-title" href="{$tsConfig.url}/posts/{$r.c_seo}/{$r.post_id}/{$r.post_title|seo}.html">
-								<img class="cat-icon" src="{$tsRoutes.assets.images}/icons/cat/{$r.c_img}" alt="{$r.c_nombre}"/>
+								<img class="cat-icon" src="{$tsRoutes.assets.images}/icons/categories/{$r.c_img}" alt="{$r.c_nombre}"/>
 								{$r.post_title}
 							</a>
 							<div class="result-meta">

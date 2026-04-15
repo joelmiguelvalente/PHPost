@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name c.afiliado.php
+ * @name src/Class/c.afiliado.php
  * @author PHPost Team
  * @copyright 2026
  */

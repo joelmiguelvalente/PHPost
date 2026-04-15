@@ -62,7 +62,7 @@ function iniciarSesion() {
 	showLoader(true);
 	setButtonLoading(true);
 
-	$.post(`${route.url}/login-user.php`, $.param(params), response => {
+	$.post(`${route.url}/login-user`, $.param(params), response => {
 		const { status, message } = $.parseResponse(response);
 		if (status === 1) {
 			// Obtener el parámetro redirect
@@ -122,7 +122,7 @@ function remindResend(confirmed = false, type) {
 	   });
 	} else {
 		const email = encodeURIComponent($('#r_email').val());
-		$.post(`${route.url}/recover-${config.page}.php`, `r_email=${email}`, response => {
+		$.post(`${route.url}/recover-${config.page}`, `r_email=${email}`, response => {
 			const { status, message } = $.parseResponse(response);
 			const alertTitle = status === 0 ? 'Oops!' : 'Hecho';
 			dialog.alert(alertTitle, message);

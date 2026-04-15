@@ -204,7 +204,7 @@ function markFixed(id, btn) {
    btn.disabled    = true;
    btn.textContent = '...';
 
-   api('logs-borrar.php', { file, datetime }, response => {
+   api('logs-borrar', { file, datetime }, response => {
       let result;
       try {
          result = typeof response === 'string' ? JSON.parse(response) : response;

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name api.perfil.php
+ * @name src/Api/api.perfil.php
  * @author PHPost Team
  * @copyright 2026
  */
@@ -93,8 +93,8 @@ switch($action){
 	break;
 	case 'perfil-info':
 		//<---
-		require_once TS_EXTRA . '/datos.php';
-		$tsPaises = require_once TS_EXTRA . "/Paises.php";
+		require_once TS_EXTRAS . '/datos.php';
+		$tsPaises = require_once TS_EXTRAS . "/Paises.php";
 		// PERFIL INFO
 		$tsPerfil = $tsCuenta->loadPerfil((int)$user_id);
 		$smarty->assign("tsPerfil", $tsPerfil);

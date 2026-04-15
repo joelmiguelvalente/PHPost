@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name c.core.php
+ * @name src/Class/c.core.php
  * @author PHPost Team
  * @copyright 2026
  */
@@ -12,10 +12,12 @@ if (!defined('TS_HEADER')) {
 	exit('No se permite el acceso directo al script');
 }
 
-require_once TS_EXTRA . '/bbcode.inc.php';
+require_once TS_EXTRAS . '/bbcode.inc.php';
+
+use Uri\Rfc3986\Uri;
 
 class tsCore {
-	 
+
 	public array $settings;
 	public int $uid;
 
@@ -28,7 +30,7 @@ class tsCore {
 			$this->settings['news'] = $this->getNews();
 		}
 	}
-	
+
 	/**
 	 * @access public
 	 * @name buildRoutes()
@@ -62,7 +64,7 @@ class tsCore {
 				'avatar'    => "$storage/avatar",
 				'portadas'  => "$storage/portadas",
 				'uploads'   => "$storage/uploads",
-				'media' 	   => "$storage/media"
+				'media' 	=> "$storage/media"
 			]
 		];
 		return $routes;
@@ -91,16 +93,16 @@ class tsCore {
 		}
 		return $current;
 	}
-	
+
 	/**
 	 * @access public
 	 * @name getSettings()
 	 * @return array
 	*/
 	public function getSettings(): array {
-		return DB::fetch("SELECT * FROM w_configuracion WHERE phpost_id");
+		return DB::fetch("SELECT * FROM w_configuracion WHERE phpost_id = :id", ['id' => 1]);
 	}
-	
+
 	/**
 	 * @access public
 	 * @name reCaptchaConfig()
@@ -112,23 +114,23 @@ class tsCore {
 		if(!empty($type)) return $data[$type];
 		return $data;
 	}
-	
+
 	/**
 	 * @access public
 	 * @name getNovemods()
 	 * @return array
 	*/
 	public function getNovemods(): array {
-	   $datos = DB::fetch("SELECT 
-	      (SELECT COUNT(post_id) FROM p_posts WHERE post_status = 3) as revposts,
-	      (SELECT COUNT(cid) FROM p_comentarios WHERE c_status = 1) as revcomentarios,
-	      (SELECT COUNT(DISTINCT obj_id) FROM w_denuncias WHERE d_type = 'post') as repposts,
-	      (SELECT COUNT(DISTINCT obj_id) FROM w_denuncias WHERE d_type = 'mensaje') as repmps,
-	      (SELECT COUNT(DISTINCT obj_id) FROM w_denuncias WHERE d_type = 'usuario') as repusers,
-	      (SELECT COUNT(DISTINCT obj_id) FROM w_denuncias WHERE d_type = 'foto') as repfotos,
-	      (SELECT COUNT(susp_id) FROM u_suspension) as suspusers,
-	      (SELECT COUNT(post_id) FROM p_posts WHERE post_status = 2) as pospelera,
-	      (SELECT COUNT(foto_id) FROM f_fotos WHERE f_status = 2) as fospelera
+	   $datos = DB::fetch("SELECT
+		  (SELECT COUNT(post_id) FROM p_posts WHERE post_status = 3) as revposts,
+		  (SELECT COUNT(cid) FROM p_comentarios WHERE c_status = 1) as revcomentarios,
+		  (SELECT COUNT(DISTINCT obj_id) FROM w_denuncias WHERE d_type = 'post') as repposts,
+		  (SELECT COUNT(DISTINCT obj_id) FROM w_denuncias WHERE d_type = 'mensaje') as repmps,
+		  (SELECT COUNT(DISTINCT obj_id) FROM w_denuncias WHERE d_type = 'usuario') as repusers,
+		  (SELECT COUNT(DISTINCT obj_id) FROM w_denuncias WHERE d_type = 'foto') as repfotos,
+		  (SELECT COUNT(susp_id) FROM u_suspension) as suspusers,
+		  (SELECT COUNT(post_id) FROM p_posts WHERE post_status = 2) as pospelera,
+		  (SELECT COUNT(foto_id) FROM f_fotos WHERE f_status = 2) as fospelera
 	   ") ?? [];
 	   // Calcular total solamente de los campos relevantes
 	   $keysToSum = ['repposts', 'repfotos', 'repmps', 'repusers', 'revposts', 'revcomentarios'];
@@ -145,7 +147,7 @@ class tsCore {
 		$data = DB::fetchAll('SELECT cid, c_orden, c_nombre, c_seo, c_img, c_color, c_privada FROM p_categorias ORDER BY c_orden');
 		return $data;
 	}
-	
+
 	/**
 	 * @access public
 	 * @name getTema()
@@ -166,12 +168,12 @@ class tsCore {
 	*/
 	private function mapNewsType(int $type): array {
 	   return match ($type) {
-	      1 => ['label' => 'Importante', 'css' => 'important'],
-	      2 => ['label' => 'Cambios',    'css' => 'changes'],
-	      default => ['label' => 'Normal', 'css' => 'normal'],
+		  1 => ['label' => 'Importante', 'css' => 'important'],
+		  2 => ['label' => 'Cambios',    'css' => 'changes'],
+		  default => ['label' => 'Normal', 'css' => 'normal'],
 	   };
 	}
-	
+
 	/**
 	 * @access public
 	 * @name getNews
@@ -182,19 +184,19 @@ class tsCore {
 	   $now  = time();
 
 	   $query = DB::fetchAll("SELECT not_body, not_date, not_expires, not_type, not_color FROM w_noticias WHERE not_active = :active AND (not_expires = :expire OR not_expires > $now) ORDER BY not_type DESC, not_date DESC LIMIT 10", [
-	   	'active' => 1,
-	   	'expire' => 0
+		'active' => 1,
+		'expire' => 0
 	   ]);
 
 	   foreach($query as $k => $row) {
-	      $row['not_body'] = $this->parseBBCode($row['not_body'], 'news');
-	      $row['type']     = $this->mapNewsType((int)$row['not_type']);
-	      $data[] = $row;
+		  $row['not_body'] = $this->parseBBCode($row['not_body'], 'news');
+		  $row['type']     = $this->mapNewsType((int)$row['not_type']);
+		  $data[] = $row;
 	   }
 
 	   return $data;
 	}
-	
+
 	/**
 	 * @access public
 	 * @name parseBadWords
@@ -218,8 +220,8 @@ class tsCore {
 			$censurar = str_ireplace($search, $replace, $censurar);
 		}
 		return $censurar;
-	}       
-	
+	}
+
 	/**
 	 * @access public
 	 * @name setLevel
@@ -244,16 +246,16 @@ class tsCore {
 			3 => $tsUser->is_admod || $tsUser->permiso('moderacion.panel.acceso'), // SOLO MODERADORES
 			4 => $tsUser->is_admod === 1 // SOLO ADMIN
 		];
-		
+
 		$tsLevel = $tsLevel ?? 0;
 		if($message && !$conditions[$tsLevel]) {
 			// Manejo de mensajes de error
 			return [
-				'titulo' => 'Error', 
+				'titulo' => 'Error',
 				'mensaje' => $setMessages[$tsLevel] ?? 'Error desconocido.'
 			];
 		}
-		elseif (isset($conditions[$tsLevel]) && $conditions[$tsLevel]) return true;   
+		elseif (isset($conditions[$tsLevel]) && $conditions[$tsLevel]) return true;
 	}
 
 	/**
@@ -286,20 +288,21 @@ class tsCore {
 	 * @return string
 	 */
 	public function getDomain(): string {
-	   $url = $this->settings['url'] ?? '';
-	   if (empty($url)) {
-	      return '';
-	   }
-	   $host = parse_url($url, PHP_URL_HOST);
-	   if (!$host) {
-	      return '';
-	   }
-	   $parts = explode('.', $host);
-	   $count = count($parts);
-	   if ($count < 2) {
-	      return $host;
-	   }
-	   return $parts[$count - 2] . '.' . $parts[$count - 1];
+		$url = $this->settings['url'] ?? '';
+		if (empty($url)) {
+		   return '';
+		}
+		$uri = new Uri($url);
+		$host = $uri->getHost();
+		if (!$host) {
+		   return '';
+		}
+		$parts = explode('.', $host);
+		$count = count($parts);
+		if ($count < 2) {
+		   return $host;
+		}
+		return $parts[$count - 2] . '.' . $parts[$count - 1];
 	}
 
 	/**
@@ -323,15 +326,15 @@ class tsCore {
 	 */
 	public function setSecure(string $value = '', bool $xss = false): string {
 		if(empty($value)) return '';
-	   // Normalizar
-	   $value = trim($value);
-	   // Escapar para SQL (legacy)
-	   #$value = db_exec('real_escape_string', $value);
-	   // Escapar para HTML si se solicita
-	   if ($xss) {
-	      $value = htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-	   }
-	   return $value;
+		// Normalizar
+		$value = trim($value);
+		// Escapar para SQL (legacy)
+		#$value = db_exec('real_escape_string', $value);
+		// Escapar para HTML si se solicita
+		if ($xss) {
+		  	$value = htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+		}
+		return $value;
 	}
 
 	/**
@@ -343,31 +346,31 @@ class tsCore {
 	 * @return bool|string
 	 */
 	public function antiFlood(bool $print = true, string $type = 'post', string $msg = ''): bool|string {
-	   global $tsUser;
+	   	global $tsUser;
 
-	   if (!isset($_SESSION['flood'])) {
-	      $_SESSION['flood'] = [];
-	   }
-	   $now   = time();
-	   $msg   = $msg ?: 'No puedes realizar tantas acciones en tan poco tiempo.';
-	   $limit = (int) ($tsUser->permiso('limites.antiflood') ?? 0);
-	   // Primera vez para este tipo
-	   if (!isset($_SESSION['flood'][$type])) {
-	      $_SESSION['flood'][$type] = $now;
-	      return true;
-	   }
-	   $elapsed = $now - $_SESSION['flood'][$type];
-	   if ($elapsed < $limit) {
-	      $remaining = $limit - $elapsed;
-	      $finalMsg  = "0: {$msg} Inténtalo en {$remaining} segundos.";
-	      if ($print) {
-	         exit($finalMsg);
-	      }
-	      return $finalMsg;
-	   }
-	   // Actualizamos timestamp
-	   $_SESSION['flood'][$type] = $now;
-	   return true;
+	  	if (!isset($_SESSION['flood'])) {
+		  	$_SESSION['flood'] = [];
+	  	}
+		$now   = time();
+		$msg   = $msg ?: 'No puedes realizar tantas acciones en tan poco tiempo.';
+		$limit = (int) ($tsUser->permiso('limites.antiflood') ?? 0);
+		// Primera vez para este tipo
+		if (!isset($_SESSION['flood'][$type])) {
+			$_SESSION['flood'][$type] = $now;
+			return true;
+		}
+		$elapsed = $now - $_SESSION['flood'][$type];
+		if ($elapsed < $limit) {
+			$remaining = $limit - $elapsed;
+			$finalMsg  = "0: {$msg} Inténtalo en {$remaining} segundos.";
+			if ($print) {
+			 	exit($finalMsg);
+			}
+			return $finalMsg;
+	   	}
+	   	// Actualizamos timestamp
+	   	$_SESSION['flood'][$type] = $now;
+	   	return true;
 	}
 
 	# MAXIMA CONVERSION => URL AMIGABLES | Ya no usaremos esta funcion...
@@ -375,6 +378,7 @@ class tsCore {
 	public function setSEO($string, $max = '-') {
 		return $this->slugify($string, $max);
 	}
+
 	/*
 		parseBBCode($bbcode)
 	*/
@@ -400,7 +404,7 @@ class tsCore {
 		$parser->parseSmiles();
 		return $parser->getAsHtml();
 	}
-	
+
 	/**
 	 * @param array  $data
 	 * @param string $prefix
@@ -408,18 +412,18 @@ class tsCore {
 	 */
 	public function buildSqlSet(array $data, string $prefix = ''): string {
 	   if (empty($data)) {
-	      return '';
+		  return '';
 	   }
 	   $sets = [];
 	   foreach ($data as $field => $value) {
-	   	$field = $prefix . $field;
-	   	$sets[] = match (true) {
-            is_int($value),
-            is_float($value)   => "$field = $value",
-            is_bool($value)    => "$field = " . (int) $value,
-            $value === null    => "$field = NULL",
-            default            => "$field = '" . (string)$value . "'",
-        };
+		$field = $prefix . $field;
+		$sets[] = match (true) {
+			is_int($value),
+			is_float($value)   => "$field = $value",
+			is_bool($value)    => "$field = " . (int) $value,
+			$value === null    => "$field = NULL",
+			default            => "$field = '" . (string)$value . "'",
+		};
 	   }
 	   return implode(', ', $sets);
 	}

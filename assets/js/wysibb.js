@@ -4,31 +4,33 @@ const Copyright = {
 
 $(function() {
 	$('button, input, .btn_g, .answerCitar').on('hover', function() {
-		if($('.wysibb-texarea').length) { $('.wysibb-texarea').sync(); }
-		else { return false; }
+		if ($('.wysibb-texarea').length) {
+			$('.wysibb-texarea').sync();
+		} else {
+			return false;
+		}
 	});
 });
 
 const toFullScreen = () => {
 	let isFullscreen = !$('.wysibb').attr('fullscreen');
 	let maxHeight = $(window).height() - $('.wysibb-toolbar').height();
-	if(isFullscreen) {
-		$('body').css({ overflow: 'hidden' });
+	if (isFullscreen) {
+		$('body').css({
+			overflow: 'hidden'
+		});
 	} else {
 		$('body, .wysibb').removeAttr('style');
 	}
-	
-	$('.wysibb')[(isFullscreen ? 'addClass' : 'removeClass')]('fullscreen').attr({ 
-		fullscreen: isFullscreen 
+
+	$('.wysibb')[(isFullscreen ? 'addClass' : 'removeClass')]('fullscreen').attr({
+		fullscreen: isFullscreen
 	});
 	$('.wysibb-body, .wysibb-texarea').css({
 		'max-height': isFullscreen ? maxHeight : 500,
 		height: isFullscreen ? maxHeight : ''
 	});
 };
-
-/* Para no causar errores con el anterior editor */
-const wysi = { on: () => {}, off: () => {} };
 
 let debug = false;
 
@@ -40,214 +42,215 @@ let debug = false;
 		this.$txtArea = $(txtArea);
 		let id = this.$txtArea.attr("id") || this.setUID(this.txtArea);
 		this.options = {
-			bbmode:				false,
-			onlyBBmode:			false,
-			themeName:			"default", 
-			bodyClass:			"",
-			tabInsert:			true,
-			toolbar:				true,
-			hotkeys:				true,
-			showHotkeys:		true,
-			autoresize:			true,
-			resize_maxheight:	500,
-			loadPageStyles:	true,
-			traceTextarea:		true,
-			smileConversion:	true,
-			//img upload config 
-			imgupload:			true,
-			img_uploadurl:		route.url + "/src/Extras/wysibbupload.php",
-			img_maxwidth:		800,
-			img_maxheight:		640,
-			//END img upload config 
+			bbmode: false,
+			onlyBBmode: false,
+			themeName: "default",
+			bodyClass: "",
+			tabInsert: true,
+			toolbar: true,
+			hotkeys: true,
+			showHotkeys: true,
+			autoresize: true,
+			resize_maxheight: 500,
+			loadPageStyles: true,
+			traceTextarea: true,
+			smileConversion: true,
+			//img upload config
+			imgupload: true,
+			img_uploadurl: route.url + "/src/Extras/upload.php",
+			img_maxwidth: 800,
+			img_maxheight: 640,
+			//END img upload config
 			buttons: "bold,italic,underline,strike,sup,sub,|,image,video,link,|,fontcolor,fontsize,fontfamily,|,smileBox,bullist,numlist,|,spoiler,messages,table,|,justifyleft,justifycenter,justifyright,justify,|,hr,quote,code,kbd,|,removeFormat,fullscreen",
 			allButtons: {
-				bold : {
+				bold: {
 					title: "Negrita",
 					buttonHTML: '<span class="wysibb-icon wysibb-icon-bold"></span>',
 					excmd: 'bold',
 					hotkey: 'ctrl+b',
-					transform : {
-						'<b>{SELTEXT}</b>':"[b]{SELTEXT}[/b]",
-						'<strong>{SELTEXT}</strong>':"[b]{SELTEXT}[/b]"
+					transform: {
+						'<b>{SELTEXT}</b>': "[b]{SELTEXT}[/b]",
+						'<strong>{SELTEXT}</strong>': "[b]{SELTEXT}[/b]"
 					}
 				},
-				italic : {
+				italic: {
 					title: "Cursiva",
 					buttonHTML: '<span class="wysibb-icon wysibb-icon-italic"></span>',
 					excmd: 'italic',
 					hotkey: 'ctrl+i',
-					transform : {
-						'<i>{SELTEXT}</i>':"[i]{SELTEXT}[/i]",
-						'<em>{SELTEXT}</em>':"[i]{SELTEXT}[/i]"
+					transform: {
+						'<i>{SELTEXT}</i>': "[i]{SELTEXT}[/i]",
+						'<em>{SELTEXT}</em>': "[i]{SELTEXT}[/i]"
 					}
 				},
-				underline : {
+				underline: {
 					title: "Subrayado",
 					buttonHTML: '<span class="wysibb-icon wysibb-icon-underline"></span>',
 					excmd: 'underline',
 					hotkey: 'ctrl+u',
-					transform : {
-						'<u>{SELTEXT}</u>':"[u]{SELTEXT}[/u]"
+					transform: {
+						'<u>{SELTEXT}</u>': "[u]{SELTEXT}[/u]"
 					}
 				},
-				strike : {
+				strike: {
 					title: "Tachado",
 					buttonHTML: '<span class="wysibb-icon wysibb-icon-strike"></span>',
 					excmd: 'strikeThrough',
-					transform : {
-						'<strike>{SELTEXT}</strike>':"[s]{SELTEXT}[/s]",
-						'<s>{SELTEXT}</s>':"[s]{SELTEXT}[/s]"
+					transform: {
+						'<strike>{SELTEXT}</strike>': "[s]{SELTEXT}[/s]",
+						'<s>{SELTEXT}</s>': "[s]{SELTEXT}[/s]"
 					}
 				},
-				sup : {
+				sup: {
 					title: "Superíndice",
 					buttonHTML: '<span class="wysibb-icon wysibb-icon-sup"></span>',
 					excmd: 'superscript',
-					transform : {
-						'<sup>{SELTEXT}</sup>':"[sup]{SELTEXT}[/sup]"
+					transform: {
+						'<sup>{SELTEXT}</sup>': "[sup]{SELTEXT}[/sup]"
 					}
 				},
-				sub : {
+				sub: {
 					title: "Subíndice",
 					buttonHTML: '<span class="wysibb-icon wysibb-icon-sub"></span>',
 					excmd: 'subscript',
-					transform : {
-						'<sub>{SELTEXT}</sub>':"[sub]{SELTEXT}[/sub]"
+					transform: {
+						'<sub>{SELTEXT}</sub>': "[sub]{SELTEXT}[/sub]"
 					}
 				},
-				hr : {
+				hr: {
 					title: "Separador",
 					buttonText: '—',
-					transform : {
-						'<hr>':"[hr]"
+					transform: {
+						'<hr>': "[hr]"
 					}
 				},
-				link : {
+				link: {
 					title: "Enlace",
 					buttonHTML: '<span class="wysibb-icon wysibb-icon-link"></span>',
 					modal: {
 						title: "Insertar enlace",
 						width: "500px",
-						tabs: [
-							{
-								input: [
-									{
-										param: "SELTEXT",
-										title: "Texto enlazado",
-										type: "div"
-									},
-									{
-										param: "URL",
-										title: "URL",
-										validation: '^http(s)?://'
-									}
-								]
-							}
-						]
+						tabs: [{
+							input: [{
+								param: "SELTEXT",
+								title: "Texto enlazado",
+								type: "div"
+							}, {
+								param: "URL",
+								title: "URL",
+								validation: '^http(s)?://'
+							}]
+						}]
 					},
-					transform : {
-						'<a href="{URL}">{SELTEXT}</a>':"[url={URL}]{SELTEXT}[/url]",
-						'<a href="{URL}">{URL}</a>':"[url]{URL}[/url]"
+					transform: {
+						'<a href="{URL}">{SELTEXT}</a>': "[url={URL}]{SELTEXT}[/url]",
+						'<a href="{URL}">{URL}</a>': "[url]{URL}[/url]"
 					}
 				},
-				image : {
-				  	title: "Imagen",
-				   buttonHTML: '<span class="wysibb-icon wysibb-icon-img"></span>',
-				   modal: {
-				      title: "Insertar imagen",
-				      width: "600px",
-				      tabs: [
-				         {
-				            title: "Añadir desde URL",
-				            input: [
-				               {
-				                  param: "SRC",
-				                  title: "URL de la imagen",
-				                  validation: '^http(s)?://.*?\.(jpg|png|gif|jpeg|webp|avif)$'
-				               }, {
-				                  param: "CAPTION",
-				                  title: "Texto alternativo (Caption)",
-				                  type: "text" // Campo de texto para el caption
-				               }, {
-				                  param: "WIDTH",
-				                  title: "Ancho (opcional)",
-				                  type: "number", // Campo numérico para el ancho
-				                  validation: '^[0-9]+$' // Solo números
-				               }, {
-				                  param: "HEIGHT",
-				                  title: "Alto (opcional)",
-				                  type: "number", // Campo numérico para el alto
-				                  validation: '^[0-9]+$' // Solo números
-				               }
-				            ]
-				         }, {
-				            title: "Subir imagen",
-				            html: '<div id="imguploader"> <form id="fupform" class="upload" action="{img_uploadurl}" method="post" enctype="multipart/form-data" target="fupload"><input type="hidden" name="iframe" value="1"/><input type="hidden" name="idarea" value="'+id+'" /><div class="fileupload"><input id="fileupl" class="file" type="file" name="img" /><button id="nicebtn" class="wbb-button">Elegir una imagen</button> </div> </form> </div><iframe id="fupload" name="fupload" src="about:blank" frameborder="0" style="width:0px;height:0px;display:none"></iframe></div>'
-				         }
-				      ],
-				      onLoad: this.imgLoadModal,
-				     	onSubmit: function(cmd, opt, queryState) {
-				         // Recoger valores del formulario del modal
-				         var src = this.$modal.find('input[name="SRC"]').val();
-				         var caption = this.$modal.find('input[name="CAPTION"]').val();
-				         var width = this.$modal.find('input[name="WIDTH"]').val();
-				         var height = this.$modal.find('input[name="HEIGHT"]').val();
-				         if (!src) {
-				            alert('Por favor, introduce una URL de imagen válida.');
-				            return false;
-				         }
-				         var bbcode = "[image";
-				         var options = [];
-				         if (caption) {
-				           	// Escapar comillas dobles en el caption si las contiene
-				           	var escapedCaption = caption.replace(/"/g, '&quot;');
-				           	options.push('"' + escapedCaption + '"');
-				         }
-				         if (width) {
-				            options.push('width=' + width);
-				         }
-				         if (height) {
-				            options.push('height=' + height);
-				         }
-				         if (options.length > 0) {
-				            bbcode += '=' + options.join(' ');
-				         }
-				         bbcode += ']' + src + '[/image]';
-				         // Insertar el BBCode generado
-				         this.insertAtCursor(bbcode);
-				         // Cerrar el modal
-				         this.closeModal();
-				         this.updateUI();
-				         return false;
-				      }
-				   },
-				   transform: {
-					   '<img src="{SRC}" />': '[image]{SRC}[/image]',
-					   '<img src="{SRC}" alt="{CAPTION}" />': '[image="{CAPTION}"]{SRC}[/image]',
-					   '<img src="{SRC}" style="width:{WIDTH}px" />': '[image width={WIDTH}]{SRC}[/image]',
-					   '<img src="{SRC}" style="height:{HEIGHT}px" />': '[image height={HEIGHT}]{SRC}[/image]',
-					   '<img src="{SRC}" style="width:{WIDTH}px;height:{HEIGHT}px" />': '[image width={WIDTH} height={HEIGHT}]{SRC}[/image]',
-					   '<img src="{SRC}" alt="{CAPTION}" style="width:{WIDTH}px" />': '[image="{CAPTION}" width={WIDTH}]{SRC}[/image]',
-					   '<img src="{SRC}" alt="{CAPTION}" style="height:{HEIGHT}px" />': '[image="{CAPTION}" height={HEIGHT}]{SRC}[/image]',
-					   '<img src="{SRC}" alt="{CAPTION}" style="width:{WIDTH}px;height:{HEIGHT}px" />': '[image="{CAPTION}" width={WIDTH} height={HEIGHT}]{SRC}[/image]',
+				image: {
+					title: "Imagen",
+					buttonHTML: '<span class="wysibb-icon wysibb-icon-img"></span>',
+					modal: {
+						title: "Insertar imagen",
+						width: "600px",
+						tabs: [{
+							title: "Añadir desde URL",
+							input: [{
+								param: "SRC",
+								title: "URL de la imagen",
+								validation: '^http(s)?://.*?\.(jpg|png|gif|jpeg|webp|avif)$'
+							}, {
+								param: "CAPTION",
+								title: "Texto alternativo (Caption)",
+								type: "text" // Campo de texto para el caption
+							}, {
+								param: "WIDTH",
+								title: "Ancho (opcional)",
+								type: "number", // Campo numérico para el ancho
+								validation: '^[0-9]+$' // Solo números
+							}, {
+								param: "HEIGHT",
+								title: "Alto (opcional)",
+								type: "number", // Campo numérico para el alto
+								validation: '^[0-9]+$' // Solo números
+							}]
+						}, {
+							title: "Subir imagen",
+							html: `<div id="imguploader">
+					            <form id="fupform" class="upload" action="{img_uploadurl}" method="post" enctype="multipart/form-data" target="fupload">
+					            	<input type="hidden" name="id_frame" value="1"/>
+					            	<input type="hidden" name="id_area" value="${id}" />
+					            	<div class="fileupload">
+					            		<input id="fileupl" class="file" type="file" name="img" />
+					            		<button id="nicebtn" class="wbb-button">Elegir una imagen</button>
+					            	</div>
+					            </form>
+					            <iframe id="fupload" name="fupload" src="about:blank" frameborder="0" style="width:0px;height:0px;display:none"></iframe>
+				            </div>`
+						}],
+						onLoad: this.imgLoadModal,
+						onSubmit: function(cmd, opt, queryState) {
+							// Recoger valores del formulario del modal
+							var src = this.$modal.find('input[name="SRC"]').val();
+							var caption = this.$modal.find('input[name="CAPTION"]').val();
+							var width = this.$modal.find('input[name="WIDTH"]').val();
+							var height = this.$modal.find('input[name="HEIGHT"]').val();
+							if (!src) {
+								alert('Por favor, introduce una URL de imagen válida.');
+								return false;
+							}
+							var bbcode = "[image";
+							var options = [];
+							if (caption) {
+								// Escapar comillas dobles en el caption si las contiene
+								var escapedCaption = caption.replace(/"/g, '&quot;');
+								options.push('"' + escapedCaption + '"');
+							}
+							if (width) {
+								options.push('width=' + width);
+							}
+							if (height) {
+								options.push('height=' + height);
+							}
+							if (options.length > 0) {
+								bbcode += '=' + options.join(' ');
+							}
+							bbcode += ']' + src + '[/image]';
+							// Insertar el BBCode generado
+							this.insertAtCursor(bbcode);
+							// Cerrar el modal
+							this.closeModal();
+							this.updateUI();
+							return false;
+						}
+					},
+					transform: {
+						'<img src="{SRC}" />': '[image]{SRC}[/image]',
+						'<img src="{SRC}" alt="{CAPTION}" />': '[image="{CAPTION}"]{SRC}[/image]',
+						'<img src="{SRC}" style="width:{WIDTH}px" />': '[image width={WIDTH}]{SRC}[/image]',
+						'<img src="{SRC}" style="height:{HEIGHT}px" />': '[image height={HEIGHT}]{SRC}[/image]',
+						'<img src="{SRC}" style="width:{WIDTH}px;height:{HEIGHT}px" />': '[image width={WIDTH} height={HEIGHT}]{SRC}[/image]',
+						'<img src="{SRC}" alt="{CAPTION}" style="width:{WIDTH}px" />': '[image="{CAPTION}" width={WIDTH}]{SRC}[/image]',
+						'<img src="{SRC}" alt="{CAPTION}" style="height:{HEIGHT}px" />': '[image="{CAPTION}" height={HEIGHT}]{SRC}[/image]',
+						'<img src="{SRC}" alt="{CAPTION}" style="width:{WIDTH}px;height:{HEIGHT}px" />': '[image="{CAPTION}" width={WIDTH} height={HEIGHT}]{SRC}[/image]',
 					}
 				},
-				bullist : {
+				bullist: {
 					title: "Lista de viñetas",
 					buttonHTML: '<span class="wysibb-icon wysibb-icon-list"></span>',
 					excmd: 'insertUnorderedList',
-					transform : {
-						'<ul>{SELTEXT}</ul>':"[list]{SELTEXT}[/list]",
-						'<li>{SELTEXT}</li>':"[item]{SELTEXT}[/item]"
+					transform: {
+						'<ul>{SELTEXT}</ul>': "[list]{SELTEXT}[/list]",
+						'<li>{SELTEXT}</li>': "[item]{SELTEXT}[/item]"
 					}
 				},
-				numlist : {
+				numlist: {
 					title: "Lista numerada",
 					buttonHTML: '<span class="wysibb-icon wysibb-icon-numlist"></span>',
 					excmd: 'insertOrderedList',
-					transform : {
-						'<ol>{SELTEXT}</ol>':"[list=decimal]{SELTEXT}[/list]",
-						'<li>{SELTEXT}</li>':"[item]{SELTEXT}[/item]"
+					transform: {
+						'<ol>{SELTEXT}</ol>': "[list=decimal]{SELTEXT}[/list]",
+						'<li>{SELTEXT}</li>': "[item]{SELTEXT}[/item]"
 					}
 				},
 				messages: {
@@ -260,7 +263,7 @@ let debug = false;
 					buttonText: "notice",
 					exvalue: "1",
 					transform: {
-						'<div class="bbcmsg notice">{SELTEXT}</div>':'[notice]{SELTEXT}[/notice]'
+						'<div class="bbcmsg notice">{SELTEXT}</div>': '[notice]{SELTEXT}[/notice]'
 					}
 				},
 				info: {
@@ -268,59 +271,59 @@ let debug = false;
 					buttonText: "info",
 					exvalue: "2",
 					transform: {
-						'<div class="bbcmsg info">{SELTEXT}</div>':'[info]{SELTEXT}[/info]'
+						'<div class="bbcmsg info">{SELTEXT}</div>': '[info]{SELTEXT}[/info]'
 					}
 				},
 				warning: {
 					title: "Advertencia",
 					exvalue: "3",
 					transform: {
-						'<div class="bbcmsg warning">{SELTEXT}</div>':'[warning]{SELTEXT}[/warning]'
+						'<div class="bbcmsg warning">{SELTEXT}</div>': '[warning]{SELTEXT}[/warning]'
 					}
 				},
 				error: {
 					title: "Error",
 					exvalue: "4",
 					transform: {
-						'<div class="bbcmsg error">{SELTEXT}</div>':'[error]{SELTEXT}[/error]'
+						'<div class="bbcmsg error">{SELTEXT}</div>': '[error]{SELTEXT}[/error]'
 					}
 				},
 				success: {
 					title: "Éxito",
 					exvalue: "5",
 					transform: {
-						'<div class="bbcmsg success">{SELTEXT}</div>':'[success]{SELTEXT}[/success]'
+						'<div class="bbcmsg success">{SELTEXT}</div>': '[success]{SELTEXT}[/success]'
 					}
 				},
-				spoiler : {
+				spoiler: {
 					title: "Spoiler",
 					buttonHTML: '<span class="wysibb-icon wysibb-icon-spoiler"></span>',
-					transform : {
-						'<div class="spoiler"><div class="title" contenteditable="false"><a href="#" onclick="spoiler($(this)); return false;">Spoiler:</a></div><div class="body">{SELTEXT}</div></div>':"[spoiler]{SELTEXT}[/spoiler]",
+					transform: {
+						'<div class="spoiler"><div class="title" contenteditable="false"><a href="#" onclick="spoiler($(this)); return false;">Spoiler:</a></div><div class="body">{SELTEXT}</div></div>': "[spoiler]{SELTEXT}[/spoiler]",
 					}
 				},
-				quote : {
+				quote: {
 					title: "Citar",
 					buttonHTML: '<span class="wysibb-icon wysibb-icon-quote"></span>',
-					transform : {
-						'<blockquote><div class="cita" contenteditable="false"><strong>Cita:</strong></div><div class="citacuerpo">{SELTEXT}</div></blockquote>':"[quote]{SELTEXT}[/quote]",
-						'<blockquote><div class="cita" contenteditable="false"><strong>{AUTOR}</strong> dijo:</div><div class="citacuerpo">{SELTEXT}</div></blockquote>':"[quote={AUTOR}]{SELTEXT}[/quote]"
+					transform: {
+						'<blockquote><div class="cita" contenteditable="false"><strong>Cita:</strong></div><div class="citacuerpo">{SELTEXT}</div></blockquote>': "[quote]{SELTEXT}[/quote]",
+						'<blockquote><div class="cita" contenteditable="false"><strong>{AUTOR}</strong> dijo:</div><div class="citacuerpo">{SELTEXT}</div></blockquote>': "[quote={AUTOR}]{SELTEXT}[/quote]"
 					}
 				},
-				code : {
+				code: {
 					title: "Código",
 					buttonHTML: '<span class="wysibb-icon wysibb-icon-code"></span>',
 					onlyClearText: true,
-					transform : {
-						'<code>{SELTEXT}</code>':"[code]{SELTEXT}[/code]"
+					transform: {
+						'<code>{SELTEXT}</code>': "[code]{SELTEXT}[/code]"
 					}
 				},
-				kbd : {
+				kbd: {
 					title: "Teclas",
 					buttonHTML: '<span class="wysibb-icon wysibb-icon-kbd"></span>',
 					onlyClearText: true,
-					transform : {
-						'<kbd class="slug">{SELTEXT}</kbd>':"[kbd]{SELTEXT}[/kbd]"
+					transform: {
+						'<kbd class="slug">{SELTEXT}</kbd>': "[kbd]{SELTEXT}[/kbd]"
 					}
 				},
 				fontcolor: {
@@ -338,7 +341,7 @@ let debug = false;
 							 #900000,#85200C,#B45F06,#BF9000,#38761D,#134F5C,#1155Cc,#0B5394,#351C75,#741B47, \
 							 #660000,#5B0F00,#783F04,#7F6000,#274E13,#0C343D,#1C4587,#073763,#20124D,#4C1130",
 					transform: {
-						'<font color="{COLOR}">{SELTEXT}</font>':'[color={COLOR}]{SELTEXT}[/color]'
+						'<font color="{COLOR}">{SELTEXT}</font>': '[color={COLOR}]{SELTEXT}[/color]'
 					}
 				},
 				table: {
@@ -367,19 +370,36 @@ let debug = false;
 					title: "Fuente",
 					excmd: 'fontName',
 					valueBBname: "font",
-					options: [
-						{title: "Arial",exvalue: "Arial"},
-						{title: "Comic Sans MS",exvalue: "Comic Sans MS"},
-						{title: "Courier New",exvalue: "Courier New"},
-						{title: "Georgia",exvalue: "Georgia"},
-						{title: "Lucida Sans Unicode",exvalue: "Lucida Sans Unicode"},
-						{title: "Tahoma",exvalue: "Tahoma"},
-						{title: "Times New Roman",exvalue: "Times New Roman"},
-						{title: "Trebuchet MS",exvalue: "Trebuchet MS"},
-						{title: "Verdana",exvalue: "Verdana"}
-					],
+					options: [{
+						title: "Arial",
+						exvalue: "Arial"
+					}, {
+						title: "Comic Sans MS",
+						exvalue: "Comic Sans MS"
+					}, {
+						title: "Courier New",
+						exvalue: "Courier New"
+					}, {
+						title: "Georgia",
+						exvalue: "Georgia"
+					}, {
+						title: "Lucida Sans Unicode",
+						exvalue: "Lucida Sans Unicode"
+					}, {
+						title: "Tahoma",
+						exvalue: "Tahoma"
+					}, {
+						title: "Times New Roman",
+						exvalue: "Times New Roman"
+					}, {
+						title: "Trebuchet MS",
+						exvalue: "Trebuchet MS"
+					}, {
+						title: "Verdana",
+						exvalue: "Verdana"
+					}],
 					transform: {
-						'<font face="{FONT}">{SELTEXT}</font>':'[font={FONT}]{SELTEXT}[/font]'
+						'<font face="{FONT}">{SELTEXT}</font>': '[font={FONT}]{SELTEXT}[/font]'
 					}
 				},
 				smilebox: {
@@ -420,60 +440,59 @@ let debug = false;
 					}
 				},
 				video: {
-				   title: "Insertar Vídeo",
-				   buttonHTML: '<span class="wysibb-icon wysibb-icon-video"></span>',
-				   modal: {
-				      title: "Insertar Vídeo",
-				      width: "600px",
-				      tabs: [
-				         {
-				            title: "Insertar Vídeo",
-				            input: [
-				               {param: "SRC", title: "URL del vídeo"}
-				            ]
-				         }
-				      ],
-				      onSubmit: function(cmd, opt, queryState) {
-				         var url = this.$modal.find('input[name="SRC"]').val();
-				         if (url) {
-				            url = url.trim();
-				         }
-				         // Expresiones regulares para cada plataforma
-				         var patterns = {
-				            youtube: /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([A-Za-z0-9_-]{11})/,
-				            vimeo: /vimeo\.com\/(\d{6,10})/,
-				            dailymotion: /dailymotion\.com\/video\/([a-zA-Z0-9]+)/,
-				            tiktok: /tiktok\.com\/@.*\/video\/(\d+)/
-				         };
-				         var platform, match;
-				         // Probar cada plataforma
-				         for (platform in patterns) {
-				            match = url.match(patterns[platform]);
-				            if (match) {
-				               break;
-				            }
-				         }
-				         if (match && match[1]) {
-				            // Insertar el BBCode genérico [video]URL[/video]
-				            this.insertAtCursor('[video]' + url + '[/video]');
-				         } else {
-				            alert('URL de vídeo no válida o plataforma no soportada');
-				         }
-				         this.closeModal();
-				         this.updateUI();
-				         return false;
-				      }
-				   },
-				   transform: {
-				      // YouTube (usa el template de lite-youtube) - Corregido
-				      '<lite-youtube loading="lazy" videoid="{SRC}" style="width: 640px; height: 390px; background-image: url(\'https://i.ytimg.com/vi/{SRC}/maxresdefault.jpg\');"></lite-youtube>': '[video]https://youtu.be/{SRC}[/video]',
-				      // Vimeo
-				      '<div class="video-container"><iframe src="https://player.vimeo.com/video/{SRC}" width="640" height="360" frameborder="0" allowfullscreen></iframe></div>': '[video]https://vimeo.com/{SRC}[/video]',
-				      // DailyMotion
-				      '<div class="video-container"><iframe frameborder="0" width="640" height="360" src="https://www.dailymotion.com/embed/video/{SRC}?autoplay=0" allow="autoplay" allowfullscreen></iframe></div>': '[video]https://dailymotion.com/video/{SRC}[/video]',
-				      // TikTok
-				      '<blockquote class="tiktok-embed" cite="{SRC}"><a href="{SRC}"></a></blockquote><script async src="https://www.tiktok.com/embed.js"></script>': '[video]{SRC}[/video]'
-				   }
+					title: "Insertar Vídeo",
+					buttonHTML: '<span class="wysibb-icon wysibb-icon-video"></span>',
+					modal: {
+						title: "Insertar Vídeo",
+						width: "600px",
+						tabs: [{
+							title: "Insertar Vídeo",
+							input: [{
+								param: "SRC",
+								title: "URL del vídeo"
+							}]
+						}],
+						onSubmit: function(cmd, opt, queryState) {
+							var url = this.$modal.find('input[name="SRC"]').val();
+							if (url) {
+								url = url.trim();
+							}
+							// Expresiones regulares para cada plataforma
+							var patterns = {
+								youtube: /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([A-Za-z0-9_-]{11})/,
+								vimeo: /vimeo\.com\/(\d{6,10})/,
+								dailymotion: /dailymotion\.com\/video\/([a-zA-Z0-9]+)/,
+								tiktok: /tiktok\.com\/@.*\/video\/(\d+)/
+							};
+							var platform, match;
+							// Probar cada plataforma
+							for (platform in patterns) {
+								match = url.match(patterns[platform]);
+								if (match) {
+									break;
+								}
+							}
+							if (match && match[1]) {
+								// Insertar el BBCode genérico [video]URL[/video]
+								this.insertAtCursor('[video]' + url + '[/video]');
+							} else {
+								alert('URL de vídeo no válida o plataforma no soportada');
+							}
+							this.closeModal();
+							this.updateUI();
+							return false;
+						}
+					},
+					transform: {
+						// YouTube (usa el template de lite-youtube) - Corregido
+						'<lite-youtube loading="lazy" videoid="{SRC}" style="width: 640px; height: 390px; background-image: url(\'https://i.ytimg.com/vi/{SRC}/maxresdefault.jpg\');"></lite-youtube>': '[video]https://youtu.be/{SRC}[/video]',
+						// Vimeo
+						'<div class="video-container"><iframe src="https://player.vimeo.com/video/{SRC}" width="640" height="360" frameborder="0" allowfullscreen></iframe></div>': '[video]https://vimeo.com/{SRC}[/video]',
+						// DailyMotion
+						'<div class="video-container"><iframe frameborder="0" width="640" height="360" src="https://www.dailymotion.com/embed/video/{SRC}?autoplay=0" allow="autoplay" allowfullscreen></iframe></div>': '[video]https://dailymotion.com/video/{SRC}[/video]',
+						// TikTok
+						'<blockquote class="tiktok-embed" cite="{SRC}"><a href="{SRC}"></a></blockquote><script async src="https://www.tiktok.com/embed.js"></script>': '[video]{SRC}[/video]'
+					}
 				},
 				//select options
 				fs_verysmall: {
@@ -482,8 +501,8 @@ let debug = false;
 					excmd: 'fontSize',
 					exvalue: "1",
 					transform: {
-						'<span style="font-size: 10px;">{SELTEXT}</span>':'[size=10]{SELTEXT}[/size]',
-						'<font size="1">{SELTEXT}</font>':'[size=10]{SELTEXT}[/size]'
+						'<span style="font-size: 10px;">{SELTEXT}</span>': '[size=10]{SELTEXT}[/size]',
+						'<font size="1">{SELTEXT}</font>': '[size=10]{SELTEXT}[/size]'
 					}
 				},
 				fs_small: {
@@ -492,8 +511,8 @@ let debug = false;
 					excmd: 'fontSize',
 					exvalue: "2",
 					transform: {
-						'<span style="font-size: 12px;">{SELTEXT}</span>':'[size=12]{SELTEXT}[/size]',
-						'<font size="2">{SELTEXT}</font>':'[size=12]{SELTEXT}[/size]'
+						'<span style="font-size: 12px;">{SELTEXT}</span>': '[size=12]{SELTEXT}[/size]',
+						'<font size="2">{SELTEXT}</font>': '[size=12]{SELTEXT}[/size]'
 					}
 				},
 				fs_normal: {
@@ -502,9 +521,9 @@ let debug = false;
 					excmd: 'fontSize',
 					exvalue: "3",
 					transform: {
-						'<span style="font-size: 16px;">{SELTEXT}</span>':'[size=16]{SELTEXT}[/size]',
-						'<font size="3">{SELTEXT}</font>':'[size=16]{SELTEXT}[/size]',
-						'<span style="font-size: {SIZE}px;">{SELTEXT}</span>':'[size={SIZE}]{SELTEXT}[/size]'
+						'<span style="font-size: 16px;">{SELTEXT}</span>': '[size=16]{SELTEXT}[/size]',
+						'<font size="3">{SELTEXT}</font>': '[size=16]{SELTEXT}[/size]',
+						'<span style="font-size: {SIZE}px;">{SELTEXT}</span>': '[size={SIZE}]{SELTEXT}[/size]'
 					}
 				},
 				fs_big: {
@@ -513,8 +532,8 @@ let debug = false;
 					excmd: 'fontSize',
 					exvalue: "4",
 					transform: {
-						'<span style="font-size: 18px;">{SELTEXT}</span>':'[size=18]{SELTEXT}[/size]',
-						'<font size="4">{SELTEXT}</font>':'[size=18]{SELTEXT}[/size]'
+						'<span style="font-size: 18px;">{SELTEXT}</span>': '[size=18]{SELTEXT}[/size]',
+						'<font size="4">{SELTEXT}</font>': '[size=18]{SELTEXT}[/size]'
 					}
 				},
 				fs_verybig: {
@@ -523,8 +542,8 @@ let debug = false;
 					excmd: 'fontSize',
 					exvalue: "5",
 					transform: {
-						'<span style="font-size: 24px;">{SELTEXT}</span>':'[size=24]{SELTEXT}[/size]',
-						'<font size="5">{SELTEXT}</font>':'[size=24]{SELTEXT}[/size]'
+						'<span style="font-size: 24px;">{SELTEXT}</span>': '[size=24]{SELTEXT}[/size]',
+						'<font size="5">{SELTEXT}</font>': '[size=24]{SELTEXT}[/size]'
 					}
 				},
 				fullscreen: {
@@ -539,120 +558,447 @@ let debug = false;
 				}
 			},
 			systr: {
-				'<br/>':"\n",
+				'<br/>': "\n",
 				'<span class="wbbtab">{SELTEXT}</span>': '   {SELTEXT}'
 			},
 			customRules: {
-				table: [["[table]{SELTEXT}[/table]",{seltext: {rgx:false,attr:false,sel:false}}]],
-				thead: [["[thead]{SELTEXT}[/thead]",{seltext: {rgx:false,attr:false,sel:false}}]],
-				tr: [["[tr]{SELTEXT}[/tr]",{seltext: {rgx:false,attr:false,sel:false}}]],
-				th: [["[th]{SELTEXT}[/th]",{seltext: {rgx:false,attr:false,sel:false}}]],
-				td: [["[td]{SELTEXT}[/td]",{seltext: {rgx:false,attr:false,sel:false}}]]
+				table: [
+					["[table]{SELTEXT}[/table]", {
+						seltext: {
+							rgx: false,
+							attr: false,
+							sel: false
+						}
+					}]
+				],
+				thead: [
+					["[thead]{SELTEXT}[/thead]", {
+						seltext: {
+							rgx: false,
+							attr: false,
+							sel: false
+						}
+					}]
+				],
+				tr: [
+					["[tr]{SELTEXT}[/tr]", {
+						seltext: {
+							rgx: false,
+							attr: false,
+							sel: false
+						}
+					}]
+				],
+				th: [
+					["[th]{SELTEXT}[/th]", {
+						seltext: {
+							rgx: false,
+							attr: false,
+							sel: false
+						}
+					}]
+				],
+				td: [
+					["[td]{SELTEXT}[/td]", {
+						seltext: {
+							rgx: false,
+							attr: false,
+							sel: false
+						}
+					}]
+				]
 			},
-			smileList: [
-			   { title: ":poop:",  img: `<img src="${route.smiles}/1f4a9.png">`, bbcode: ":poop:" },
-				{ title: ":goblin:",  img: `<img src="${route.smiles}/1f47a.png">`, bbcode: ":goblin:" },
-				{ title: ":ghost:",  img: `<img src="${route.smiles}/1f47b.png">`, bbcode: ":ghost:" },
-				{ title: ":alien:",  img: `<img src="${route.smiles}/1f47d.png">`, bbcode: ":alien:" },
-				{ title: ":imp:",  img: `<img src="${route.smiles}/1f47f.png">`, bbcode: ":imp:" },
-				{ title: ":blush:",  img: `<img src="${route.smiles}/1f60a.png">`, bbcode: ":blush:" },
-				{ title: ":yum:",  img: `<img src="${route.smiles}/1f60b.png">`, bbcode: ":yum:" },
-				{ title: ":relieved:",  img: `<img src="${route.smiles}/1f60c.png">`, bbcode: ":relieved:" },
-				{ title: ":heart_eyes:",  img: `<img src="${route.smiles}/1f60d.png">`, bbcode: ":heart_eyes:" },
-				{ title: ":sunglasses:",  img: `<img src="${route.smiles}/1f60e.png">`, bbcode: ":sunglasses:" },
-				{ title: ":smirk:",  img: `<img src="${route.smiles}/1f60f.png">`, bbcode: ":smirk:" },
-				{ title: ":kissing_closed_eyes:",  img: `<img src="${route.smiles}/1f61a.png">`, bbcode: ":kissing_closed_eyes:" },
-				{ title: ":stuck_out_tongue:",  img: `<img src="${route.smiles}/1f61b.png">`, bbcode: ":stuck_out_tongue:" },
-				{ title: ":stuck_out_tongue_winking_eye:",  img: `<img src="${route.smiles}/1f61c.png">`, bbcode: ":stuck_out_tongue_winking_eye:" },
-				{ title: ":stuck_out_tongue_closed_eyes:",  img: `<img src="${route.smiles}/1f61d.png">`, bbcode: ":stuck_out_tongue_closed_eyes:" },
-				{ title: ":pensive:",  img: `<img src="${route.smiles}/1f61e.png">`, bbcode: ":pensive:" },
-				{ title: ":worried:",  img: `<img src="${route.smiles}/1f61f.png">`, bbcode: ":worried:" },
-				{ title: ":sleepy:",  img: `<img src="${route.smiles}/1f62a.png">`, bbcode: ":sleepy:" },
-				{ title: ":tired_face:",  img: `<img src="${route.smiles}/1f62b.png">`, bbcode: ":tired_face:" },
-				{ title: ":grimacing:",  img: `<img src="${route.smiles}/1f62c.png">`, bbcode: ":grimacing:" },
-				{ title: ":sob:",  img: `<img src="${route.smiles}/1f62d.png">`, bbcode: ":sob:" },
-				{ title: ":open_mouth:",  img: `<img src="${route.smiles}/1f62e.png">`, bbcode: ":open_mouth:" },
-				{ title: ":hushed:",  img: `<img src="${route.smiles}/1f62f.png">`, bbcode: ":hushed:" },
-				{ title: ":smiley_cat:",  img: `<img src="${route.smiles}/1f63a.png">`, bbcode: ":smiley_cat:" },
-				{ title: ":smile_cat:",  img: `<img src="${route.smiles}/1f63b.png">`, bbcode: ":smile_cat:" },
-				{ title: ":heart_eyes_cat:",  img: `<img src="${route.smiles}/1f63c.png">`, bbcode: ":heart_eyes_cat:" },
-				{ title: ":kissing_cat:",  img: `<img src="${route.smiles}/1f63d.png">`, bbcode: ":kissing_cat:" },
-				{ title: ":pouting_cat:",  img: `<img src="${route.smiles}/1f63e.png">`, bbcode: ":pouting_cat:" },
-				{ title: ":crying_cat:",  img: `<img src="${route.smiles}/1f63f.png">`, bbcode: ":crying_cat:" },
-				{ title: ":ogre:",  img: `<img src="${route.smiles}/1f479.png">`, bbcode: ":ogre:" },
-				{ title: ":skull:",  img: `<img src="${route.smiles}/1f480.png">`, bbcode: ":skull:" },
-				{ title: ":grinning:",  img: `<img src="${route.smiles}/1f600.png">`, bbcode: ":grinning:" },
-				{ title: ":grin:",  img: `<img src="${route.smiles}/1f601.png">`, bbcode: ":grin:" },
-				{ title: ":joy:",  img: `<img src="${route.smiles}/1f602.png">`, bbcode: ":joy:" },
-				{ title: ":smiley:",  img: `<img src="${route.smiles}/1f603.png">`, bbcode: ":smiley:" },
-				{ title: ":smile:",  img: `<img src="${route.smiles}/1f604.png">`, bbcode: ":smile:" },
-				{ title: ":sweat_smile:",  img: `<img src="${route.smiles}/1f605.png">`, bbcode: ":sweat_smile:" },
-				{ title: ":laughing:",  img: `<img src="${route.smiles}/1f606.png">`, bbcode: ":laughing:" },
-				{ title: ":innocent:",  img: `<img src="${route.smiles}/1f607.png">`, bbcode: ":innocent:" },
-				{ title: ":smiling_imp:",  img: `<img src="${route.smiles}/1f608.png">`, bbcode: ":smiling_imp:" },
-				{ title: ":wink:",  img: `<img src="${route.smiles}/1f609.png">`, bbcode: ":wink:" },
-				{ title: ":neutral_face:",  img: `<img src="${route.smiles}/1f610.png">`, bbcode: ":neutral_face:" },
-				{ title: ":expressionless:",  img: `<img src="${route.smiles}/1f611.png">`, bbcode: ":expressionless:" },
-				{ title: ":unamused:",  img: `<img src="${route.smiles}/1f612.png">`, bbcode: ":unamused:" },
-				{ title: ":sweat:",  img: `<img src="${route.smiles}/1f613.png">`, bbcode: ":sweat:" },
-				{ title: ":pensive:",  img: `<img src="${route.smiles}/1f614.png">`, bbcode: ":pensive:" },
-				{ title: ":confused:",  img: `<img src="${route.smiles}/1f615.png">`, bbcode: ":confused:" },
-				{ title: ":confounded:",  img: `<img src="${route.smiles}/1f616.png">`, bbcode: ":confounded:" },
-				{ title: ":kissing:",  img: `<img src="${route.smiles}/1f617.png">`, bbcode: ":kissing:" },
-				{ title: ":kissing_heart:",  img: `<img src="${route.smiles}/1f618.png">`, bbcode: ":kissing_heart:" },
-				{ title: ":kissing_smiling_eyes:",  img: `<img src="${route.smiles}/1f619.png">`, bbcode: ":kissing_smiling_eyes:" },
-				{ title: ":angry:",  img: `<img src="${route.smiles}/1f620.png">`, bbcode: ":angry:" },
-				{ title: ":rage:",  img: `<img src="${route.smiles}/1f621.png">`, bbcode: ":rage:" },
-				{ title: ":cry:",  img: `<img src="${route.smiles}/1f622.png">`, bbcode: ":cry:" },
-				{ title: ":persevere:",  img: `<img src="${route.smiles}/1f623.png">`, bbcode: ":persevere:" },
-				{ title: ":triumph:",  img: `<img src="${route.smiles}/1f624.png">`, bbcode: ":triumph:" },
-				{ title: ":disappointed_relieved:",  img: `<img src="${route.smiles}/1f625.png">`, bbcode: ":disappointed_relieved:" },
-				{ title: ":frowning:",  img: `<img src="${route.smiles}/1f626.png">`, bbcode: ":frowning:" },
-				{ title: ":anguished:",  img: `<img src="${route.smiles}/1f627.png">`, bbcode: ":anguished:" },
-				{ title: ":fearful:",  img: `<img src="${route.smiles}/1f628.png">`, bbcode: ":fearful:" },
-				{ title: ":weary:",  img: `<img src="${route.smiles}/1f629.png">`, bbcode: ":weary:" },
-				{ title: ":cold_sweat:",  img: `<img src="${route.smiles}/1f630.png">`, bbcode: ":cold_sweat:" },
-				{ title: ":scream:",  img: `<img src="${route.smiles}/1f631.png">`, bbcode: ":scream:" },
-				{ title: ":astonished:",  img: `<img src="${route.smiles}/1f632.png">`, bbcode: ":astonished:" },
-				{ title: ":flushed:",  img: `<img src="${route.smiles}/1f633.png">`, bbcode: ":flushed:" },
-				{ title: ":sleeping:",  img: `<img src="${route.smiles}/1f634.png">`, bbcode: ":sleeping:" },
-				{ title: ":dizzy_face:",  img: `<img src="${route.smiles}/1f635.png">`, bbcode: ":dizzy_face:" },
-				{ title: ":no_mouth:",  img: `<img src="${route.smiles}/1f636.png">`, bbcode: ":no_mouth:" },
-				{ title: ":mask:",  img: `<img src="${route.smiles}/1f637.png">`, bbcode: ":mask:" },
-				{ title: ":smile_cat:",  img: `<img src="${route.smiles}/1f638.png">`, bbcode: ":smile_cat:" },
-				{ title: ":joy_cat:",  img: `<img src="${route.smiles}/1f639.png">`, bbcode: ":joy_cat:" },
-				{ title: ":scream_cat:",  img: `<img src="${route.smiles}/1f640.png">`, bbcode: ":scream_cat:" },
-				{ title: ":slight_frown:",  img: `<img src="${route.smiles}/1f641.png">`, bbcode: ":slight_frown:" },
-				{ title: ":slight_smile:",  img: `<img src="${route.smiles}/1f642.png">`, bbcode: ":slight_smile:" },
-				{ title: ":upside_down_face:",  img: `<img src="${route.smiles}/1f643.png">`, bbcode: ":upside_down_face:" },
-				{ title: ":rolling_eyes:",  img: `<img src="${route.smiles}/1f644.png">`, bbcode: ":rolling_eyes:" },
-				{ title: ":zipper_mouth_face:",  img: `<img src="${route.smiles}/1f910.png">`, bbcode: ":zipper_mouth_face:" },
-				{ title: ":money_mouth_face:",  img: `<img src="${route.smiles}/1f911.png">`, bbcode: ":money_mouth_face:" },
-				{ title: ":face_with_thermometer:",  img: `<img src="${route.smiles}/1f912.png">`, bbcode: ":face_with_thermometer:" },
-				{ title: ":nerd_face:",  img: `<img src="${route.smiles}/1f913.png">`, bbcode: ":nerd_face:" },
-				{ title: ":thinking_face:",  img: `<img src="${route.smiles}/1f914.png">`, bbcode: ":thinking_face:" },
-				{ title: ":face_with_head_bandage:",  img: `<img src="${route.smiles}/1f915.png">`, bbcode: ":face_with_head_bandage:" },
-				{ title: ":robot_face:",  img: `<img src="${route.smiles}/1f916.png">`, bbcode: ":robot_face:" },
-				{ title: ":hugging_face:",  img: `<img src="${route.smiles}/1f917.png">`, bbcode: ":hugging_face:" },
-				{ title: ":cowboy_hat_face:",  img: `<img src="${route.smiles}/1f920.png">`, bbcode: ":cowboy_hat_face:" },
-				{ title: ":clown_face:",  img: `<img src="${route.smiles}/1f921.png">`, bbcode: ":clown_face:" },
-				{ title: ":nauseated_face:",  img: `<img src="${route.smiles}/1f922.png">`, bbcode: ":nauseated_face:" },
-				{ title: ":rofl:",  img: `<img src="${route.smiles}/1f923.png">`, bbcode: ":rofl:" },
-				{ title: ":drooling_face:",  img: `<img src="${route.smiles}/1f924.png">`, bbcode: ":drooling_face:" },
-				{ title: ":lying_face:",  img: `<img src="${route.smiles}/1f925.png">`, bbcode: ":lying_face:" },
-				{ title: ":face_palm:",  img: `<img src="${route.smiles}/1f926.png">`, bbcode: ":face_palm:" },
-				{ title: ":sneezing_face:",  img: `<img src="${route.smiles}/1f927.png">`, bbcode: ":sneezing_face:" },
-				{ title: ":star_struck:",  img: `<img src="${route.smiles}/1f929.png">`, bbcode: ":star_struck:" },
-				{ title: ":smiling_face_with_3_hearts:",  img: `<img src="${route.smiles}/1f970.png">`, bbcode: ":smiling_face_with_3_hearts:" },
-				{ title: ":relaxed:",  img: `<img src="${route.smiles}/263a.png">`, bbcode: ":relaxed:" },
-				{ title: ":frowning_face:",  img: `<img src="${route.smiles}/2639.png">`, bbcode: ":frowning_face:" }
-			],
-			attrWrap: ['src','color','href'] //use becouse FF and IE change values for this attr, modify [attr] to _[attr]
+			smileList: [{
+				title: ":poop:",
+				img: `<img src="${route.smiles}/1f4a9.png">`,
+				bbcode: ":poop:"
+			}, {
+				title: ":goblin:",
+				img: `<img src="${route.smiles}/1f47a.png">`,
+				bbcode: ":goblin:"
+			}, {
+				title: ":ghost:",
+				img: `<img src="${route.smiles}/1f47b.png">`,
+				bbcode: ":ghost:"
+			}, {
+				title: ":alien:",
+				img: `<img src="${route.smiles}/1f47d.png">`,
+				bbcode: ":alien:"
+			}, {
+				title: ":imp:",
+				img: `<img src="${route.smiles}/1f47f.png">`,
+				bbcode: ":imp:"
+			}, {
+				title: ":blush:",
+				img: `<img src="${route.smiles}/1f60a.png">`,
+				bbcode: ":blush:"
+			}, {
+				title: ":yum:",
+				img: `<img src="${route.smiles}/1f60b.png">`,
+				bbcode: ":yum:"
+			}, {
+				title: ":relieved:",
+				img: `<img src="${route.smiles}/1f60c.png">`,
+				bbcode: ":relieved:"
+			}, {
+				title: ":heart_eyes:",
+				img: `<img src="${route.smiles}/1f60d.png">`,
+				bbcode: ":heart_eyes:"
+			}, {
+				title: ":sunglasses:",
+				img: `<img src="${route.smiles}/1f60e.png">`,
+				bbcode: ":sunglasses:"
+			}, {
+				title: ":smirk:",
+				img: `<img src="${route.smiles}/1f60f.png">`,
+				bbcode: ":smirk:"
+			}, {
+				title: ":kissing_closed_eyes:",
+				img: `<img src="${route.smiles}/1f61a.png">`,
+				bbcode: ":kissing_closed_eyes:"
+			}, {
+				title: ":stuck_out_tongue:",
+				img: `<img src="${route.smiles}/1f61b.png">`,
+				bbcode: ":stuck_out_tongue:"
+			}, {
+				title: ":stuck_out_tongue_winking_eye:",
+				img: `<img src="${route.smiles}/1f61c.png">`,
+				bbcode: ":stuck_out_tongue_winking_eye:"
+			}, {
+				title: ":stuck_out_tongue_closed_eyes:",
+				img: `<img src="${route.smiles}/1f61d.png">`,
+				bbcode: ":stuck_out_tongue_closed_eyes:"
+			}, {
+				title: ":pensive:",
+				img: `<img src="${route.smiles}/1f61e.png">`,
+				bbcode: ":pensive:"
+			}, {
+				title: ":worried:",
+				img: `<img src="${route.smiles}/1f61f.png">`,
+				bbcode: ":worried:"
+			}, {
+				title: ":sleepy:",
+				img: `<img src="${route.smiles}/1f62a.png">`,
+				bbcode: ":sleepy:"
+			}, {
+				title: ":tired_face:",
+				img: `<img src="${route.smiles}/1f62b.png">`,
+				bbcode: ":tired_face:"
+			}, {
+				title: ":grimacing:",
+				img: `<img src="${route.smiles}/1f62c.png">`,
+				bbcode: ":grimacing:"
+			}, {
+				title: ":sob:",
+				img: `<img src="${route.smiles}/1f62d.png">`,
+				bbcode: ":sob:"
+			}, {
+				title: ":open_mouth:",
+				img: `<img src="${route.smiles}/1f62e.png">`,
+				bbcode: ":open_mouth:"
+			}, {
+				title: ":hushed:",
+				img: `<img src="${route.smiles}/1f62f.png">`,
+				bbcode: ":hushed:"
+			}, {
+				title: ":smiley_cat:",
+				img: `<img src="${route.smiles}/1f63a.png">`,
+				bbcode: ":smiley_cat:"
+			}, {
+				title: ":smile_cat:",
+				img: `<img src="${route.smiles}/1f63b.png">`,
+				bbcode: ":smile_cat:"
+			}, {
+				title: ":heart_eyes_cat:",
+				img: `<img src="${route.smiles}/1f63c.png">`,
+				bbcode: ":heart_eyes_cat:"
+			}, {
+				title: ":kissing_cat:",
+				img: `<img src="${route.smiles}/1f63d.png">`,
+				bbcode: ":kissing_cat:"
+			}, {
+				title: ":pouting_cat:",
+				img: `<img src="${route.smiles}/1f63e.png">`,
+				bbcode: ":pouting_cat:"
+			}, {
+				title: ":crying_cat:",
+				img: `<img src="${route.smiles}/1f63f.png">`,
+				bbcode: ":crying_cat:"
+			}, {
+				title: ":ogre:",
+				img: `<img src="${route.smiles}/1f479.png">`,
+				bbcode: ":ogre:"
+			}, {
+				title: ":skull:",
+				img: `<img src="${route.smiles}/1f480.png">`,
+				bbcode: ":skull:"
+			}, {
+				title: ":grinning:",
+				img: `<img src="${route.smiles}/1f600.png">`,
+				bbcode: ":grinning:"
+			}, {
+				title: ":grin:",
+				img: `<img src="${route.smiles}/1f601.png">`,
+				bbcode: ":grin:"
+			}, {
+				title: ":joy:",
+				img: `<img src="${route.smiles}/1f602.png">`,
+				bbcode: ":joy:"
+			}, {
+				title: ":smiley:",
+				img: `<img src="${route.smiles}/1f603.png">`,
+				bbcode: ":smiley:"
+			}, {
+				title: ":smile:",
+				img: `<img src="${route.smiles}/1f604.png">`,
+				bbcode: ":smile:"
+			}, {
+				title: ":sweat_smile:",
+				img: `<img src="${route.smiles}/1f605.png">`,
+				bbcode: ":sweat_smile:"
+			}, {
+				title: ":laughing:",
+				img: `<img src="${route.smiles}/1f606.png">`,
+				bbcode: ":laughing:"
+			}, {
+				title: ":innocent:",
+				img: `<img src="${route.smiles}/1f607.png">`,
+				bbcode: ":innocent:"
+			}, {
+				title: ":smiling_imp:",
+				img: `<img src="${route.smiles}/1f608.png">`,
+				bbcode: ":smiling_imp:"
+			}, {
+				title: ":wink:",
+				img: `<img src="${route.smiles}/1f609.png">`,
+				bbcode: ":wink:"
+			}, {
+				title: ":neutral_face:",
+				img: `<img src="${route.smiles}/1f610.png">`,
+				bbcode: ":neutral_face:"
+			}, {
+				title: ":expressionless:",
+				img: `<img src="${route.smiles}/1f611.png">`,
+				bbcode: ":expressionless:"
+			}, {
+				title: ":unamused:",
+				img: `<img src="${route.smiles}/1f612.png">`,
+				bbcode: ":unamused:"
+			}, {
+				title: ":sweat:",
+				img: `<img src="${route.smiles}/1f613.png">`,
+				bbcode: ":sweat:"
+			}, {
+				title: ":pensive:",
+				img: `<img src="${route.smiles}/1f614.png">`,
+				bbcode: ":pensive:"
+			}, {
+				title: ":confused:",
+				img: `<img src="${route.smiles}/1f615.png">`,
+				bbcode: ":confused:"
+			}, {
+				title: ":confounded:",
+				img: `<img src="${route.smiles}/1f616.png">`,
+				bbcode: ":confounded:"
+			}, {
+				title: ":kissing:",
+				img: `<img src="${route.smiles}/1f617.png">`,
+				bbcode: ":kissing:"
+			}, {
+				title: ":kissing_heart:",
+				img: `<img src="${route.smiles}/1f618.png">`,
+				bbcode: ":kissing_heart:"
+			}, {
+				title: ":kissing_smiling_eyes:",
+				img: `<img src="${route.smiles}/1f619.png">`,
+				bbcode: ":kissing_smiling_eyes:"
+			}, {
+				title: ":angry:",
+				img: `<img src="${route.smiles}/1f620.png">`,
+				bbcode: ":angry:"
+			}, {
+				title: ":rage:",
+				img: `<img src="${route.smiles}/1f621.png">`,
+				bbcode: ":rage:"
+			}, {
+				title: ":cry:",
+				img: `<img src="${route.smiles}/1f622.png">`,
+				bbcode: ":cry:"
+			}, {
+				title: ":persevere:",
+				img: `<img src="${route.smiles}/1f623.png">`,
+				bbcode: ":persevere:"
+			}, {
+				title: ":triumph:",
+				img: `<img src="${route.smiles}/1f624.png">`,
+				bbcode: ":triumph:"
+			}, {
+				title: ":disappointed_relieved:",
+				img: `<img src="${route.smiles}/1f625.png">`,
+				bbcode: ":disappointed_relieved:"
+			}, {
+				title: ":frowning:",
+				img: `<img src="${route.smiles}/1f626.png">`,
+				bbcode: ":frowning:"
+			}, {
+				title: ":anguished:",
+				img: `<img src="${route.smiles}/1f627.png">`,
+				bbcode: ":anguished:"
+			}, {
+				title: ":fearful:",
+				img: `<img src="${route.smiles}/1f628.png">`,
+				bbcode: ":fearful:"
+			}, {
+				title: ":weary:",
+				img: `<img src="${route.smiles}/1f629.png">`,
+				bbcode: ":weary:"
+			}, {
+				title: ":cold_sweat:",
+				img: `<img src="${route.smiles}/1f630.png">`,
+				bbcode: ":cold_sweat:"
+			}, {
+				title: ":scream:",
+				img: `<img src="${route.smiles}/1f631.png">`,
+				bbcode: ":scream:"
+			}, {
+				title: ":astonished:",
+				img: `<img src="${route.smiles}/1f632.png">`,
+				bbcode: ":astonished:"
+			}, {
+				title: ":flushed:",
+				img: `<img src="${route.smiles}/1f633.png">`,
+				bbcode: ":flushed:"
+			}, {
+				title: ":sleeping:",
+				img: `<img src="${route.smiles}/1f634.png">`,
+				bbcode: ":sleeping:"
+			}, {
+				title: ":dizzy_face:",
+				img: `<img src="${route.smiles}/1f635.png">`,
+				bbcode: ":dizzy_face:"
+			}, {
+				title: ":no_mouth:",
+				img: `<img src="${route.smiles}/1f636.png">`,
+				bbcode: ":no_mouth:"
+			}, {
+				title: ":mask:",
+				img: `<img src="${route.smiles}/1f637.png">`,
+				bbcode: ":mask:"
+			}, {
+				title: ":smile_cat:",
+				img: `<img src="${route.smiles}/1f638.png">`,
+				bbcode: ":smile_cat:"
+			}, {
+				title: ":joy_cat:",
+				img: `<img src="${route.smiles}/1f639.png">`,
+				bbcode: ":joy_cat:"
+			}, {
+				title: ":scream_cat:",
+				img: `<img src="${route.smiles}/1f640.png">`,
+				bbcode: ":scream_cat:"
+			}, {
+				title: ":slight_frown:",
+				img: `<img src="${route.smiles}/1f641.png">`,
+				bbcode: ":slight_frown:"
+			}, {
+				title: ":slight_smile:",
+				img: `<img src="${route.smiles}/1f642.png">`,
+				bbcode: ":slight_smile:"
+			}, {
+				title: ":upside_down_face:",
+				img: `<img src="${route.smiles}/1f643.png">`,
+				bbcode: ":upside_down_face:"
+			}, {
+				title: ":rolling_eyes:",
+				img: `<img src="${route.smiles}/1f644.png">`,
+				bbcode: ":rolling_eyes:"
+			}, {
+				title: ":zipper_mouth_face:",
+				img: `<img src="${route.smiles}/1f910.png">`,
+				bbcode: ":zipper_mouth_face:"
+			}, {
+				title: ":money_mouth_face:",
+				img: `<img src="${route.smiles}/1f911.png">`,
+				bbcode: ":money_mouth_face:"
+			}, {
+				title: ":face_with_thermometer:",
+				img: `<img src="${route.smiles}/1f912.png">`,
+				bbcode: ":face_with_thermometer:"
+			}, {
+				title: ":nerd_face:",
+				img: `<img src="${route.smiles}/1f913.png">`,
+				bbcode: ":nerd_face:"
+			}, {
+				title: ":thinking_face:",
+				img: `<img src="${route.smiles}/1f914.png">`,
+				bbcode: ":thinking_face:"
+			}, {
+				title: ":face_with_head_bandage:",
+				img: `<img src="${route.smiles}/1f915.png">`,
+				bbcode: ":face_with_head_bandage:"
+			}, {
+				title: ":robot_face:",
+				img: `<img src="${route.smiles}/1f916.png">`,
+				bbcode: ":robot_face:"
+			}, {
+				title: ":hugging_face:",
+				img: `<img src="${route.smiles}/1f917.png">`,
+				bbcode: ":hugging_face:"
+			}, {
+				title: ":cowboy_hat_face:",
+				img: `<img src="${route.smiles}/1f920.png">`,
+				bbcode: ":cowboy_hat_face:"
+			}, {
+				title: ":clown_face:",
+				img: `<img src="${route.smiles}/1f921.png">`,
+				bbcode: ":clown_face:"
+			}, {
+				title: ":nauseated_face:",
+				img: `<img src="${route.smiles}/1f922.png">`,
+				bbcode: ":nauseated_face:"
+			}, {
+				title: ":rofl:",
+				img: `<img src="${route.smiles}/1f923.png">`,
+				bbcode: ":rofl:"
+			}, {
+				title: ":drooling_face:",
+				img: `<img src="${route.smiles}/1f924.png">`,
+				bbcode: ":drooling_face:"
+			}, {
+				title: ":lying_face:",
+				img: `<img src="${route.smiles}/1f925.png">`,
+				bbcode: ":lying_face:"
+			}, {
+				title: ":face_palm:",
+				img: `<img src="${route.smiles}/1f926.png">`,
+				bbcode: ":face_palm:"
+			}, {
+				title: ":sneezing_face:",
+				img: `<img src="${route.smiles}/1f927.png">`,
+				bbcode: ":sneezing_face:"
+			}, {
+				title: ":star_struck:",
+				img: `<img src="${route.smiles}/1f929.png">`,
+				bbcode: ":star_struck:"
+			}, {
+				title: ":smiling_face_with_3_hearts:",
+				img: `<img src="${route.smiles}/1f970.png">`,
+				bbcode: ":smiling_face_with_3_hearts:"
+			}, {
+				title: ":relaxed:",
+				img: `<img src="${route.smiles}/263a.png">`,
+				bbcode: ":relaxed:"
+			}, {
+				title: ":frowning_face:",
+				img: `<img src="${route.smiles}/2639.png">`,
+				bbcode: ":frowning_face:"
+			}],
+			attrWrap: ['src', 'color', 'href'] //use becouse FF and IE change values for this attr, modify [attr] to _[attr]
 		}
-		
+
 		//FIX for Opera. Wait while iframe loaded
-		this.inited=this.options.onlyBBmode;
-		
+		this.inited = this.options.onlyBBmode;
+
 		//init css prefix, if not set
 		if (!this.options.themePrefix) {
 			$('link').each($.proxy(function(idx, el) {
@@ -661,727 +1007,799 @@ let debug = false;
 					this.options.themeName = sriptMatch[2];
 					this.options.themePrefix = sriptMatch[1];
 				}
-			},this));
+			}, this));
 		}
-		
+
 		//check for preset
-		if (typeof(WBBPRESET)!="undefined") {
+		if (typeof(WBBPRESET) != "undefined") {
 			if (WBBPRESET.allButtons) {
 				//clear transform
-				$.each(WBBPRESET.allButtons,$.proxy(function(k,v) {
+				$.each(WBBPRESET.allButtons, $.proxy(function(k, v) {
 					if (v.transform && this.options.allButtons[k]) {
 						delete this.options.allButtons[k].transform;
 					}
-				},this));
+				}, this));
 			}
-			$.extend(true,this.options,WBBPRESET);
-		} 
-		
+			$.extend(true, this.options, WBBPRESET);
+		}
+
 		if (settings && settings.allButtons) {
-			$.each(settings.allButtons,$.proxy(function(k,v) {
+			$.each(settings.allButtons, $.proxy(function(k, v) {
 				if (v.transform && this.options.allButtons[k]) {
 					delete this.options.allButtons[k].transform;
 				}
-			},this));
+			}, this));
 		}
-		$.extend(true,this.options,settings);
+		$.extend(true, this.options, settings);
 		this.init();
 	}
-	
+
 	$.wysibb.prototype = {
-		lastid : 1,
-		init:	function() {
-			$.log("Init",this);
+		lastid: 1,
+		init: function() {
+			$.log("Init", this);
 			//check for mobile
-			this.isMobile = function(a) {(/android|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|meego.+mobile|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino/i.test(a))}(navigator.userAgent||navigator.vendor||window.opera);
-			
+			this.isMobile = function(a) {
+				(/android|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|meego.+mobile|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino/i.test(a))
+			}(navigator.userAgent || navigator.vendor || window.opera);
+
 			//use bbmode on mobile devices
 			//this.isMobile = true; //TEMP
-			if (this.options.onlyBBmode===true) {this.options.bbmode=true;}
+			if (this.options.onlyBBmode === true) {
+				this.options.bbmode = true;
+			}
 			//create array of controls, for queryState
 			this.controllers = [];
-			
+
 			//convert button string to array
 			this.options.buttons = this.options.buttons.toLowerCase();
 			this.options.buttons = this.options.buttons.split(",");
-			
+
 			//init system transforms
 			this.options.allButtons["_systr"] = {};
-			this.options.allButtons["_systr"]["transform"]= this.options.systr;
-			
+			this.options.allButtons["_systr"]["transform"] = this.options.systr;
+
 			this.smileFind();
 			this.initTransforms();
 			this.build();
 			this.initModal();
-			if (this.options.hotkeys===true && !this.isMobile) {
+			if (this.options.hotkeys === true && !this.isMobile) {
 				this.initHotkeys();
 			}
-			
+
 			//sort smiles
-			if (this.options.smileList && this.options.smileList.length>0) {
-				this.options.smileList.sort(function(a,b) {
-					return (b.bbcode.length-a.bbcode.length);
+			if (this.options.smileList && this.options.smileList.length > 0) {
+				this.options.smileList.sort(function(a, b) {
+					return (b.bbcode.length - a.bbcode.length);
 				})
 			}
-			
-			this.$txtArea.parents("form").on("submit",$.proxy(function() {
+
+			this.$txtArea.parents("form").on("submit", $.proxy(function() {
 				this.sync();
 				return true;
-			},this)); 
-			
-			
+			}, this));
+
+
 			//phpbb2
-			this.$txtArea.parents("form").find("input[id*='preview'],input[id*='submit'],input[class*='preview'],input[class*='submit'],input[name*='preview'],input[name*='submit']").on("mousedown",$.proxy(function() {
+			this.$txtArea.parents("form").find("input[id*='preview'],input[id*='submit'],input[class*='preview'],input[class*='submit'],input[name*='preview'],input[name*='submit']").on("mousedown", $.proxy(function() {
 				this.sync();
 				setTimeout($.proxy(function() {
-					if (this.options.bbmode===false) {
+					if (this.options.bbmode === false) {
 						this.$txtArea.removeAttr("wbbsync").val("");
 					}
-				},this),1000);
-			},this));
+				}, this), 1000);
+			}, this));
 			//end phpbb2
-			
+
 			if (this.options.initCallback) {
 				this.options.initCallback.call(this);
 			}
-			
+
 			$.log(this);
-			
+
 		},
 		initTransforms: function() {
 			$.log("Create rules for transform HTML=>BB");
 			var o = this.options;
 			//need to check for active buttons
-			if (!o.rules) {o.rules={};}
-			if (!o.groups) {o.groups={};} //use for groupkey, For example: justifyleft,justifyright,justifycenter. It is must replace each other.
-			var  btnlist = o.buttons.slice();
-			
+			if (!o.rules) {
+				o.rules = {};
+			}
+			if (!o.groups) {
+				o.groups = {};
+			} //use for groupkey, For example: justifyleft,justifyright,justifycenter. It is must replace each other.
+			var btnlist = o.buttons.slice();
+
 			//add system transform
 			btnlist.push("_systr");
-			for (var bidx=0; bidx<btnlist.length; bidx++) {
+			for (var bidx = 0; bidx < btnlist.length; bidx++) {
 				var ob = o.allButtons[btnlist[bidx]];
-				if (!ob ) {continue;}
-				ob.en=true;
-				
-				//check for simplebbcode
-				if (ob.simplebbcode && Array.isArray(ob.simplebbcode) && ob.simplebbcode.length==2) {
-					ob.bbcode = ob.html = ob.simplebbcode[0]+"{SELTEXT}"+ob.simplebbcode[1];
-					if (ob.transform) delete ob.transform;
-					if (ob.modal)  delete ob.modal;
+				if (!ob) {
+					continue;
 				}
-				
+				ob.en = true;
+
+				//check for simplebbcode
+				if (ob.simplebbcode && Array.isArray(ob.simplebbcode) && ob.simplebbcode.length == 2) {
+					ob.bbcode = ob.html = ob.simplebbcode[0] + "{SELTEXT}" + ob.simplebbcode[1];
+					if (ob.transform) delete ob.transform;
+					if (ob.modal) delete ob.modal;
+				}
+
 				//add transforms to option list
-				if (ob.type=="select" && typeof(ob.options)=="string") {
+				if (ob.type == "select" && typeof(ob.options) == "string") {
 					var olist = ob.options.split(",");
-					$.each(olist,function(i,op) {
+					$.each(olist, function(i, op) {
 						if (btnlist.includes(op)) {
 							btnlist.push(op);
 						}
 					});
 				}
-				if (ob.transform && ob.skipRules!==true) {
-					var obtr = $.extend({},ob.transform);
-					
+				if (ob.transform && ob.skipRules !== true) {
+					var obtr = $.extend({}, ob.transform);
+
 					for (var bhtml in obtr) {
 						var orightml = bhtml;
 						var bbcode = obtr[bhtml];
-						
+
 						//create root selector for isContain bbmode
-						if (!ob.bbSelector) {ob.bbSelector=[];}
+						if (!ob.bbSelector) {
+							ob.bbSelector = [];
+						}
 						if (ob.bbSelector.includes(bbcode)) {
 							ob.bbSelector.push(bbcode);
 						}
-						if (this.options.onlyBBmode===false) {
-						
-							//wrap attributes 
-							bhtml = this.wrapAttrs(bhtml);
-							
+						if (this.options.onlyBBmode === false) {
 
-							var $bel = $(document.createElement('DIV')).append($(this.elFromString(bhtml,document)));
+							//wrap attributes
+							bhtml = this.wrapAttrs(bhtml);
+
+
+							var $bel = $(document.createElement('DIV')).append($(this.elFromString(bhtml, document)));
 							var rootSelector = this.filterByNode($bel.children());
-							
-							
+
+
 							//check if current rootSelector is exist, create unique selector for each transform (1.2.2)
-							if (rootSelector=="div" || typeof(o.rules[rootSelector])!="undefined") {
+							if (rootSelector == "div" || typeof(o.rules[rootSelector]) != "undefined") {
 								//create unique selector
-								$.log("create unique selector: "+rootSelector);
+								$.log("create unique selector: " + rootSelector);
 								this.setUID($bel.children());
 								rootSelector = this.filterByNode($bel.children());
-								$.log("New rootSelector: "+rootSelector);
+								$.log("New rootSelector: " + rootSelector);
 								//replace transform with unique selector
 								var nhtml2 = $bel.html();
 								nhtml2 = this.unwrapAttrs(nhtml2);
 								var obhtml = this.unwrapAttrs(bhtml);
-								
-								
-								ob.transform[nhtml2]=bbcode;
+
+
+								ob.transform[nhtml2] = bbcode;
 								delete ob.transform[obhtml];
-								
-								bhtml=nhtml2;
+
+								bhtml = nhtml2;
 								orightml = nhtml2;
 							}
-							
+
 							//create root selector for isContain
 							if (!ob.excmd) {
-								if (!ob.rootSelector) {ob.rootSelector=[];}
+								if (!ob.rootSelector) {
+									ob.rootSelector = [];
+								}
 								ob.rootSelector.push(rootSelector);
 							}
-							
+
 							//check for rules on this rootSeletor
-							if (typeof(o.rules[rootSelector])=="undefined") {
-								o.rules[rootSelector]=[];
+							if (typeof(o.rules[rootSelector]) == "undefined") {
+								o.rules[rootSelector] = [];
 							}
-							var crules={};
-							
+							var crules = {};
+
 							if (bhtml.match(/\{\S+?\}/)) {
-								$bel.find('*').each($.proxy(function(idx,el) {
+								$bel.find('*').each($.proxy(function(idx, el) {
 									//check attributes
-									
+
 									var attributes = this.getAttributeList(el);
-									$.each(attributes,$.proxy(function(i, item) {
+									$.each(attributes, $.proxy(function(i, item) {
 										var attr = $(el).attr(item);
-										if (item.substr(0,1)=='_') {
+										if (item.substr(0, 1) == '_') {
 											item = item.substr(1);
 										}
-										
+
 										var r = attr.match(/\{\S+?\}/g);
 										if (r) {
-											for (var a=0; a<r.length; a++) {
-												var rname = r[a].substr(1,r[a].length-2);
-													rname = rname.replace(this.getValidationRGX(rname),"");
-												var p = this.relFilterByNode(el,rootSelector);
-												var regRepl = (attr!=r[a]) ? this.getRegexpReplace(attr,r[a]):false;
-												crules[rname.toLowerCase()]={sel:(p) ? p.trim():false,attr:item,rgx:regRepl}
-											}
-										}
-									},this));
-									
-									//check for text
-									var  sl=[];
-									if (!$(el).is("iframe")) {
-										$(el).contents().filter(function() {return this.nodeType===3}).each($.proxy(function(i,rel) {
-											var txt = rel.textContent || rel.data;
-											if (typeof(txt)=="undefined") {return true;}
-											var r = txt.match(/\{\S+?\}/g)
-											if (r) {
-												for (var a=0; a<r.length; a++) {	
-													var rname = r[a].substr(1,r[a].length-2);
-														rname = rname.replace(this.getValidationRGX(rname),"");
-													var p = this.relFilterByNode(el,rootSelector);
-													var regRepl = (txt!=r[a]) ? this.getRegexpReplace(txt,r[a]):false;
-													var sel = (p) ? p.trim():false;
-													if (sl.includes(sel) || $(rel).parent().contents().length>1) {
-														//has dublicate and not one children, need wrap
-														var nel = $("<span>").html("{"+rname+"}");
-														this.setUID(nel,"wbb");
-														var start = (txt.indexOf(rname)+rname.length)+1;
-														var after_txt = txt.substr(start,txt.length-start);
-														//create wrap element
-														rel.data = txt.substr(0,txt.indexOf(rname)-1);
-														$(rel).after(this.elFromString(after_txt,document)).after(nel);
-														
-														sel=((sel) ? sel+" ":"")+this.filterByNode(nel);
-														regRepl=false;
-													}
-													crules[rname.toLowerCase()]={sel:sel,attr:false,rgx:regRepl}
-													sl[sl.length]=sel;
+											for (var a = 0; a < r.length; a++) {
+												var rname = r[a].substr(1, r[a].length - 2);
+												rname = rname.replace(this.getValidationRGX(rname), "");
+												var p = this.relFilterByNode(el, rootSelector);
+												var regRepl = (attr != r[a]) ? this.getRegexpReplace(attr, r[a]) : false;
+												crules[rname.toLowerCase()] = {
+													sel: (p) ? p.trim() : false,
+													attr: item,
+													rgx: regRepl
 												}
 											}
-										},this));
+										}
+									}, this));
+
+									//check for text
+									var sl = [];
+									if (!$(el).is("iframe")) {
+										$(el).contents().filter(function() {
+											return this.nodeType === 3
+										}).each($.proxy(function(i, rel) {
+											var txt = rel.textContent || rel.data;
+											if (typeof(txt) == "undefined") {
+												return true;
+											}
+											var r = txt.match(/\{\S+?\}/g)
+											if (r) {
+												for (var a = 0; a < r.length; a++) {
+													var rname = r[a].substr(1, r[a].length - 2);
+													rname = rname.replace(this.getValidationRGX(rname), "");
+													var p = this.relFilterByNode(el, rootSelector);
+													var regRepl = (txt != r[a]) ? this.getRegexpReplace(txt, r[a]) : false;
+													var sel = (p) ? p.trim() : false;
+													if (sl.includes(sel) || $(rel).parent().contents().length > 1) {
+														//has dublicate and not one children, need wrap
+														var nel = $("<span>").html("{" + rname + "}");
+														this.setUID(nel, "wbb");
+														var start = (txt.indexOf(rname) + rname.length) + 1;
+														var after_txt = txt.substr(start, txt.length - start);
+														//create wrap element
+														rel.data = txt.substr(0, txt.indexOf(rname) - 1);
+														$(rel).after(this.elFromString(after_txt, document)).after(nel);
+
+														sel = ((sel) ? sel + " " : "") + this.filterByNode(nel);
+														regRepl = false;
+													}
+													crules[rname.toLowerCase()] = {
+														sel: sel,
+														attr: false,
+														rgx: regRepl
+													}
+													sl[sl.length] = sel;
+												}
+											}
+										}, this));
 									}
-									sl=null;
-									
-									
-								},this));
-								
+									sl = null;
+
+
+								}, this));
+
 								var nbhtml = $bel.html();
-								//UnWrap attributes 
+								//UnWrap attributes
 								nbhtml = this.unwrapAttrs(nbhtml);
-								if (orightml!=nbhtml) {
+								if (orightml != nbhtml) {
 									//if we modify html, replace it
 									delete ob.transform[orightml];
-									ob.transform[nbhtml]=bbcode;
-									bhtml=nbhtml;
+									ob.transform[nbhtml] = bbcode;
+									bhtml = nbhtml;
 								}
-								
+
 							}
-							o.rules[rootSelector].push([bbcode,crules]);
-							
+							o.rules[rootSelector].push([bbcode, crules]);
+
 							//check for onlyClearText
-							if (ob.onlyClearText===true) {
-								if (!this.cleartext) {this.cleartext={};}
-								this.cleartext[rootSelector]=btnlist[bidx];
+							if (ob.onlyClearText === true) {
+								if (!this.cleartext) {
+									this.cleartext = {};
+								}
+								this.cleartext[rootSelector] = btnlist[bidx];
 							}
-							
+
 							//check for groupkey
 							if (ob.groupkey) {
-								if (!o.groups[ob.groupkey]) {o.groups[ob.groupkey]=[]}
+								if (!o.groups[ob.groupkey]) {
+									o.groups[ob.groupkey] = []
+								}
 								o.groups[ob.groupkey].push(rootSelector);
 							}
 						}
 					}
-					
+
 					//sort rootSelector
 					if (ob.rootSelector) {
-						this.sortArray(ob.rootSelector,-1);
+						this.sortArray(ob.rootSelector, -1);
 					}
-						
-					var htmll = $.map(ob.transform,function(bb,html) {return html}).sort(function(a,b) {
-							return ((b[0] || "").length-(a[0] || "").length)
+
+					var htmll = $.map(ob.transform, function(bb, html) {
+						return html
+					}).sort(function(a, b) {
+						return ((b[0] || "").length - (a[0] || "").length)
 					});
 					ob.bbcode = ob.transform[htmll[0]];
 					ob.html = htmll[0];
 				}
 			};
-			
-			this.options.btnlist=btnlist; //use for transforms, becouse select elements not present in buttons
-			
+
+			this.options.btnlist = btnlist; //use for transforms, becouse select elements not present in buttons
+
 			//add custom rules, for table,tr,td and other
-			$.extend(o.rules,this.options.customRules);
-		
+			$.extend(o.rules, this.options.customRules);
+
 			//smile rules
-			o.srules={};
+			o.srules = {};
 			if (this.options.smileList) {
-				$.each(o.smileList,$.proxy(function(i,sm) {
-					var $sm = $(this.strf(sm.img,o));
+				$.each(o.smileList, $.proxy(function(i, sm) {
+					var $sm = $(this.strf(sm.img, o));
 					var f = this.filterByNode($sm);
-					o.srules[f]=[sm.bbcode,sm.img];
-				},this));
+					o.srules[f] = [sm.bbcode, sm.img];
+				}, this));
 			}
-			
+
 			//sort transforms by bbcode length desc
 			for (var rootsel in o.rules) {
-				this.options.rules[rootsel].sort(function(a,b) {
-					return (b[0].length-a[0].length)
+				this.options.rules[rootsel].sort(function(a, b) {
+					return (b[0].length - a[0].length)
 				});
 			}
-			
+
 			//create rootsel list
 			this.rsellist = [];
 			for (var rootsel in this.options.rules) {
 				this.rsellist.push(rootsel);
 			}
-			this.sortArray(this.rsellist,-1);
+			this.sortArray(this.rsellist, -1);
 		},
-		
+
 		//BUILD
 		build: function() {
 			$.log("Build editor");
-			
+
 			//this.$editor = $('<div class="wysibb">');
 			this.$editor = $('<div>').addClass("wysibb");
-			
+
 			if (this.isMobile) {
 				this.$editor.addClass("wysibb-mobile");
 			}
-			
+
 			//set direction if defined
-			if (this.options.direction) {this.$editor.css("direction",this.options.direction)}
-			
+			if (this.options.direction) {
+				this.$editor.css("direction", this.options.direction)
+			}
+
 			this.$editor.insertAfter(this.txtArea).append(this.txtArea);
-			
+
 			this.startHeight = this.$txtArea.outerHeight();
 			this.$txtArea.addClass("wysibb-texarea");
 			this.buildToolbar();
 			//Build iframe if needed
 			this.$txtArea.wrap('<div class="wysibb-text">');
-			
-			if (this.options.onlyBBmode===false) {
+
+			if (this.options.onlyBBmode === false) {
 				var width = this.$txtArea.outerWidth();
 				var height = this.options.minheight || this.$txtArea.outerHeight();
 				var maxheight = this.options.resize_maxheight;
-				var mheight = (this.options.autoresize===true) ? this.options.resize_maxheight:height;
-				this.$body = $(this.strf('<div class="wysibb-text-editor" style="width:{width}px;max-height:{maxheight}px;min-height:{height}px;"></div>',{width:width,maxheight:mheight,height:height})).insertAfter(this.$txtArea);
+				var mheight = (this.options.autoresize === true) ? this.options.resize_maxheight : height;
+				this.$body = $(this.strf('<div class="wysibb-text-editor" style="width:{width}px;max-height:{maxheight}px;min-height:{height}px;"></div>', {
+					width: width,
+					maxheight: mheight,
+					height: height
+				})).insertAfter(this.$txtArea);
 				this.body = this.$body[0];
 				this.$txtArea.hide();
-				
-				if (height>32) {
-					this.$toolbar.css("max-height",height);
+
+				if (height > 32) {
+					this.$toolbar.css("max-height", height);
 				}
-				
+
 				$.log("WysiBB loaded");
-				
+
 				this.$body.addClass("wysibb-body").addClass(this.options.bodyClass);
-				
+
 				//set direction if defined
-				if (this.options.direction) {this.$body.css("direction",this.options.direction)}
-				
-				
+				if (this.options.direction) {
+					this.$body.css("direction", this.options.direction)
+				}
+
+
 				if ('contentEditable' in this.body) {
-					this.body.contentEditable=true;
-					try{
+					this.body.contentEditable = true;
+					try {
 						//fix for mfirefox
 						//document.execCommand('enableObjectResizing', false, 'false'); //disable image resizing
 						document.execCommand('StyleWithCSS', false, false);
 						//document.designMode = "on";
 						this.$body.append("<span></span>");
-					}catch(e) {}
-				}else{
+					} catch (e) {}
+				} else {
 					//use onlybbmode
-					this.options.onlyBBmode=this.options.bbmode=true;
+					this.options.onlyBBmode = this.options.bbmode = true;
 				}
-				
+
 				//check for exist content in textarea
-				if (this.txtArea.value.length>0) {
+				if (this.txtArea.value.length > 0) {
 					this.txtAreaInitContent();
 				}
-				
-				
+
+
 				//clear html on paste from external editors
 				this.$body.on('keydown', $.proxy(function(e) {
-					if ((e.which == 86 && (e.ctrlKey==true || e.metaKey==true)) || (e.which == 45 && (e.shiftKey==true || e.metaKey==true))) {
+					if ((e.which == 86 && (e.ctrlKey == true || e.metaKey == true)) || (e.which == 45 && (e.shiftKey == true || e.metaKey == true))) {
 						if (!this.$pasteBlock) {
 							this.saveRange();
 							this.$pasteBlock = $(this.elFromString('<div style="opacity:0;" contenteditable="true"><br></div>'));
-							
+
 							this.$pasteBlock.appendTo(this.body);
 							//if (!$.support.search?type=2) {this.$pasteBlock.focus();} //IE 7,8 FIX
-								setTimeout($.proxy(function() {
-									this.clearPaste(this.$pasteBlock);
-									var rdata = '<span>'+this.$pasteBlock.html()+'</span>';
-									this.$body.attr("contentEditable","true");
-									this.$pasteBlock.blur().remove();
-									this.body.focus();
+							setTimeout($.proxy(function() {
+								this.clearPaste(this.$pasteBlock);
+								var rdata = '<span>' + this.$pasteBlock.html() + '</span>';
+								this.$body.attr("contentEditable", "true");
+								this.$pasteBlock.blur().remove();
+								this.body.focus();
 
-									if (this.cleartext) {
-										$.log("Check if paste to clearText Block");
-										if (this.isInClearTextBlock()) {
-											rdata = this.toBB(rdata).replace(/\n/g,"<br/>").replace(/\s{3}/g,'<span class="wbbtab"></span>');
-										}
+								if (this.cleartext) {
+									$.log("Check if paste to clearText Block");
+									if (this.isInClearTextBlock()) {
+										rdata = this.toBB(rdata).replace(/\n/g, "<br/>").replace(/\s{3}/g, '<span class="wbbtab"></span>');
 									}
-									rdata = rdata.replace(/\t/g,'<span class="wbbtab"></span>');
-									this.selectRange(this.lastRange);
-									this.insertAtCursor(rdata,false);
-									this.lastRange=false;
-									this.$pasteBlock=false;
 								}
-								,this), 1);
+								rdata = rdata.replace(/\t/g, '<span class="wbbtab"></span>');
+								this.selectRange(this.lastRange);
+								this.insertAtCursor(rdata, false);
+								this.lastRange = false;
+								this.$pasteBlock = false;
+							}, this), 1);
 							this.selectNode(this.$pasteBlock[0]);
 						}
 						return true;
 					}
-				},this));
-				
+				}, this));
+
 				//insert BR on press enter
-				this.$body.on('keydown',$.proxy(function(e) {
+				this.$body.on('keydown', $.proxy(function(e) {
 					if (e.which == 13) {
-						var isLi = this.isContain(this.getSelectNode(),'li');
+						var isLi = this.isContain(this.getSelectNode(), 'li');
 						if (!isLi) {
-							if (e.preventDefault) {e.preventDefault();}
+							if (e.preventDefault) {
+								e.preventDefault();
+							}
 							this.checkForLastBR(this.getSelectNode());
-							this.insertAtCursor('<br/>',false);
+							this.insertAtCursor('<br/>', false);
 						}
 					}
-				},this));
-				
+				}, this));
+
 				//tabInsert
-				if (this.options.tabInsert===true) {
-					this.$body.on('keydown', $.proxy(this.pressTab,this));
+				if (this.options.tabInsert === true) {
+					this.$body.on('keydown', $.proxy(this.pressTab, this));
 				}
-				
+
 				//add event listeners
-				this.$body.on('mouseup keyup',$.proxy(this.updateUI,this));
-				this.$body.on('mousedown',$.proxy(function(e) {this.clearLastRange();this.checkForLastBR(e.target)},this));
+				this.$body.on('mouseup keyup', $.proxy(this.updateUI, this));
+				this.$body.on('mousedown', $.proxy(function(e) {
+					this.clearLastRange();
+					this.checkForLastBR(e.target)
+				}, this));
 
 				//trace Textarea
-				if (this.options.traceTextarea===true) {
-					$(document).on("mousedown",$.proxy(this.traceTextareaEvent,this));
+				if (this.options.traceTextarea === true) {
+					$(document).on("mousedown", $.proxy(this.traceTextareaEvent, this));
 					this.$txtArea.val("");
 				}
 
 				//attach hotkeys
-				if (this.options.hotkeys===true) {
-					this.$body.on('keydown',$.proxy(this.presskey,this));
-				}
-				
-				//smileConversion
-				if (this.options.smileConversion===true) {
-					this.$body.on('keyup',$.proxy(this.smileConversion,this));
+				if (this.options.hotkeys === true) {
+					this.$body.on('keydown', $.proxy(this.presskey, this));
 				}
 
-				this.inited=true;
+				//smileConversion
+				if (this.options.smileConversion === true) {
+					this.$body.on('keyup', $.proxy(this.smileConversion, this));
+				}
+
+				this.inited = true;
 
 				//create resize lines
-				if (this.options.autoresize===true) {
+				if (this.options.autoresize === true) {
 					this.$bresize = $(this.elFromString('<div class="bottom-resize-line"></div>')).appendTo(this.$editor)
 						.wdrag({
-							scope:this,
+							scope: this,
 							axisY: true,
 							height: height
 						});
 				}
-				
+
 				this.imgListeners();
 			}
-			
-			
+
+
 			this.$editor.append(Copyright.app);
-			
-			//add event listeners to textarea 
-			this.$txtArea.on('mouseup keyup',$.proxy(function() {
+
+			//add event listeners to textarea
+			this.$txtArea.on('mouseup keyup', $.proxy(function() {
 				clearTimeout(this.uitimer);
-				this.uitimer = setTimeout($.proxy(this.updateUI,this),100);
-			},this));
-			
+				this.uitimer = setTimeout($.proxy(this.updateUI, this), 100);
+			}, this));
+
 			//attach hotkeys
-			if (this.options.hotkeys===true) {
-				$(document).on('keydown',$.proxy(this.presskey,this));
+			if (this.options.hotkeys === true) {
+				$(document).on('keydown', $.proxy(this.presskey, this));
 			}
 		},
 		buildToolbar: function() {
-			if (this.options.toolbar === false) {return false;}
-			
+			if (this.options.toolbar === false) {
+				return false;
+			}
+
 			//this.$toolbar = $('<div class="wysibb-toolbar">').prependTo(this.$editor);
 			this.$toolbar = $('<div>').addClass("wysibb-toolbar").prependTo(this.$editor);
-			
+
 			var $btnContainer;
-			$.each(this.options.buttons,$.proxy(function(i,bn) {
+			$.each(this.options.buttons, $.proxy(function(i, bn) {
 				var opt = this.options.allButtons[bn];
-				if (i==0 || bn=="|" || bn=="-") {
-					if (bn=="-") {
+				if (i == 0 || bn == "|" || bn == "-") {
+					if (bn == "-") {
 						this.$toolbar.append("<div>");
 					}
 					$btnContainer = $('<div class="wysibb-toolbar-container">').appendTo(this.$toolbar);
 				}
 				if (opt) {
-					if (opt.type=="colorpicker") {
-						this.buildColorpicker($btnContainer,bn,opt);
-					}else if (opt.type=="table") {
-						this.buildTablepicker($btnContainer,bn,opt);
-					}else if (opt.type=="select") {
-						this.buildSelect($btnContainer,bn,opt);
-					}else if (opt.type=="smilebox") {
-						this.buildSmilebox($btnContainer,bn,opt);
-					}else{
-						this.buildButton($btnContainer,bn,opt);
+					if (opt.type == "colorpicker") {
+						this.buildColorpicker($btnContainer, bn, opt);
+					} else if (opt.type == "table") {
+						this.buildTablepicker($btnContainer, bn, opt);
+					} else if (opt.type == "select") {
+						this.buildSelect($btnContainer, bn, opt);
+					} else if (opt.type == "smilebox") {
+						this.buildSmilebox($btnContainer, bn, opt);
+					} else {
+						this.buildButton($btnContainer, bn, opt);
 					}
 				}
-			},this));
-			
+			}, this));
+
 			//fix for hide tooltip on quick mouse over
-			this.$toolbar.find(".btn-tooltip").hover(function () {$(this).parent().css("overflow","hidden")},function() {$(this).parent().css("overflow","visible")});
-			
+			this.$toolbar.find(".btn-tooltip").hover(function() {
+				$(this).parent().css("overflow", "hidden")
+			}, function() {
+				$(this).parent().css("overflow", "visible")
+			});
+
 			//build bbcode switch button
 			var $bbsw = $(document.createElement('div')).addClass("wysibb-toolbar-container modeSwitch").html('<div class="wysibb-toolbar-btn mswitch" unselectable="on"><span class="btn-inner modesw" unselectable="on">[/]</span><span class="btn-tooltip">Ver código<ins></ins></span></div>').appendTo(this.$toolbar);
-			if (this.options.bbmode==true) {$bbsw.children(".wysibb-toolbar-btn").addClass("on");}
-			if (this.options.onlyBBmode===false) {
+			if (this.options.bbmode == true) {
+				$bbsw.children(".wysibb-toolbar-btn").addClass("on");
+			}
+			if (this.options.onlyBBmode === false) {
 				$bbsw.children(".wysibb-toolbar-btn").click($.proxy(function(e) {
 					$(e.currentTarget).toggleClass("on");
 					this.modeSwitch();
-				},this));
+				}, this));
 			}
 		},
-		buildButton: function(container,bn,opt) {
-			if (typeof(container)!="object") {
+		buildButton: function(container, bn, opt) {
+			if (typeof(container) != "object") {
 				container = this.$toolbar;
 			}
-			var btnHTML = (opt.buttonHTML) ? $(this.strf(opt.buttonHTML,this.options)).addClass("btn-inner") : this.strf('<span class="btn-inner btn-text">{text}</span>',{text:opt.buttonText.replace(/</g,"&lt;")});
-			var hotkey = (this.options.hotkeys===true && this.options.showHotkeys===true && opt.hotkey) ? (' <span class="tthotkey">['+opt.hotkey+']</span>'):""
-			var $btn = $('<div class="wysibb-toolbar-btn wbb-'+bn+'">').appendTo(container).append(btnHTML).append(this.strf('<span class="btn-tooltip">{title}<ins/>{hotkey}</span>',{title:opt.title,hotkey:hotkey}));
-			
+			var btnHTML = (opt.buttonHTML) ? $(this.strf(opt.buttonHTML, this.options)).addClass("btn-inner") : this.strf('<span class="btn-inner btn-text">{text}</span>', {
+				text: opt.buttonText.replace(/</g, "&lt;")
+			});
+			var hotkey = (this.options.hotkeys === true && this.options.showHotkeys === true && opt.hotkey) ? (' <span class="tthotkey">[' + opt.hotkey + ']</span>') : ""
+			var $btn = $('<div class="wysibb-toolbar-btn wbb-' + bn + '">').appendTo(container).append(btnHTML).append(this.strf('<span class="btn-tooltip">{title}<ins/>{hotkey}</span>', {
+				title: opt.title,
+				hotkey: hotkey
+			}));
+
 			//attach events
 			this.controllers.push($btn);
-			$btn.on('queryState',$.proxy(function(e) {
-				(this.queryState(bn)) ? $(e.currentTarget).addClass("on"):$(e.currentTarget).removeClass("on");
-			},this));
+			$btn.on('queryState', $.proxy(function(e) {
+				(this.queryState(bn)) ? $(e.currentTarget).addClass("on"): $(e.currentTarget).removeClass("on");
+			}, this));
 			$btn.mousedown($.proxy(function(e) {
 				e.preventDefault();
-				this.execCommand(bn,opt.exvalue || false);
+				this.execCommand(bn, opt.exvalue || false);
 				$(e.currentTarget).trigger('queryState');
-			},this));
+			}, this));
 		},
-		buildColorpicker: function(container,bn,opt) {
-			var $btn = $('<div class="wysibb-toolbar-btn wbb-dropdown wbb-cp">').appendTo(container).append('<span class="wysibb-icon wysibb-icon-color"></span><ins class="caret-down"></ins>').append(this.strf('<span class="btn-tooltip">{title}<ins/></span>',{title:opt.title}));
+		buildColorpicker: function(container, bn, opt) {
+			var $btn = $('<div class="wysibb-toolbar-btn wbb-dropdown wbb-cp">').appendTo(container).append('<span class="wysibb-icon wysibb-icon-color"></span><ins class="caret-down"></ins>').append(this.strf('<span class="btn-tooltip">{title}<ins/></span>', {
+				title: opt.title
+			}));
 			var $cpline = $btn.find(".cp-line");
-			
-			var $dropblock = $('<div class="wbb-list">').appendTo($btn); 
+
+			var $dropblock = $('<div class="wbb-list">').appendTo($btn);
 			$dropblock.append('<div class="nc">Auto</div>');
-			var colorlist = (opt.colors) ? opt.colors.split(","):[]; 
-			for (var j=0; j<colorlist.length; j++) {
+			var colorlist = (opt.colors) ? opt.colors.split(",") : [];
+			for (var j = 0; j < colorlist.length; j++) {
 				colorlist[j] = colorlist[j].trim();
-				if (colorlist[j]=="-") { 
+				if (colorlist[j] == "-") {
 					//insert padding
 					$dropblock.append('<span class="pl"></span>');
-				}else{ 
-					$dropblock.append(this.strf('<div class="sc" style="background:{color}" title="{color}"></div>',{color:colorlist[j]}));
+				} else {
+					$dropblock.append(this.strf('<div class="sc" style="background:{color}" title="{color}"></div>', {
+						color: colorlist[j]
+					}));
 				}
 			}
 			var basecolor = $(document.body).css("color");
 			//attach events
 			this.controllers.push($btn);
-			$btn.on('queryState',$.proxy(function(e) {
+			$btn.on('queryState', $.proxy(function(e) {
 				//queryState
-				$cpline.css("background-color",basecolor);
-				var r = this.queryState(bn,true);
+				$cpline.css("background-color", basecolor);
+				var r = this.queryState(bn, true);
 				if (r) {
-					$cpline.css("background-color",(this.options.bbmode) ? r.color:r);
-					$btn.find(".ve-tlb-colorpick span.fonticon").css("color",(this.options.bbmode) ? r.color:r);
+					$cpline.css("background-color", (this.options.bbmode) ? r.color : r);
+					$btn.find(".ve-tlb-colorpick span.fonticon").css("color", (this.options.bbmode) ? r.color : r);
 				}
-			},this));
+			}, this));
 			$btn.mousedown($.proxy(function(e) {
 				e.preventDefault();
-				this.dropdownclick(".wbb-cp",".wbb-list",e);
-			},this));
+				this.dropdownclick(".wbb-cp", ".wbb-list", e);
+			}, this));
 			$btn.find(".sc").mousedown($.proxy(function(e) {
 				e.preventDefault();
 				this.selectLastRange();
 				var c = $(e.currentTarget).attr("title");
-				this.execCommand(bn,c);
+				this.execCommand(bn, c);
 				$btn.trigger('queryState');
-			},this));
+			}, this));
 			$btn.find(".nc").mousedown($.proxy(function(e) {
 				e.preventDefault();
 				this.selectLastRange();
-				this.execCommand(bn,basecolor);
+				this.execCommand(bn, basecolor);
 				$btn.trigger('queryState');
-			},this));
-			$btn.mousedown(function(e) { 
+			}, this));
+			$btn.mousedown(function(e) {
 				if (e.preventDefault) e.preventDefault();
 			});
 		},
-		buildTablepicker: function(container,bn,opt) {
-		   var $btn = $('<div class="wysibb-toolbar-btn wbb-dropdown wbb-tbl">').appendTo(container).append('<span class="btn-inner wysibb-icon wysibb-icon-table"></span><ins class="caret-down"></ins>').append(this.strf('<span class="btn-tooltip">{title}<ins/></span>',{title:opt.title}));
-		   var $listblock = $('<div class="wbb-list">').appendTo($btn);
-		   var $dropblock = $('<div>').css({"position":"relative","box-sizing":"border-box"}).appendTo($listblock);
-		   var rows = opt.rows || 10;
-		   var cols = opt.cols || 10;
-		   var allcount = rows*cols;
-		   $dropblock.css("height",(rows*opt.cellwidth+2)+"px");
-		   for (var j=1; j<=cols; j++) {
-		        for (var h=1; h<=rows; h++) {
-		            var html = '<div class="tbl-sel" style="width:'+(j*100/cols)+'%;height:'+(h*100/rows)+'%;z-index:'+(--allcount)+'" title="'+h+','+j+'"></div>';
-		            $dropblock.append(html);
-		        }
-		    }
+		buildTablepicker: function(container, bn, opt) {
+			var $btn = $('<div class="wysibb-toolbar-btn wbb-dropdown wbb-tbl">').appendTo(container).append('<span class="btn-inner wysibb-icon wysibb-icon-table"></span><ins class="caret-down"></ins>').append(this.strf('<span class="btn-tooltip">{title}<ins/></span>', {
+				title: opt.title
+			}));
+			var $listblock = $('<div class="wbb-list">').appendTo($btn);
+			var $dropblock = $('<div>').css({
+				"position": "relative",
+				"box-sizing": "border-box"
+			}).appendTo($listblock);
+			var rows = opt.rows || 10;
+			var cols = opt.cols || 10;
+			var allcount = rows * cols;
+			$dropblock.css("height", (rows * opt.cellwidth + 2) + "px");
+			for (var j = 1; j <= cols; j++) {
+				for (var h = 1; h <= rows; h++) {
+					var html = '<div class="tbl-sel" style="width:' + (j * 100 / cols) + '%;height:' + (h * 100 / rows) + '%;z-index:' + (--allcount) + '" title="' + h + ',' + j + '"></div>';
+					$dropblock.append(html);
+				}
+			}
 
-		    $btn.find(".tbl-sel").mousedown($.proxy(function(e) {
-		        e.preventDefault();
-		        var t = $(e.currentTarget).attr("title");
-		        var rc = t.split(",");
-		        var rows = parseInt(rc[0]);
-		        var cols = parseInt(rc[1]);
-		        
-		        var code = (this.options.bbmode) ? '[table]':'<table class="bbctab">';
-		        
-		        // Agregar thead con primera fila como encabezados
-		        code += (this.options.bbmode) ? '[thead][tr]':'<thead><tr>';
-		        for (var j=1; j<=cols; j++) {
-		            code += (this.options.bbmode) ? '[th][/th]':'<th><br></th>';
-		        }
-		        code += (this.options.bbmode) ? '[/tr][/thead]':'</tr></thead>';
-		        
-		        // Agregar tbody con las filas restantes como datos
-		        code += (this.options.bbmode) ? '[tbody]':'<tbody>';
-		        for (var i=2; i<=rows; i++) { // Empezamos desde 2 porque la primera fila es el encabezado
-		            code += (this.options.bbmode) ? '[tr]':'<tr>';
-		            for (var j=1; j<=cols; j++) {
-		                code += (this.options.bbmode) ? '[td][/td]':'<td><br></td>';
-		            }
-		            code += (this.options.bbmode) ? '[/tr]':'</tr>';
-		        }
-		        code += (this.options.bbmode) ? '[/tbody]':'</tbody>';
-		        
-		        code += (this.options.bbmode) ? '[/table]':'</table>';
-		        this.insertAtCursor(code);
-		    },this));
+			$btn.find(".tbl-sel").mousedown($.proxy(function(e) {
+				e.preventDefault();
+				var t = $(e.currentTarget).attr("title");
+				var rc = t.split(",");
+				var rows = parseInt(rc[0]);
+				var cols = parseInt(rc[1]);
 
-		    $btn.mousedown($.proxy(function(e) {
-		        e.preventDefault();
-		        this.dropdownclick(".wbb-tbl",".wbb-list",e);
-		    },this));
+				var code = (this.options.bbmode) ? '[table]' : '<table class="bbctab">';
+
+				// Agregar thead con primera fila como encabezados
+				code += (this.options.bbmode) ? '[thead][tr]' : '<thead><tr>';
+				for (var j = 1; j <= cols; j++) {
+					code += (this.options.bbmode) ? '[th][/th]' : '<th><br></th>';
+				}
+				code += (this.options.bbmode) ? '[/tr][/thead]' : '</tr></thead>';
+
+				// Agregar tbody con las filas restantes como datos
+				code += (this.options.bbmode) ? '[tbody]' : '<tbody>';
+				for (var i = 2; i <= rows; i++) { // Empezamos desde 2 porque la primera fila es el encabezado
+					code += (this.options.bbmode) ? '[tr]' : '<tr>';
+					for (var j = 1; j <= cols; j++) {
+						code += (this.options.bbmode) ? '[td][/td]' : '<td><br></td>';
+					}
+					code += (this.options.bbmode) ? '[/tr]' : '</tr>';
+				}
+				code += (this.options.bbmode) ? '[/tbody]' : '</tbody>';
+
+				code += (this.options.bbmode) ? '[/table]' : '</table>';
+				this.insertAtCursor(code);
+			}, this));
+
+			$btn.mousedown($.proxy(function(e) {
+				e.preventDefault();
+				this.dropdownclick(".wbb-tbl", ".wbb-list", e);
+			}, this));
 		},
-		buildSelect: function(container,bn,opt) {
-			var $btn = $('<div class="wysibb-toolbar-btn wbb-select wbb-'+bn+'">').appendTo(container).append(this.strf('<span class="btn-inner wysibb-icon wysibb-icon-'+bn+'"></span><ins class="caret-down"></ins>',opt)).append(this.strf('<span class="btn-tooltip">{title}<ins/></span>',{title:opt.title}));  
+		buildSelect: function(container, bn, opt) {
+			var $btn = $('<div class="wysibb-toolbar-btn wbb-select wbb-' + bn + '">').appendTo(container).append(this.strf('<span class="btn-inner wysibb-icon wysibb-icon-' + bn + '"></span><ins class="caret-down"></ins>', opt)).append(this.strf('<span class="btn-tooltip">{title}<ins/></span>', {
+				title: opt.title
+			}));
 			var $sblock = $('<div class="wbb-list">').appendTo($btn);
 			var $sval = $btn.find("span.val");
-			
-			var olist = (Array.isArray(opt.options)) ? opt.options:opt.options.split(",");
-			var $selectbox = (this.isMobile) ? $("<select>").addClass("wbb-selectbox"):"";
-			for (var i=0; i<olist.length; i++) {
+
+			var olist = (Array.isArray(opt.options)) ? opt.options : opt.options.split(",");
+			var $selectbox = (this.isMobile) ? $("<select>").addClass("wbb-selectbox") : "";
+			for (var i = 0; i < olist.length; i++) {
 				var oname = olist[i];
-				if (typeof(oname)=="string") {
+				if (typeof(oname) == "string") {
 					var option = this.options.allButtons[oname];
 					if (option) {
-						//$.log("create: "+oname); 
+						//$.log("create: "+oname);
 						if (option.html) {
-							$('<span>').addClass("option").attr("oid",oname).attr("cmdvalue",option.exvalue).appendTo($sblock).append(this.strf(option.html,{seltext:option.title}));
-						}else{
-							$sblock.append(this.strf('<span class="option" oid="'+oname+'" cmdvalue="'+option.exvalue+'">{title}</span>',option));
+							$('<span>').addClass("option").attr("oid", oname).attr("cmdvalue", option.exvalue).appendTo($sblock).append(this.strf(option.html, {
+								seltext: option.title
+							}));
+						} else {
+							$sblock.append(this.strf('<span class="option" oid="' + oname + '" cmdvalue="' + option.exvalue + '">{title}</span>', option));
 						}
-						
+
 						//SelectBox for mobile devices
 						if (this.isMobile) {
-							$selectbox.append($('<option>').attr("oid",oname).attr("cmdvalue",option.exvalue).append(option.title));
+							$selectbox.append($('<option>').attr("oid", oname).attr("cmdvalue", option.exvalue).append(option.title));
 						}
 					}
-				}else{
+				} else {
 					//build option list from array
 					var params = {
 						seltext: oname.title
 					}
-					params[opt.valueBBname]=oname.exvalue;
-					$('<span>').addClass("option").attr("oid",bn).attr("cmdvalue",oname.exvalue).appendTo($sblock).append(this.strf(opt.html,params));
-					
-					if (this.isMobile) {$selectbox.append($('<option>').attr("oid",bn).attr("cmdvalue",oname.exvalue).append(oname.exvalue))}
+					params[opt.valueBBname] = oname.exvalue;
+					$('<span>').addClass("option").attr("oid", bn).attr("cmdvalue", oname.exvalue).appendTo($sblock).append(this.strf(opt.html, params));
+
+					if (this.isMobile) {
+						$selectbox.append($('<option>').attr("oid", bn).attr("cmdvalue", oname.exvalue).append(oname.exvalue))
+					}
 				}
 			}
 			//$sblock.append($selectbox);
 			if (this.isMobile) {
 				$selectbox.appendTo(container);
 				this.controllers.push($selectbox);
-				
-				$selectbox.on('queryState',$.proxy(function(e) {
+
+				$selectbox.on('queryState', $.proxy(function(e) {
 					//queryState
-					$selectbox.find("option").each($.proxy(function(i,el){
+					$selectbox.find("option").each($.proxy(function(i, el) {
 						var $el = $(el);
-						var r = this.queryState($el.attr("oid"),true);
+						var r = this.queryState($el.attr("oid"), true);
 						var cmdvalue = $el.attr("cmdvalue");
-						if ((cmdvalue && r==$el.attr("cmdvalue")) || (!cmdvalue && r)) {
-							$el.prop("selected",true);
+						if ((cmdvalue && r == $el.attr("cmdvalue")) || (!cmdvalue && r)) {
+							$el.prop("selected", true);
 							return false;
 						}
-					},this));
-				},this));
-				
+					}, this));
+				}, this));
+
 				$selectbox.change($.proxy(function(e) {
 					e.preventDefault();
-					var $o =  $(e.currentTarget).find(":selected");
+					var $o = $(e.currentTarget).find(":selected");
 					var oid = $o.attr("oid");
 					var cmdvalue = $o.attr("cmdvalue");
 					var opt = this.options.allButtons[oid];
-					this.execCommand(oid,opt.exvalue || cmdvalue || false);
+					this.execCommand(oid, opt.exvalue || cmdvalue || false);
 					$(e.currentTarget).trigger('queryState');
-				},this));
-				
+				}, this));
+
 			}
 			this.controllers.push($btn);
-			$btn.on('queryState',$.proxy(function(e) {
+			$btn.on('queryState', $.proxy(function(e) {
 				//queryState
 				$sval.text(opt.title);
 				$btn.find(".option.selected").removeClass("selected");
-				$btn.find(".option").each($.proxy(function(i,el){
+				$btn.find(".option").each($.proxy(function(i, el) {
 					var $el = $(el);
-					var r = this.queryState($el.attr("oid"),true);
+					var r = this.queryState($el.attr("oid"), true);
 					var cmdvalue = $el.attr("cmdvalue");
-					if ((cmdvalue && r==$el.attr("cmdvalue")) || (!cmdvalue && r)) {
+					if ((cmdvalue && r == $el.attr("cmdvalue")) || (!cmdvalue && r)) {
 						$sval.text($el.text());
 						$el.addClass("selected");
 						return false;
 					}
-				},this));
-			},this));
+				}, this));
+			}, this));
 			$btn.mousedown($.proxy(function(e) {
 				e.preventDefault();
-				this.dropdownclick(".wbb-select",".wbb-list",e);
-			},this));
+				this.dropdownclick(".wbb-select", ".wbb-list", e);
+			}, this));
 			$btn.find(".option").mousedown($.proxy(function(e) {
 				e.preventDefault();
 				var oid = $(e.currentTarget).attr("oid");
 				var cmdvalue = $(e.currentTarget).attr("cmdvalue");
 				var opt = this.options.allButtons[oid];
-				this.execCommand(oid,opt.exvalue || cmdvalue || false);
+				this.execCommand(oid, opt.exvalue || cmdvalue || false);
 				$(e.currentTarget).trigger('queryState');
-			},this));
+			}, this));
 		},
 		buildSmilebox: function(container, bn, opt) {
 			if (this.options.smileList && this.options.smileList.length > 0) {
@@ -1407,167 +1825,191 @@ let debug = false;
 			}
 		},
 		updateUI: function(e) {
-			if (!e || ((e.which>=8 && e.which<=46) || e.which>90 || e.type=="mouseup")) {
-				$.each(this.controllers,$.proxy(function(i,$btn) {
+			if (!e || ((e.which >= 8 && e.which <= 46) || e.which > 90 || e.type == "mouseup")) {
+				$.each(this.controllers, $.proxy(function(i, $btn) {
 					$btn.trigger('queryState');
-				},this));
+				}, this));
 			}
-			
+
 			//check for onlyClearText
 			this.disNonActiveButtons();
-			
+
 		},
 		initModal: function() {
-			this.$modal=$("#wbbmodal");
-			if (this.$modal.length==0) {
+			this.$modal = $("#wbbmodal");
+			if (this.$modal.length == 0) {
 				$.log("Init modal");
-				this.$modal = $('<div>').attr("id","wbbmodal").prependTo(document.body)
+				this.$modal = $('<div>').attr("id", "wbbmodal").prependTo(document.body)
 					.html('<div class="wbbm"><div class="wbbm-title"><span class="wbbm-title-text"></span><span class="wbbclose" title="Cerrar">×</span></div><div class="wbbm-content"></div><div class="wbbm-bottom"><button id="wbbm-submit" class="wbb-button">Guardar</button><button id="wbbm-cancel" class="wbb-cancel-button">Cancelar</button><button id="wbbm-remove" class="wbb-remove-button">Borrar</button></div></div>').hide();
-				
-				this.$modal.find('#wbbm-cancel,.wbbclose').click($.proxy(this.closeModal,this));
-				this.$modal.on('click',$.proxy(function(e) {
-					if ($(e.target).parents(".wbbm").length==0) {
+
+				this.$modal.find('#wbbm-cancel,.wbbclose').click($.proxy(this.closeModal, this));
+				this.$modal.on('click', $.proxy(function(e) {
+					if ($(e.target).parents(".wbbm").length == 0) {
 						this.closeModal();
 					}
-				},this));
-				
-				$(document).on("keydown",$.proxy(this.escModal,this)); //ESC key close modal
+				}, this));
+
+				$(document).on("keydown", $.proxy(this.escModal, this)); //ESC key close modal
 			}
 		},
 		initHotkeys: function() {
 			$.log("initHotkeys");
-			this.hotkeys=[];
+			this.hotkeys = [];
 			var klist = "0123456789       abcdefghijklmnopqrstuvwxyz";
-			$.each(this.options.allButtons,$.proxy(function(cmd,opt) {
+			$.each(this.options.allButtons, $.proxy(function(cmd, opt) {
 				if (opt.hotkey) {
 					var keys = opt.hotkey.split("+");
- 					if (keys && keys.length>=2) {
-						var metasum=0;
+					if (keys && keys.length >= 2) {
+						var metasum = 0;
 						var key = keys.pop();
-						$.each(keys,function(i,k) {
-							switch(k.toLowerCase().trim()) {
-								case "ctrl": {metasum+=1;break;}
-								case "shift": {metasum+=4;break;}
-								case "alt": {metasum+=7;break;}
+						$.each(keys, function(i, k) {
+								switch (k.toLowerCase().trim()) {
+									case "ctrl":
+										{
+											metasum += 1;
+											break;
+										}
+									case "shift":
+										{
+											metasum += 4;
+											break;
+										}
+									case "alt":
+										{
+											metasum += 7;
+											break;
+										}
+								}
+							})
+							//$.log("metasum: "+metasum+" key: "+key+" code: "+(klist.indexOf(key)+48));
+						if (metasum > 0) {
+							if (!this.hotkeys["m" + metasum]) {
+								this.hotkeys["m" + metasum] = [];
 							}
-						})
-						//$.log("metasum: "+metasum+" key: "+key+" code: "+(klist.indexOf(key)+48));
-						if (metasum>0) {
-							if (!this.hotkeys["m"+metasum]) {this.hotkeys["m"+metasum]=[];}
-							this.hotkeys["m"+metasum]["k"+(klist.indexOf(key)+48)]=cmd;
+							this.hotkeys["m" + metasum]["k" + (klist.indexOf(key) + 48)] = cmd;
 						}
 					}
 				}
-			},this))
+			}, this))
 		},
 		presskey: function(e) {
-			if (e.ctrlKey==true || e.shiftKey==true || e.altKey==true) {
-				var  metasum = ((e.ctrlKey==true) ? 1:0)+((e.shiftKey==true) ? 4:0)+((e.altKey==true) ? 7:0);
-				if (this.hotkeys["m"+metasum] && this.hotkeys["m"+metasum]["k"+e.which]) {
-					this.execCommand(this.hotkeys["m"+metasum]["k"+e.which],false);
+			if (e.ctrlKey == true || e.shiftKey == true || e.altKey == true) {
+				var metasum = ((e.ctrlKey == true) ? 1 : 0) + ((e.shiftKey == true) ? 4 : 0) + ((e.altKey == true) ? 7 : 0);
+				if (this.hotkeys["m" + metasum] && this.hotkeys["m" + metasum]["k" + e.which]) {
+					this.execCommand(this.hotkeys["m" + metasum]["k" + e.which], false);
 					e.preventDefault();
 					return false;
 				}
 			}
 		},
-		
+
 		//COgdfMMAND FUNCTIONS
-		execCommand: function(command,value) {
-			$.log("execCommand: "+command);
+		execCommand: function(command, value) {
+			$.log("execCommand: " + command);
 			var opt = this.options.allButtons[command];
-			if (opt.en!==true) {return false;}
-			var queryState = this.queryState(command,value);
-			
+			if (opt.en !== true) {
+				return false;
+			}
+			var queryState = this.queryState(command, value);
+
 			//check for onlyClearText
 			var skipcmd = this.isInClearTextBlock();
-			if (skipcmd && skipcmd!=command) {return;}
-			
-			
+			if (skipcmd && skipcmd != command) {
+				return;
+			}
+
+
 			if (opt.excmd) {
 				//use NativeCommand
 				if (this.options.bbmode) {
-					$.log("Native command in bbmode: "+command);
-					if (queryState && opt.subInsert!=true) {
+					$.log("Native command in bbmode: " + command);
+					if (queryState && opt.subInsert != true) {
 						//remove bbcode
-						this.wbbRemoveCallback(command,value);
-					}else{
+						this.wbbRemoveCallback(command, value);
+					} else {
 						//insert bbcode
 						var v = {};
 						if (opt.valueBBname && value) {
-							v[opt.valueBBname]=value;
+							v[opt.valueBBname] = value;
 						}
-						this.insertAtCursor(this.getBBCodeByCommand(command,v));
+						this.insertAtCursor(this.getBBCodeByCommand(command, v));
 					}
-				}else{
-					this.execNativeCommand(opt.excmd,value || false);
+				} else {
+					this.execNativeCommand(opt.excmd, value || false);
 				}
-			}else if (!opt.cmd) {
+			} else if (!opt.cmd) {
 				//wbbCommand
 				//this.wbbExecCommand(command,value,queryState,$.proxy(this.wbbInsertCallback,this),$.proxy(this.wbbRemoveCallback,this));
-				this.wbbExecCommand.call(this,command,value,queryState);
-			}else{
+				this.wbbExecCommand.call(this, command, value, queryState);
+			} else {
 				//user custom command
-				opt.cmd.call(this,command,value,queryState);
+				opt.cmd.call(this, command, value, queryState);
 			}
 			this.updateUI();
 		},
-		queryState: function(command,withvalue) {
+		queryState: function(command, withvalue) {
 			var opt = this.options.allButtons[command];
-			if (opt.en!==true) {return false;}
+			if (opt.en !== true) {
+				return false;
+			}
 			//if (opt.subInsert===true && opt.type!="colorpicker") {return false;}
 			if (this.options.bbmode) {
 				//bbmode
 				if (opt.bbSelector) {
-					for (var i=0; i<opt.bbSelector.length; i++) {
+					for (var i = 0; i < opt.bbSelector.length; i++) {
 						var b = this.isBBContain(opt.bbSelector[i]);
 						if (b) {
-							return this.getParams(b,opt.bbSelector[i],b[1]);
+							return this.getParams(b, opt.bbSelector[i], b[1]);
 						}
 					}
 				}
 				return false;
-			}else{
+			} else {
 				const node = this.getSelectNode();
 				if (opt.excmd) {
 					//native command
 					if (withvalue) {
 						try {
 							//Firefox fix
-							var v = (document.queryCommandValue(opt.excmd)+"").replace(/\'/g,"");
-							if (opt.excmd=="foreColor") {
+							var v = (document.queryCommandValue(opt.excmd) + "").replace(/\'/g, "");
+							if (opt.excmd == "foreColor") {
 								v = this.rgbToHex(v);
 							}
 							//return (v==value);
 							return v;
-						}catch(e) {return false;}
-					}else{
+						} catch (e) {
+							return false;
+						}
+					} else {
 
 						try { //Firefox fix, exception while get queryState for UnorderedList
-							
+
 
 							if ((
-									opt.excmd === "bold" || 
-									opt.excmd === "italic" || 
-									opt.excmd === "underline" || 
+									opt.excmd === "bold" ||
+									opt.excmd === "italic" ||
+									opt.excmd === "underline" ||
 									opt.excmd === "strikeThrough"
-								) && 
+								) &&
 								$(node).is("img")
 							) { //Fix, when img selected
 								return false;
-							}else if (opt.excmd=="underline" && $(node).closest("a").length>0) { //fix, when link select
+							} else if (opt.excmd == "underline" && $(node).closest("a").length > 0) { //fix, when link select
 								return false;
-							}else {
+							} else {
 								return document.queryCommandState(opt.excmd);
 							}
-						}catch(e) {return false;}
+						} catch (e) {
+							return false;
+						}
 					}
-				}else{
+				} else {
 					//custom command
 					if (Array.isArray(opt.rootSelector)) {
-						for (var i=0; i<opt.rootSelector.length; i++) {
-							var n = this.isContain(node,opt.rootSelector[i]);
+						for (var i = 0; i < opt.rootSelector.length; i++) {
+							var n = this.isContain(node, opt.rootSelector[i]);
 							if (n) {
-								return this.getParams(n,opt.rootSelector[i]);
+								return this.getParams(n, opt.rootSelector[i]);
 							}
 						}
 					}
@@ -1575,7 +2017,7 @@ let debug = false;
 				}
 			}
 		},
-		wbbExecCommand: function(command,value,queryState) { //default command for custom bbcodes
+		wbbExecCommand: function(command, value, queryState) { //default command for custom bbcodes
 			$.log("wbbExecCommand");
 			var opt = this.options.allButtons[command];
 			if (opt) {
@@ -1583,328 +2025,370 @@ let debug = false;
 					if (typeof opt.modal === 'function') {
 						//custom modal function
 						//opt.modal(command,opt.modal,queryState,new clbk(this));
-						opt.modal.call(this,command,opt.modal,queryState);
-					}else{
-						this.showModal.call(this,command,opt.modal,queryState);
+						opt.modal.call(this, command, opt.modal, queryState);
+					} else {
+						this.showModal.call(this, command, opt.modal, queryState);
 					}
-				}else{
-					if (queryState && opt.subInsert!=true) {
+				} else {
+					if (queryState && opt.subInsert != true) {
 						//remove formatting
 						//removeCallback(command,value);
 						this.wbbRemoveCallback(command);
-					}else{
+					} else {
 						//insert format
 						if (opt.groupkey) {
 							var groupsel = this.options.groups[opt.groupkey];
 							if (groupsel) {
 								var snode = this.getSelectNode();
-								$.each(groupsel,$.proxy(function(i,sel) {
-									var is = this.isContain(snode,sel);
+								$.each(groupsel, $.proxy(function(i, sel) {
+									var is = this.isContain(snode, sel);
 									if (is) {
 										var $sp = $('<span>').html(is.innerHTML)
 										var id = this.setUID($sp);
 										$(is).replaceWith($sp);
-										this.selectNode(this.$editor.find("#"+id)[0]);
+										this.selectNode(this.$editor.find("#" + id)[0]);
 										return false;
 									}
-								},this));
+								}, this));
 							}
 						}
-						this.wbbInsertCallback(command,value)
+						this.wbbInsertCallback(command, value)
 					}
 				}
 			}
 		},
-		wbbInsertCallback: function(command,paramobj) {
-			if (typeof(paramobj)!="object") {paramobj={}};
-			$.log("wbbInsertCallback: "+command);
-			var data = this.getCodeByCommand(command,paramobj);
+		wbbInsertCallback: function(command, paramobj) {
+			if (typeof(paramobj) != "object") {
+				paramobj = {}
+			};
+			$.log("wbbInsertCallback: " + command);
+			var data = this.getCodeByCommand(command, paramobj);
 			this.insertAtCursor(data);
-			
-			if (this.seltextID && data.indexOf(this.seltextID)!=-1) {
-				var snode = this.$body.find("#"+this.seltextID)[0];
+
+			if (this.seltextID && data.indexOf(this.seltextID) != -1) {
+				var snode = this.$body.find("#" + this.seltextID)[0];
 				this.selectNode(snode);
 				$(snode).removeAttr("id");
-				this.seltextID=false;
+				this.seltextID = false;
 			}
 		},
-		wbbRemoveCallback: function(command,clear) {
-			$.log("wbbRemoveCallback: "+command);
+		wbbRemoveCallback: function(command, clear) {
+			$.log("wbbRemoveCallback: " + command);
 			var opt = this.options.allButtons[command];
 			if (this.options.bbmode) {
 				//bbmode
 				//REMOVE BBCODE
 				var pos = this.getCursorPosBB();
-				var stextnum=0;
-				$.each(opt.bbSelector,$.proxy(function(i,bbcode) {
+				var stextnum = 0;
+				$.each(opt.bbSelector, $.proxy(function(i, bbcode) {
 					var stext = bbcode.match(/\{[\s\S]+?\}/g);
-					$.each(stext,function(n,s) {
-						if (s.toLowerCase()=="{seltext}") {stextnum=n;return false}
+					$.each(stext, function(n, s) {
+						if (s.toLowerCase() == "{seltext}") {
+							stextnum = n;
+							return false
+						}
 					});
 					var a = this.isBBContain(bbcode);
 					if (a) {
-						this.txtArea.value = this.txtArea.value.substr(0,a[1])+this.txtArea.value.substr(a[1],this.txtArea.value.length-a[1]).replace(a[0][0],(clear===true) ? '':a[0][stextnum+1]);
+						this.txtArea.value = this.txtArea.value.substr(0, a[1]) + this.txtArea.value.substr(a[1], this.txtArea.value.length - a[1]).replace(a[0][0], (clear === true) ? '' : a[0][stextnum + 1]);
 						this.setCursorPosBB(a[1]);
 						return false;
 					}
-				},this));
-			}else{
+				}, this));
+			} else {
 				var node = this.getSelectNode();
-				$.each(opt.rootSelector,$.proxy(function(i,s) {
+				$.each(opt.rootSelector, $.proxy(function(i, s) {
 					//$.log("RS: "+s);
-					var root = this.isContain(node,s);
-					if (!root) {return true;}
+					var root = this.isContain(node, s);
+					if (!root) {
+						return true;
+					}
 					var $root = $(root);
 					var cs = this.options.rules[s][0][1];
 					if ($root.is("span[wbb]") || !$root.is("span,font")) { //remove only blocks
-						if (clear===true || (!cs || !cs["seltext"])) {
+						if (clear === true || (!cs || !cs["seltext"])) {
 							this.setCursorByEl($root);
 							$root.remove();
-						}else{
+						} else {
 							if (cs && cs["seltext"] && cs["seltext"]["sel"]) {
 								var htmldata = $root.find(cs["seltext"]["sel"]).html();
-								if (opt.onlyClearText===true) {
-									htmldata = this.getHTML(htmldata,true,true);
-									htmldata = htmldata.replace(/\&#123;/g,"{").replace(/\&#125;/g,"}");
+								if (opt.onlyClearText === true) {
+									htmldata = this.getHTML(htmldata, true, true);
+									htmldata = htmldata.replace(/\&#123;/g, "{").replace(/\&#125;/g, "}");
 								}
 								$root.replaceWith(htmldata);
-							}else{
+							} else {
 								var htmldata = $root.html();
-								if (opt.onlyClearText===true) {
-									htmldata = this.getHTML(htmldata,true);
-									htmldata = htmldata.replace(/\&lt;/g,"<").replace(/\&gt;/g,">").replace(/\&#123;/g,"{").replace(/\&#125;/g,"}");
+								if (opt.onlyClearText === true) {
+									htmldata = this.getHTML(htmldata, true);
+									htmldata = htmldata.replace(/\&lt;/g, "<").replace(/\&gt;/g, ">").replace(/\&#123;/g, "{").replace(/\&#125;/g, "}");
 								}
 								$root.replaceWith(htmldata);
 							}
 						}
 						return false;
-					}else{
+					} else {
 						//span,font - extract select content from this span,font
 						var rng = this.getRange();
 						var shtml = this.getSelectText();
 						var rnode = this.getSelectNode();
-						if (shtml=="") {
-							shtml="<br>";
-						}else{
-							shtml = this.clearFromSubInsert(shtml,command);
+						if (shtml == "") {
+							shtml = "<br>";
+						} else {
+							shtml = this.clearFromSubInsert(shtml, command);
 						}
 						var ins = this.elFromString(shtml);
-						
-						var before_rng = (window.getSelection) ? rng.cloneRange():this.body.createTextRange();
-						var after_rng = (window.getSelection) ? rng.cloneRange():this.body.createTextRange();
+
+						var before_rng = (window.getSelection) ? rng.cloneRange() : this.body.createTextRange();
+						var after_rng = (window.getSelection) ? rng.cloneRange() : this.body.createTextRange();
 
 						if (window.getSelection) {
 							this.insertAtCursor('<span id="wbbdivide"></span>');
 							var div = $root.find('span#wbbdivide').get(0);
-							before_rng.setStart(root.firstChild,0);
+							before_rng.setStart(root.firstChild, 0);
 							before_rng.setEndBefore(div);
 							after_rng.setStartAfter(div);
 							after_rng.setEndAfter(root.lastChild);
-						}else{
+						} else {
 							before_rng.moveToElementText(root);
 							after_rng.moveToElementText(root);
-							before_rng.setEndPoint('EndToStart',rng);
-							after_rng.setEndPoint('StartToEnd',rng);
+							before_rng.setEndPoint('EndToStart', rng);
+							after_rng.setEndPoint('StartToEnd', rng);
 						}
-						var bf = this.getSelectText(false,before_rng);
-						var af = this.getSelectText(false,after_rng);
-						if (af!="") {
+						var bf = this.getSelectText(false, before_rng);
+						var af = this.getSelectText(false, after_rng);
+						if (af != "") {
 							var $af = $root.clone().html(af);
 							$root.after($af);
 						}
-						if (clear!==true) $root.after(ins); //insert select html
+						if (clear !== true) $root.after(ins); //insert select html
 						if (window.getSelection) {
 							$root.html(bf);
-							if (clear!==true) this.selectNode(ins);
-						}else{
+							if (clear !== true) this.selectNode(ins);
+						} else {
 							$root.replaceWith(bf);
 						}
 						return false;
 					}
-				},this));
+				}, this));
 			}
 		},
-		execNativeCommand: function(cmd,param) { 
-			//$.log("execNativeCommand: '"+cmd+"' : "+param); 
+		execNativeCommand: function(cmd, param) {
+			//$.log("execNativeCommand: '"+cmd+"' : "+param);
 			this.body.focus(); //set focus to frame body
-			if (cmd=="insertHTML" && !window.getSelection) { //IE does't support insertHTML
-				var r = (this.lastRange) ? this.lastRange:document.selection.createRange(); //IE 7,8 range lost fix
+			if (cmd == "insertHTML" && !window.getSelection) { //IE does't support insertHTML
+				var r = (this.lastRange) ? this.lastRange : document.selection.createRange(); //IE 7,8 range lost fix
 				r.pasteHTML(param);
 				var txt = $('<div>').html(param).text(); //for ie selection inside block
 				var brsp = txt.indexOf("<br>");
-				if (brsp>-1) {
-					r.moveStart('character',(-1)*(txt.length-brsp));
+				if (brsp > -1) {
+					r.moveStart('character', (-1) * (txt.length - brsp));
 					r.select();
 				}
-				this.lastRange=false;
-			}else if (cmd=="insertHTML") { //fix webkit bug with insertHTML
+				this.lastRange = false;
+			} else if (cmd == "insertHTML") { //fix webkit bug with insertHTML
 				var sel = this.getSelection();
 				var e = this.elFromString(param);
-				var rng = (this.lastRange) ? this.lastRange:this.getRange();
+				var rng = (this.lastRange) ? this.lastRange : this.getRange();
 				rng.deleteContents();
 				rng.insertNode(e);
 				rng.collapse(false);
 				sel.removeAllRanges();
 				sel.addRange(rng);
-			}else{
-				if (typeof param == "undefined") {param=false;}
+			} else {
+				if (typeof param == "undefined") {
+					param = false;
+				}
 				if (this.lastRange) {
 					$.log("Last range select");
 					this.selectLastRange()
 				}
 				document.execCommand(cmd, false, param);
 			}
-			
+
 		},
-		getCodeByCommand: function(command,paramobj) {
-			return (this.options.bbmode) ? this.getBBCodeByCommand(command,paramobj):this.getHTMLByCommand(command,paramobj);
+		getCodeByCommand: function(command, paramobj) {
+			return (this.options.bbmode) ? this.getBBCodeByCommand(command, paramobj) : this.getHTMLByCommand(command, paramobj);
 		},
-		getBBCodeByCommand: function(command,params) {
-			if (!this.options.allButtons[command]) {return "";}
-			if (typeof(params)=="undefined") {params={};}
+		getBBCodeByCommand: function(command, params) {
+			if (!this.options.allButtons[command]) {
+				return "";
+			}
+			if (typeof(params) == "undefined") {
+				params = {};
+			}
 			params = this.keysToLower(params);
 			if (!params["seltext"]) {
 				//get selected text
 				params["seltext"] = this.getSelectText(true);
 			}
-			
+
 			var bbcode = this.options.allButtons[command].bbcode;
 			//bbcode = this.strf(bbcode,params);
-			bbcode = bbcode.replace(/\{(.*?)(\[.*?\])*\}/g,function(str,p,vrgx) {
+			bbcode = bbcode.replace(/\{(.*?)(\[.*?\])*\}/g, function(str, p, vrgx) {
 				if (vrgx) {
 					var vrgxp;
 					if (vrgx) {
-						vrgxp = new RegExp(vrgx+"+","i");
+						vrgxp = new RegExp(vrgx + "+", "i");
 					}
-					if (typeof(params[p.toLowerCase()])!="undefined" && params[p.toLowerCase()].toString().match(vrgxp)===null) {
+					if (typeof(params[p.toLowerCase()]) != "undefined" && params[p.toLowerCase()].toString().match(vrgxp) === null) {
 						//not valid value
 						return "";
 					}
 				}
-				return (typeof(params[p.toLowerCase()])=="undefined") ? "":params[p.toLowerCase()];
+				return (typeof(params[p.toLowerCase()]) == "undefined") ? "" : params[p.toLowerCase()];
 			});
-			
+
 			//insert first with max params
-			var rbbcode=null,maxpcount=0;
+			var rbbcode = null,
+				maxpcount = 0;
 			if (this.options.allButtons[command].transform) {
-				var tr=[];
-				$.each(this.options.allButtons[command].transform,function(html,bb) {
+				var tr = [];
+				$.each(this.options.allButtons[command].transform, function(html, bb) {
 					tr.push(bb);
 				});
-				tr=this.sortArray(tr,-1);
-				$.each(tr,function(i,v) {
-					var valid=true,pcount=0,pname={};;
-					v = v.replace(/\{(.*?)(\[.*?\])*\}/g,function(str,p,vrgx) {
+				tr = this.sortArray(tr, -1);
+				$.each(tr, function(i, v) {
+					var valid = true,
+						pcount = 0,
+						pname = {};;
+					v = v.replace(/\{(.*?)(\[.*?\])*\}/g, function(str, p, vrgx) {
 						var vrgxp;
 						p = p.toLowerCase();
 						if (vrgx) {
-							vrgxp = new RegExp(vrgx+"+","i");
+							vrgxp = new RegExp(vrgx + "+", "i");
 						}
-						if (typeof(params[p.toLowerCase()])=="undefined" || (vrgx && params[p.toLowerCase()].toString().match(vrgxp)===null)) {valid=false;};
-						if (typeof(params[p])!="undefined" && !pname[p]) {pname[p]=1;pcount++;}
-						return (typeof(params[p.toLowerCase()])=="undefined") ? "":params[p.toLowerCase()];
+						if (typeof(params[p.toLowerCase()]) == "undefined" || (vrgx && params[p.toLowerCase()].toString().match(vrgxp) === null)) {
+							valid = false;
+						};
+						if (typeof(params[p]) != "undefined" && !pname[p]) {
+							pname[p] = 1;
+							pcount++;
+						}
+						return (typeof(params[p.toLowerCase()]) == "undefined") ? "" : params[p.toLowerCase()];
 					});
-					if (valid && (pcount>maxpcount)) {rbbcode = v;maxpcount=pcount;}
+					if (valid && (pcount > maxpcount)) {
+						rbbcode = v;
+						maxpcount = pcount;
+					}
 				});
 			}
 			return rbbcode || bbcode;
 		},
-		getHTMLByCommand: function(command,params) {
-			if (!this.options.allButtons[command]) {return "";}
+		getHTMLByCommand: function(command, params) {
+			if (!this.options.allButtons[command]) {
+				return "";
+			}
 			params = this.keysToLower(params);
-			if (typeof(params)=="undefined") {params={};}
+			if (typeof(params) == "undefined") {
+				params = {};
+			}
 			if (!params["seltext"]) {
 				//get selected text
 				params["seltext"] = this.getSelectText(false);
 				//$.log("seltext: '"+params["seltext"]+"'");
-				if (params["seltext"]=="") {params["seltext"]="<br>";}
-				else{
+				if (params["seltext"] == "") {
+					params["seltext"] = "<br>";
+				} else {
 					//clear selection from current command tags
-					params["seltext"] = this.clearFromSubInsert(params["seltext"],command);
-					
+					params["seltext"] = this.clearFromSubInsert(params["seltext"], command);
+
 					//toBB if params onlyClearText=true
-					if (this.options.allButtons[command].onlyClearText===true) {
-						params["seltext"] = this.toBB(params["seltext"]).replace(/\</g,"&lt;").replace(/\n/g,"<br/>").replace(/\s{3}/g,'<span class="wbbtab"></span>'); 
+					if (this.options.allButtons[command].onlyClearText === true) {
+						params["seltext"] = this.toBB(params["seltext"]).replace(/\</g, "&lt;").replace(/\n/g, "<br/>").replace(/\s{3}/g, '<span class="wbbtab"></span>');
 					}
-					
+
 				}
 			}
-			
-			var postsel="";
-			this.seltextID = "wbbid_"+(++this.lastid);
-			if (command!="link" && command!="img") {
-				params["seltext"] = '<span id="'+this.seltextID+'">'+params["seltext"]+'</span>'; //use for select seltext
-			}else{
-				postsel = '<span id="'+this.seltextID+'"><br></span>'
+
+			var postsel = "";
+			this.seltextID = "wbbid_" + (++this.lastid);
+			if (command != "link" && command != "img") {
+				params["seltext"] = '<span id="' + this.seltextID + '">' + params["seltext"] + '</span>'; //use for select seltext
+			} else {
+				postsel = '<span id="' + this.seltextID + '"><br></span>'
 			}
 			var html = this.options.allButtons[command].html;
-			html = html.replace(/\{(.*?)(\[.*?\])*\}/g,function(str,p,vrgx) {
+			html = html.replace(/\{(.*?)(\[.*?\])*\}/g, function(str, p, vrgx) {
 				if (vrgx) {
-					var vrgxp = new RegExp(vrgx+"+","i");
-					if (typeof(params[p.toLowerCase()])!="undefined" && params[p.toLowerCase()].toString().match(vrgxp)===null) {
+					var vrgxp = new RegExp(vrgx + "+", "i");
+					if (typeof(params[p.toLowerCase()]) != "undefined" && params[p.toLowerCase()].toString().match(vrgxp) === null) {
 						//not valid value
 						return "";
 					}
 				}
-				return (typeof(params[p.toLowerCase()])=="undefined") ? "":params[p.toLowerCase()];
+				return (typeof(params[p.toLowerCase()]) == "undefined") ? "" : params[p.toLowerCase()];
 			});
-			
+
 			//insert first with max params
-			var rhtml=null,maxpcount=0;
+			var rhtml = null,
+				maxpcount = 0;
 			if (this.options.allButtons[command].transform) {
-				var tr=[];
-				$.each(this.options.allButtons[command].transform,function(html,bb) {
+				var tr = [];
+				$.each(this.options.allButtons[command].transform, function(html, bb) {
 					tr.push(html);
 				});
-				tr=this.sortArray(tr,-1);
-				$.each(tr,function(i,v) {
-					var valid=true, pcount=0,pname={};
-					v = v.replace(/\{(.*?)(\[.*?\])*\}/g,function(str,p,vrgx) {
+				tr = this.sortArray(tr, -1);
+				$.each(tr, function(i, v) {
+					var valid = true,
+						pcount = 0,
+						pname = {};
+					v = v.replace(/\{(.*?)(\[.*?\])*\}/g, function(str, p, vrgx) {
 						var vrgxp;
 						p = p.toLowerCase();
 						if (vrgx) {
-							vrgxp = new RegExp(vrgx+"+","i");
+							vrgxp = new RegExp(vrgx + "+", "i");
 						}
-						if (typeof(params[p])=="undefined" || (vrgx && params[p].toString().match(vrgxp)===null)) {valid=false;};
-						if (typeof(params[p])!="undefined" && !pname[p]) {pname[p]=1;pcount++;}
-						return (typeof(params[p])=="undefined") ? "":params[p];
+						if (typeof(params[p]) == "undefined" || (vrgx && params[p].toString().match(vrgxp) === null)) {
+							valid = false;
+						};
+						if (typeof(params[p]) != "undefined" && !pname[p]) {
+							pname[p] = 1;
+							pcount++;
+						}
+						return (typeof(params[p]) == "undefined") ? "" : params[p];
 					});
-					if (valid && (pcount>maxpcount)) {rhtml = v;maxpcount=pcount;}
+					if (valid && (pcount > maxpcount)) {
+						rhtml = v;
+						maxpcount = pcount;
+					}
 				});
 			}
-			return (rhtml || html)+postsel;
+			return (rhtml || html) + postsel;
 		},
-		
+
 		//SELECTION FUNCTIONS
 		getSelection: function() {
 			if (window.getSelection) {
 				return window.getSelection();
-			}else if (document.selection) {
-				return (this.options.bbmode) ? document.selection.createRange():document.selection.createRange();
+			} else if (document.selection) {
+				return (this.options.bbmode) ? document.selection.createRange() : document.selection.createRange();
 			}
 		},
-		getSelectText: function(fromTxtArea,range) {
+		getSelectText: function(fromTxtArea, range) {
 			if (fromTxtArea) {
 				//return select text from textarea
 				this.txtArea.focus();
-				if('selectionStart' in this.txtArea) {
+				if ('selectionStart' in this.txtArea) {
 					var l = this.txtArea.selectionEnd - this.txtArea.selectionStart;
 					return this.txtArea.value.substr(this.txtArea.selectionStart, l);
-				}else{
+				} else {
 					//IE
 					var r = document.selection.createRange();
 					return r.text;
 				}
-			}else{
+			} else {
 				//return select html from body
 				this.body.focus();
-				if (!range)  {range=this.getRange()};
+				if (!range) {
+					range = this.getRange()
+				};
 				if (window.getSelection) {
 					//w3c
 					if (range) {
 						return $('<div>').append(range.cloneContents()).html();
 					}
-				}else{
+				} else {
 					//ie
 					return range.htmlText;
 				}
@@ -1914,34 +2398,38 @@ let debug = false;
 		getRange: function() {
 			if (window.getSelection) {
 				var sel = this.getSelection();
-				if (sel.getRangeAt && sel.rangeCount>0) {
+				if (sel.getRangeAt && sel.rangeCount > 0) {
 					return sel.getRangeAt(0);
-				}else if (sel.anchorNode) {
+				} else if (sel.anchorNode) {
 					var range = (this.options.bbmode) ? document.createRange() : document.createRange();
-					range.setStart (sel.anchorNode, sel.anchorOffset);
-					range.setEnd (sel.focusNode, sel.focusOffset);
+					range.setStart(sel.anchorNode, sel.anchorOffset);
+					range.setEnd(sel.focusNode, sel.focusOffset);
 					return range;
 				}
-			}else{
-				return (this.options.bbmode===true) ? document.selection.createRange():document.selection.createRange();
+			} else {
+				return (this.options.bbmode === true) ? document.selection.createRange() : document.selection.createRange();
 			}
 		},
-		insertAtCursor: function(code,forceBBMode) {
-			if (typeof(code)!="string") {code = $("<div>").append(code).html();}
-			if ((this.options.bbmode && typeof(forceBBMode)=="undefined") || forceBBMode===true) {
-				var clbb = code.replace(/.*(\[\/\S+?\])$/,"$1");
-				var p = this.getCursorPosBB()+((code.indexOf(clbb)!=-1 && code.match(/\[.*\]/)) ? code.indexOf(clbb):code.length);
+		insertAtCursor: function(code, forceBBMode) {
+			if (typeof(code) != "string") {
+				code = $("<div>").append(code).html();
+			}
+			if ((this.options.bbmode && typeof(forceBBMode) == "undefined") || forceBBMode === true) {
+				var clbb = code.replace(/.*(\[\/\S+?\])$/, "$1");
+				var p = this.getCursorPosBB() + ((code.indexOf(clbb) != -1 && code.match(/\[.*\]/)) ? code.indexOf(clbb) : code.length);
 				if (document.selection) {
 					//IE
 					this.txtArea.focus();
-					this.getSelection().text=code;
-				}else if (this.txtArea.selectionStart || this.txtArea.selectionStart == '0') {
+					this.getSelection().text = code;
+				} else if (this.txtArea.selectionStart || this.txtArea.selectionStart == '0') {
 					this.txtArea.value = this.txtArea.value.substring(0, this.txtArea.selectionStart) + code + this.txtArea.value.substring(this.txtArea.selectionEnd, this.txtArea.value.length);
 				}
-				if (p<0) {p=0;}
+				if (p < 0) {
+					p = 0;
+				}
 				this.setCursorPosBB(p);
-			}else{
-				this.execNativeCommand("insertHTML",code);
+			} else {
+				this.execNativeCommand("insertHTML", code);
 				var node = this.getSelectNode();
 				if (!$(node).closest("table,tr,td")) {
 					this.splitPrevNext(node);
@@ -1950,23 +2438,29 @@ let debug = false;
 		},
 		getSelectNode: function(rng) {
 			this.body.focus();
-			if (!rng) {rng=this.getRange();}
-			if (!rng) {return this.$body;}
+			if (!rng) {
+				rng = this.getRange();
+			}
+			if (!rng) {
+				return this.$body;
+			}
 			//return (window.getSelection) ? rng.commonAncestorContainer:rng.parentElement();
-			var sn = (window.getSelection) ? rng.commonAncestorContainer:rng.parentElement();
-			if ($(sn).is(".imgWrap")) {sn = $(sn).children("img")[0];}
+			var sn = (window.getSelection) ? rng.commonAncestorContainer : rng.parentElement();
+			if ($(sn).is(".imgWrap")) {
+				sn = $(sn).children("img")[0];
+			}
 			return sn;
 		},
-		getCursorPosBB: function() {	
-			var pos=0;
+		getCursorPosBB: function() {
+			var pos = 0;
 			if ('selectionStart' in this.txtArea) {
 				pos = this.txtArea.selectionStart;
-			}else{
+			} else {
 				this.txtArea.focus();
 				var r = this.getRange();
 				var rt = document.body.createTextRange();
 				rt.moveToElementText(this.txtArea);
-				rt.setEndPoint('EndToStart',r);
+				rt.setEndPoint('EndToStart', r);
 				pos = rt.text.length;
 			}
 			return pos;
@@ -1974,9 +2468,9 @@ let debug = false;
 		setCursorPosBB: function(pos) {
 			if (this.options.bbmode) {
 				if (window.getSelection) {
-					this.txtArea.selectionStart=pos;
-					this.txtArea.selectionEnd=pos;
-				}else{
+					this.txtArea.selectionStart = pos;
+					this.txtArea.selectionEnd = pos;
+				} else {
 					var range = this.txtArea.createTextRange();
 					range.collapse(true);
 					range.move('character', pos);
@@ -1984,15 +2478,19 @@ let debug = false;
 				}
 			}
 		},
-		selectNode: function(node,rng) {
-			if (!rng) {rng = this.getRange();}
-			if (!rng) {return;}
+		selectNode: function(node, rng) {
+			if (!rng) {
+				rng = this.getRange();
+			}
+			if (!rng) {
+				return;
+			}
 			if (window.getSelection) {
 				var sel = this.getSelection();
 				rng.selectNodeContents(node)
 				sel.removeAllRanges();
 				sel.addRange(rng);
-			}else{
+			} else {
 				rng.moveToElementText(node);
 				rng.select();
 			}
@@ -2001,7 +2499,7 @@ let debug = false;
 			if (rng) {
 				if (!window.getSelection) {
 					rng.select();
-				}else{
+				} else {
 					var sel = this.getSelection();
 					sel.removeAllRanges();
 					sel.addRange(rng);
@@ -2012,7 +2510,7 @@ let debug = false;
 			if (rng) {
 				if (!window.getSelection) {
 					return rng.duplicate();
-				}else{
+				} else {
 					return rng.cloneRange();
 				}
 			}
@@ -2023,13 +2521,13 @@ let debug = false;
 		saveRange: function() {
 			this.setBodyFocus();
 			//this.lastRange=(this.options.bbmode) ? this.getCursorPosBB():this.getRangeClone();
-			this.lastRange=this.getRangeClone();
+			this.lastRange = this.getRangeClone();
 		},
 		selectLastRange: function() {
 			if (this.lastRange) {
 				this.body.focus();
 				this.selectRange(this.lastRange);
-				this.lastRange=false;
+				this.lastRange = false;
 			}
 		},
 		setBodyFocus: function() {
@@ -2038,21 +2536,21 @@ let debug = false;
 				if (!this.$txtArea.is(":focus")) {
 					this.$txtArea.focus();
 				}
-			}else{
+			} else {
 				if (!this.$body.is(":focus")) {
 					this.$body.focus();
 				}
 			}
 		},
 		clearLastRange: function() {
-			this.lastRange=false;
+			this.lastRange = false;
 		},
-		 
+
 		//TRANSFORM FUNCTIONS
 		filterByNode: function(node) {
 			var $n = $(node);
 			var tagName = $n.get(0).tagName.toLowerCase();
-			var filter=tagName;
+			var filter = tagName;
 			var attributes = this.getAttributeList($n.get(0));
 			$.each(attributes, $.proxy(function(i, item) {
 				var v = $n.attr(item);
@@ -2061,195 +2559,222 @@ let debug = false;
 					item = '_'+item;
 				} */
 				//$.log(item);
-				if (item.substr(0,1)=="_") {item=item.substr(1,item.length)}
+				if (item.substr(0, 1) == "_") {
+					item = item.substr(1, item.length)
+				}
 				if (v && !v.match(/\{.*?\}/)) {
 					//$.log("I1: "+item);
-					if (item=="style") {
+					if (item == "style") {
 						var v = $n.attr(item);
 						var va = v.split(";");
-						$.each(va,function(i,f) {
-							if (f && f.length>0) {
-								filter+='['+item+'*="'+f.trim()+'"]';
+						$.each(va, function(i, f) {
+							if (f && f.length > 0) {
+								filter += '[' + item + '*="' + f.trim() + '"]';
 							}
 						});
-					}else{
-						filter+='['+item+'="'+v+'"]';
+					} else {
+						filter += '[' + item + '="' + v + '"]';
 					}
-				}else if (v && item=="style") {
+				} else if (v && item == "style") {
 					//$.log("I2: "+item);
-					var vf = v.substr(0,v.indexOf("{"));
-					if (vf && vf!="") {
-						var v = v.substr(0,v.indexOf("{"));
+					var vf = v.substr(0, v.indexOf("{"));
+					if (vf && vf != "") {
+						var v = v.substr(0, v.indexOf("{"));
 						var va = v.split(";");
-						$.each(va,function(i,f) {
-							filter+='['+item+'*="'+f+'"]';
+						$.each(va, function(i, f) {
+							filter += '[' + item + '*="' + f + '"]';
 						});
 						//filter+='['+item+'*="'+v.substr(0,v.indexOf("{"))+'"]';
 					}
-				}else{ //1.2.2
+				} else { //1.2.2
 					//$.log("I3: "+item);
-					filter+='['+item+']';
+					filter += '[' + item + ']';
 				}
-			},this));
-			
+			}, this));
+
 			//index
 			var idx = $n.parent().children(filter).index($n);
-			if (idx>0) {
-				filter+=":eq("+$n.index()+")";
+			if (idx > 0) {
+				filter += ":eq(" + $n.index() + ")";
 			}
 			return filter;
 		},
-		relFilterByNode: function(node,stop) {
-			var p="";
-			$.each(this.options.attrWrap,function(i,a) {
-				stop = stop.replace('['+a,'[_'+a);
+		relFilterByNode: function(node, stop) {
+			var p = "";
+			$.each(this.options.attrWrap, function(i, a) {
+				stop = stop.replace('[' + a, '[_' + a);
 			});
-			while (node && node.tagName!="BODY" && !$(node).is(stop)) {
-				p=this.filterByNode(node)+" "+p;
-				if (node) {node = node.parentNode;}
+			while (node && node.tagName != "BODY" && !$(node).is(stop)) {
+				p = this.filterByNode(node) + " " + p;
+				if (node) {
+					node = node.parentNode;
+				}
 			}
 			return p;
 		},
-		getRegexpReplace: function(str,validname) {
-			str = str.replace(/(\(|\)|\[|\]|\.|\*|\?|\:|\\)/g,"\\$1") 
-				.replace(/\s+/g,"\\s+")
-				.replace(validname.replace(/(\(|\)|\[|\]|\.|\*|\?|\:|\\)/g,"\\$1"),"(.+)")
-				.replace(/\{\S+?\}/g,".*");
+		getRegexpReplace: function(str, validname) {
+			str = str.replace(/(\(|\)|\[|\]|\.|\*|\?|\:|\\)/g, "\\$1")
+				.replace(/\s+/g, "\\s+")
+				.replace(validname.replace(/(\(|\)|\[|\]|\.|\*|\?|\:|\\)/g, "\\$1"), "(.+)")
+				.replace(/\{\S+?\}/g, ".*");
 			return (str);
 		},
 		getBBCode: function() {
-			if (!this.options.rules) {return this.$txtArea.val();}
-			if (this.options.bbmode) {return this.$txtArea.val();}
+			if (!this.options.rules) {
+				return this.$txtArea.val();
+			}
+			if (this.options.bbmode) {
+				return this.$txtArea.val();
+			}
 			this.clearEmpty();
 			this.removeLastBodyBR();
 			return this.toBB(this.$body.html());
 		},
 		toBB: function(data) {
-			if (!data) {return "";};
-			var $e = (typeof(data)=="string") ? $('<span>').html(data):$(data);
+			if (!data) {
+				return "";
+			};
+			var $e = (typeof(data) == "string") ? $('<span>').html(data) : $(data);
 			//remove last BR
 			$e.find("div,blockquote,p").each(function() {
-				if (this.nodeType!=3 && this.lastChild && this.lastChild.tagName=="BR") {
+				if (this.nodeType != 3 && this.lastChild && this.lastChild.tagName == "BR") {
 					$(this.lastChild).remove();
 				}
 			})
-			if ($e.is("div,blockquote,p") && $e[0].nodeType!=3 && $e[0].lastChild && $e[0].lastChild.tagName=="BR") {
+			if ($e.is("div,blockquote,p") && $e[0].nodeType != 3 && $e[0].lastChild && $e[0].lastChild.tagName == "BR") {
 				$($e[0].lastChild).remove();
 			}
 			//END remove last BR
-			
+
 			//Remove BR
 			$e.find("ul > br, table > br, tr > br").remove();
 			//IE
-			
-			var outbb="";
-			
+
+			var outbb = "";
+
 			//transform smiles
-			$.each(this.options.srules,$.proxy(function(s,bb) {
+			$.each(this.options.srules, $.proxy(function(s, bb) {
 				$e.find(s).replaceWith(bb[0]);
-			},this));
-			
-			$e.contents().each($.proxy(function(i,el) {
+			}, this));
+
+			$e.contents().each($.proxy(function(i, el) {
 				var $el = $(el);
-				if (el.nodeType===3) {
-					outbb+=el.data.replace(/\n+/,"").replace(/\t/g,"   ");
-				}else{
+				if (el.nodeType === 3) {
+					outbb += el.data.replace(/\n+/, "").replace(/\t/g, "   ");
+				} else {
 					//process html tag
-					var rpl,processed=false;
+					var rpl, processed = false;
 
 					//for (var rootsel in this.options.rules) {
-					for (var j=0; j<this.rsellist.length; j++) {
+					for (var j = 0; j < this.rsellist.length; j++) {
 						var rootsel = this.rsellist[j];
 						if ($el && $el.is(rootsel)) {
 							//it is root sel
 							var rlist = this.options.rules[rootsel];
-							for (var i=0; i<rlist.length; i++) {
+							for (var i = 0; i < rlist.length; i++) {
 								var bbcode = rlist[i][0];
 								var crules = rlist[i][1];
-								var skip=false,keepElement=false,keepAttr=false;
+								var skip = false,
+									keepElement = false,
+									keepAttr = false;
 								if (!$el.is("br")) {
-									bbcode = bbcode.replace(/\n/g,"<br>");
+									bbcode = bbcode.replace(/\n/g, "<br>");
 								}
-								bbcode = bbcode.replace(/\{(.*?)(\[.*?\])*\}/g,$.proxy(function(str,s,vrgx) {
+								bbcode = bbcode.replace(/\{(.*?)(\[.*?\])*\}/g, $.proxy(function(str, s, vrgx) {
 									var c = crules[s.toLowerCase()];
 									//if (typeof(c)=="undefined") {$.log("Param: {"+s+"} not found in HTML representation.");skip=true;return s;}
-									if (typeof(c)=="undefined") {$.log("Param: {"+s+"} not found in HTML representation.");skip=true;}
-									var $cel = (c.sel) ? $(el).find(c.sel):$(el);
-									if (c.attr && !$cel.attr(c.attr)) {skip=true;return s;} //skip if needed attribute not present, maybe other bbcode
-									var cont = (c.attr) ? $cel.attr(c.attr):$cel.html();
-									if (typeof(cont)=="undefined" || cont==null) {skip=true;return s;}
-									var regexp = c.rgx;
-									
-									//style fix 
-									if (regexp && c.attr=="style" && regexp.substr(regexp.length-1,1)!=";") {
-										regexp+=";";
+									if (typeof(c) == "undefined") {
+										$.log("Param: {" + s + "} not found in HTML representation.");
+										skip = true;
 									}
-									if (c.attr=="style" && cont && cont.substr(cont.length-1,1)!=";") {cont+=";"}
+									var $cel = (c.sel) ? $(el).find(c.sel) : $(el);
+									if (c.attr && !$cel.attr(c.attr)) {
+										skip = true;
+										return s;
+									} //skip if needed attribute not present, maybe other bbcode
+									var cont = (c.attr) ? $cel.attr(c.attr) : $cel.html();
+									if (typeof(cont) == "undefined" || cont == null) {
+										skip = true;
+										return s;
+									}
+									var regexp = c.rgx;
+
+									//style fix
+									if (regexp && c.attr == "style" && regexp.substr(regexp.length - 1, 1) != ";") {
+										regexp += ";";
+									}
+									if (c.attr == "style" && cont && cont.substr(cont.length - 1, 1) != ";") {
+										cont += ";"
+									}
 									//prepare regexp
-									var rgx = (regexp) ? new RegExp(regexp,""):false;
+									var rgx = (regexp) ? new RegExp(regexp, "") : false;
 									if (rgx) {
 										if (cont.match(rgx)) {
 											var m = cont.match(rgx);
-											if (m && m.length==2) {
-												cont=m[1];
+											if (m && m.length == 2) {
+												cont = m[1];
 											}
-										}else{
-											cont="";
+										} else {
+											cont = "";
 										}
 									}
-									
+
 									//if it is style attr, then keep tag alive, remove this style
-									if (c.attr && skip===false) {
-										if (c.attr=="style") {
-											keepElement=true;
-											var nstyle="";
-											var r = c.rgx.replace(/^\.\*\?/,"").replace(/\.\*$/,"").replace(/;$/,"");
-											$($cel.attr("style").split(";")).each(function(idx,style) {
-												if (style && style!="") {
+									if (c.attr && skip === false) {
+										if (c.attr == "style") {
+											keepElement = true;
+											var nstyle = "";
+											var r = c.rgx.replace(/^\.\*\?/, "").replace(/\.\*$/, "").replace(/;$/, "");
+											$($cel.attr("style").split(";")).each(function(idx, style) {
+												if (style && style != "") {
 													if (!style.match(r)) {
-														nstyle+=style+";";
+														nstyle += style + ";";
 													}
 												}
 											});
-											if (nstyle=="") {
+											if (nstyle == "") {
 												$cel.removeAttr("style");
-											}else{
-												$cel.attr("style",nstyle);
+											} else {
+												$cel.attr("style", nstyle);
 											}
-										}else if (c.rgx===false){	
-											keepElement=true;
-											keepAttr=true;
+										} else if (c.rgx === false) {
+											keepElement = true;
+											keepAttr = true;
 											$cel.removeAttr(c.attr);
 										}
 									}
-									if ($el.is('table,tr,td,font')) {keepElement=true;}
-									
+									if ($el.is('table,tr,td,font')) {
+										keepElement = true;
+									}
+
 									return cont || "";
-								},this));
-								if (skip) {continue;}
+								}, this));
+								if (skip) {
+									continue;
+								}
 								if ($el.is("img,br,hr")) {
 									//replace element
-									outbb+=bbcode;
-									$el=null;
+									outbb += bbcode;
+									$el = null;
 									break;
-								}else{
+								} else {
 									if (keepElement && !$el.attr("notkeep")) {
 										if ($el.is("table,tr,td")) {
 											bbcode = this.fixTableTransform(bbcode);
-											outbb+=this.toBB($('<span>').html(bbcode));
-											$el=null;
-										}else{
-											$el.empty().html('<span>'+bbcode+'</span>');
+											outbb += this.toBB($('<span>').html(bbcode));
+											$el = null;
+										} else {
+											$el.empty().html('<span>' + bbcode + '</span>');
 										}
-										
-									}else{
+
+									} else {
 										if ($el.is("iframe")) {
-											outbb+=bbcode;
-										}else{
+											outbb += bbcode;
+										} else {
 											$el.empty().html(bbcode);
-											outbb+=this.toBB($el);
-											$el=null;
-											
+											outbb += this.toBB($el);
+											$el = null;
+
 										}
 										break;
 									}
@@ -2257,202 +2782,234 @@ let debug = false;
 							}
 						}
 					}
-					if (!$el || $el.is("iframe,img")) {return true;}
-					outbb+=this.toBB($el);
+					if (!$el || $el.is("iframe,img")) {
+						return true;
+					}
+					outbb += this.toBB($el);
 				}
-			},this));
-			
-			outbb.replace(/<br>/g,"");
+			}, this));
+
+			outbb.replace(/<br>/g, "");
 			return outbb;
 		},
-		getHTML: function(bbdata,init,skiplt) {
-			if (!this.options.bbmode && !init) {return this.$body.html()}
-			
-			if (!skiplt) {bbdata = bbdata.replace(/</g,"&lt;").replace(/\{/g,"&#123;").replace(/\}/g,"&#125;");}
-			bbdata = bbdata.replace(/\[code\]([\s\S]*?)\[\/code\]/g,function(s) {
-				s = s.substr("[code]".length,s.length-"[code]".length-"[/code]".length).replace(/\[/g,"&#91;").replace(/\]/g,"&#93;");
-				return "[code]"+s+"[/code]";
+		getHTML: function(bbdata, init, skiplt) {
+			if (!this.options.bbmode && !init) {
+				return this.$body.html()
+			}
+
+			if (!skiplt) {
+				bbdata = bbdata.replace(/</g, "&lt;").replace(/\{/g, "&#123;").replace(/\}/g, "&#125;");
+			}
+			bbdata = bbdata.replace(/\[code\]([\s\S]*?)\[\/code\]/g, function(s) {
+				s = s.substr("[code]".length, s.length - "[code]".length - "[/code]".length).replace(/\[/g, "&#91;").replace(/\]/g, "&#93;");
+				return "[code]" + s + "[/code]";
 			});
-			
-			
-			$.each(this.options.btnlist,$.proxy(function(i,b){
-				if (b!="|" && b!="-") {
-					var find=true;
+
+
+			$.each(this.options.btnlist, $.proxy(function(i, b) {
+				if (b != "|" && b != "-") {
+					var find = true;
 					if (!this.options.allButtons[b] || !this.options.allButtons[b].transform) {
 						return true;
 					}
 
-					$.each(this.options.allButtons[b].transform,$.proxy(function(html,bb) {
-						html = html.replace(/\n/g,""); //IE 7,8 FIX
-						var a=[];
-						bb = bb.replace(/(\(|\)|\[|\]|\.|\*|\?|\:|\\|\\)/g,"\\$1");
-							//.replace(/\s/g,"\\s");
-						bb = bb.replace(/\{(.*?)(\\\[.*?\\\])*\}/gi,$.proxy(function(str,s,vrgx) {
+					$.each(this.options.allButtons[b].transform, $.proxy(function(html, bb) {
+						html = html.replace(/\n/g, ""); //IE 7,8 FIX
+						var a = [];
+						bb = bb.replace(/(\(|\)|\[|\]|\.|\*|\?|\:|\\|\\)/g, "\\$1");
+						//.replace(/\s/g,"\\s");
+						bb = bb.replace(/\{(.*?)(\\\[.*?\\\])*\}/gi, $.proxy(function(str, s, vrgx) {
 							a.push(s);
 							if (vrgx) {
 								//has validation regexp
-								vrgx = vrgx.replace(/\\/g,"");
-								return "("+vrgx+"*?)";
+								vrgx = vrgx.replace(/\\/g, "");
+								return "(" + vrgx + "*?)";
 							}
 							return "([\\s\\S]*?)";
-						},this));
-						var n=0,am;
-						while ((am = (new RegExp(bb,"mgi")).exec(bbdata)) != null) {
+						}, this));
+						var n = 0,
+							am;
+						while ((am = (new RegExp(bb, "mgi")).exec(bbdata)) != null) {
 							if (am) {
-								var r={};
-								$.each(a,$.proxy(function(i,k) {
-									r[k]=am[i+1];
-								},this));
+								var r = {};
+								$.each(a, $.proxy(function(i, k) {
+									r[k] = am[i + 1];
+								}, this));
 								var nhtml = html;
-								nhtml = nhtml.replace(/\{(.*?)(\[.*?\])\}/g,"{$1}");
-								nhtml = this.strf(nhtml,r);
-								bbdata = bbdata.replace(am[0],nhtml);
+								nhtml = nhtml.replace(/\{(.*?)(\[.*?\])\}/g, "{$1}");
+								nhtml = this.strf(nhtml, r);
+								bbdata = bbdata.replace(am[0], nhtml);
 							}
 						}
-					},this));
+					}, this));
 				}
-			},this));
-			
+			}, this));
+
 			//transform system codes
-			$.each(this.options.systr,function(html,bb) {
-				bb = bb.replace(/(\(|\)|\[|\]|\.|\*|\?|\:|\\|\\)/g,"\\$1")
-					.replace(" ","\\s");
-				bbdata = bbdata.replace(new RegExp(bb,"g"),html);
+			$.each(this.options.systr, function(html, bb) {
+				bb = bb.replace(/(\(|\)|\[|\]|\.|\*|\?|\:|\\|\\)/g, "\\$1")
+					.replace(" ", "\\s");
+				bbdata = bbdata.replace(new RegExp(bb, "g"), html);
 			});
-			
-			
-			var $wrap = $(this.elFromString("<div>"+bbdata+"</div>"));
+
+
+			var $wrap = $(this.elFromString("<div>" + bbdata + "</div>"));
 			//transform smiles
 			this.getHTMLSmiles($wrap);
-			
+
 			return $wrap.html();
 		},
 		getHTMLSmiles: function(rel) {
-			$(rel).contents().filter(function() {return this.nodeType==3}).each($.proxy(this.smileRPL,this));
+			$(rel).contents().filter(function() {
+				return this.nodeType == 3
+			}).each($.proxy(this.smileRPL, this));
 		},
-		smileRPL: function(i,el) {
+		smileRPL: function(i, el) {
 			var ndata = el.data;
-			$.each(this.options.smileList,$.proxy(function(i,row) {
+			$.each(this.options.smileList, $.proxy(function(i, row) {
 				var fidx = ndata.indexOf(row.bbcode);
-				if (fidx!=-1) {
-					var afternode_txt = ndata.substring(fidx+row.bbcode.length,ndata.length);
+				if (fidx != -1) {
+					var afternode_txt = ndata.substring(fidx + row.bbcode.length, ndata.length);
 					var afternode = document.createTextNode(afternode_txt);
-					el.data = ndata = el.data.substr(0,fidx);
-					$(el).after(afternode).after(this.strf(row.img,this.options));
+					el.data = ndata = el.data.substr(0, fidx);
+					$(el).after(afternode).after(this.strf(row.img, this.options));
 					this.getHTMLSmiles(el.parentNode);
 					return false;
 				}
-			this.getHTMLSmiles(el);
-			},this));	
+				this.getHTMLSmiles(el);
+			}, this));
 		},
 		//UTILS
-		setUID: function(el,attr) {
-			var id = "wbbid_"+(++this.lastid);
+		setUID: function(el, attr) {
+			var id = "wbbid_" + (++this.lastid);
 			if (el) {
-				$(el).attr(attr || "id",id);
+				$(el).attr(attr || "id", id);
 			}
 			return id;
 		},
 		keysToLower: function(o) {
-			$.each(o,function(k,v) {
-				if (k!=k.toLowerCase()) {
+			$.each(o, function(k, v) {
+				if (k != k.toLowerCase()) {
 					delete o[k];
-					o[k.toLowerCase()]=v;
+					o[k.toLowerCase()] = v;
 				}
 			});
 			return o;
 		},
-		strf: function(str,data) {
-			data = this.keysToLower($.extend({},data));
-			return str.replace(/\{([\w\.]*)\}/g, function (str, key) {key = key.toLowerCase();var keys = key.split("."), value = data[keys.shift().toLowerCase()];$.each(keys, function () { value = value[this]; }); return (value === null || value === undefined) ? "" : value;});
+		strf: function(str, data) {
+			data = this.keysToLower($.extend({}, data));
+			return str.replace(/\{([\w\.]*)\}/g, function(str, key) {
+				key = key.toLowerCase();
+				var keys = key.split("."),
+					value = data[keys.shift().toLowerCase()];
+				$.each(keys, function() {
+					value = value[this];
+				});
+				return (value === null || value === undefined) ? "" : value;
+			});
 		},
 		elFromString: function(str) {
-			if (str.indexOf("<")!=-1 && str.indexOf(">")!=-1) {
+			if (str.indexOf("<") != -1 && str.indexOf(">") != -1) {
 				//create tag
 				var wr = document.createElement("SPAN");
 				$(wr).html(str);
-				this.setUID(wr,"wbb");
-				return ($(wr).contents().length>1) ? wr:wr.firstChild;
-			}else{
+				this.setUID(wr, "wbb");
+				return ($(wr).contents().length > 1) ? wr : wr.firstChild;
+			} else {
 				//create text node
 				return document.createTextNode(str);
 			}
 		},
-		isContain: function(node,sel) {
+		isContain: function(node, sel) {
 			while (node && !$(node).hasClass("wysibb")) {
-				if ($(node).is(sel)) {return node};
-				if (node) {node = node.parentNode;}
-				else{return null;}
+				if ($(node).is(sel)) {
+					return node
+				};
+				if (node) {
+					node = node.parentNode;
+				} else {
+					return null;
+				}
 			}
 		},
 		isBBContain: function(bbcode) {
-			var pos=this.getCursorPosBB();
+			var pos = this.getCursorPosBB();
 			var b = this.prepareRGX(bbcode);
-			var bbrgx = new RegExp(b,"g");
+			var bbrgx = new RegExp(b, "g");
 			var a;
-			var lastindex=0;
-			while ((a=bbrgx.exec(this.txtArea.value))!=null) {
-				var p = this.txtArea.value.indexOf(a[0],lastindex);
-				if (pos>p && pos<(p+a[0].length)) {
-					return [a,p];
+			var lastindex = 0;
+			while ((a = bbrgx.exec(this.txtArea.value)) != null) {
+				var p = this.txtArea.value.indexOf(a[0], lastindex);
+				if (pos > p && pos < (p + a[0].length)) {
+					return [a, p];
 				}
-				lastindex=p+1;
+				lastindex = p + 1;
 			}
 		},
 		prepareRGX: function(r) {
-			return r.replace(/(\[|\]|\)|\(|\.|\*|\?|\:|\||\\)/g,"\\$1").replace(/\{.*?\}/g,"([\\s\\S]*?)");
+			return r.replace(/(\[|\]|\)|\(|\.|\*|\?|\:|\||\\)/g, "\\$1").replace(/\{.*?\}/g, "([\\s\\S]*?)");
 			//return r.replace(/([^a-z0-9)/ig,"\\$1").replace(/\{.*?\}/g,"([\\s\\S]*?)");
 		},
 		checkForLastBR: function(node) {
-			if (!node) {$node = this.body;} 
-			if (node.nodeType==3) {node=node.parentNode;}
-			var $node = $(node);
-			if ($node.is("span[id*='wbbid']")) {$node = $node.parent();}
-			if (this.options.bbmode===false && $node.is('div,blockquote,code') && $node.contents().length>0) {
-				var l = $node[0].lastChild;
-				if (!l || (l && l.tagName!="BR")) {$node.append("<br/>");}
+			if (!node) {
+				$node = this.body;
 			}
-			if (this.$body.contents().length>0 && this.body.lastChild.tagName!="BR") {
+			if (node.nodeType == 3) {
+				node = node.parentNode;
+			}
+			var $node = $(node);
+			if ($node.is("span[id*='wbbid']")) {
+				$node = $node.parent();
+			}
+			if (this.options.bbmode === false && $node.is('div,blockquote,code') && $node.contents().length > 0) {
+				var l = $node[0].lastChild;
+				if (!l || (l && l.tagName != "BR")) {
+					$node.append("<br/>");
+				}
+			}
+			if (this.$body.contents().length > 0 && this.body.lastChild.tagName != "BR") {
 				this.$body.append('<br/>');
 			}
 		},
 		getAttributeList: function(el) {
-			var a=[];
-			$.each(el.attributes,function(i,attr) {
+			var a = [];
+			$.each(el.attributes, function(i, attr) {
 				if (attr.specified) {
 					a.push(attr.name);
 				}
 			});
 			return a;
 		},
-		clearFromSubInsert: function(html,cmd) {
+		clearFromSubInsert: function(html, cmd) {
 			if (this.options.allButtons[cmd] && this.options.allButtons[cmd].rootSelector) {
 				var $wr = $('<div>').html(html);
-				$.each(this.options.allButtons[cmd].rootSelector,$.proxy(function(i,s) {
-					var seltext=false;
-					if (typeof(this.options.rules[s][0][1]["seltext"])!="undefined") {
+				$.each(this.options.allButtons[cmd].rootSelector, $.proxy(function(i, s) {
+					var seltext = false;
+					if (typeof(this.options.rules[s][0][1]["seltext"]) != "undefined") {
 						seltext = this.options.rules[s][0][1]["seltext"]["sel"];
 					}
-					var res=true;
+					var res = true;
 					$wr.find("*").each(function() { //work with find("*") and "is", becouse in ie7-8 find is case sensitive
 						if ($(this).is(s)) {
 							if (seltext && seltext["sel"]) {
 								$(this).replaceWith($(this).find(seltext["sel"].toLowerCase()).html());
-							}else{
+							} else {
 								$(this).replaceWith($(this).html());
 							}
-							res=false;
+							res = false;
 						}
 					});
 					return res;
-				},this));
+				}, this));
 				return $wr.html();
 			}
 			return html;
 		},
 		splitPrevNext: function(node) {
-			if (node.nodeType==3) {node = node.parentNode};
-			var f = this.filterByNode(node).replace(/\:eq.*$/g,"");
+			if (node.nodeType == 3) {
+				node = node.parentNode
+			};
+			var f = this.filterByNode(node).replace(/\:eq.*$/g, "");
 			if ($(node.nextSibling).is(f)) {
 				$(node).append($(node.nextSibling).html());
 				$(node.nextSibling).remove();
@@ -2465,142 +3022,151 @@ let debug = false;
 		modeSwitch: function() {
 			if (this.options.bbmode) {
 				//to HTML
-				this.$body.html(this.getHTML(this.$txtArea.val())).css("min-height",this.$txtArea.height());
+				this.$body.html(this.getHTML(this.$txtArea.val())).css("min-height", this.$txtArea.height());
 				this.$txtArea.hide().removeAttr("wbbsync").val("");
 				this.$body.show().focus();
-			}else{
+			} else {
 				//to bbcode
-				this.$txtArea.val(this.getBBCode()).css("min-height",this.$body.height());
+				this.$txtArea.val(this.getBBCode()).css("min-height", this.$body.height());
 				this.$body.hide();
 				this.$txtArea.show().focus();
 			}
-			this.options.bbmode=!this.options.bbmode;
+			this.options.bbmode = !this.options.bbmode;
 		},
-		clearEmpty: function () {
+		clearEmpty: function() {
 			this.$body.children().filter(emptyFilter).remove();
+
 			function emptyFilter() {
 				if (!$(this).is("span,font,a,b,i,u,s")) {
 					//clear empty only for span,font
 					return false;
 				}
-				if (!$(this).hasClass("wbbtab") && $(this).html().trim().length==0) {
+				if (!$(this).hasClass("wbbtab") && $(this).html().trim().length == 0) {
 					return true;
-				}else if ($(this).children().length>0) {
+				} else if ($(this).children().length > 0) {
 					$(this).children().filter(emptyFilter).remove();
-					if ($(this).html().length==0 && this.tagName!="BODY") {
+					if ($(this).html().length == 0 && this.tagName != "BODY") {
 						return true;
 					}
 				}
 			}
 		},
-		dropdownclick: function(bsel,tsel,e) {
+		dropdownclick: function(bsel, tsel, e) {
 			//this.body.focus();
 			var $btn = $(e.currentTarget).closest(bsel);
-			if ($btn.hasClass("dis")) {return;}
+			if ($btn.hasClass("dis")) {
+				return;
+			}
 			if ($btn.attr("wbbshow")) {
 				//hide dropdown
 				$btn.removeAttr("wbbshow");
-				$(document).off("mousedown",this.dropdownhandler);
+				$(document).off("mousedown", this.dropdownhandler);
 				if (document) {
-					$(document).off("mousedown",this.dropdownhandler);
+					$(document).off("mousedown", this.dropdownhandler);
 				}
-				this.lastRange=false;
-				
-			}else{
+				this.lastRange = false;
+
+			} else {
 				this.saveRange();
-				this.$editor.find("*[wbbshow]").each(function(i,el) {
+				this.$editor.find("*[wbbshow]").each(function(i, el) {
 					$(el).removeClass("on").find($(el).attr("wbbshow")).hide().end().removeAttr("wbbshow");
 				})
-				$btn.attr("wbbshow",tsel);
-				$(document.body).on("mousedown",$.proxy(function(evt) {this.dropdownhandler($btn,bsel,tsel,evt)},this));
+				$btn.attr("wbbshow", tsel);
+				$(document.body).on("mousedown", $.proxy(function(evt) {
+					this.dropdownhandler($btn, bsel, tsel, evt)
+				}, this));
 				if (this.$body) {
-					this.$body.on("mousedown",$.proxy(function(evt) {this.dropdownhandler($btn,bsel,tsel,evt)},this));
+					this.$body.on("mousedown", $.proxy(function(evt) {
+						this.dropdownhandler($btn, bsel, tsel, evt)
+					}, this));
 				}
 			}
 			$btn.find(tsel).toggle();
 			$btn.toggleClass("on");
 		},
-		dropdownhandler: function($btn,bsel,tsel,e) {
-			if ($(e.target).parents(bsel).length==0) {
+		dropdownhandler: function($btn, bsel, tsel, e) {
+			if ($(e.target).parents(bsel).length == 0) {
 				$btn.removeClass("on").find(tsel).hide();
-				$(document).off('mousedown',this.dropdownhandler);
+				$(document).off('mousedown', this.dropdownhandler);
 				if (this.$body) {
-					this.$body.off('mousedown',this.dropdownhandler);
+					this.$body.off('mousedown', this.dropdownhandler);
 				}
 			}
 		},
 		rgbToHex: function(rgb) {
-			if (rgb.substr(0, 1)=='#') {return rgb;}
+			if (rgb.substr(0, 1) == '#') {
+				return rgb;
+			}
 			//if (rgb.indexOf("rgb")==-1) {return rgb;}
-			if (rgb.indexOf("rgb")==-1) {
+			if (rgb.indexOf("rgb") == -1) {
 				//IE
-				var color=parseInt(rgb);
+				var color = parseInt(rgb);
 				color = ((color & 0x0000ff) << 16) | (color & 0x00ff00) | ((color & 0xff0000) >>> 16);
-				return '#'+color.toString(16);
+				return '#' + color.toString(16);
 			}
 			var digits = /(.*?)rgb\((\d+),\s*(\d+),\s*(\d+)\)/.exec(rgb);
-			return "#"+this.dec2hex(parseInt(digits[2]))+this.dec2hex(parseInt(digits[3]))+this.dec2hex(parseInt(digits[4])); 
+			return "#" + this.dec2hex(parseInt(digits[2])) + this.dec2hex(parseInt(digits[3])) + this.dec2hex(parseInt(digits[4]));
 		},
 		dec2hex: function(d) {
-			if(d>15) {
+			if (d > 15) {
 				return d.toString(16);
-			}else{
-				return "0"+d.toString(16);
+			} else {
+				return "0" + d.toString(16);
 			}
 		},
 		sync: function() {
 			if (this.options.bbmode) {
-				this.$body.html(this.getHTML(this.txtArea.value,true));
-			}else{
-				this.$txtArea.attr("wbbsync",1).val(this.getBBCode());
+				this.$body.html(this.getHTML(this.txtArea.value, true));
+			} else {
+				this.$txtArea.attr("wbbsync", 1).val(this.getBBCode());
 			}
 		},
 		clearPaste: function(el) {
 			var $block = $(el);
-			//NEW 
-			$.each(this.options.rules,$.proxy(function(s,ar) {
-				var $sf = $block.find(s).attr("wbbkeep",1);
-				if ($sf.length>0) {
+			//NEW
+			$.each(this.options.rules, $.proxy(function(s, ar) {
+				var $sf = $block.find(s).attr("wbbkeep", 1);
+				if ($sf.length > 0) {
 					var s2 = ar[0][1];
-					$.each(s2,function(i,v) {
+					$.each(s2, function(i, v) {
 						if (v.sel) {
-							$sf.find(v.sel).attr("wbbkeep",1);
+							$sf.find(v.sel).attr("wbbkeep", 1);
 						}
 					});
 				}
-			},this));
-			$block.find("*[wbbkeep!='1']").each($.proxy(function(i,el) {
+			}, this));
+			$block.find("*[wbbkeep!='1']").each($.proxy(function(i, el) {
 				var $this = $(el);
-				if ($this.is('div,p') && ($this.children().length==0 || el.lastChild.tagName!="BR")) {
+				if ($this.is('div,p') && ($this.children().length == 0 || el.lastChild.tagName != "BR")) {
 					$this.after("<br/>");
 				}
-			},this));
+			}, this));
 			$block.find("*[wbbkeep]").removeAttr("wbbkeep").removeAttr("style");
 			$.log($block.html());
 			//$.log("BBCODE: "+this.toBB($block.clone(true)));
-			$block.html(this.getHTML(this.toBB($block),true));
+			$block.html(this.getHTML(this.toBB($block), true));
 			$.log($block.html());
 
 		},
-		sortArray: function(ar,asc) {
-			ar.sort(function(a,b) {
-				return (a.length-b.length)*(asc || 1);
+		sortArray: function(ar, asc) {
+			ar.sort(function(a, b) {
+				return (a.length - b.length) * (asc || 1);
 			});
 			return ar;
 		},
 		smileFind: function() {
 			if (this.options.smilefind) {
 				var $smlist = $(this.options.smilefind).find('img[alt]');
-				if ($smlist.length>0) {
-					this.options.smileList=[];
-					$smlist.each($.proxy(function(i,el) {
-						var $el=$(el);
+				if ($smlist.length > 0) {
+					this.options.smileList = [];
+					$smlist.each($.proxy(function(i, el) {
+						var $el = $(el);
 						this.options.smileList.push({
 							title: $el.attr("title"),
 							bbcode: $el.attr("alt"),
 							img: $el.removeAttr("alt").removeAttr("title")[0].outerHTML
 						});
-					},this));
+					}, this));
 				}
 			}
 		},
@@ -2608,106 +3174,108 @@ let debug = false;
 			this.$editor.replaceWith(this.$txtArea);
 			this.$txtArea.removeClass("wysibb-texarea").show();
 			this.$modal.remove();
-			this.$txtArea.data("wbb",null);
+			this.$txtArea.data("wbb", null);
 		},
 		pressTab: function(e) {
 			if (e && e.which == 9) {
 				//insert tab
-				if (e.preventDefault) {e.preventDefault();}
+				if (e.preventDefault) {
+					e.preventDefault();
+				}
 				if (this.options.bbmode) {
-					this.insertAtCursor('   ',false);
-				}else{
-					this.insertAtCursor('<span class="wbbtab"><br></span>',false);
-					//this.execNativeCommand("indent",false); 
+					this.insertAtCursor('   ', false);
+				} else {
+					this.insertAtCursor('<span class="wbbtab"><br></span>', false);
+					//this.execNativeCommand("indent",false);
 				}
 			}
 		},
 		removeLastBodyBR: function() {
-			if (this.body.lastChild && this.body.lastChild.nodeType!=3 && this.body.lastChild.tagName=="BR") {
+			if (this.body.lastChild && this.body.lastChild.nodeType != 3 && this.body.lastChild.tagName == "BR") {
 				this.body.removeChild(this.body.lastChild);
 				this.removeLastBodyBR();
 			}
 		},
 		traceTextareaEvent: function(e) {
-			if ($(e.target).closest("div.wysibb").length==0) {
+			if ($(e.target).closest("div.wysibb").length == 0) {
 				if ($(document.activeElement).is("div.wysibb-body")) {
 					this.saveRange();
 				}
 				setTimeout($.proxy(function() {
 					var data = this.$txtArea.val();
-					if (this.options.bbmode===false && data!="" && $(e.target).closest("div.wysibb").length==0 && !this.$txtArea.attr("wbbsync")) {
+					if (this.options.bbmode === false && data != "" && $(e.target).closest("div.wysibb").length == 0 && !this.$txtArea.attr("wbbsync")) {
 						this.selectLastRange();
-						this.insertAtCursor(this.getHTML(data,true));
+						this.insertAtCursor(this.getHTML(data, true));
 						this.$txtArea.val("");
 					}
 					if ($(document.activeElement).is("div.wysibb-body")) {
-						this.lastRange=false;
+						this.lastRange = false;
 					}
-				},this),100);
+				}, this), 100);
 			}
 		},
 		txtAreaInitContent: function() {
 			//$.log(this.txtArea.value);
-			this.$body.html(this.getHTML(this.txtArea.value,true));
+			this.$body.html(this.getHTML(this.txtArea.value, true));
 		},
 		getValidationRGX: function(s) {
 			if (s.match(/\[\S+\]/)) {
-				return s.replace(/.*(\\*\[\S+\]).*/,"$1");
+				return s.replace(/.*(\\*\[\S+\]).*/, "$1");
 			}
 			return "";
 		},
 		smileConversion: function() {
-			if (this.options.smileList && this.options.smileList.length>0) {
+			if (this.options.smileList && this.options.smileList.length > 0) {
 				var snode = this.getSelectNode();
-				if (snode.nodeType==3) {
+				if (snode.nodeType == 3) {
 					var ndata = snode.data;
-					if (ndata.length>=2 && !this.isInClearTextBlock(snode) && $(snode).parents("a").length==0) {
-						$.each(this.options.srules,$.proxy(function(i,sar) {
+					if (ndata.length >= 2 && !this.isInClearTextBlock(snode) && $(snode).parents("a").length == 0) {
+						$.each(this.options.srules, $.proxy(function(i, sar) {
 							var smbb = sar[0];
 							var fidx = ndata.indexOf(smbb);
-							if (fidx!=-1) {
-								var afternode_txt = ndata.substring(fidx+smbb.length,ndata.length);
+							if (fidx != -1) {
+								var afternode_txt = ndata.substring(fidx + smbb.length, ndata.length);
 								var afternode = document.createTextNode(afternode_txt);
 								var afternode_cursor = document.createElement("SPAN");
-								snode.data = snode.data.substr(0,fidx);
-								$(snode).after(afternode).after(afternode_cursor).after(this.strf(sar[1],this.options));
+								snode.data = snode.data.substr(0, fidx);
+								$(snode).after(afternode).after(afternode_cursor).after(this.strf(sar[1], this.options));
 								this.selectNode(afternode_cursor);
 								return false;
 							}
-						},this));
+						}, this));
 					}
 				}
 			}
 		},
 		isInClearTextBlock: function() {
 			if (this.cleartext) {
-				var find=false;
-				$.each(this.cleartext,$.proxy(function(sel,command) {
+				var find = false;
+				$.each(this.cleartext, $.proxy(function(sel, command) {
 					if (this.queryState(command)) {
-						find=command;
+						find = command;
 						return false;
 					}
-				},this))
+				}, this))
 				return find;
 			}
 			return false;
 		},
 		wrapAttrs: function(html) {
-			$.each(this.options.attrWrap,function(i,a) {
-				html = html.replace(a+'="','_'+a+'="');
+			$.each(this.options.attrWrap, function(i, a) {
+				html = html.replace(a + '="', '_' + a + '="');
 			});
 			return html;
 		},
 		unwrapAttrs: function(html) {
-			$.each(this.options.attrWrap,function(i,a) {
-				html = html.replace('_'+a+'="',a+'="');
+			$.each(this.options.attrWrap, function(i, a) {
+				html = html.replace('_' + a + '="', a + '="');
 			});
 			return html;
 		},
 		disNonActiveButtons: function() {
 			if (this.isInClearTextBlock()) {
 				this.$toolbar.find(".wysibb-toolbar-btn:not(.on,.mswitch)").addClass("dis");
-			}else{
+			} else {
 				this.$toolbar.find(".wysibb-toolbar-btn.dis").removeClass("dis");
 			}
 		},
@@ -2716,14 +3284,14 @@ let debug = false;
 			$(el).after(sl);
 			this.selectNode(sl);
 		},
-		
+
 		//img listeners
 		imgListeners: function() {
-			$(document).on("mousedown",$.proxy(this.imgEventHandler,this));
+			$(document).on("mousedown", $.proxy(this.imgEventHandler, this));
 		},
 		imgEventHandler: function(e) {
 			var $e = $(e.target);
-			if (this.hasWrapedImage && ($e.closest(".wbb-img,#wbbmodal").length==0 || $e.hasClass("wbb-cancel-button"))) {
+			if (this.hasWrapedImage && ($e.closest(".wbb-img,#wbbmodal").length == 0 || $e.hasClass("wbb-cancel-button"))) {
 				this.$body.find(".imgWrap ").each(function() {
 					$.log("Removed imgWrap block");
 					$(this).replaceWith($(this).find("img"));
@@ -2731,180 +3299,190 @@ let debug = false;
 				this.hasWrapedImage = false;
 				this.updateUI();
 			}
-			
-			if ($e.is("img") && $e.closest(".wysibb-body").length>0) {
+
+			if ($e.is("img") && $e.closest(".wysibb-body").length > 0) {
 				$e.wrap("<span class='imgWrap'></span>");
 				this.hasWrapedImage = $e;
 				this.$body.focus();
 				this.selectNode($e.parent()[0]);
 			}
 		},
-		
+
 		//MODAL WINDOW
-		showModal: function(cmd,opt,queryState) {
-			$.log("showModal: "+cmd);
+		showModal: function(cmd, opt, queryState) {
+			$.log("showModal: " + cmd);
 			this.saveRange();
 			var $cont = this.$modal.find(".wbbm-content").html("");
 			var $wbbm = this.$modal.find(".wbbm").removeClass("hastabs");
 			this.$modal.find("span.wbbm-title-text").html(opt.title);
-			if (opt.tabs && opt.tabs.length>1) {
+			if (opt.tabs && opt.tabs.length > 1) {
 				//has tabs, create
 				$wbbm.addClass("hastabs");
 				var $ul = $('<div class="wbbm-tablist">').appendTo($cont).append("<ul>").children("ul");
-				$.each(opt.tabs,$.proxy(function(i,row) {
-					if (i==0) {row['on']="on"}
-					$ul.append(this.strf('<li class="{on}" onClick="$(this).parent().find(\'.on\').removeClass(\'on\');$(this).addClass(\'on\');$(this).parents(\'.wbbm-content\').find(\'.tab-cont\').hide();$(this).parents(\'.wbbm-content\').find(\'.tab'+i+'\').show()">{title}</li>',row));
-					
-				},this))
+				$.each(opt.tabs, $.proxy(function(i, row) {
+					if (i == 0) {
+						row['on'] = "on"
+					}
+					$ul.append(this.strf('<li class="{on}" onClick="$(this).parent().find(\'.on\').removeClass(\'on\');$(this).addClass(\'on\');$(this).parents(\'.wbbm-content\').find(\'.tab-cont\').hide();$(this).parents(\'.wbbm-content\').find(\'.tab' + i + '\').show()">{title}</li>', row));
+
+				}, this))
 			}
 			if (opt.width) {
-				$wbbm.css("width",opt.width);
+				$wbbm.css("width", opt.width);
 			}
 			var $cnt = $('<div class="wbbm-cont">').appendTo($cont);
 			if (queryState) {
 				$wbbm.find('#wbbm-remove').show();
-			}else{
+			} else {
 				$wbbm.find('#wbbm-remove').hide();
 			}
-			$.each(opt.tabs,$.proxy(function(i,r) {
-				var $c = $('<div>').addClass("tab-cont tab"+i).attr("tid",i).appendTo($cnt);
-				if (i>0) {$c.hide();} 
+			$.each(opt.tabs, $.proxy(function(i, r) {
+				var $c = $('<div>').addClass("tab-cont tab" + i).attr("tid", i).appendTo($cnt);
+				if (i > 0) {
+					$c.hide();
+				}
 				if (r.html) {
-					$c.html(this.strf(r.html,this.options));
-				}else{
-					$.each(r.input,$.proxy(function(j,inp) {
-						inp["value"]=queryState[inp.param.toLowerCase()];
-						if (inp.param.toLowerCase()=="seltext" && (!inp["value"] || inp["value"]=="")) {
+					$c.html(this.strf(r.html, this.options));
+				} else {
+					$.each(r.input, $.proxy(function(j, inp) {
+						inp["value"] = queryState[inp.param.toLowerCase()];
+						if (inp.param.toLowerCase() == "seltext" && (!inp["value"] || inp["value"] == "")) {
 							inp["value"] = this.getSelectText(this.options.bbmode);
 						}
-						if (inp["value"] && inp["value"].indexOf("<span id='wbbid")==0 && $(inp["value"]).is("span[id*='wbbid']")) {
+						if (inp["value"] && inp["value"].indexOf("<span id='wbbid") == 0 && $(inp["value"]).is("span[id*='wbbid']")) {
 							inp["value"] = $(inp["value"]).html();
 						}
-						if (inp.type && inp.type=="div") {
+						if (inp.type && inp.type == "div") {
 							//div input, support wysiwyg input
-							$c.append(this.strf('<div class="wbbm-inp-row"><label>{title}</label><div class="inp-text div-modal-text" contenteditable="true" name="{param}">{value}</div></div>',inp));
-						}else{
+							$c.append(this.strf('<div class="wbbm-inp-row"><label>{title}</label><div class="inp-text div-modal-text" contenteditable="true" name="{param}">{value}</div></div>', inp));
+						} else {
 							//default input
-							$c.append(this.strf('<div class="wbbm-inp-row"><label>{title}</label><input class="inp-text modal-text" type="text" name="{param}" value="{value}"/></div>',inp));
+							$c.append(this.strf('<div class="wbbm-inp-row"><label>{title}</label><input class="inp-text modal-text" type="text" name="{param}" value="{value}"/></div>', inp));
 						}
-					},this));
+					}, this));
 				}
-			},this));
+			}, this));
 			if (typeof opt.onLoad === 'function') {
-				opt.onLoad.call(this,cmd,opt,queryState);
+				opt.onLoad.call(this, cmd, opt, queryState);
 			}
-			
+
 			$wbbm.find('#wbbm-submit').click($.proxy(function() {
-				if (typeof opt.onSubmit === 'function') {  //custom submit function, if return false, then don't process our function
-					var r = opt.onSubmit.call(this,cmd,opt,queryState);
-					if (r===false) {return;}
+				if (typeof opt.onSubmit === 'function') { //custom submit function, if return false, then don't process our function
+					var r = opt.onSubmit.call(this, cmd, opt, queryState);
+					if (r === false) {
+						return;
+					}
 				}
-				var params={};
-				var valid=true;
+				var params = {};
+				var valid = true;
 				this.$modal.find(".wbbm-inperr").remove();
 				this.$modal.find(".wbbm-brdred").removeClass("wbbm-brdred");
-				$.each(this.$modal.find(".tab-cont:visible .inp-text"),$.proxy(function(i,el) {
+				$.each(this.$modal.find(".tab-cont:visible .inp-text"), $.proxy(function(i, el) {
 					var tid = $(el).parents(".tab-cont").attr("tid");
 					var pname = $(el).attr("name").toLowerCase();
-					var pval="";
+					var pval = "";
 					if ($(el).is("input,textrea,select")) {
 						pval = $(el).val();
-					}else{
+					} else {
 						pval = $(el).html();
 					}
 					var validation = opt.tabs[tid]["input"][i]["validation"];
-					if (typeof(validation)!="undefined") {
-						if (!pval.match(new RegExp(validation,"i"))) {
-							valid=false;
+					if (typeof(validation) != "undefined") {
+						if (!pval.match(new RegExp(validation, "i"))) {
+							valid = false;
 							$(el).after('<span class="wbbm-inperr">"La información ingresada no es válida"</span>').addClass("wbbm-brdred");
 						}
 					}
-					params[pname]=pval;
-				},this));
+					params[pname] = pval;
+				}, this));
 				if (valid) {
-					$.log("Last range: "+this.lastRange);
+					$.log("Last range: " + this.lastRange);
 					this.selectLastRange();
 					//insert callback
 					if (queryState) {
-						this.wbbRemoveCallback(cmd,true);
+						this.wbbRemoveCallback(cmd, true);
 					}
-					this.wbbInsertCallback(cmd,params);
+					this.wbbInsertCallback(cmd, params);
 					//END insert callback
-					
+
 					this.closeModal();
 					this.updateUI();
 				}
-			},this));
+			}, this));
 			$wbbm.find('#wbbm-remove').click($.proxy(function() {
 				this.selectLastRange();
 				this.wbbRemoveCallback(cmd); //remove callback
 				this.closeModal();
 				this.updateUI();
-			},this));
-			
-			$(document.body).css("overflow","hidden"); //lock the screen, remove scroll on body
+			}, this));
+
+			$(document.body).css("overflow", "hidden"); //lock the screen, remove scroll on body
 			if ($("body").height() > $(window).height()) { //if body has scroll, add padding-right 18px
-				$(document.body).css("padding-right","18px");
+				$(document.body).css("padding-right", "18px");
 			}
-			this.$modal.show(); 
+			this.$modal.show();
 			if (this.isMobile) {
-				$wbbm.css("margin-top","10px");
-			}else{
-				$wbbm.css("margin-top",($(window).height()-$wbbm.outerHeight())/3+"px");
+				$wbbm.css("margin-top", "10px");
+			} else {
+				$wbbm.css("margin-top", ($(window).height() - $wbbm.outerHeight()) / 3 + "px");
 			}
-			setTimeout($.proxy(function() {this.$modal.find(".inp-text:visible")[0].focus()},this),10);
+			setTimeout($.proxy(function() {
+				this.$modal.find(".inp-text:visible")[0].focus()
+			}, this), 10);
 		},
 		escModal: function(e) {
-			if (e.which==27) {this.closeModal();}
+			if (e.which == 27) {
+				this.closeModal();
+			}
 		},
 		closeModal: function() {
-			$(document.body).css("overflow","auto").css("padding-right","0").off("keyup",this.escModal); //ESC key close modal;
+			$(document.body).css("overflow", "auto").css("padding-right", "0").off("keyup", this.escModal); //ESC key close modal;
 			this.$modal.find('#wbbm-submit,#wbbm-remove').off('click');
 			this.$modal.hide();
-			this.lastRange=false;
+			this.lastRange = false;
 			return this;
 		},
-		getParams: function(src,s,offset) {
-			var params={};
+		getParams: function(src, s, offset) {
+			var params = {};
 			if (this.options.bbmode) {
 				//bbmode
 				var stext = s.match(/\{[\s\S]+?\}/g);
 				s = this.prepareRGX(s);
-				var rgx = new RegExp(s,"g");
+				var rgx = new RegExp(s, "g");
 				var val = this.txtArea.value;
-				if (offset>0) {
-					val = val.substr(offset,val.length-offset);
+				if (offset > 0) {
+					val = val.substr(offset, val.length - offset);
 				}
 				var a = rgx.exec(val);
 				if (a) {
-					$.each(stext,function(i,n) {
-						params[n.replace(/\{|\}/g,"").replace(/"/g,"'").toLowerCase()] = a[i+1];
+					$.each(stext, function(i, n) {
+						params[n.replace(/\{|\}/g, "").replace(/"/g, "'").toLowerCase()] = a[i + 1];
 					});
 				}
-			}else{
+			} else {
 				var rules = this.options.rules[s][0][1];
-				$.each(rules,$.proxy(function(k,v) {
-					var value="";
-					var $v = (v.sel!==false) ? value=$(src).find(v.sel):$(src);
-					if (v.attr!==false) {
-						value=$v.attr(v.attr);
-					}else{
-						value=$v.html();
+				$.each(rules, $.proxy(function(k, v) {
+					var value = "";
+					var $v = (v.sel !== false) ? value = $(src).find(v.sel) : $(src);
+					if (v.attr !== false) {
+						value = $v.attr(v.attr);
+					} else {
+						value = $v.html();
 					}
 					if (value) {
-						if (v.rgx!==false) {
+						if (v.rgx !== false) {
 							var m = value.match(new RegExp(v.rgx));
-							if (m && m.length==2) {
+							if (m && m.length == 2) {
 								value = m[1];
 							}
 						}
-						params[k]=value.replace(/"/g,"'");
+						params[k] = value.replace(/"/g, "'");
 					}
-				},this))
+				}, this))
 			}
 			return params;
 		},
-		
+
 		//imgUploader
 		imgLoadModal: function() {
 			$.log("imgLoadModal");
@@ -2914,7 +3492,7 @@ let debug = false;
 				this.$modal.find(".wbbm-tablist").remove();
 			} else {
 				this.$modal.find("#imguploader").dragfileupload({
-					url: this.strf(this.options.img_uploadurl,this.options),
+					url: this.strf(this.options.img_uploadurl, this.options),
 					extraParams: {
 						maxwidth: this.options.img_maxwidth,
 						maxheight: this.options.img_maxheight
@@ -2922,18 +3500,18 @@ let debug = false;
 					themePrefix: this.options.themePrefix,
 					themeName: this.options.themeName,
 					success: $.proxy(function(data) {
-						this.$txtArea.insertImage(data.image_link,data.thumb_link);
+						this.$txtArea.insertImage(data.image_link, data.thumb_link);
 						this.closeModal();
 						this.updateUI();
-					},this)
+					}, this)
 				});
-				
-				this.$modal.find("#fileupl").on("change",function() {
+
+				this.$modal.find("#fileupl").on("change", function() {
 					$("#fupform").submit();
 				});
 				this.$modal.find("#fupform").on("submit", $.proxy(function(e) {
-					$(e.target).parents("#imguploader").hide().after('<div class="loader"><img src="'+route.assets +'/images/loader.gif" /><br/><br/><span>Cargando</span></div>').parent().css("text-align","center");
-				},this))
+					$(e.target).parents("#imguploader").hide().after('<div class="loader"><img src="' + route.assets + '/images/loader.gif" /><br/><br/><span>Cargando</span></div>').parent().css("text-align", "center");
+				}, this))
 			}
 		},
 		imgSubmitModal: function() {
@@ -2941,9 +3519,9 @@ let debug = false;
 		},
 		//DEBUG
 		printObjectInIE: function(obj) {
-			try{
+			try {
 				$.log(JSON.stringify(obj));
-			} catch(e) {}
+			} catch (e) {}
 		},
 		checkFilter: function(node, filter) {
 			const nodeHTML = $(node).get(0).outerHTML;
@@ -2951,37 +3529,39 @@ let debug = false;
 			$.log(`node: ${nodeHTML} - filter: ${filter} - res: ${res}`);
 		},
 		debug: function(msg) {
-			if (this.options.debug===true) {
+			if (this.options.debug === true) {
 				var time = (new Date()).getTime();
-				if (typeof(console)!="undefined") {
-					console.log((time-this.startTime)+" ms: "+msg);
-				}else{
-					$("#exlog").append('<p>'+(time-this.startTime)+" ms: "+msg+'</p>');  
+				if (typeof(console) != "undefined") {
+					console.log((time - this.startTime) + " ms: " + msg);
+				} else {
+					$("#exlog").append('<p>' + (time - this.startTime) + " ms: " + msg + '</p>');
 				}
-				this.startTime=time;
+				this.startTime = time;
 			}
 		},
-		
+
 		//Browser fixes
 		isChrome: function() {
 			return (window.chrome);
 		},
 		fixTableTransform: function(html) {
-			if (!html) {return "";}
+			if (!html) {
+				return "";
+			}
 			if (this.options.buttons.includes("table")) {
-				return html.replace(/\<(\/*?(table|tr|td|tbody))[^>]*\>/ig,"");
-			}else{
-				return html.replace(/\<(\/*?(table|tr|td))[^>]*\>/ig,"[$1]".toLowerCase()).replace(/\<\/*tbody[^>]*\>/ig,"");
+				return html.replace(/\<(\/*?(table|tr|td|tbody))[^>]*\>/ig, "");
+			} else {
+				return html.replace(/\<(\/*?(table|tr|td))[^>]*\>/ig, "[$1]".toLowerCase()).replace(/\<\/*tbody[^>]*\>/ig, "");
 			}
 		}
 	}
-	
+
 	$.log = function(msg) {
-		if (typeof(debug)!="undefined" && debug===true) {
-			if (typeof(console)!="undefined") {
+		if (typeof(debug) != "undefined" && debug === true) {
+			if (typeof(console) != "undefined") {
 				console.log(msg);
-			}else{
-				$("#exlog").append('<p>'+msg+'</p>');  
+			} else {
+				$("#exlog").append('<p>' + msg + '</p>');
 			}
 		}
 	}
@@ -2994,80 +3574,87 @@ let debug = false;
 		});
 	}
 	$.fn.wdrag = function(opt) {
-		if (!opt.scope) {opt.scope=this;}
-		var start={x:0,y:0, height: 0};
-		var drag;
-		opt.scope.drag_mousedown = function(e) {
-			e.preventDefault();
-			start = {
-				x: e.pageX,
-				y: e.pageY,
-				height: opt.height,
-				sheight: opt.scope.$body.height()
+			if (!opt.scope) {
+				opt.scope = this;
 			}
-			drag=true;
-			$(document).on("mousemove",$.proxy(opt.scope.drag_mousemove,this));
-			$(this).addClass("drag");
-		};
-		opt.scope.drag_mouseup = function(e) {
-			if (drag===true) {
+			var start = {
+				x: 0,
+				y: 0,
+				height: 0
+			};
+			var drag;
+			opt.scope.drag_mousedown = function(e) {
 				e.preventDefault();
-				$(document).off("mousemove",opt.scope.drag_mousemove);
-				$(this).removeClass("drag");
-				drag=false;
-			}
-		};
-		opt.scope.drag_mousemove = function(e) {
-			e.preventDefault();
-			var axisX=0,axisY=0;
-			if (opt.axisX) {
-				axisX = e.pageX-start.x;
-			}
-			if (opt.axisY) {
-				axisY = e.pageY-start.y;
-			}
-			if (axisY!=0) {
-				var nheight = start.sheight+axisY;
-				if (nheight>start.height && nheight<=opt.scope.options.resize_maxheight) {
-					if (opt.scope.options.bbmode==true) {
-						opt.scope.$txtArea.css((opt.scope.options.autoresize===true) ? "min-height":"height",nheight+"px");
-					}else{
-						opt.scope.$body.css((opt.scope.options.autoresize===true) ? "min-height":"height",nheight+"px");
+				start = {
+					x: e.pageX,
+					y: e.pageY,
+					height: opt.height,
+					sheight: opt.scope.$body.height()
+				}
+				drag = true;
+				$(document).on("mousemove", $.proxy(opt.scope.drag_mousemove, this));
+				$(this).addClass("drag");
+			};
+			opt.scope.drag_mouseup = function(e) {
+				if (drag === true) {
+					e.preventDefault();
+					$(document).off("mousemove", opt.scope.drag_mousemove);
+					$(this).removeClass("drag");
+					drag = false;
+				}
+			};
+			opt.scope.drag_mousemove = function(e) {
+				e.preventDefault();
+				var axisX = 0,
+					axisY = 0;
+				if (opt.axisX) {
+					axisX = e.pageX - start.x;
+				}
+				if (opt.axisY) {
+					axisY = e.pageY - start.y;
+				}
+				if (axisY != 0) {
+					var nheight = start.sheight + axisY;
+					if (nheight > start.height && nheight <= opt.scope.options.resize_maxheight) {
+						if (opt.scope.options.bbmode == true) {
+							opt.scope.$txtArea.css((opt.scope.options.autoresize === true) ? "min-height" : "height", nheight + "px");
+						} else {
+							opt.scope.$body.css((opt.scope.options.autoresize === true) ? "min-height" : "height", nheight + "px");
+						}
 					}
 				}
-			}
-		};
+			};
 
-		
-		$(this).on("mousedown",opt.scope.drag_mousedown);
-		$(document).on("mouseup",$.proxy(opt.scope.drag_mouseup,this));
-	},
-	
-	//API
-	$.fn.getDoc = function() {
-		return this.data('wbb').doc;
-	}
+
+			$(this).on("mousedown", opt.scope.drag_mousedown);
+			$(document).on("mouseup", $.proxy(opt.scope.drag_mouseup, this));
+		},
+
+		//API
+		$.fn.getDoc = function() {
+			return this.data('wbb').doc;
+		}
 	$.fn.getSelectText = function(fromTextArea) {
 		return this.data('wbb').getSelectText(fromTextArea);
 	}
 	$.fn.bbcode = function(data) {
-		if (typeof(data)!="undefined") {
+		if (typeof(data) != "undefined") {
 			if (this.data('wbb').options.bbmode) {
 				this.data('wbb').$txtArea.val(data);
-			}else{
+			} else {
 				this.data('wbb').$body.html(this.data("wbb").getHTML(data));
 			}
 			return this;
-		}else{
+		} else {
 			return this.data('wbb').getBBCode();
 		}
 	}
 	$.fn.htmlcode = function(data) {
-		if (!this.data('wbb').options.onlyBBMode && this.data('wbb').inited===true) {
-			if (typeof(data)!="undefined") {
+		if (!this.data('wbb').options.onlyBBMode && this.data('wbb').inited === true) {
+			if (typeof(data) != "undefined") {
 				this.data('wbb').$body.html(data);
 				return this;
-			}else{
+			} else {
 				return this.data('wbb').getHTML(this.data('wbb').$txtArea.val());
 			}
 		}
@@ -3079,25 +3666,27 @@ let debug = false;
 		var wbb = this.data('wbb');
 		return wbb.getHTML(wbb.$txtArea.val());
 	}
-	$.fn.getHTMLByCommand = function(command,params) {
-		return this.data("wbb").getHTMLByCommand(command,params);
+	$.fn.getHTMLByCommand = function(command, params) {
+		return this.data("wbb").getHTMLByCommand(command, params);
 	}
-	$.fn.getBBCodeByCommand = function(command,params) {
-		return this.data("wbb").getBBCodeByCommand(command,params);
+	$.fn.getBBCodeByCommand = function(command, params) {
+		return this.data("wbb").getBBCodeByCommand(command, params);
 	}
-	$.fn.insertAtCursor = function(data,forceBBMode) {
-		this.data("wbb").insertAtCursor(data,forceBBMode);
+	$.fn.insertAtCursor = function(data, forceBBMode) {
+		this.data("wbb").insertAtCursor(data, forceBBMode);
 		return this.data("wbb");
 	}
-	$.fn.execCommand = function(command,value) {
-		this.data("wbb").execCommand(command,value);
+	$.fn.execCommand = function(command, value) {
+		this.data("wbb").execCommand(command, value);
 		return this.data("wbb");
 	}
 	$.fn.insertImage = function(imgurl, thumburl) {
-	   var editor = this.data("wbb");
-	   var code = editor.getCodeByCommand('image', {src: imgurl});
-	   this.insertAtCursor(code);
-	   return editor;
+		var editor = this.data("wbb");
+		var code = editor.getCodeByCommand('image', {
+			src: imgurl
+		});
+		this.insertAtCursor(code);
+		return editor;
 	}
 	$.fn.sync = function() {
 		this.data("wbb").sync();
@@ -3106,8 +3695,8 @@ let debug = false;
 	$.fn.destroy = function() {
 		this.data("wbb").destroy();
 	}
-	
-	
+
+
 	$.fn.queryState = function(command) {
 		return this.data("wbb").queryState(command);
 	}
@@ -3117,46 +3706,52 @@ let debug = false;
 //Drag&Drop file uploader
 (function($) {
 	'use strict';
-	
-	$.fn.dragfileupload = function(options) {		
-		return this.each(function() { 
+
+	$.fn.dragfileupload = function(options) {
+		return this.each(function() {
 			var upl = new FileUpload(this, options);
 			upl.init();
 		});
-	}; 
-	
+	};
+
 	function FileUpload(e, options) {
-		this.$block=$(e);
-		
+		this.$block = $(e);
+
 		this.opt = $.extend({
 			url: false,
 			success: false,
 			extraParams: false,
 			fileParam: 'img',
 			validation: '\.(jpg|png|gif|jpeg|webp|avif)$',
-			
+
 			t1: "Suelta el archivo aquí",
 			t2: "o también puedes"
-		},options);
+		}, options);
 	}
-	
+
 	FileUpload.prototype = {
 		init: function() {
 			if (window.FormData != null) {
 				this.$block.addClass("drag");
-				this.$block.prepend('<div class="p2">'+this.opt.t2+'</div>');
-				this.$block.prepend('<div class="p">'+this.opt.t1+'</div>');
-				
-				this.$block.on('dragover', function() {$(this).addClass('dragover');return false;});
-				this.$block.on('dragleave', function() {$(this).removeClass('dragover');return false;});
-				
+				this.$block.prepend('<div class="p2">' + this.opt.t2 + '</div>');
+				this.$block.prepend('<div class="p">' + this.opt.t1 + '</div>');
+
+				this.$block.on('dragover', function() {
+					$(this).addClass('dragover');
+					return false;
+				});
+				this.$block.on('dragleave', function() {
+					$(this).removeClass('dragover');
+					return false;
+				});
+
 				//upload progress
-				var uploadProgress = $.proxy(function(e) { 
-					var p = parseInt(e.loaded/e.total*100, 10);
-					this.$loader.children("span").text('Cargando: '+ p+'%');
-					
+				var uploadProgress = $.proxy(function(e) {
+					var p = parseInt(e.loaded / e.total * 100, 10);
+					this.$loader.children("span").text('Cargando: ' + p + '%');
+
 				}, this);
-				var xhr = jQuery.ajaxSettings.xhr(); 
+				var xhr = jQuery.ajaxSettings.xhr();
 				if (xhr.upload) {
 					xhr.upload.addEventListener('progress', uploadProgress, false);
 				}
@@ -3164,46 +3759,50 @@ let debug = false;
 					e.preventDefault();
 					this.$block.removeClass('dragover');
 					var ufile = e.dataTransfer.files[0];
-					
+
 					if (this.opt.validation && !ufile.name.match(new RegExp(this.opt.validation))) {
 						this.error("La información ingresada no es válida");
 						return false;
 					}
 					var fData = new FormData();
 					fData.append(this.opt.fileParam, ufile);
-					
+
 					if (this.opt.extraParams) { //check for extraParams to upload
-						$.each(this.opt.extraParams,function(k,v) {
+						$.each(this.opt.extraParams, function(k, v) {
 							fData.append(k, v);
 						});
 					}
-					
-					this.$loader = $('<div class="loader"><img src="'+this.opt.themePrefix+'/'+this.opt.themeName+'/img/loader.gif" /><br/><span>Cargando...</span></div>');
+
+					this.$loader = $('<div class="loader"><img src="' + this.opt.themePrefix + '/' + this.opt.themeName + '/img/loader.gif" /><br/><span>Cargando...</span></div>');
 					this.$block.html(this.$loader);
-					
+
 					$.ajax({
 						type: 'POST',
 						url: this.opt.url,
 						data: fData,
 						processData: false,
 						contentType: false,
-						xhr: function() {return xhr},
+						xhr: function() {
+							return xhr
+						},
 						dataType: 'json',
 						success: $.proxy(function(data) {
-							if (data && data.status==1) {
-								this.opt.success(data); 
-							}else{
+							if (data && data.status == 1) {
+								this.opt.success(data);
+							} else {
 								this.error(data.msg || "Ha ocurrido un error mientras se cargaban los archivos");
 							}
-						},this),
-						error: $.proxy(function (xhr, txt, thr) {this.error("Ha ocurrido un error mientras se cargaban los archivos")},this)
+						}, this),
+						error: $.proxy(function(xhr, txt, thr) {
+							this.error("Ha ocurrido un error mientras se cargaban los archivos")
+						}, this)
 					});
-				},this);
-				
+				}, this);
+
 			}
 		},
 		error: function(msg) {
-			this.$block.find(".upl-error").remove().end().append('<span class="upl-error">'+msg+'</span>').addClass("wbbm-brdred");
+			this.$block.find(".upl-error").remove().end().append('<span class="upl-error">' + msg + '</span>').addClass("wbbm-brdred");
 		}
 	}
 })(jQuery);

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name api.posts.php
+ * @name src/Api/api.posts.php
  * @author PHPost Team
  * @copyright 2026
  */

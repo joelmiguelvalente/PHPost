@@ -55,7 +55,7 @@
                                                             <div class="more_comments clearfix">
                                                                 <i></i>
                                                                 <a href="#" class="a_blue floatL" onclick="muro.more_comments({$p.pub_id}, this); return false">Ver los {$p.p_comments} comentarios</a>
-                                                                <img width="16" height="11" src="http://static.ak.fbcdn.net/rsrc.php/yb/r/GsNJNwuI-UM.gif"/>
+                                                                <img width="16" height="11" src="http://static.ak.fbcdn.net/rsrc/yb/r/GsNJNwuI-UM.gif"/>
                                                             </div>
                                                         </li>
                                                         {/if}
@@ -97,7 +97,7 @@
                             <div class="more-pubs">
                                 <div class="content">
                                 <a href="#" onclick="muro.stream.loadMore('news'); return false;" class="a_blue">Publicaciones m&aacute;s antiguas</a>
-                                <span><img width="16" height="11" alt="" src="http://static.ak.fbcdn.net/rsrc.php/yb/r/GsNJNwuI-UM.gif"/></span>
+                                <span><img width="16" height="11" alt="" src="http://static.ak.fbcdn.net/rsrc/yb/r/GsNJNwuI-UM.gif"/></span>
                                 </div>
                             </div>
                             {elseif $tsMuro.total == 0 && $tsUser->is_member}

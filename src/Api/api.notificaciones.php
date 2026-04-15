@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name api.notificacion.php
+ * @name src/Api/api.notificacion.php
  * @author PHPost Team
  * @copyright 2026
  */

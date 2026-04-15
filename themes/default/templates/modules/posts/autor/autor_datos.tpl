@@ -10,7 +10,7 @@
 		<span class="title">{$tsAutor.rango.r_name}</span>
 		<div class="box-autor-badges flex justify-center items-center gap-2 py-2">
 			<img src="{$tsRoutes.tema.images}/space.gif" class="status {$tsAutor.status.css}" title="{$tsAutor.status.t}"/>
-			<img src="{$tsRoutes.assets.images}/icons/ran/{$tsAutor.rango.r_image}" title="{$tsAutor.rango.r_name}" />
+			<img src="{$tsRoutes.assets.images}/icons/ranks/{$tsAutor.rango.r_image}" title="{$tsAutor.rango.r_name}" />
 			<img src="{$tsRoutes.assets.images}/icons/{if $tsAutor.user_sexo == 0}female{else}male{/if}.png" title="{if $tsAutor.user_sexo == 0}Mujer{else}Hombre{/if}" />
 			<img src="{$tsRoutes.assets.images}/flags/{$tsAutor.pais.icon}.png" style="padding:2px" title="{$tsAutor.pais.name}" />
 		</div>

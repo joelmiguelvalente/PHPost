@@ -16,7 +16,7 @@ const perfil = (() => {
          return;
       }
       $('#loading').slideDown(250);
-      api(`perfil-${type}.php?hide=true&page=${page}`, { pid: getPid() }, response => {
+      api(`perfil-${type}?hide=true&page=${page}`, { pid: getPid() }, response => {
 	      const { status, message } = $.parseResponse(response);
 	      if (status !== 1) {
 	         dialog.alert('Error', message);
@@ -34,7 +34,7 @@ const perfil = (() => {
 		});
    };
    const loadFollows = (type, page = 1) => {
-      api(`perfil-${type}.php?hide=true&page=${page}`, { pid: getPid() }, response => {
+      api(`perfil-${type}?hide=true&page=${page}`, { pid: getPid() }, response => {
          const { message } = $.parseResponse(response);
          $(`#perfil_${type}`).html(message);
       });
@@ -56,7 +56,7 @@ const actividad = {
 		if(ac_do === 'filtrar') actividad.total = 0;
 		let params = { pid: perfil.pid, ac_type, do: ac_do, start: actividad.total };
 		// ENVIAMOS
-		api(`perfil-actividad.php`, params, response => {
+		api(`perfil-actividad`, params, response => {
 			const { status, message } = $.parseResponse(response);
 			if(status === 0) {
 				dialog.alert('Error', message);
@@ -74,7 +74,7 @@ const actividad = {
 	borrar(id, obj) {
 		// ENVIAMOS
 		let params = { pid: perfil.pid, acid: id, do: 'borrar' };
-		api(`perfil-actividad.php`, params, response => {
+		api(`perfil-actividad`, params, response => {
 			const { status, message } = $.parseResponse(response);
 			if(status === 0) {
 				dialog.alert('Error', message);
@@ -184,7 +184,7 @@ const muro = {
 		},
 		// VERIFICAR ARCHIVO
 		ajaxCheck(url, inputContent) {
-			api(`muro-stream.php?do=check&type=${settings.type}`, { url }, response => {
+			api(`muro-stream?do=check&type=${settings.type}`, { url }, response => {
 				const { status, message } = $.parseResponse(response);
 				if(status === 0) {
 					muro.stream.adjuntando(false);
@@ -233,7 +233,7 @@ const muro = {
 		// POSTEAR EN EL MURO
 		ajaxPost(data) {
 			const params = { adj: settings.adjunto, pid: perfil.pid, data };
-			api(`muro-stream.php?do=post&type=${settings.type}`, params, response => {
+			api(`muro-stream?do=post&type=${settings.type}`, params, response => {
 				const { status, message } = $.parseResponse(response);
 				if(status === 0) {
 					dialog.alert('Error al publicar', message);
@@ -257,7 +257,7 @@ const muro = {
 			// CARGAMOS
 			let { muro: { stream } } = global_data
 			const params = { start: stream.total, pid: perfil.pid };
-			api(`muro-stream.php?do=more&type=${type}`, params, response => {
+			api(`muro-stream?do=more&type=${type}`, params, response => {
 				const { status, message } = $.parseResponse(response);
 				if(status === 0) {
 					dialog.alert('Error al cargar', message);
@@ -292,7 +292,7 @@ const muro = {
 		$('#loading').slideDown(250); 
 		$.ajax({
 			type: 'POST',
-			url: route.url + '/muro-likes.php',
+			url: route.url + '/muro-likes',
 			dataType: 'json',
 			data: 'id=' + id + '&type=' + type,
 			success: function(h){
@@ -333,7 +333,7 @@ const muro = {
 		$('#loading').fadeIn(250); 
 		$.ajax({
 			type: 'POST',
-			url: route.url + '/muro-likes.php?do=show',
+			url: route.url + '/muro-likes?do=show',
 			dataType: 'json',
 			data: 'id=' + id + '&type=' + type,
 			success: function(h){
@@ -384,7 +384,7 @@ const muro = {
 		$('#loading').fadeIn(250); 
 		$.ajax({
 			type: 'POST',
-			url: route.url + '/muro-stream.php?do=repost',
+			url: route.url + '/muro-stream?do=repost',
 			data: 'data=' + encodeURIComponent(val) + '&pid=' + id,
 			success: function(h){
 				switch(h.charAt(0)){
@@ -414,7 +414,7 @@ const muro = {
 		$('#loading').fadeIn(250); 
 		$.ajax({
 			type: 'POST',
-			url: route.url + '/muro-stream.php?do=more_comments',
+			url: route.url + '/muro-stream?do=more_comments',
 			data: 'pid=' + id,
 			success: function(h){
 				switch(h.charAt(0)){
@@ -470,7 +470,7 @@ const muro = {
 		$('#loading').slideDown(250); 
 		$.ajax({
 			type: 'POST',
-			url: route.url + '/muro-stream.php?do=delete',
+			url: route.url + '/muro-stream?do=delete',
 			data: 'id=' + id + '&type=' + snd_type,
 			success: function(h){
 				switch(h.charAt(0)){

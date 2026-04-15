@@ -1,29 +1,32 @@
 <?php
 
 /**
- * @name Config.Paths.php
+ * @name config/Config.Paths.php
  * @author PHPost Team
  * @copyright 2026
  */
 
 declare(strict_types=1);
 
+define('SOURCEPATH', BASEPATH . '/src');
+
 const PATHS = [
    'TS_ROOT'     => BASEPATH,
 	'TS_STORAGE'  => BASEPATH . '/storage',
    'TS_ASSETS'   => BASEPATH . '/assets',
-   'TS_SOURCES'  => BASEPATH . '/src',
    'TS_THEMES'   => BASEPATH . '/themes',
    'TS_VIEWS'    => BASEPATH . '/views',
 	'TS_CONFIG'   => BASEPATH . '/config',
 	'TS_BACKUPS'  => BASEPATH . '/storage/backups',
-	'TS_CLASS' 	  => BASEPATH . '/src/Class',
-	'TS_DATABASE' => BASEPATH . '/src/Database',
-	'TS_EXTRA'    => BASEPATH . '/src/Extras',
-	'TS_HELPERS'  => BASEPATH . '/src/Helpers',
-	'TS_LIBS' 	  => BASEPATH . '/src/Libs',
-	'TS_LOGGER'   => BASEPATH . '/src/Logger',
-	'TS_UTILS' 	  => BASEPATH . '/src/Utils'
+   'TS_SOURCES'  => SOURCEPATH,
+	'TS_CLASS' 	  => SOURCEPATH . '/Class',
+	'TS_DATABASE' => SOURCEPATH . '/Database',
+	'TS_ENUM' 	  => SOURCEPATH . '/Enum',
+	'TS_EXTRAS'   => SOURCEPATH . '/Extras',
+	'TS_HELPERS'  => SOURCEPATH . '/Helpers',
+	'TS_LIBS' 	  => SOURCEPATH . '/Libs',
+	'TS_LOGGER'   => SOURCEPATH . '/Logger',
+	'TS_UTILS' 	  => SOURCEPATH . '/Utils'
 ];
 
 foreach (PATHS as $name => $path) {

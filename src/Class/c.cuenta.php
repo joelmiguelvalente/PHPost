@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name c.cuenta.php
+ * @name src/Class/c.cuenta.php
  * @author PHPost Team
  * @copyright 2026
  */
@@ -427,7 +427,7 @@ class tsCuenta {
 	}
 
 	private function guardarConfiguracion() {
-		$perfilData['p_privacidad'] 			= trim($_POST['privacidad']);
+		$perfilData['p_privacidad'] 		= trim($_POST['privacidad']);
 		$perfilData['p_publicar_muro'] 		= trim($_POST['publicar_muro'] ?? 'nobody');
 		$perfilData['p_mensajes_privados'] 	= trim($_POST['mensajes_privados'] ?? 'nobody');
 		$perfilData['p_muro_visitas'] 		= trim($_POST['muro_visitas'] ?? 'nobody');
@@ -477,7 +477,6 @@ class tsCuenta {
 	      return '0: El usuario seleccionado no existe.';
 	   }
 	   $param = ['uid' => $this->User->uid, 'target' => $targetUserId];
-	   var_dump($bloquear);
 	   if ($bloquear) {
 	   	// ¿Ya está bloqueado?
 	      $exists = DB::exists("SELECT 1 FROM u_bloqueos WHERE b_user = :uid AND b_auser = :target LIMIT 1", $param);

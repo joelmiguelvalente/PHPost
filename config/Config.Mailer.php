@@ -11,7 +11,7 @@
  * Este archivo debe ser incluido una única vez
  * desde el bootstrap principal.
  *
- * @package   PHPost
+ * @name config/Config.Mailer.php
  * @author    PHPost Team
  * @copyright 2026
  */

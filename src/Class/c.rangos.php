@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name c.rangos.php
+ * @name src/Class/c.rangos.php
  * @author PHPost Team
  * @copyright 2026
  */
@@ -118,11 +118,11 @@ class tsRangos {
       $cantidad = (int)($_POST['global-cantidadrequerida'] ?? 0);
       $tipo = (int)($_POST['global-type'] ?? 0);
       $tipo = ($tipo > 4) ? 0 : $tipo;
-      $color = ltrim($this->Core->setSecure($_POST['r_img']), '#');
+      $image = $this->Core->setSecure($_POST['r_img']);
       $rango = [
          'r_name' => $this->Core->setSecure($this->Core->parseBadWords($_POST['r_name'])),
-         'r_color' => $this->Core->setSecure($_POST['r_color']),
-         'r_image' => $color,
+         'r_color' => ltrim($this->Core->setSecure($_POST['r_color']), '#'),
+         'r_image' => $image,
          'r_cant' => (int)$cantidad,
          'r_allows' => $this->AdminHelper->optionsRange($_POST),
          'r_type' => (int)$tipo

@@ -70,16 +70,16 @@
                         <div class="icon"><span class="systemicons micuenta"></span></div>
                         <div class="info">Mi cuenta</div>
                      </a>
-                     <a title="Mis Favoritos" href="{$tsConfig.url}/favoritos.php" class="dropdown-item">
+                     <a title="Mis Favoritos" href="{$tsConfig.url}/favoritos" class="dropdown-item">
                         <div class="icon"><span class="systemicons favoritos"></span></div>
                         <div class="info">Mis Favoritos</div>
                      </a>
-                     <a title="Mis Borradores" href="{$tsConfig.url}/borradores.php" class="dropdown-item">
+                     <a title="Mis Borradores" href="{$tsConfig.url}/borradores" class="dropdown-item">
                         <div class="icon"><span class="systemicons borradores"></span></div>
                         <div class="info">Mis Borradores</div>
                      </a>
                      <hr>
-                     <a title="Salir" href="{$tsConfig.url}/login-salir.php" class="dropdown-item">
+                     <a title="Salir" href="{$tsConfig.url}/login-salir" class="dropdown-item">
                         <div class="icon"><span class="systemicons logout"></span></div>
                         <div class="info">Salir</div>
                      </a>

@@ -24,7 +24,7 @@
       {if $tsGeneral.m_total}
          <div class="flex justify-start items-start gap-3" style="flex-wrap: wrap;">
             {foreach from=$tsGeneral.medallas item=m}
-               <img src="{$tsRoutes.assets.images}/icons/med/{$m.m_image}_32.png" width="32" height="32" title="{$m.m_title} - {$m.m_description}"/>
+               <img src="{$tsRoutes.assets.images}/icons/medals/{$m.m_image}_32.png" width="32" height="32" title="{$m.m_title} - {$m.m_description}"/>
             {/foreach}
          </div>
          {if $tsGeneral.m_total >= 21}

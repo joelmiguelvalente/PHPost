@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name c.mensajes.php
+ * @name src/Class/c.mensajes.php
  * @author PHPost Team
  * @copyright 2026
  */

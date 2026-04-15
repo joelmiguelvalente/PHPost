@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name c.phpmailer.php
+ * @name src/Class/c.phpmailer.php
  * @author PHPost Team
  * @copyright 2026
  */

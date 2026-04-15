@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name api.registro.php
+ * @name src/Api/api.registro.php
  * @author PHPost Team
  * @copyright 2026
  */
@@ -49,8 +49,8 @@ switch($action) {
 			$tsAjax = true;
 			echo "0: El registro de nuevas cuentas en <strong>{$tsCore->settings['titulo']}</strong> est&aacute; desactivado.";
 		} else {
-			$tsPaises = require_once TS_EXTRA . "/Paises.php";
-			$tsMeses = require_once TS_EXTRA . "/Meses.php";
+			$tsPaises = require_once TS_EXTRAS . "/Paises.php";
+			$tsMeses = require_once TS_EXTRAS . "/Meses.php";
 			
 			// SOLO MENORES DE 100 AÑOS xD Y MAYORES DE...
 			$minAge = (int)$tsCore->settings['c_allow_edad'];
@@ -71,7 +71,7 @@ switch($action) {
 		echo $tsRegistro->checkUserEmail();
 	break;
 	case 'registro-geo':
-		$tsEstados = require TS_EXTRA . "/geodata.php";
+		$tsEstados = require TS_EXTRAS . "/geodata.php";
 		$pais = trim($_GET['pais_code'] ?? '');
 		if ($pais === '') {
 		   echo '0: El campo <strong>pais_code</strong> es requerido para esta operación';

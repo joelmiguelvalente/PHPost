@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name c.emails.php
+ * @name src/Class/c.emails.php
  * @author PHPost Team
  * @copyright 2026
  */
@@ -23,7 +23,7 @@ require_once TS_LIBS . '/phpmailer/src/Exception.php';
 final class tsEmail {
 
 	private string $to        = '';
-	private string $asunto    = '';
+	public string $asunto     = '';
 	private string $body      = '';
 	public string  $lastError = '';
 	public array   $config    = [];
@@ -87,7 +87,8 @@ final class tsEmail {
 	 * ========================= */
 
 	public function sendFast(string $to, array $placeholders): bool {
-		return $this->to($to)->subject($this->asunto)->body($placeholders, $this->asunto)->send();
+        $type = $this->asunto;
+		return $this->to($to)->subject($this->asunto)->body($placeholders, $type)->send();
 	}
 
 	/* =========================
@@ -131,7 +132,7 @@ final class tsEmail {
 			}
 
 			// Debug: 0 = sin output, 2 = verbose (solo en desarrollo)
-			$mail->SMTPDebug = Config::app('debug.active') ? SMTP::DEBUG_SERVER : SMTP::DEBUG_OFF;
+			#$mail->SMTPDebug = Config::app('debug.active') ? SMTP::DEBUG_SERVER : SMTP::DEBUG_OFF;
 		}
 		// Si $mode === 'mail', PHPMailer usa mail() por defecto
 
@@ -154,13 +155,14 @@ final class tsEmail {
 			'admin_notice'      => 'Tienes un aviso importante del administrador.',
 			'ban_notice'        => 'Tu cuenta ha sido suspendida.',
 			'system_update'     => 'Actualización importante del sistema.',
+			'new_access'   		=> 'Nuevos datos de acceso.',
 			default             => 'Notificación',
 		};
 	}
 
 	private function wrapTemplate(array $placeholders, string $type): string {
-		$specific = TS_EXTRA . '/emails/' . $type . '.php';
-		$fallback  = TS_EXTRA . '/emails/basic.php';
+		$specific = TS_EXTRAS . '/emails/' . $type . '.php';
+		$fallback  = TS_EXTRAS . '/emails/basic.php';
 		$templatePath = is_file($specific) ? $specific : $fallback;
 
 		if (!is_file($templatePath)) {

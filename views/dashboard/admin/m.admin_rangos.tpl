@@ -23,7 +23,7 @@
                         <td class="px-3 py-2 text-gray-600">{$r.num_members}</td>
                         <td class="px-3 py-2 text-gray-600">{$r.user_puntos}</td>
    							<td class="px-3 py-2 text-gray-600">{$r.max_points}</td>
-                        <td class="px-3 py-2 text-gray-600"><img src="{$tsRoutes.assets.images}/icons/ran/{$r.imagen}" /></td>
+                        <td class="px-3 py-2 text-gray-600"><img src="{$tsRoutes.assets.images}/icons/ranks/{$r.imagen}" /></td>
                         <td class="px-3 py-2">
                            <div class="flex justify-center gap-2">
                               {include "dashboard/table/Action.tpl" action="rangos?act=editar&rid={$r.id}&type=special" title="Editar Rango" icon="edit"}
@@ -68,7 +68,7 @@
                         <td class="px-3 py-2">{$r.cant}</td>
                         <td class="px-3 py-2">{$r.user_puntos}</td>
    							<td class="px-3 py-2">{$r.max_points}</td>
-                        <td class="px-3 py-2"><img src="{$tsRoutes.assets.images}/icons/ran/{$r.imagen}" /></td>
+                        <td class="px-3 py-2"><img src="{$tsRoutes.assets.images}/icons/ranks/{$r.imagen}" /></td>
                         <td class="px-3 py-2">
                            <div class="flex justify-center gap-2">
                               {include "dashboard/table/Action.tpl" action="rangos?act=editar&rid={$r.id}&type=counted" title="Editar Rango" icon="edit"}
@@ -163,14 +163,14 @@
                         $('#c_img').on('change', function () {
                            const icon = $(this).val();
                            $('#c_icon').css({
-                              background: "url('{$tsRoutes.assets.images}/icons/ran/" + icon + "') no-repeat center center",
+                              background: "url('{$tsRoutes.assets.images}/icons/ranks/" + icon + "') no-repeat center center",
                               backgroundSize: '16px'
                            });
                         });
                      });
                   </script>
                   <div class="md:col-span-2 space-y-3 flex justify-start items-center">
-                     <div style="background:url({$tsRoutes.assets.images}/icons/ran/{if $tsRango.r_image}{$tsRango.r_image}{else}{$tsIcons.0}{/if}) no-repeat center center;background-size:16px;display:block;width:16px;height:16px;margin-right:10px;" id="c_icon"></div>
+                     <div style="background:url({$tsRoutes.assets.images}/icons/ranks/{if $tsRango.r_image}{$tsRango.r_image}{else}{$tsIcons.0}{/if}) no-repeat center center;background-size:16px;display:block;width:16px;height:16px;margin-right:10px;" id="c_icon"></div>
                      <select name="r_img" id="c_img" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-surface px-3 py-2 text-sm focus:ring-2 focus:ring-primary">
                         {foreach from=$tsIcons key=i item=img}
                            <option value="{$img}"{if $tsRango.r_image == $img} selected{/if}>{$img}</option>

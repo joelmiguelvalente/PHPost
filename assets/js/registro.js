@@ -109,7 +109,7 @@ function validateField(selector, response) {
 
 const endpoint = (element, input, param) => {
 	displayMessage(element, `Comprobando ${input}...`, STATUS.WARNING);
-	const endpoint = `${route.url}/registro-check-${element}.php?ajax=true`;
+	const endpoint = `${route.url}/registro-check-${element}?ajax=true`;
 	$.post(endpoint, param, response => approved[input] = validateField(input, response));
 }
 
@@ -262,7 +262,7 @@ function createAccount() {
 	onLoader(true);
 	let formData = $form.serializeArray();
 	// Petición de creación de cuenta
-	$.post(`${route.url}/registro-nuevo.php?ajax=true`, $.param(formData), response => {
+	$.post(`${route.url}/registro-nuevo?ajax=true`, $.param(formData), response => {
 		const { status, message } = $.parseResponse(response);
 		onDialog(message);
 	

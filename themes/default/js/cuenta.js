@@ -2,7 +2,7 @@ function desactivate(next = false) {
 	if(next) {
 		const param = $.param({ validar: true });
 		$('#loading').fadeIn(250); 
-		api(`cuenta-desactivar.php`, param, response => {
+		api(`cuenta-desactivar`, param, response => {
 			const { status, message } = $.parseResponse(response);
 			dialog.toast({
 				type: (status ? 'success' : 'danger'),
@@ -26,7 +26,7 @@ const cuenta = {
 			//Obtengo las estados
 			$(estado).html('');
 			$('#loading').fadeIn(250);
-			$.get(`${route.url}/registro-geo.php?pais_code=${pais}`, response => {
+			$.get(`${route.url}/registro-geo?pais_code=${pais}`, response => {
 				const { status, message } = $.parseResponse(response);
 				if(status === 1) {
 					estado.val('').append(message).removeAttr('disabled').focus();
@@ -38,7 +38,7 @@ const cuenta = {
 	guardar_datos: () => {
 		$('#loading').slideDown(250);
 		const formData = $("form[name=editarcuenta]").serialize();
-		$.post(`${route.url}/cuenta-guardar.php`, formData, response => {
+		$.post(`${route.url}/cuenta-guardar`, formData, response => {
 			const { status, message } = $.parseResponse(response);
 			dialog.toast({
 				type: (status ? 'success' : 'danger'),
@@ -53,7 +53,7 @@ const cuenta = {
 const apariencia = {
 	theme() {
 		const theme = $("select[name=theme]").val();
-		api('cuenta-cambiar-tema.php', { skin: theme }, response => {
+		api('cuenta-cambiar-tema', { skin: theme }, response => {
 			const { status, message } = $.parseResponse(response);
 			dialog.toast({
 				type: (status ? 'success' : 'danger'),

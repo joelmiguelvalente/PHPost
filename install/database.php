@@ -737,13 +737,6 @@ $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `w_stats` (
 
 $phpost_sql[] = "INSERT INTO `w_stats` (`stats_no`, `stats_max_online`) VALUES (1, 0);";
 
-$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `w_temas` (
-  `tid` INT AUTO_INCREMENT PRIMARY KEY,
-  `t_name` VARCHAR(72) NOT NULL DEFAULT '',
-  `t_path` VARCHAR(72) NOT NULL DEFAULT '',
-  `t_copy` VARCHAR(72) NOT NULL DEFAULT ''
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1;";
-
 $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `w_visitas` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `user` INT NOT NULL,
@@ -772,18 +765,21 @@ $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `w_migrations` (
   `executed_at` INT NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 AUTO_INCREMENT=1 ;";
 
+$time = time();
 $phpost_sql[] = "INSERT INTO `w_migrations` (`id`, `migration`, `executed_at`) VALUES
-(1, 'video_platforms', 1770957195),
-(2, 'categorias', 1770825789),
-(3, 'permisos', 1770409335),
-(4, 'configuracion_registro', 1770409300),
-(5, 'post_excerpt', 1772591038),
-(6, 'miembro_tema', 1772591048),
-(7, 'configuracion_puntos_ilimitados', 1772591095),
-(8, 'comentarios_votos', 1772591095),
-(9, 'denuncias', 1772601095),
-(10, 'voto_type', 1772738395),
-(11, 'comentarios_level', 1772747280);";
+(1, 'video_platforms', $time),
+(2, 'categorias', $time),
+(3, 'permisos', $time),
+(4, 'configuracion_registro', $time),
+(5, 'post_excerpt', $time),
+(6, 'miembro_tema', $time),
+(7, 'configuracion_puntos_ilimitados', $time),
+(8, 'comentarios_votos', $time),
+(9, 'denuncias', $time),
+(10, 'voto_type', $time),
+(11, 'comentarios_level', $time),
+(12, 'mensaje_off', $time),
+(13, 'image_providers', $time);";
 
 $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `w_video_platforms` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
@@ -807,7 +803,7 @@ $phpost_sql[] = "INSERT INTO `w_video_platforms` (`id`, `name`, `domain`, `path_
 (7, 'instagram', 'instagram.com', '/p/{id}', '<blockquote class=\"instagram-media\" data-instgrm-permalink=\"{url}\"><a href=\"{url}\"></a></blockquote><script async defer src=\"//www.instagram.com/embed.js\"></script>', 0, 1770957196, 0),
 (8, 'streamable', 'streamable.com', '/p/{id}', '<iframe src=\"https://streamable.com/e/{id}\" width=\"640\" height=\"360\" frameborder=\"0\" allowfullscreen></iframe>', 0, 1770957196, 0);";
 
-$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `post_collaborators` (
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `p_post_collaborators` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `post_id` INT NOT NULL,
   `user_id` INT NOT NULL,
@@ -816,10 +812,23 @@ $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `post_collaborators` (
   `created_at` INT NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 AUTO_INCREMENT=1 ;";
 
-$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `post_changes_log` (
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `p_post_changes` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `post_id` INT NOT NULL,
   `user_id` INT NOT NULL,
   `change_note` TEXT NOT NULL,
   `changed_at` INT NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 AUTO_INCREMENT=1 ;";
+
+$phpost_sql[] = "CREATE TABLE IF NOT EXISTS `w_image_providers` (
+  `provider_id`   TINYINT UNSIGNED  NOT NULL AUTO_INCREMENT,
+  `provider_slug` VARCHAR(32) NOT NULL UNIQUE,
+  `provider_name` VARCHAR(64) NOT NULL,
+  `api_key`       VARCHAR(255) NOT NULL DEFAULT '',
+  `extra_config`  JSON NULL,
+  `is_active`     TINYINT(1) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`provider_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
+
+$phpost_sql[] = "INSERT INTO `w_image_providers` (`provider_slug`, `provider_name`, `api_key`, `is_active`) VALUES
+('imgur', 'Imgur', 'b2fddcb704b44a5', 1);";

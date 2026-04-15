@@ -7,7 +7,7 @@ const moderacion = {
 				$('#d_razon').focus();
 				return;
 			} else {
-				api('moderacion-posts.php?do=ocultar', { razon, pid }, response => {
+				api('moderacion-posts?do=ocultar', { razon, pid }, response => {
 					const { status, message } = $.parseResponse(response);
 					const title = status === 1 ? 'Hecho' : 'Opps!';
 					dialog.alert(title, message, true);
@@ -16,7 +16,7 @@ const moderacion = {
 		}
 	},
 	view(postid) {
-		api('moderacion-posts.php?do=view', { postid }, response => {
+		api('moderacion-posts?do=view', { postid }, response => {
 			dialog.init({
 				title: '...', 
 				body: response, 
@@ -28,7 +28,7 @@ const moderacion = {
 	},
 	borrar(pid, redirect, aceptar) {
 		if(!aceptar) {
-			api('moderacion-posts.php?do=borrar', {}, response => {
+			api('moderacion-posts?do=borrar', {}, response => {
 				dialog.init({ title: 'Borrar Post', body: response, 
 					buttons: { 
 						confirm: { text: 'Borrar', action: () => moderacion.posts.borrar(pid, redirect, 1) } 
@@ -43,7 +43,7 @@ const moderacion = {
 			if($('#send_b').prop('checked')){
 				const send_b = 'yes';
 			}
-			api('moderacion-posts.php?do=borrar', { pid, razon, razon_desc, send_b }, response => {
+			api('moderacion-posts?do=borrar', { pid, razon, razon_desc, send_b }, response => {
 				const { status, message } = $.parseResponse(response);
 				if(status === 0) {
 					dialog.alert('Error', message);
@@ -65,7 +65,7 @@ const moderacion = {
 				dialog.easy('Borrar Mensaje', '&#191;Quiere eliminar <b>toda</b> la conversaci&oacute;n?', 'S&iacute; borrar', () => moderacion.mensajes.borrar(mpid, 1));
 				return;
 			} else {
-				api('moderacion-mps.php?do=borrar', { mpid }, response => {
+				api('moderacion-mps?do=borrar', { mpid }, response => {
 					const { status, message } = $.parseResponse(response);
 					dialog.alert((status === 0 ? 'Opps!' : 'Hecho'), message, false);
 					$('#report_' + mpid).fadeOut(); 
@@ -76,7 +76,7 @@ const moderacion = {
 	fotos: {
 		borrar(fid, redirect, aceptar) {
 			if(!aceptar) {
-				api('moderacion-fotos.php?do=borrar', { fid }, response => {
+				api('moderacion-fotos?do=borrar', { fid }, response => {
 					dialog.easy('Borrar Foto', response, 'Borrar foto', () => moderacion.fotos.borrar(fid, redirect, 1));
 					$('#report_' + fid).fadeOut(); 
 				});
@@ -84,7 +84,7 @@ const moderacion = {
 				dialog.loading('Eliminando...', 'Borrar Foto');
 				const razon = $('#razon').val()
 				const razon_desc = $('input[name=razon_desc]').val();
-				api('moderacion-fotos.php?do=borrar', { fid, razon, razon_desc }, response => {
+				api('moderacion-fotos?do=borrar', { fid, razon, razon_desc }, response => {
 					const { status, message } = $.parseResponse(response);
 					if(status === 0) {
 						dialog.alert('Error', message, false);
@@ -107,7 +107,7 @@ const moderacion = {
 			const btn_txt = esAviso ? 'Enviar' : 'Suspender';
 			const titulo = esAviso ? 'Enviar Aviso/Alerta' : 'Suspender usuario';
 			const funcion = `set_${action}`;
-			moderacion.loadDialog(`/moderacion-users.php?do=${action}`, { uid }, titulo, btn_txt, 
+			moderacion.loadDialog(`/moderacion-users?do=${action}`, { uid }, titulo, btn_txt,
 				() => moderacion.usuarios[funcion](uid, redirect)
 			);
 		},
@@ -115,14 +115,14 @@ const moderacion = {
 			const av_type = $('#mod_type').val();
 			const av_subject = $('#mod_subject').val();
 			const av_body = $('#mod_body').val();
-			moderacion.sendData('/moderacion-users.php?do=aviso', { uid, av_type, av_subject, av_body }, uid, redirect);
+			moderacion.sendData('/moderacion-users?do=aviso', { uid, av_type, av_subject, av_body }, uid, redirect);
 		},
 		set_ban(uid, redirect, type = '') {
 			const b_time = $('#mod_time').val();
 			const b_cant = $('#mod_cant').val();
 			const b_causa = $('#mod_causa').val();
 			//
-			moderacion.sendData('/moderacion-users.php?do=ban', { uid, b_time, b_cant, b_causa }, uid, redirect, '');
+			moderacion.sendData('/moderacion-users?do=ban', { uid, b_time, b_cant, b_causa }, uid, redirect, '');
 		}
 	},
 	loadDialog(endpoint, params, title, text, action) {
@@ -147,7 +147,7 @@ const moderacion = {
 		});
 	},
 	reboot(id, type, hdo, redirect) {
-		api(`moderacion-${type}.php?do=${hdo}`, { id }, response => {
+		api(`moderacion-${type}?do=${hdo}`, { id }, response => {
 			const { status, message } = $.parseResponse(response);
 			if(status === 0) {
 				dialog.alert('Error', message, false);

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name Config.Session.php
+ * @name config/Config.Session.php
  * @author PHPost Team
  * @copyright 2026
  */

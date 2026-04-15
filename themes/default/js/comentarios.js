@@ -11,7 +11,7 @@ const comentario = {
 		$comentarios.css('opacity', 0.4)
 		// COMPRVAMOS CACHE
       if(typeof comentario.cache[`c_${page}`] === 'undefined') {
-         api(`comentario-ajax.php?page=${page}`, { postid, autor }, response => {
+         api(`comentario-ajax?page=${page}`, { postid, autor }, response => {
 				comentario.cache['comments_page_' + page] = response;
 				$comentarios.html(response);
 				comentario.setPages(postid, page, autor);
@@ -25,7 +25,7 @@ const comentario = {
    },
    setPages(postid, page, autor) {
     	const total = parseInt($('#ncomments').text());
-    	api(`comentario-pages.php?page=${page}`, { postid, autor, total }, response => {
+    	api(`comentario-pages?page=${page}`, { postid, autor, total }, response => {
     		comentario.cache[`p_${page}`] = response;
    		$('.paginadorCom').html(response);
          $('#commentsLoads').hide();
@@ -53,7 +53,7 @@ const comentario = {
       // Agregar parent_cid si es respuesta
       if (isReply) params += `&parent_cid=${cid}`;
       if (!isReply) $('.miComentario #gif_cargando').show();
-      api('comentario-agregar.php', params, response => {
+      api('comentario-agregar', params, response => {
          const { status, message } = $.parseResponse(response);
          if (status === 0) {
             if (isReply) {
@@ -116,7 +116,7 @@ const comentario = {
       //
       let params = $.param({ cid, type });
       params += queryParam('postid');
-      api('comentario-votar.php', params, response => {
+      api('comentario-votar', params, response => {
          const { status, message } = $.parseResponse(response);
          dialog.alert((status === 0 ? "Error al votar" : "Bien"), message);
          if(status === 0) return;
@@ -210,7 +210,7 @@ const comentario = {
             $('#loading').fadeIn(250); 
             $.ajax({
             	type: 'POST',
-            	url: route.url + '/comentario-editar.php',
+            	url: route.url + '/comentario-editar',
             	data: 'comentario=' + encodeURIComponent(comment) + '&cid=' + id,
             	success: function(h){
             		switch(h.charAt(0)){

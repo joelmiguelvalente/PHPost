@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name c.home.php
+ * @name src/Class/c.home.php
  * @author PHPost Team
  * @copyright 2026
  */
@@ -31,7 +31,7 @@ class tsHome {
 	 */
 	public function getDataCategorie(): array {
 		$seo = $this->Core->setSecure($_GET['cat']);
-		return db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', "SELECT c_nombre, c_seo FROM p_categorias WHERE c_seo = '$seo' LIMIT 1"));
+		return DB::fetch("SELECT c_nombre, c_seo FROM p_categorias WHERE c_seo = :seo LIMIT 1", ['seo' => $seo]);
 	}
 
 	private function getCategoryId(string $category): ?int {
@@ -39,7 +39,7 @@ class tsHome {
 			return null;
 		}
 		$categorySeo = $this->Core->setSecure($category);
-		$row = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', "SELECT cid FROM p_categorias WHERE c_seo = '{$categorySeo}' LIMIT 1"));
+		$row = DB::fetch("SELECT cid FROM p_categorias WHERE c_seo = :seo LIMIT 1", ['seo' => $categorySeo]);
 		return !empty($row['cid']) ? (int) $row['cid'] : null;
 	}
 
@@ -48,7 +48,7 @@ class tsHome {
 	}
 
 	private function countPosts(string $visibilityWhere, string $categoryWhere, string $stickyWhere): int {
-		$sql = "SELECT COUNT(p.post_id) AS total FROM p_posts AS p LEFT JOIN u_miembros AS u ON p.post_user = u.user_id WHERE 1 = 1 {$visibilityWhere} {$categoryWhere} {$stickyWhere}";
+		$sql = "SELECT COUNT(p.post_id) AS total FROM p_posts AS p LEFT JOIN u_miembros AS u ON p.post_user = u.user_id WHERE {$visibilityWhere} {$categoryWhere} {$stickyWhere}";
 		$row = db_exec('fetch_row', db_exec([__FILE__, __LINE__], 'query', $sql));
 		return (int)($row[0] ?? 0);
 	}
@@ -60,7 +60,7 @@ class tsHome {
 		// Post Fijado si/no
 		$stickyWhere = $sticky ? 'AND p.post_sticky = 1' : 'AND p.post_sticky = 0';
 		// Tipo de usuario admin/comun
-		$visibilityWhere = $this->canSeeHiddenPosts() ? '' : 'AND u.user_activo = 1 AND u.user_baneado = 0 AND p.post_status = 0';
+		$visibilityWhere = $this->canSeeHiddenPosts() ? '' : 'u.user_activo = 1 AND u.user_baneado = 0 AND p.post_status = 1';
 
 		$orderBy = $sticky ? 'p.post_sponsored' : 'p.post_id';
 		// Paginacion
@@ -71,7 +71,7 @@ class tsHome {
 
 		$query = result_array(db_exec([__FILE__, __LINE__], 'query', $sql));
 		foreach($query as $pid => $post) {
-			$query[$pid]['c_img'] = $this->Core->route('assets:images') . '/icons/cat/' . $post['c_img'];
+			$query[$pid]['c_img'] = $this->Core->route('assets:images') . '/icons/categories/' . $post['c_img'];
 		}
 		$pages = $sticky ? null : $this->Paginator->getPages((int)$total, (int)$this->Core->settings['c_max_posts']);
 		return [

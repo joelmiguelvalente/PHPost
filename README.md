@@ -8,7 +8,7 @@ PHPost Risus es un sistema de compartimiento de enlaces que permite crear un sit
 # Cambios realizados (base PHPost Risus 2022)
 
 ### Este repositorio sirve como espacio de trabajo para:
- - Migrar el código de PHP 7.4 a PHP 8.x (compatible con PHP 8.4)
+ - Migrar el código de PHP 7.4 a PHP 8.x (compatible con PHP 8.5)
  - Refactorizar código PHP siguiendo buenas prácticas actuales
  - Modernizar y organizar el código JavaScript
  - Corregir errores existentes

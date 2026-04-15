@@ -44,8 +44,8 @@ if($ctx->continue()) {
 
 	if(is_numeric($action)) {
 		require_once TS_CLASS . "/c.borradores.php";
-		$tsDrafts = new tsDrafts($tsCore, $tsUser);
-		$tsBorrador = $tsDrafts->getDraft();
+		$tsBorradores = new tsBorradores($tsCore, $tsUser);
+		$tsBorrador = $tsBorradores->getDraft();
 		$smarty->assign("tsDraft", $tsBorrador);
 		//
 	} elseif($action === 'editar') {

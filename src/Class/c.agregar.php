@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name c.agregar.php
+ * @name src/Class/c.agregar.php
  * @author PHPost Team
  * @copyright 2026
  */
@@ -232,7 +232,7 @@ class tsAgregar {
 				'post_smileys' => $postData['post_smileys'],
 				'post_visitantes' => $postData['post_visitantes'],
 				'post_status' => $this->postApproved() ? 3 : 0,
-				'post_draft' => 0
+				'post_draft' => (int)($_POST['draft'] ?? 0)
 			]);
 			// Si está oculto, lo creamos en el historial e.e
 			if($this->postApproved()) $this->moderatePost($postId);

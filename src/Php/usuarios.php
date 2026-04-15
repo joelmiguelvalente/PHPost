@@ -30,7 +30,7 @@ if (is_array($tsLevelMsg)) {
 
 if($ctx->continue()) {
 
-   $tsPaises = require_once TS_EXTRA . "/Paises.php";
+   $tsPaises = require_once TS_EXTRAS . "/Paises.php";
    $smarty->assign("tsPaises", $tsPaises);
    // USUARIOS
    $tsUsers = $tsUser->getUsuarios();

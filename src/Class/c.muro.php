@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name c.muro.php
+ * @name src/Class/c.muro.php
  * @author PHPost Team
  * @copyright 2026
  */

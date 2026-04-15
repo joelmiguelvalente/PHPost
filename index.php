@@ -1,10 +1,9 @@
 <?php
 
 /**
- * Resuelve para la home
- *
- * @name    index.php
- * @author  PHPost Team
+ * @name index.php
+ * @author PHPost Team
+ * @copyright 2026
  */
 
 declare(strict_types=1);

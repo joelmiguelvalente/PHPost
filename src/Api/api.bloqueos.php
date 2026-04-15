@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name api.bloqueos.php
+ * @name src/Api/api.bloqueos.php
  * @author PHPost Team
  * @copyright 2026
  */

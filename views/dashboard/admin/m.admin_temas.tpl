@@ -23,7 +23,7 @@
 							<td class="px-3 py-2">{$tema.t_name}</td>
 							<td class="px-3 py-2">{$tema.t_copy}</td>
 							<td class="px-3 py-2">
-								<span class="inline-flex rounded-full{if $tsConfig.tema.t_path == $tema.t_path} bg-green-100 text-green-800{else} bg-purple-100 text-purple-800{/if} px-2 py-0.5 text-xs font-medium">{if $tsConfig.tema.t_path == $tema.t_path}Activo{else}Sin uso{/if}</span>
+								<span class="inline-flex rounded-full{if $tsConfig.tema.t_path == $tema.t_path} bg-green-100 text-green-800{else} bg-purple-100 text-purple-800{/if} px-2 py-0.5 text-xs font-medium">{if $tsConfig.tema.t_path == $tema.t_path}Activo{else}Inactivo{/if}</span>
 							</td>
 							<td class="px-3 py-2">
 								<div class="flex justify-center gap-2">

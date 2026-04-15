@@ -24,7 +24,7 @@
                 <td class="admin_actions">
                     <a href="{$tsConfig.url}/moderacion/fotos?act=info&obj={$r.foto_id}"><img src="{$tsRoutes.tema.images}/icons/details.png" title="Ver Detalles" /></a>
                     {if $tsUser->is_admod || $tsUser->permiso('moderacion.denuncias.cancelar.fotos')}<a href="#" onclick="mod.reboot({$r.foto_id}, 'fotos', 'reboot', false); return false;"><img src="{$tsRoutes.tema.images}/icons/reboot.png" title="{if $r.f_status == 1}Reactivar Foto{else}Desechar denuncias{/if}" /></a>{/if}
-                    {if $tsUser->is_admod || $tsUser->permiso('moderacion.fotos.editar')}<a href="{$tsConfig.url}/fotos/editar.php?id={$r.foto_id}" target="_blank"><img src="{$tsRoutes.tema.images}/icons/edit.png" title="Editar Foto" /></a>{/if}
+                    {if $tsUser->is_admod || $tsUser->permiso('moderacion.fotos.editar')}<a href="{$tsConfig.url}/fotos/editar?id={$r.foto_id}" target="_blank"><img src="{$tsRoutes.tema.images}/icons/edit.png" title="Editar Foto" /></a>{/if}
                     {if $tsUser->is_admod || $tsUser->permiso('moderacion.fotos.eliminar')}<a href="#" onclick="moderacion.fotos.borrar({$r.foto_id}); return false"><img src="{$tsRoutes.tema.images}/icons/close.png" title="Borrar Foto" /></a>{/if}
                 </td>
             </tr>
@@ -43,7 +43,7 @@
         <a href="{$tsConfig.url}/fotos/{$r.user_name}/{$r.foto_id}/{$r.f_title|seo}.html" target="_blank">{$r.f_title}</a>{$tsDenuncia.data.f_title}</a> de <a href="{$tsConfig.url}/@{$tsDenuncia.data.user_name}">{$tsDenuncia.data.user_name}</a> 
         <span class="floatR admin_actions">
             {if $tsUser->is_admod || $tsUser->permiso('moderacion.denuncias.cancelar.fotos')}<a href="#" onclick="mod.reboot({$tsDenuncia.data.foto_id}, 'fotos', 'reboot', true); return false"><img src="{$tsRoutes.tema.images}/icons/reboot.png" title="{if $tsDenuncia.data.f_status == 1}Reactivar Fotos{else}Desechar denuncias{/if}" /></a>{/if}
-            {if $tsUser->is_admod || $tsUser->permiso('moderacion.fotos.editar')}<a href="{$tsConfig.url}/fotos/editar.php?id={$tsDenuncia.data.foto_id}" target="_blank"><img src="{$tsRoutes.tema.images}/icons/edit.png" title="Editar Fotos" /></a>{/if}
+            {if $tsUser->is_admod || $tsUser->permiso('moderacion.fotos.editar')}<a href="{$tsConfig.url}/fotos/editar?id={$tsDenuncia.data.foto_id}" target="_blank"><img src="{$tsRoutes.tema.images}/icons/edit.png" title="Editar Fotos" /></a>{/if}
             {if $tsUser->is_admod || $tsUser->permiso('moderacion.fotos.eliminar')}<a href="#" onclick="moderacion.fotos.borrar({$tsDenuncia.data.foto_id}); return false"><img src="{$tsRoutes.tema.images}/icons/close.png" title="Borrar Foto" /></a>{/if}
         </span>
     </h2>

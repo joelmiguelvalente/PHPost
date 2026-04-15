@@ -1,3 +1,4 @@
+'use strict';
 let audioUnlocked = false;
 
 function unlockAudio() {
@@ -154,7 +155,7 @@ const live = {
 
 	update() {
 		$('#loading').fadeIn(250);
-		$.post(`${route.url}/live-stream.php`, {
+		$.post(`${route.url}/live-stream`, {
 			nots: configs.status.notifications,
 			mps:  configs.status.messages
 		}, response => {

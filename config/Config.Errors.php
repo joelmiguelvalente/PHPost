@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name Config.Errors.php
+ * @name config/Config.Errors.php
  * @author PHPost Team
  * @copyright 2026
  */
@@ -22,15 +22,13 @@ $level = match(Config::app('debug.level')) {
 // Reporte de errores
 error_reporting($level);
 
-ini_set('display_errors', Config::app('debug.active') ? '1' : '0');
-ini_set('display_startup_errors', Config::app('debug.active') ? '1' : '0');
-ini_set('log_errors', Config::app('debug.logs') === 'always');
-ini_set('html_errors', Config::app('debug.logs') === 'always');
+$__DebugActive = Config::app('debug.active') ? '1' : '0';
+$__DebugLogs = Config::app('debug.logs') === 'always';
 
-
-if(!is_dir(Config::app('paths.logs'))) {
-	mkdir(Config::app('paths.logs'), 0777);
-}
+ini_set('display_errors',           $__DebugActive);
+ini_set('display_startup_errors',   $__DebugActive);
+ini_set('log_errors',   $__DebugLogs);
+ini_set('html_errors',  $__DebugLogs);
 
 set_error_handler(function (int $severity, string $message, string $file, int $line) {
    if (!(error_reporting() & $severity)) {

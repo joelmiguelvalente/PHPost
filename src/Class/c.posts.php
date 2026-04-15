@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name c.posts.php
+ * @name src/Class/c.posts.php
  * @author PHPost Team
  * @copyright 2026
  */
@@ -37,10 +37,10 @@ class tsPosts {
 		$this->PostHelper = new PostHelper($this->Core, $this->User);;
 		$this->UserHelper = new UserHelper($this->Core);
 		$this->Extras = new Extras;
-      $this->Processor = new ImageProcessor([
-      	'storage_path' => TS_STORAGE . '/media/',
-		   'type' => 'posts',
-		   'id' => (int)$this->postId
+      	$this->Processor = new ImageProcessor([
+      		'storage_path' => TS_STORAGE . '/media/',
+			'type' => 'posts',
+			'id' => (int)$this->postId
 		]);
 		// Variables normales
 		$this->cacheTTL = (int)$this->Core->settings['c_stats_cache'] * 60;
@@ -297,7 +297,7 @@ class tsPosts {
 		// STATUS
 		$data['status'] = $this->UserHelper->getStatusCode((int)$data['user_lastactive'], (int)$data['user_baneado']);
 		// PAIS
-		$tsPaises = require_once TS_EXTRA . "/Paises.php";
+		$tsPaises = require_once TS_EXTRAS . "/Paises.php";
 		$userPais = empty($data['user_pais']) ? 'XX' : $data['user_pais'];
 		$data['pais'] = [
 			'icon' => strtolower($userPais),

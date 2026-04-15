@@ -51,6 +51,10 @@ if($ctx->continue()) {
 	if(empty($action)) {
 		$smarty->assign("tsAdmins", $tsAdmin->getAdmins());
       $smarty->assign("tsInstalled", $tsAdmin->getInst());
+		$smarty->assign("tsVersion", $tsAdmin->getVersions());
+      if($act === 'limpiar-cache') {
+      	if($tsAdmin->clearCache()) $tsCore->redirectAdmin($action);
+      }
 
    # SOPORTE Y CREDITOS
 	} elseif($action === 'creditos') {
@@ -135,6 +139,28 @@ if($ctx->continue()) {
 	      	   exit;
 	      	}
 	    	}
+		}
+
+	# TEMAS
+	} elseif($action === 'imageprovider') {
+   	require_once TS_CLASS . "/c.imageprovider.php";
+   	$ImageProvider = new ImageProvider;
+   	if(empty($act)) {
+			$smarty->assign("tsProviders", $ImageProvider->getAll());
+		} elseif($act === 'nuevo' && !empty($_POST['provider_name'])) {
+			if($ImageProvider->newProvider()) $tsCore->redirectAdmin($action);
+		} elseif($act === 'editar') {
+			$smarty->assign("tsProvider", $ImageProvider->getProvider());
+			if($_SERVER['REQUEST_METHOD'] === 'POST') {
+				if($ImageProvider->editProvider()) $tsCore->redirectAdmin($action);
+			}
+		} elseif($act === 'activar') {
+			$id = (int)($_GET['id'] ?? 0);
+			$api = trim($_GET['api'] ?? '');
+			if($ImageProvider->activate($id, $api)) $tsCore->redirectAdmin($action);
+		} elseif($act === 'borrar') {
+			$smarty->assign("tsProvider", $ImageProvider->getProvider());
+			if($ImageProvider->delProvider()) $tsCore->redirectAdmin($action);
 		}
 
 	# TEMAS
@@ -368,62 +394,65 @@ if($ctx->continue()) {
 		} elseif($act === 'setdefault'){
 			if($tsRangos->SetDefaultRango()) $tsCore->redirectAdmin($action);
 		}
-	} elseif($action === 'users'){
-	   if(empty($act)) $smarty->assign("tsMembers", $tsAdmin->getUsuarios());
-	   elseif($act === 'show'){
-	      $do = intval($_GET['t']);
-         $user_id = intval($_GET['uid']);
+
+	} elseif($action === 'users') {
+		require_once TS_CLASS . '/c.useradmin.php';
+		$tsUserAdmin = new tsUserAdmin($tsCore, $tsUser, $tsAdmin);
+	   if(empty($act)) $smarty->assign("tsMembers", $tsUserAdmin->getUsuarios());
+	   elseif($act === 'show') {
+			$userID = $tsUserAdmin->getUserID();
+	      $type = (int)($_GET['type'] ?? 0);
          // HACER
-         if($do === 5 OR $do === 6) {
-				require_once TS_EXTRA . "datos.php";
-            $smarty->assign("tsPerfil", $tsAdmin->getUserPrivacidad());
+         if($type === 5 OR $type === 6) {
+				require_once TS_EXTRAS . "/datos.php";
+            $smarty->assign("tsPerfil", $tsUserAdmin->getUserPrivacidad());
 				$smarty->assign("tsPrivacidad", $tsPrivacidad);
 				$smarty->assign("tsContenido", $tsContenido);
          }
-         switch($do){
+         switch($type){
 				case 5:
         	     	if(!empty($_POST['save'])) {
-        	         $update = $tsAdmin->setUserPrivacidad($user_id);
-        	         if($update === 'OK') $tsCore->redirectTo('/admin/users?act=show&uid='.$user_id.'&save=true');
+        	         $update = $tsUserAdmin->setUserPrivacidad($userID);
+        	         if($update === 'OK') $tsCore->redirectTo('/admin/users?act=show&uid='.$userID.'&save=true');
                   else $smarty->assign("tsError", $update);
                }
             break;
             case 6:
             	if(!empty($_POST['save'])) {
-            		$delete = $tsAdmin->deleteContent($user_id);
-            		if($delete === 'OK') $tsCore->redirectTo('/admin/users?act=show&uid='.$user_id.'&save=true');
+            		$delete = $tsUserAdmin->deleteContent($userID);
+            		if($delete === 'OK') $tsCore->redirectTo('/admin/users?act=show&uid='.$userID.'&save=true');
             		else $smarty->assign("tsError", $delete);
             	}
             break;
-            case 7:
-        	   	if(!empty($_POST['save'])){
-        	       	$update = $tsAdmin->setUserRango($user_id);
-        	       	if($update === 'OK') $tsCore->redirectTo('/admin/users?act=show&uid='.$user_id.'&save=true');
+            case 7: // Rango
+        	   	if(!empty($_POST['save'])) {
+        	       	$update = $tsAdmin->setUserRango($userID);
+        	       	if($update === 'OK') $tsCore->redirectTo('/admin/users?act=show&uid='.$userID.'&save=true');
                   else $smarty->assign("tsError", $update);
                }
-               $smarty->assign("tsUserR", $tsAdmin->getUserRango($user_id));
+               $smarty->assign("tsUserR", $tsUserAdmin->getUserRango($userID));
             break;
-				case 8:
+				case 8: // Firma
         	      if(!empty($_POST['save'])){
-        	         $update = $tsAdmin->setUserFirma($user_id);
-        	         if($update === 'OK') $tsCore->redirectTo('/admin/users?act=show&uid='.$user_id.'&save=true');
+        	         $update = $tsUserAdmin->setUserFirma($userID);
+        	         if($update === 'OK') $tsCore->redirectTo('/admin/users?act=show&uid='.$userID.'&save=true');
                   else $smarty->assign("tsError", $update);
                }
-					$smarty->assign("tsUserF", $tsAdmin->getUserData());
+					$smarty->assign("tsUserF", $tsUserAdmin->getUserData());
             break;
             default:
-               if(!empty($_POST['save'])){
-        	         $update = $tsAdmin->setUserData($user_id);
-        	         if($update === 'OK') $tsCore->redirectTo('/admin/users?act=show&uid='.$user_id.'&save=true');
+               if(!empty($_POST['user_name'])) {
+        	         $update = $tsUserAdmin->setUserData();
+        	         if($update === 'OK') $tsCore->redirectTo('/admin/users?act=show&uid='.$userID.'&save=true');
                   else $smarty->assign("tsError", $update);
                }
-    	         $smarty->assign("tsUserD", $tsAdmin->getUserData());
+    	         $smarty->assign("tsUserD", $tsUserAdmin->getUserData());
             break;
          }
          // TIPO
-         $smarty->assign("tsType", $_GET['t']);
-         $smarty->assign("tsUserID", $user_id);
-         $smarty->assign("tsUsername", $tsUser->getUserName($user_id));
+         $smarty->assign("tsType", $type);
+         $smarty->assign("tsUserID", $userID);
+         $smarty->assign("tsUsername", $tsUser->getUserName($userID));
 	   }
 	}
 

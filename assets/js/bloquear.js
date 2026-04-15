@@ -62,7 +62,7 @@ const bloquear = (user, bloqueado, lugar, aceptar) => {
 		user,
 		bloqueado
 	});
-	api('bloqueos-cambiar.php', params, response => {
+	api('bloqueos-cambiar', params, response => {
 		const { status, message } = $.parseResponse(response);
 		dialog.alert('Bloquear Usuarios', message);
 		if (status === 1) actualizarUIBloqueo(user, bloqueado, lugar);

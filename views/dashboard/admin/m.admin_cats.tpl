@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function () {
       multiDrag: true,
       store: {
          // Guardar orden
-         set: sortable => $.post(route.url + '/admin-ordenar-categorias.php', 'cats=' + sortable.toArray().join(','))
+         set: sortable => $.post(route.url + '/admin-ordenar-categorias', 'cats=' + sortable.toArray().join(','))
       }
    });
    /* {/if} */

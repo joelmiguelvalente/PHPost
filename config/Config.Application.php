@@ -10,6 +10,7 @@
  *
  * Este archivo NO contiene lógica de negocio.
  *
+ * @name config/Config.Application.php
  * @package   PHPost
  * @copyright 2026
  */
@@ -25,6 +26,7 @@ final class ConfigApplication extends AbstractConfig
 		 * development | staging | production
 		 */
 		$APP_ENV = 'development';
+		$isLocalDev = ($APP_ENV === 'development' && file_exists(dirname(__DIR__, 1)."/.local"));
 
 		$this->items = [
 
@@ -37,7 +39,7 @@ final class ConfigApplication extends AbstractConfig
 				'name'      	=> 'PHPost Risus',
 				'slogan'	   	=> 'Inteligencia recargada 2026',
 				'server'    	=> 'https://discord.gg/StWZtrt2DE',
-				'version'   	=> '3.4.36',
+				'version'   	=> '3.5.50',
 				'status'    	=> $APP_ENV,
 				'description'	=> 'Descubre nuestra plataforma completamente renovada. Actualizaciones constantes, nuevas funcionalidades y experiencia mejorada. En constante evolución para ofrecerte lo mejor.'
 			],
@@ -51,8 +53,8 @@ final class ConfigApplication extends AbstractConfig
 				// 1 - E_ALL
 				// 2 - E_ALL & ~E_WARNING & ~E_NOTICE & ~E_DEPRECATED
 				// 3 - 0
-				'level' => file_exists(dirname(__DIR__, 1)."/.local") ? 1 : 3,
-				'active' => ($APP_ENV === 'development' && file_exists(dirname(__DIR__, 1)."/.local")),
+				'level'  => $isLocalDev ? 1 : 3,
+				'active' => $isLocalDev,
 				'logs' 	=> 'always',
 			],
 
@@ -116,7 +118,7 @@ final class ConfigApplication extends AbstractConfig
 				'session' => [
 					'name'     => 'phpost_session',
 					'lifetime' => 0,
-					'secure'   => $APP_ENV === 'production',
+					'secure'   => in_array($APP_ENV, ['production', 'staging']),
 					'httponly' => true,
 					'samesite' => 'Lax',
 				],
@@ -130,8 +132,10 @@ final class ConfigApplication extends AbstractConfig
 			'paths' => [
 				//'base_url'    => 'http://localhost/phpost',
 				'avatar'      => TS_STORAGE . '/avatar',
+				'backups'     => TS_STORAGE . '/backups',
 				'cache'       => TS_STORAGE . '/cache',
 				'logs'        => TS_STORAGE . '/logs',
+				'media'       => TS_STORAGE . '/media',
 				'uploads'     => TS_STORAGE . '/uploads',
 			],
 		];

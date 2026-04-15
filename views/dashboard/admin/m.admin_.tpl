@@ -31,7 +31,31 @@
 		</div>
 		<div class="phpost version lg:col-span-1">
 			<div class="bg-neutral-primary-soft block border border-default rounded-base shadow-xs p-3 mb-4">
-				<h5 class="mb-3 text-2xl font-semibold tracking-tight text-heading leading-8">PHPost Risus</h5>
+		      <h5 class="text-sm font-semibold uppercase tracking-wide mb-4 flex items-center">
+		         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04m14.562 10.848a12.059 12.059 0 01-5.944 5.48m-5.944-5.48a12.059 12.059 0 01-5.944-5.48M12 7V12l3 3"></path></svg>
+		         Salud del Sistema
+		      </h5>
+
+		      <div class="py-2 flex justify-between">
+		         <span>Protocolo de Red</span>
+		         <span class="font-medium {if $smarty.server.HTTPS}text-green-600{else}text-amber-600{/if}">
+		            {if $smarty.server.HTTPS}Seguro (HTTPS){else}No Seguro (HTTP){/if}
+		         </span>
+		      </div>
+		      <div class="py-2 flex justify-between">
+		         <span>Exposición de Errores</span>
+		         <span class="font-medium {if $tsVersion.php.display_errors}text-red-600{else}text-green-600{/if}">
+		            {if $tsVersion.php.display_errors}Activo (Riesgo){else}Oculto (Seguro){/if}
+		         </span>
+		      </div>
+		      <div class="py-2 flex justify-between">
+		         <span>Límite de Memoria</span>
+		         <span class="font-medium text-gray-800 dark:text-gray-200">{$tsVersion.php.memory_limit}</span>
+		      </div>
+		   </div>
+
+			<div class="bg-neutral-primary-soft block border border-default rounded-base shadow-xs p-3 mb-4">
+				<h5 class="text-sm font-semibold uppercase tracking-wide mb-4 flex items-center">PHPost Risus</h5>
 				<ul id="version_pp" class="pp_list">
 					<li>
 	            	<span class="text-lg font-medium text-heading">Versi&oacute;n instalada</span>
@@ -41,7 +65,7 @@
 			</div>
 			
 			<div class="bg-neutral-primary-soft block border border-default rounded-base shadow-xs p-3 mb-4">
-				<h5 class="mb-3 text-2xl font-semibold tracking-tight text-heading leading-8">Administradores</h5>
+				<h5 class="text-sm font-semibold uppercase tracking-wide mb-4 flex items-center">Administradores</h5>
 				<ul class="pp_list">                                    
 					{foreach from=$tsAdmins item=admin}
 						<li><div class="title"><a href="{$tsConfig.url}/perfil/{$admin.user_name}" class="hovercard" uid="{$admin.user_id}">{$admin.user_name}</a></div></li>
@@ -50,7 +74,7 @@
 			</div>
 			
 			<div class="bg-neutral-primary-soft block border border-default rounded-base shadow-xs p-3 mb-4">
-				<h5 class="mb-3 text-2xl font-semibold tracking-tight text-heading leading-8">Instalaciones</h5>
+				<h5 class="text-sm font-semibold uppercase tracking-wide mb-4 flex items-center">Instalaciones</h5>
 				<ul>
 					<li class="py-2 flex justify-between">
 						<span>Fundaci&oacute;n</span>
@@ -76,7 +100,7 @@ document.addEventListener('DOMContentLoaded', function () {
 	   const $news = $('#news_pp');
 	   const $versions = $('#version_pp');
 	   // ---- Feed version ----
-	   $.get(route.url + '/feed-version.php').done(response => {
+	   $.get(route.url + '/feed-version').done(response => {
 	      const { name, latest, required_php } = response;
 	      let html = `<li class="flex flex-col py-2">
 	         <span class="text-lg font-medium text-heading">Última versión</span>
@@ -86,7 +110,7 @@ document.addEventListener('DOMContentLoaded', function () {
 	      $versions.append(html);
 	   }).fail((_, status, error) => console.error('Error feed-version:', status, error));
 	   // ---- Feed soporte ----
-	   $.getJSON(route.url + '/feed-support.php').done(response => {
+	   $.getJSON(route.url + '/feed-support').done(response => {
 	      if (!Array.isArray(response)) {
 	         console.error('Respuesta inválida feed-support', response);
 	         return;

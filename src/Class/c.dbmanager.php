@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name c.dbmanager.php
+ * @name src/Class/c.dbmanager.php
  * @author PHPost Team
  * @copyright 2026
  */

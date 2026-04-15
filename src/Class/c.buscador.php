@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name c.buscador.php
+ * @name src/Class/c.buscador.php
  * @author PHPost Team
  * @copyright 2026
  * @note Desarrollado con asistencia de Claude (Anthropic)

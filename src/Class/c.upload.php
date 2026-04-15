@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name c.upload.php
+ * @name src/Class/c.upload.php
  * @author PHPost Team
  * @copyright 2026
  */
@@ -70,8 +70,10 @@ final class tsUpload {
 
 		$this->storeAvatarVariants($base, $userId);
 
-		imagedestroy($src);
-		imagedestroy($base);
+		if(PHP_VERSION_ID < 80400) {
+			imagedestroy($src);
+			imagedestroy($base);
+		}
 		@unlink($source);
 
 		return ['error' => 'success'];
@@ -150,8 +152,9 @@ final class tsUpload {
 		$path = TS_STORAGE . "/uploads/avatar_{$key}.{$ext}";
 
 		imagejpeg($img, $path, 95);
-		imagedestroy($img);
-
+		if (PHP_VERSION_ID < 80400) {
+			imagedestroy($img);
+		}
 		return [
 			'msg' => true,
 			'key' => $key,
@@ -230,7 +233,7 @@ final class tsUpload {
 			}
 
 			if ($img !== $base) {
-				imagedestroy($img);
+				if(PHP_VERSION_ID < 80400) imagedestroy($img);
 			}
 		}
 	}

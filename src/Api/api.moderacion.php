@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name api.cuenta.php
+ * @name src/Api/api.cuenta.php
  * @author PHPost Team
  * @copyright 2026
  */
@@ -69,7 +69,7 @@ switch($action){
 				if(isset($_POST['razon'])) {
 					echo $tsMod->deletePost($pid);
 				} else {
-					require_once TS_EXTRA . "/datos.php";
+					require_once TS_EXTRAS . "/datos.php";
 					$tsPage = 'p.posts.mod';
 					$smarty->assign("tsDenuncias", $tsDenuncias['posts']);   
 				}
@@ -142,7 +142,7 @@ switch($action){
 						$tsAjax = false;
 						echo $tsMod->deleteFoto($fid);
 					} else {
-						require_once TS_EXTRA . '/datos.php';
+						require_once TS_EXTRAS . '/datos.php';
 						$tsPage = 'p.fotos.mod';
 						$smarty->assign("tsDenuncias",$tsDenuncias['fotos']);   
 					}

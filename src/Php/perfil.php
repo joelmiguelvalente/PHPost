@@ -47,7 +47,7 @@ if($ctx->continue()) {
 		require_once TS_HELPERS . "/UserHelper.php";
 		require_once TS_CLASS . "/c.cuenta.php";
 		require_once TS_CLASS . "/c.muro.php";
-		$tsPaises = require_once TS_EXTRA . "/Paises.php";
+		$tsPaises = require_once TS_EXTRAS . "/Paises.php";
 
 		$tsCuenta = new tsCuenta($tsCore, $tsUser);
 		$UserHelper = new UserHelper($tsCore);

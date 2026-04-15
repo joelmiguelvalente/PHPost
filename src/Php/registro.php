@@ -28,6 +28,11 @@ if (is_array($tsLevelMsg)) {
    $ctx->exportLegacy();
 }
 
+if($tsUser->is_member) {
+   header("Location: {$tsCore->route('url')}");
+   die;
+}
+
 if($ctx->continue()) {
 
    $registro = $tsCore->reCaptchaConfig();

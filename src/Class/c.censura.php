@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name c.censura.php
+ * @name src/Class/c.censura.php
  * @author PHPost Team
  * @copyright 2026
  */

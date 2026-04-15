@@ -6,7 +6,7 @@
 			{include "dashboard/Alert.tpl" text="No hay fotos." color="orange" show=true}
 		{else}
 			<div class="overflow-x-auto rounded-md border bg-white dark:bg-surface shadow-sm">
-				<table class="min-w-full border-collapse text-sm">					
+				<table class="min-w-full border-collapse text-sm">
 					{include "dashboard/table/Thead.tpl" fields=[
 						"ID",
 						"T&iacute;tulo",

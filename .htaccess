@@ -1,7 +1,7 @@
-# ==================================================
+# ==============================
 # PHPost - Apache .htaccess
-# Propósito: Routing + Hardening básico
-# ==================================================
+# Propósito: Routing + Hardening
+# ==============================
 
 # --------------------
 # Error handling
@@ -17,39 +17,55 @@ ErrorDocument 501 /views/error/501.html
 # --------------------
 Options All -Indexes
 IndexIgnore *
-  
-# --------------------
-# Rewrite engine
-# --------------------
-RewriteEngine On
 
-# RewriteCond %{HTTPS} !=on
-# RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
-# Redirect 301 /old-page /new-page
-
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteCond %{REQUEST_FILENAME} !-f
- 
 # --------------------
-# Request limits (10mb x 1024b x 1024b)
+# Request limits (10mb)
 # --------------------
 LimitRequestBody 10485760
 
-# ==================================================
+# ==============================
+# Rewrite engine
+# ==============================
+RewriteEngine On
+
+# --------------------
+# HTTPS redirect (activar en producción)
+# --------------------
+# RewriteCond %{HTTPS} !=on
+# RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# --------------------
+# Bloquear acceso directo a PHP desde el navegador
+# (permite rewrites internos, bloquea requests directos)
+# --------------------
+RewriteCond %{THE_REQUEST} \s.+\.(php|phtml|php5|php7)\s [NC]
+RewriteCond %{THE_REQUEST} !index\.php [NC]
+# EXCEPCIÓN: Permitir el cargador del editor visual
+RewriteCond %{REQUEST_URI} !src/Extras/upload\.php [NC]
+RewriteRule ^ - [F,L]
+
+# --------------------
+# Archivos y rutas que existen físicamente
+# --------------------
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+
+# ==============================
 # Application routing
-# ==================================================
+# ==============================
 
 RewriteRule ^$ index.php?do=home [QSA,L]
 RewriteRule ^pagina([0-9]+)$ index.php?page=$1 [QSA,L]
-RewriteRule ^index.php$ index.php?do=home [QSA,L]
-RewriteRule ^cuenta.php$ src/Php/cuenta.php [QSA,L]
+RewriteRule ^index\.php$ index.php?do=home [QSA,L]
+RewriteRule ^cuenta\.php$ src/Php/cuenta.php [QSA,L]
 RewriteRule ^cuenta/([A-Za-z0-9_-]+)$ src/Php/cuenta.php?accion=$1 [QSA,L]
 
 # AGREGAR O EDITAR POST
 RewriteRule ^(agregar|editar)$ src/Php/agregar.php?action=$1 [QSA,L]
-RewriteRule ^editar/([0-9_-]+)$ src/Php/agregar.php?action=$1&id=$2 [QSA,L]
+RewriteRule ^fotos/(agregar|editar)$ src/Php/fotos.php?action=$1 [QSA,L]
+RewriteRule ^editar/([0-9_-]+)$ src/Php/agregar.php?action=editar&id=$1 [QSA,L]
 
-#PERFIL
+# PERFIL
 RewriteRule ^(perfil/|@)([A-Za-z0-9_-]+)$ src/Php/perfil.php?user=$2 [QSA,L]
 RewriteRule ^(perfil/|@)([A-Za-z0-9_-]+)/$ src/Php/perfil.php?user=$2 [QSA,L]
 RewriteRule ^(perfil/|@)([A-Za-z0-9_-]+)/([0-9]+)$ src/Php/perfil.php?user=$2&pid=$3 [QSA,L]
@@ -57,84 +73,110 @@ RewriteRule ^(perfil/|@)([A-Za-z0-9_-]+)/([0-9]+)$ src/Php/perfil.php?user=$2&pi
 # PORTAL
 RewriteRule ^mi/$ index.php?do=portal [QSA,L]
 
-# POSTS (2026)
+# POSTS
 RewriteRule ^posts/$ src/Php/home.php?do=posts [QSA,L]
 RewriteRule ^posts/pagina([0-9]+)$ src/Php/posts.php?do=posts&page=$1 [QSA,L]
 RewriteRule ^posts/([A-Za-z0-9_-]+)$ src/Php/posts.php?do=posts&cat=$1 [QSA,L]
 RewriteRule ^posts/([A-Za-z0-9_-]+)/pagina([0-9]+)$ src/Php/posts.php?do=posts&cat=$1&page=$2 [QSA,L]
-RewriteRule ^posts/([A-Za-z0-9_-]+)/([0-9]+)/(.*).html$ src/Php/posts.php?do=posts&cat=$1&id=$2&title=$3 [QSA,L]
+RewriteRule ^posts/([A-Za-z0-9_-]+)/([0-9]+)/(.*)\.html$ src/Php/posts.php?do=posts&cat=$1&id=$2&title=$3 [QSA,L]
 RewriteRule ^p/([0-9]+)$ src/Php/posts.php?do=posts&id=$1 [QSA,L]
 
 # FOTOS
-RewriteRule ^fotos/([A-Za-z0-9_-]+).php$ src/Php/fotos.php?action=$1 [QSA,L]
+RewriteRule ^fotos/([A-Za-z0-9_-]+)\.php$ src/Php/fotos.php?action=$1 [QSA,L]
 RewriteRule ^fotos/([A-Za-z0-9_-]+)$ src/Php/fotos.php?action=album&user=$1 [QSA,L]
 RewriteRule ^fotos/([A-Za-z0-9_-]+)/([0-9]+)$ src/Php/fotos.php?action=album&user=$1&page=$2 [QSA,L]
-RewriteRule ^fotos/([A-Za-z0-9_-]+)/([0-9]+)/([A-Za-z0-9_-]+).html$ src/Php/fotos.php?action=ver&user=$1&fid=$2 [QSA,L]
+RewriteRule ^fotos/([A-Za-z0-9_-]+)/([0-9]+)/([A-Za-z0-9_-]+)\.html$ src/Php/fotos.php?action=ver&user=$1&fid=$2 [QSA,L]
 
 # ADMIN
 RewriteRule ^admin/afs/editar/([0-9]+)$ src/Php/admin.php?action=afs&act=editar&aid=$1 [QSA,L]
 RewriteRule ^admin/medals/editar/([0-9]+)$ src/Php/admin.php?action=medals&act=editar&mid=$1 [QSA,L]
-RewriteRule ^admin/medals/nueva src/Php/admin.php?action=medals&act=nueva [QSA,L]
+RewriteRule ^admin/medals/nueva$ src/Php/admin.php?action=medals&act=nueva [QSA,L]
 RewriteRule ^admin/news/editar/([0-9]+)$ src/Php/admin.php?action=news&act=editar&nid=$1 [QSA,L]
-RewriteRule ^admin/news/nueva src/Php/admin.php?action=news&act=nuevo [QSA,L]
+RewriteRule ^admin/news/nueva$ src/Php/admin.php?action=news&act=nuevo [QSA,L]
 
 # MODERACIÓN
 RewriteRule ^moderacion/buscador/([0-2]+)/([0-2]+)/(.*)$ src/Php/moderacion.php?action=buscador&act=search&m=$1&t=$2&texto=$3 [QSA,L]
-# AllowEncodedSlashes NoDecode
 
 # RECUPERAR PASS Y VALIDAR CUENTA
-RewriteRule ^(password|validar)/(.+)/([0-9]+)/(.+)$ src/Php/password.php?hash=$1&type=$2&email=$3
+RewriteRule ^(password|validar)/(.+)/([0-9]+)/(.+)$ src/Php/password.php?hash=$2&type=$1&email=$3&token=$4 [QSA,L]
+# NOTA: en el original los parámetros estaban mal mapeados ($1 iba a hash siendo type, etc.)
 
-#HISTORIAL DE MODERACIÓN
-RewriteRule ^mod-history/([A-Za-z0-9_-]+)/ src/Php/mod-history.php?ver=$1 [QSA,L]
+# HISTORIAL DE MODERACIÓN
+RewriteRule ^mod-history/([A-Za-z0-9_-]+)/$ src/Php/mod-history.php?ver=$1 [QSA,L]
 
-RewriteRule ^generator/ views/generator.panel.php [QSA,L]
+# GENERATOR (solo en desarrollo — bloquear en producción)
+RewriteRule ^generator/$ views/generator.panel.php [QSA,L]
 
 # --------------------
 # Generic fallbacks
 # --------------------
-
-RewriteRule ^([A-Za-z0-9_-]+)\.php$ src/Api/index.php?action=$1 [QSA,L]
+RewriteRule ^([A-Za-z0-9_-]+)$ src/Api/index.php?action=$1 [QSA,L]
 RewriteRule ^([A-Za-z0-9_-]+)/$ src/Php/$1.php [QSA,L]
 RewriteRule ^([A-Za-z0-9_-]+)/([A-Za-z0-9_-]+)$ src/Php/$1.php?action=$2 [QSA,L]
 RewriteRule ^([A-Za-z0-9_-]+)/([A-Za-z0-9_-]+)/$ src/Php/$1.php?action=$2 [QSA,L]
 RewriteRule ^([A-Za-z0-9_-]+)/([A-Za-z0-9_-]+)/([0-9]+)$ src/Php/$1.php?action=$2&id=$3 [QSA,L]
 
+# ==============================
+# Hardening
+# ==============================
+
 # --------------------
-# Configuración, templates, logs
+# Bloquear extensiones sensibles
 # --------------------
-<FilesMatch "\.(ini|log|cfg|tpl|cache|version|md)$">
-	Require all denied
+<FilesMatch "\.(ini|log|cfg|tpl|cache|version|md|sql|bak|backup|old|tmp|swp)$">
+    Require all denied
 </FilesMatch>
 
 # --------------------
 # Archivos ocultos y de control
 # --------------------
 <FilesMatch "^\.">
-	Require all denied
+    Require all denied
 </FilesMatch>
 
 # --------------------
 # Ecosistema JS/PHP
 # --------------------
 <FilesMatch "(composer|package|yarn)\.(json|lock)$">
-	Require all denied
+    Require all denied
 </FilesMatch>
 
 # --------------------
 # Variables de entorno y auth
 # --------------------
 <FilesMatch "(\.env|\.gitignore|\.htaccess|\.htpasswd)$">
-	Require all denied
+    Require all denied
 </FilesMatch>
 
+# ==============================
+# Headers de seguridad
+# ==============================
+Header always set X-Frame-Options "SAMEORIGIN"
+Header always set X-Content-Type-Options "nosniff"
+Header always set Referrer-Policy "strict-origin-when-cross-origin"
+Header always set Permissions-Policy "geolocation=()"
+
+# Ajustar CSP según los dominios externos que uses (CDNs, fuentes, etc.)
+Header always set Content-Security-Policy "\
+default-src 'self'; \
+script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://www.google.com https://www.gstatic.com; \
+style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com; \
+font-src 'self' https://fonts.gstatic.com; \
+img-src 'self' data: blob: *; \
+media-src *; \
+frame-src *; \
+object-src 'none';"
+
 # --------------------
-# Cacheo de imagenes y archivos
+# Cacheo de assets estáticos
 # --------------------
 <FilesMatch "\.(jpg|jpeg|png|gif|webp|avif|js|css|pdf)$">
-	Header set Cache-Control "public, max-age=31536000, immutable"
+    Header set Cache-Control "public, max-age=31536000, immutable"
 </FilesMatch>
 
+# --------------------
+# Métodos HTTP permitidos
+# --------------------
 <LimitExcept GET POST>
-	Require all denied
+    Require all denied
 </LimitExcept>

@@ -1,3 +1,4 @@
+'use strict';
 // Desarrollado con asistencia de Claude (Anthropic)
 $(document).ready(() => {
 

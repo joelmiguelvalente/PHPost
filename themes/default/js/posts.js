@@ -13,7 +13,7 @@ const borrarComentario = (comid, autor, postid, next) => {
 	}
 	dialog.loading('Espere por favor...', 'Borrando Post');
 	let params = `comid=${comid}&autor=${autor}${queryParam('postid')}`;
-	api('comentario-borrar.php', params, response => {
+	api('comentario-borrar', params, response => {
 		const { status, message } = $.parseResponse(response);
 		if(status === 0) {
 			dialog.alert('Error', message);
@@ -31,7 +31,7 @@ const borrarComentario = (comid, autor, postid, next) => {
 /* Ocultar Comentario */
 const ocultarComentario = (comid, autor, postid) => {
 	let params = `comid=${comid}&autor=${autor}${queryParam('postid')}`;
-	api('comentario-ocultar.php', params, response => {
+	api('comentario-ocultar', params, response => {
    	const { status, message } = $.parseResponse(response);
    	if(status === 0) {
    		dialog.alert('Error', message);
@@ -53,7 +53,7 @@ const borrarPost = (next = 0) => {
 		return;
 	}
 	dialog.loading('Espere por favor...', 'Borrando Post');
-	api('posts-borrar.php', queryParam('postid', true), response => {
+	api('posts-borrar', queryParam('postid', true), response => {
 		const { status, message } = $.parseResponse(response);
 		const title = status === 1 ? 'Post borrado...' : 'Error';
 		dialog.alert(title, message);
@@ -78,7 +78,7 @@ const votarPost = (puntos = 0) => {
       return false;
    }
 	isVoted = true;
-   api('posts-votar.php', 'puntos=' + puntos + queryParam('postid'), response => {
+   api('posts-votar', 'puntos=' + puntos + queryParam('postid'), response => {
 		const { status, message } = $.parseResponse(response);
    	showVoteForce(true);
    	$('.dar-puntos').slideUp();
@@ -105,7 +105,7 @@ const addFavorite = () =>{
 		return;
 	}
 	isFavorite = true;
-   api('favoritos-agregar.php', queryParam('postid', true), response => {
+   api('favoritos-agregar', queryParam('postid', true), response => {
 		const { status, message } = $.parseResponse(response);
    	showMessage(message);
 		if(status === 1) {

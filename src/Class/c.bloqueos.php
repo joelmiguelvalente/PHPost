@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name c.bloqueos.php
+ * @name src/Class/c.bloqueos.php
  * @author PHPost Team
  * @copyright 2026
  */

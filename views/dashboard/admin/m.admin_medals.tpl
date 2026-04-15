@@ -27,7 +27,7 @@
 						{foreach from=$tsMedals.medallas item=m}
 							<tr class="hover:bg-gray-50 dark:hover:bg-surface-alt transition-colors" id="medal_id_{$m.medal_id}">
 								<td class="hover:bg-gray-50 dark:hover:bg-surface-alt transition-colors text-center">{$m.medal_id}</td>
-								<td class="px-3 py-2"><img src="{$tsRoutes.assets.images}/icons/med/{$m.m_image}_32.png" /></td>
+								<td class="px-3 py-2"><img src="{$tsRoutes.assets.images}/icons/medals/{$m.m_image}_32.png" /></td>
 								<td class="px-3 py-2">{if $m.m_type == 1}Usuario{elseif $m.m_type == 2}Post{else}Foto{/if}</td>
 								<td class="px-3 py-2">{$m.m_title}</td>
 								<td class="px-3 py-2">{$m.m_description}</td>
@@ -74,7 +74,7 @@
 					{foreach from=$tsAsignaciones.asignaciones item=m}
 						<tr id="assign_id_{$m.id}" class="hover:bg-gray-50 dark:hover:bg-surface-alt transition-colors">
 							<td class="px-3 py-2 text-gray-600 dark:text-gray-400">{$m.id}</td>
-							<td class="px-3 py-2"><img src="{$tsRoutes.assets.images}/icons/med/{$m.m_image}_32.png" title="{$m.m_title}"/></td>
+							<td class="px-3 py-2"><img src="{$tsRoutes.assets.images}/icons/medals/{$m.m_image}_32.png" title="{$m.m_title}"/></td>
 							<td class="px-3 py-2">{if $m.m_type == 1}Usuario{elseif $m.m_type == 2}Post{else}Foto{/if}</td>
 							<td class="px-3 py-2">{if $m.m_type == 1}<a href="{$tsConfig.url}/perfil/{$m.user_name}">@{$m.user_name}</a>{elseif $m.m_type == 2}<a href="{$tsConfig.url}/posts/{$m.c_seo}/{$m.post_id}/{$m.post_title|seo}.html" target="_blank">{$m.post_title}</a>{else}<a href="{$tsConfig.url}/fotos/autor/{$m.foto_id}/{$m.f_title}.html" target="_blank">{$m.f_title}</a>{/if}</td>
 							<td class="px-3 py-2">{$m.m_date|hace:true}</td>
@@ -102,7 +102,7 @@
 				$('#med_img').on('change', () => {
 					let icono = $("#med_img option:selected").val();
 					$('#c_icon').css({
-						"background": 'url(\'{$tsRoutes.assets.images}/icons/med/'+icono+'_32.png\') no-repeat center',
+						"background": 'url(\'{$tsRoutes.assets.images}/icons/medals/'+icono+'_32.png\') no-repeat center',
 						"background-size": '18px'
 					})
 				});
@@ -133,7 +133,7 @@
 				<div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-start py-2 mb-3">
 				  	<label for="m_image" class="font-medium text-gray-700 dark:text-gray-300">Icono de la categor&iacute;a</label>
 				  	<div class="md:col-span-2 flex items-center">
-				    	<div style="background:url({$tsRoutes.assets.images}/icons/med/{if $tsMed.m_image}{$tsMed.m_image}{else}{$tsIcons.0}{/if}_32.png) no-repeat center center;background-size:32px;display:block;width:32px;height:32px;margin-right:10px;" id="c_icon"></div>
+				    	<div style="background:url({$tsRoutes.assets.images}/icons/medals/{if $tsMed.m_image}{$tsMed.m_image}{else}{$tsIcons.0}{/if}_32.png) no-repeat center center;background-size:32px;display:block;width:32px;height:32px;margin-right:10px;" id="c_icon"></div>
 				  		<select name="m_image" id="m_image" class="rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-surface px-3 py-2 text-sm focus:ring-2 focus:ring-primary" style="width: 160px;">
 							{html_options values=$tsIcons output=$tsIcons selected=$tsMed.m_image}
 						</select>

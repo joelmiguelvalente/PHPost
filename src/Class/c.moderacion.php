@@ -213,7 +213,7 @@ class tsMod {
             $data = db_exec('fetch_assoc', $query);
             // RAZON
             if (is_numeric($razon_db)) {
-               require_once TS_EXTRA . "/datos.php";
+               require_once TS_EXTRAS . "/datos.php";
                $razon_db = $tsDenuncias['posts'][$razon_db];
             }
             db_exec([__FILE__, __LINE__], 'query', 'UPDATE `w_stats` SET `stats_posts` = stats_posts - 1 WHERE `stats_no` = 1');
@@ -275,7 +275,7 @@ class tsMod {
                $data = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', 'SELECT f.f_user, f.f_title, u.user_name FROM f_fotos AS f LEFT JOIN u_miembros AS u ON f.f_user = u.user_id WHERE f.foto_id = \'' . (int)$fid . '\' LIMIT 1'));
                // RAZON
                if (is_numeric($razon_db)) {
-                  require_once TS_EXTRA . "/datos.php";
+                  require_once TS_EXTRAS . "/datos.php";
                   $razon_db = $tsDenuncias['fotos'][$razon_db];
                }
                // AVISO
@@ -491,7 +491,7 @@ class tsMod {
       //
       $query = db_exec([__FILE__, __LINE__], 'query', 'SELECT u.user_id, u.user_name, h.*, p.post_id, p.post_title, c.c_seo, c.c_nombre FROM p_posts AS p LEFT JOIN u_miembros AS u ON u.user_id = p.post_user LEFT JOIN w_historial AS h ON h.pofid = p.post_id LEFT JOIN p_categorias AS c ON c.cid = p.post_category  WHERE h.type = 1 AND h.action = 2 AND p.post_status = 2 LIMIT ' . $limit);
       // DENUNCIAS
-      require_once TS_EXTRA . "/datos.php";
+      require_once TS_EXTRAS . "/datos.php";
       //
       while ($row = db_exec('fetch_assoc', $query)) {
          $row['mod_name'] = $this->User->getUserName($row['mod']);
@@ -513,7 +513,7 @@ class tsMod {
       //
       $query = db_exec([__FILE__, __LINE__], 'query', 'SELECT u.user_id, u.user_name, h.*, f.foto_id, f.f_title, f.f_user FROM f_fotos AS f LEFT JOIN u_miembros AS u ON u.user_id = f.f_user LEFT JOIN w_historial AS h ON h.pofid = f.foto_id WHERE h.type = 2 AND h.action = 2 AND f.f_status = 2 LIMIT ' . $limit);
       // DENUNCIAS
-      include TS_EXTRA . "datos.php";
+      include TS_EXTRAS . "datos.php";
       //
       while ($row = db_exec('fetch_assoc', $query)) {
          $row['mod_name'] = $this->User->getUserName($row['mod']);
@@ -564,7 +564,7 @@ class tsMod {
       'SELECT u.user_id, u.user_name, h.*, p.post_id, p.post_title FROM p_posts AS p LEFT JOIN u_miembros AS u ON u.user_id = p.post_user LEFT JOIN w_historial AS h ON h.pofid = p.post_id WHERE h.type = 1' : 
       'SELECT u.user_id, u.user_name, h.*, f.foto_id, f.f_title, f.f_user FROM f_fotos AS f LEFT JOIN u_miembros AS u ON u.user_id = f.f_user LEFT JOIN w_historial AS h ON h.pofid = f.foto_id WHERE h.type = 2';
       // DENUNCIAS
-      require_once TS_EXTRA . "/datos.php";
+      require_once TS_EXTRAS . "/datos.php";
       while ($row = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', $query .' ORDER BY h.id DESC LIMIT 20'))) {
          $row['mod_name'] = $this->User->getUserName($row['mod']);
          $row['reason'] = (is_numeric($row['reason'])) ? $tsDenuncias['posts'][$row['reason']] :

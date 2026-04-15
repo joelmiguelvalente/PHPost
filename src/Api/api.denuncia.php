@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name api.cuenta.php
+ * @name src/Api/api.cuenta.php
  * @author PHPost Team
  * @copyright 2026
  */
@@ -72,7 +72,7 @@ switch($action){
 	break;
 }
 if(in_array($action, ['denuncia-post', 'denuncia-foto', 'denuncia-usuario'])) {
-	require_once TS_EXTRA . "/datos.php";
+	require_once TS_EXTRAS . "/datos.php";
 	$data = [
 		'post' => 'posts',
 		'usuario' => 'users',

@@ -1,7 +1,7 @@
 {include "main_header.tpl"}
 	<div id="borradores">
 		<script type="text/javascript">
-		var borradores_data = [{$tsDrafts}];
+		var borradores_data = [{$tsBorradores}];
 		</script>
 		<div class="clearfix">
 			<div class="left" style="float:left;width:200px">
@@ -40,7 +40,7 @@
 						<label for="borradores-search" style="color:#999999;float:right;position:absolute;right:135px;top:11px;z-index:5;">Buscar</label><input type="text" id="borradores-search" value="" onKeyUp="borradores.search(this.value, event)" onFocus="borradores.search_focus()" onBlur="borradores.search_blur()" autocomplete="off" />
 					</div>
 					<div id="res" class="boxy-content">
-						{if $tsDrafts}<ul id="resultados-borradores"></ul>{else}
+						{if $tsBorradores}<ul id="resultados-borradores"></ul>{else}
 						<div class="alert-empty">No tienes ning&uacute;n borrador ni post eliminado.</div>{/if}
 					</div>
 				</div>

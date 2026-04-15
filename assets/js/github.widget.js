@@ -40,7 +40,7 @@ function loadCommit(branch = 'php-8-migration') {
 
    $widget.html('<div class="text-xs text-gray-400 text-center py-2">Cargando...</div>');
 
-   api(`github-commit.php`, { branch }, response => {
+   api(`github-commit`, { branch }, response => {
       const result = typeof response === 'string' ? JSON.parse(response) : response;
 
       if (!result || result.state === 0) {

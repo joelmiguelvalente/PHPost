@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name api.dbmanager.php
+ * @name src/Api/api.dbmanager.php
  * @author PHPost Team
  * @copyright 2026
  */

@@ -5,7 +5,7 @@ function actualizar_comentarios() {
 	const $lista = $('#ult_comm')
    $('#loading').fadeIn(250);
    $lista.html('<div class="alert-empty">Esperando...</div>')
-   $.get(`${route.url}/posts-last-comentarios.php`, response => {
+   $.get(`${route.url}/posts-last-comentarios`, response => {
    	$lista.html(response);
    })
    .fail(() => {

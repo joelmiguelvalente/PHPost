@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name c.estadisticas.php
+ * @name src/Class/c.estadisticas.php
  * @author PHPost Team
  * @copyright 2026
  * > Si, tengo que mejorar estos bloques

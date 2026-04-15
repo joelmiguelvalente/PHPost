@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name c.monitor.php
+ * @name src/Class/c.monitor.php
  * @author PHPost Team
  * @copyright 2026
  */
@@ -493,15 +493,15 @@ class tsMonitor {
 			break;
 			// 15|16|17 $this->buildMedalAction($oracion, $data, $noType);
 			case 15:
-				$oracion['text'] = "Recibiste una nueva <span title=\"{$data['m_title']}\"><strong>medalla</strong> <img class=\"item-image\" src=\"{$urlImages}/icons/med/{$data['m_image']}_32.png\"/></span>";
+				$oracion['text'] = "Recibiste una nueva <span title=\"{$data['m_title']}\"><strong>medalla</strong> <img class=\"item-image\" src=\"{$urlImages}/icons/medals/{$data['m_image']}_32.png\"/></span>";
 			break;
 			case 16:
 				$urlPost = $this->makeUrlOracion('post', $data);
-				$oracion['text'] = "Tu <a href=\"{$urlPost}\" title=\"{$data['post_title']}\"><strong>post</strong></a> tiene una nueva <span title=\"{$data['m_title']}\"><strong>medalla</strong> <img class=\"item-image\" src=\"{$urlImages}/icons/med/{$data['m_image']}_32.png\"/></span>";
+				$oracion['text'] = "Tu <a href=\"{$urlPost}\" title=\"{$data['post_title']}\"><strong>post</strong></a> tiene una nueva <span title=\"{$data['m_title']}\"><strong>medalla</strong> <img class=\"item-image\" src=\"{$urlImages}/icons/medals/{$data['m_image']}_32.png\"/></span>";
 			break;
 			case 17:
 				$urlFoto = $this->makeUrlOracion('foto', $data);
-				$oracion['text'] = "Tu <a href=\"{$urlFoto}\" title=\"{$data['f_title']}\"><strong>foto</strong></a> tiene una nueva <span title=\"{$data['m_title']}\"><strong>medalla</strong> <img class=\"item-image\" src=\"{$urlImages}/icons/med/{$data['m_image']}_32.png\"/></span>";
+				$oracion['text'] = "Tu <a href=\"{$urlFoto}\" title=\"{$data['f_title']}\"><strong>foto</strong></a> tiene una nueva <span title=\"{$data['m_title']}\"><strong>medalla</strong> <img class=\"item-image\" src=\"{$urlImages}/icons/medals/{$data['m_image']}_32.png\"/></span>";
 			break;
 		}
 		# RETORNAMOS

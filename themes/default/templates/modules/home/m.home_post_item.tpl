@@ -9,11 +9,11 @@
 	{if !$staff}
 		<div class="item-data">
 			<div>
-				<time datetime="{$data.post_date|fecha:'iso'}">{$data.post_date|hace:true}</time>
 				<a href="{$tsConfig.url}/@{$data.user_name}" title="Perfil del usuario">@{$data.user_name}</a>
 				<span>Puntos <strong>{$data.post_puntos|number_abbr}</strong></span>
 				<span>Comentarios <strong>{$data.post_comments|number_abbr}</strong></span>
 			</div>
+			<time datetime="{$data.post_date|fecha:'iso'}" class="block">{$data.post_date|hace:true}</time>
 			{if $category}
 				<a class="category" href="{$tsConfig.url}/posts/{$data.c_seo}/">{$data.c_nombre}</a>
 			{/if}

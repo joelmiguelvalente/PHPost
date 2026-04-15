@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name c.registro.php
+ * @name src/Class/c.registro.php
  * @author PHPost Team
  * @copyright 2026
  */
@@ -157,47 +157,47 @@ class tsRegistro {
 
 	private function insertMessagePrivate(int $uid, string $message, string $titulo) {
 		$preview = substr($message, 0, 75);
-	   $mp_id = DB::insert('u_mensajes', [
-	   	'mp_to' => $uid,
+	   	$mp_id = DB::insert('u_mensajes', [
+	   		'mp_to' => $uid,
 			'mp_from' => 1,
 			'mp_subject' => $titulo,
 			'mp_preview' => $preview,
 			'mp_date' => time()
-	   ]);
-	   DB::insert('u_respuestas', [
-	   	'mp_id' => $mp_id,
+	   	]);
+	  	DB::insert('u_respuestas', [
+	   		'mp_id' => $mp_id,
 			'mr_from' => 1,
 			'mr_body' => $message,
 			'mr_ip' => $this->myIP,
 			'mr_date' => time()
-	   ]);
+	   	]);
 	}
 
 	private function insertAvise(int $uid, string $message, string $titulo) {
-	   DB::insert('u_avisos', [
-	   	'user_id' => $uid,
+	   	DB::insert('u_avisos', [
+	   		'user_id' => $uid,
 			'av_subject' => $titulo,
 			'av_body' => $message,
 			'av_date' => $time,
 			'av_type' => 4
-	   ]);
+	   	]);
 	}
 
 	private function sendMessageWelcome(int $uid, array $tsData = []) {
 		$welcome = $this->Core->reCaptchaConfig('c_met_welcome');
 		if($welcome > 0 && $welcome < 4) {
 			$heading = 'Bienvenid' . (in_array($tsData['user_sexo'], ['none','male']) ? 'o' : 'a'); 
-         $message = str_replace(
-         	['[usuario]', '[welcome]', '[web]'], 
-         	[$tsData['user_nick'], $heading, $this->Core->settings['titulo']], 
-	         $this->Core->parseBBCode($this->Core->reCaptchaConfig('c_message_welcome'))
-	      );
-         //
-         $time = time();
-         $title = "$heading a {$this->Core->settings['titulo']}";
-	      switch($welcome) {
-	         case 1: $this->insertMuroMessage($uid, $message); break;
-	         case 2: $this->insertMessagePrivate($uid, $message, $title); break;
+         	$message = str_replace(
+         		['[usuario]', '[welcome]', '[web]'],
+         		[$tsData['user_nick'], $heading, $this->Core->settings['titulo']],
+	         	$this->Core->parseBBCode($this->Core->reCaptchaConfig('c_message_welcome'))
+	      	);
+        	//
+        	$time = time();
+        	$title = "$heading a {$this->Core->settings['titulo']}";
+	    	switch($welcome) {
+	         	case 1: $this->insertMuroMessage($uid, $message); break;
+	         	case 2: $this->insertMessagePrivate($uid, $message, $title); break;
 		 		case 3: $this->insertAvise($uid, $message, $title); break;
 			}
 		}

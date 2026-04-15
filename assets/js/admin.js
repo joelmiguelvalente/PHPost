@@ -1,12 +1,10 @@
 const subDelete = ({ endpoint, param, remove }) => {
-   $('#loading').fadeIn(250);
    api(endpoint, param, response => {
    	const { status, message } = $.parseResponse(response);
 	   dialog.alert((status === 0 ? 'Error' : 'Bien'), message, status === 1);
 	   if(status === 1 && remove !== '') {
 	   	$(remove).remove()
 	   }
-	   $('#loading').fadeOut(350);
    });
 }
 const mainDelete = ({ title, body, text, fn }) => {
@@ -14,8 +12,7 @@ const mainDelete = ({ title, body, text, fn }) => {
 }
 
 const noticias = nid => {
-	$('#loading').fadeIn(250);
-	api('admin-noticias-setInActive.php', { nid }, response => {
+	api('admin-noticias-setInActive', { nid }, response => {
 		const { status, message } = $.parseResponse(response);
 		if(status === 0) {
 			dialog.alert('Error', message);
@@ -27,13 +24,12 @@ const noticias = nid => {
 			.addClass(`bg-${color}-100 text-${color}-800`)
 			.text((status === 1 ? 'Activa' : 'Inactiva'))
 		}
-		$('#loading').fadeOut(350)
 	})
 }
 
 const tema = {
 	usar(path) {
-		api('tema-usar.php', { path }, response => {
+		api('tema-usar', { path }, response => {
 	      const { status, message } = $.parseResponse(response);
 	      dialog.alert((status === 0 ? 'Error' : 'Bien'), message, status === 1);
 			return;
@@ -54,17 +50,17 @@ const medallas = {
 		   });
 		   return;
 	   }
-	   subDelete({ 
-	   	endpoint: 'admin-medalla-borrar.php', 
-	   	param: { medal_id: mid }, 
+	   subDelete({
+	   	endpoint: 'admin-medalla-borrar',
+	   	param: { medal_id: mid },
 	   	remove: `#medal_id_${mid}`
 	   });
 	},
    asignar(mid, gew) {
    	if(!gew) {
-		   api('admin-medalla-asignar-form.php', {}, response => {
+		   api('admin-medalla-asignar-form', {}, response => {
 	   		const { status, message } = $.parseResponse(response);
-	   		dialog.init({ 
+	   		dialog.init({
 	        		title: 'Asignar medalla',
 	        		body: '<div id="AFormInputs">'+message+'</div>',
 			      buttons: {
@@ -73,35 +69,33 @@ const medallas = {
 		  		});
 		   });
 		} else {
-		   $('#loading').fadeIn(250);
 		   const params = {
-				mid: mid, 
-				m_usuario: $('#m_usuario').val(), 
-				pid: $('#m_post').val(), 
+				mid: mid,
+				m_usuario: $('#m_usuario').val(),
+				pid: $('#m_post').val(),
 				fid: $('#m_foto').val()
 		   };
-		   api('admin-medalla-asignar.php', params, response => {
+		   api('admin-medalla-asignar', params, response => {
 	   		const { status, message } = $.parseResponse(response);
 	   		dialog.alert((status ? 'Hecho' : 'Opps!'), message);
 	   		if(status === 1) {
 	   			$('#total_med_assig_' + mid).text(parseInt($('#total_med_assig_' + mid).text()) + 1);
-         		$('#loading').fadeOut(350);
 	   		}
 		   })
 		}
    },
 	borrar_asignacion(aid, mid, next = false) {
 		if(!next) {
-			mainDelete({ 
+			mainDelete({
 	        	title: 'Borrar Asignacion',
 	        	body: '&#191;Quiere continuar borrando esta asignaci&oacute;n?',
-			   text: 'Borrar asignacion', 
-			   fn: () => medallas.borrar_asignacion(aid, mid, true) 
+			   text: 'Borrar asignacion',
+			   fn: () => medallas.borrar_asignacion(aid, mid, true)
 			});
 			return;
 		}
 		subDelete({
-			endpoint: 'admin-medallas-borrar-asignacion.php',
+			endpoint: 'admin-medallas-borrar-asignacion',
 			param: { aid, mid },
 			remove: `#assign_id_${aid}`
 		})
@@ -111,16 +105,16 @@ const medallas = {
 const blacklist = {
 	borrar(bid, next = false) {
 		if(!next) {
-			mainDelete({ 
+			mainDelete({
 	        	title: 'Retirar Bloqueo',
 	        	body: '&#191;Quiere retirar este bloqueo?',
-			   text: 'Quitar bloque', 
-			   fn: () => blacklist.borrar(bid, true) 
+			   text: 'Quitar bloque',
+			   fn: () => blacklist.borrar(bid, true)
 			});
 			return;
 		}
 		subDelete({
-			endpoint: 'admin-blacklist-delete.php',
+			endpoint: 'admin-blacklist-delete',
 			param: { bid },
 			remove: `#block_${bid}`
 		})
@@ -130,16 +124,16 @@ const blacklist = {
 const badwords = {
 	borrar(wid, next = false) {
 		if(!next) {
-			mainDelete({ 
+			mainDelete({
 	        	title: 'Retirar Filtro',
 	        	body: '&#191;Quiere retirar este Filtro?',
-			   text: 'Quitar Filtro', 
-			   fn: () => badwords.borrar(wid, true) 
+			   text: 'Quitar Filtro',
+			   fn: () => badwords.borrar(wid, true)
 			});
 			return;
 		}
 		subDelete({
-			endpoint: 'admin-badwords-delete.php',
+			endpoint: 'admin-badwords-delete',
 			param: { wid },
 			remove: `#wid_${wid}`
 		})
@@ -149,16 +143,16 @@ const badwords = {
 const posts = {
 	borrar(pid, next = false) {
 		if(!next) {
-			mainDelete({ 
+			mainDelete({
 	        	title: 'Borrar Post',
 	        	body: '&#191;Quiere borrar este post permanentemente?',
-			   text: 'Borrar post', 
-			   fn: () => posts.borrar(pid, true) 
+			   text: 'Borrar post',
+			   fn: () => posts.borrar(pid, true)
 			});
 			return;
 		}
 		subDelete({
-			endpoint: 'posts-admin-borrar.php',
+			endpoint: 'posts-admin-borrar',
 			param: { postid: pid },
 			remove: `#post_${pid}`
 		})
@@ -168,16 +162,16 @@ const posts = {
 const fotos = {
 	borrar(fid, next = false) {
 		if(!next) {
-			mainDelete({  
+			mainDelete({
 	        	title: 'Borrar Foto',
 	        	body: '&#191;Quiere borrar esta foto permanentemente?',
-			   text: 'Borrar foto', 
-			   fn: () => fotos.borrar(fid, true) 
+			   text: 'Borrar foto',
+			   fn: () => fotos.borrar(fid, true)
 			});
 			return;
 		}
 		subDelete({
-			endpoint: 'admin-foto-borrar.php',
+			endpoint: 'admin-foto-borrar',
 			param: { foto_id: fid },
 			remove: `#foto_${fid}`
 		})
@@ -185,7 +179,7 @@ const fotos = {
 	setOpenClosed: async fid => {
 		$('#loading').fadeIn(250);
       var h = await admin_send_post({
-      	pagina: 'admin-foto-setOpenClosed', 
+      	pagina: 'admin-foto-setOpenClosed',
       	parametros: 'fid=' + fid
       })
 		if(h.charAt(0) === '0') mydialog.alert('Error', h.substring(3))
@@ -196,7 +190,7 @@ const fotos = {
 	setShowHide:async fid => {
       $('#loading').fadeIn(250);
       var h = await admin_send_post({
-      	pagina: 'admin-foto-setShowHide', 
+      	pagina: 'admin-foto-setShowHide',
       	parametros: 'fid=' + fid
       })
 		if(h.charAt(0) === '0') mydialog.alert('Error', h.substring(3))
@@ -206,7 +200,7 @@ const fotos = {
 	}
 }
 
-/** 
+/**
  * Nueva organización
 */
 const admin = {
@@ -218,7 +212,7 @@ const admin = {
             pagina: 'admin-users-InActivo',
             parametros: 'uid=' + uid
          })
-         if(h.charAt(0) === '0') mydialog.alert('Error', h.substring(3)); 
+         if(h.charAt(0) === '0') mydialog.alert('Error', h.substring(3));
          var change = (h.charAt(0) === '1') ? ['green', 'Activo'] : ['purple', 'Inactivo'];
          $('#status_user_' + fid).html('<font color="'+change[0]+'">'+change[1]+'</font>');
       }
@@ -240,7 +234,7 @@ const admin = {
             })
             mydialog.alert((a.charAt(0) == '0' ? 'Opps!' : 'Hecho'), a.substring(3), false);
             mydialog.center();
-            if(a.charAt(0) == '1') $('#sesion_' + sid).fadeOut(); 
+            if(a.charAt(0) == '1') $('#sesion_' + sid).fadeOut();
             $('#loading').fadeOut(350);
          }
       }
@@ -262,7 +256,7 @@ const admin = {
             })
             mydialog.alert((a.charAt(0) == '0' ? 'Opps!' : 'Hecho'), a.substring(3), false);
             mydialog.center();
-            if(a.charAt(0) == '1') $('#nick_' + nid).fadeOut(); 
+            if(a.charAt(0) == '1') $('#nick_' + nid).fadeOut();
             $('#loading').fadeOut(350);
          }
       }
@@ -289,7 +283,7 @@ function selectAll(formId, state) {
    $('#' + formId + ' input[type="checkbox"]').prop('checked', state);
 }
 function confirmTruncate(table) {
-	dialog.init({ 
+	dialog.init({
 		title: '⚠ Vaciar tabla',
 		body: `¿Estás seguro que querés vaciar la tabla <strong>${table}</strong>? Esta acción no se puede deshacer.`,
 	   buttons: {
@@ -302,7 +296,7 @@ function doTruncate() {
 }
 
 function doDeleteBackup(filename, id) {
-	api(`dbmanager-delete_backup.php`, { filename }, response => {
+	api(`dbmanager-delete_backup`, { filename }, response => {
 		const { status, message } = $.parseResponse(response);
 	  	dialog.alert((status === 0 ? 'Error' : 'Bien'), message, status === 1);
 	  	if(status === 1) {
@@ -329,7 +323,7 @@ $(document).ready(() => {
 	$('.bactions button[data-action=delete]').on('click', function() {
 	   const filename = $(this).data('filename');
 	   const id = $(this).data('id');
-		dialog.init({ 
+		dialog.init({
 			title: '⚠ Eliminar backup',
 			body: `¿Estás seguro que quierés eliminar el <strong>${filename}</strong>? Esta acción no se puede deshacer.`,
 		   buttons: {

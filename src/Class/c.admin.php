@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name c.admin.php
+ * @name src/Class/c.admin.php
  * @author PHPost Team
  * @copyright 2026
  */
@@ -38,6 +38,7 @@ class tsAdmin {
    public function getAdmins(): array {
       return DB::fetchAll("SELECT user_id, user_name FROM u_miembros WHERE user_rango = 1 ORDER BY user_id");
    }
+
    /**
     * Obtenemos fundación y acutalización
    */
@@ -55,6 +56,8 @@ class tsAdmin {
          'version' => PHP_VERSION,
          'sapi' => PHP_SAPI,
          'memory_limit' => ini_get('memory_limit'),
+         'upload_max_filesize' => ini_get('upload_max_filesize'),
+         'display_errors' => ini_get('display_errors'),
          'timezone' => date_default_timezone_get(),
       ];
       // Database
@@ -78,9 +81,33 @@ class tsAdmin {
          'intl'     => extension_loaded('intl'),
          'curl'     => extension_loaded('curl'),
          'openssl'  => extension_loaded('openssl'),
+         'zlib'     => extension_loaded('zlib'),
          'json'     => extension_loaded('json'),
       ];
       return $data;
+   }
+
+   public function clearCache(): void {
+      if($this->User->uid !== 1) {
+         header("Location: " . $this->Core->settings['url'] . "/admin/creditos");
+         exit();
+      }
+      $cacheDir = TS_STORAGE . '/cache/';
+      $this->deleteCacheContents($cacheDir);
+      header("Location: " . $this->Core->settings['url'] . "/admin/creditos?save=true");
+      exit();
+   }
+
+   private function deleteCacheContents(string $dir): void {
+      $items = glob($dir . '*');
+      foreach($items as $item) {
+         if(is_dir($item)) {
+            $this->deleteCacheContents($item . '/'); // Recursivo para subcarpetas
+            rmdir($item); // Elimina la carpeta vacía
+         } elseif(is_file($item) && basename($item) !== 'index.html') {
+            unlink($item); // Elimina el archivo
+         }
+      }
    }
 
    /**
@@ -97,7 +124,7 @@ class tsAdmin {
     * saveAds() :: Guardamos las publicidades
     * ------------------------------ 
    */
-   public function saveAds() {
+   public function saveAds(): bool {
       $publicidades = [];
       $ads = ['300','468','160','728'];
       foreach($ads as $ad) {
@@ -106,7 +133,7 @@ class tsAdmin {
       }
       $publicidades['ads_search'] = $this->Core->setSecure($_POST['ads_search']);
       # Guardamos los datos en la base
-      if (DB::update('w_configuracion', $publicidades, "phpost_id = :id", ['id' => 1])) return true;
+      return (DB::update('w_configuracion', $publicidades, "phpost_id = :id", ['id' => 1]));
    }
 
    /**
@@ -120,8 +147,7 @@ class tsAdmin {
     * delCat() :: Eliminamos la categoría 
     * ------------------------------ 
    */
-   public function saveOrden() {
-      # 
+   public function saveOrden(): void {
       $ordenado = [];
       # Obtenemos lista con el nuevo orden
       $nuevo_orden = 1;
@@ -132,13 +158,13 @@ class tsAdmin {
       }
    }
 
-   public function getCat() {
+   public function getCat(): array {
       $cid = (int)($_GET['cid'] ?? 0);
       $data = DB::fetch("SELECT * FROM p_categorias WHERE cid = :id LIMIT 1", ['id' => $cid]);
       return $data;
    }
 
-   public function saveCat() {
+   public function saveCat(): bool {
       $cid = (int)($_GET['cid'] ?? 0);
       //
       $nombre = $this->Core->setSecure($this->Core->parseBadWords($_POST['c_nombre']));
@@ -148,16 +174,16 @@ class tsAdmin {
          "c_img" => $this->Core->setSecure($this->Core->parseBadWords($_POST['c_img'])),
       ];
       # Guardamos en la tabla
-      if (DB::update('p_categorias', $categoria, "cid = :id", ['id' => $cid])) return true;
+      return (DB::update('p_categorias', $categoria, "cid = :id", ['id' => $cid]));
    }
 
-   public function MoveCat() {
+   public function MoveCat(): bool {
       $new = (int)($_POST['newcid'] ?? 0);
       $old = (int)($_POST['oldcid'] ?? 0);
-      if (DB::update('p_categorias', ['post_category' => $new], "post_category = :old", ['old' => $old])) return true;
+      return (DB::update('p_categorias', ['post_category' => $new], "post_category = :old", ['old' => $old]));
    }
 
-   public function newCat() {
+   public function newCat(): bool {
       # Valores
       $nombre = $this->Core->setSecure($this->Core->parseBadWords($_POST['c_nombre']));
       # Orden
@@ -170,10 +196,10 @@ class tsAdmin {
          'c_seo' => $this->Core->setSEO($nombre),
          'c_img' => $this->Core->setSecure($this->Core->parseBadWords($_POST['c_img']))
       ]);
-      if ($insert) return true;
+      return ($insert);
    }
 
-   public function delCat() {
+   public function delCat(): string|bool {
       $cid = (int)($_GET['cid'] ?? 0);
       $ncid = (int)($_POST['ncid'] ?? 0);
       // MOVER
@@ -183,196 +209,9 @@ class tsAdmin {
       if(!DB::update('p_categorias', ['post_category' => $ncid], "post_category = :cid", ['cid' => $cid])) {
          return 'Lo sentimos ocurri&oacute; un error.';
       }
-      if (DB::delete('p_categorias', 'cid = :cid', ['cid' => $cid])) return true;
+      return (DB::delete('p_categorias', 'cid = :cid', ['cid' => $cid]));
    }
    
-   /**
-    * ------------------------------
-    * USUARIOS
-    * getUsuarios() :: Obtenemos todos los usuarios
-    * getUserPrivacidad() :: Obtenemos privacidad del usuario
-    * setUserPrivacidad() :: Guardamos privacidad del usuario
-    * getUserData() :: Obtenemos datos del usuario
-    * setUserData() :: Guardamos datos del usuario
-    * deleteContent() :: Eliminamos el contenido del usuario
-    * getUserRango() :: Obtenemos el rango del usuario
-    * setUserFirma() :: Guardamos nueva firma del usuario
-    * setUserInActivo() :: Activar/Desactivar usuario (AJAX)
-    * ------------------------------ 
-   */
-   public function getUsuarios() {
-      //
-      $max = 20; // MAXIMO A MOSTRAR
-      $limit = $this->Paginator->setPageLimit($max, true);
-      //
-      $order = ($_GET['o'] === 'e') ? 'activo, u.user_baneado' : ($_GET['o'] === 'c' ? 'email' : ($_GET['o'] == 'i' ? 'last_ip' : ($_GET['o'] == 'u' ? 'lastactive' : 'id')));
-      //
-      $data['data'] = result_array(db_exec([__FILE__, __LINE__], 'query', 'SELECT u.*, r.*, p.* FROM u_perfil AS p LEFT JOIN u_miembros AS u ON u.user_id = p.user_id LEFT JOIN u_rangos AS r ON r.rango_id = u.user_rango ORDER BY u.user_'.$order.' ' . ($_GET['m'] == 'a' ? 'ASC' : 'DESC') . ' LIMIT ' . $limit));
-      # Paginamos
-      list($total) = db_exec('fetch_row', db_exec([__FILE__, __LINE__], 'query', 'SELECT COUNT(*) FROM u_miembros WHERE user_id > 0'));
-      $data['pages'] = $this->Paginator->pageIndex($this->Core->settings['url'] . "/admin/users?o=" . $_GET['o'] . "&m=" . $_GET['m'] . "", $_GET['s'] ?? 0, (int)$total, $max);
-      # Retornamos
-        return $data;
-   }
-   public function getUserPrivacidad() {
-      # Obtenemos la ID del usuario
-      $uid = intval($_GET['uid']);
-      $data = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', 'SELECT p_configs FROM u_perfil WHERE user_id = '.$uid.' LIMIT 1'));
-      $data['p_configs'] = unserialize($data['p_configs']);
-      //
-      return $data;
-   }
-   public function setUserPrivacidad() {
-      # ID del usuario
-      $uid = intval($_GET['uid']);
-      //
-      $muro_firm = ($_POST['muro_firm'] > 4) ? 5 : $_POST['muro_firm'];
-      $see_hits = ($_POST['last_hits'] == 1 || $_POST['last_hits'] == 2) ? 0 : $_POST['last_hits'];
-      $perfilData['configs'] = serialize([
-         'm' => $_POST['muro'],
-         'mf' => $muro_firm,
-         'rmp' => $_POST['rec_mps'],
-         'hits' => $see_hits
-      ]);
-      //
-      $updates = $this->Core->buildSqlSet($perfilData, 'p_');
-      if (db_exec([__FILE__, __LINE__], 'query', 'UPDATE u_perfil SET ' . $updates . ' WHERE user_id = ' . $uid)) return true;
-   }
-   public function getUserData() {
-      # ID del usuario
-      $user_id = intval($_GET['uid']);
-      //
-      $data = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', 'SELECT u.*, r.*, p.* FROM u_perfil AS p LEFT JOIN u_miembros AS u ON u.user_id = p.user_id LEFT JOIN u_rangos AS r ON r.rango_id = u.user_rango WHERE u.user_id = '.$user_id.' LIMIT 1'));
-      $data['p_configs'] = json_decode($data['p_configs'], true);
-      # Retornamos
-      return $data;
-   }
-   public function setUserData(int $user_id = 0) {
-      # DATA
-      $data = db_exec('fetch_assoc',db_exec([__FILE__, __LINE__], 'query', 'SELECT `user_name`, `user_email`, `user_password` FROM u_miembros WHERE user_id = ' . $user_id));
-      # LOCALS
-      $email = $this->Core->setSecure(empty($_POST['email']) ? $data['user_email'] : $_POST['email']);
-      $password = $_POST['pwd'];
-      $cpassword = $_POST['cpwd'];
-      $user_nick = empty($_POST['nick']) ? $data['user_name'] : $_POST['nick'];
-      $user_points = empty($_POST['points']) ? $data['user_puntos'] : $_POST['points'];
-      $pointsxdar = empty($_POST['pointsxdar']) ? $data['user_puntos'] : $_POST['pointsxdar'];
-      $changenames = empty($_POST['changenicks']) ? $data['user_name_changes'] : $_POST['changenicks'];
-      $up["user_email"] = $email;
-      #
-      if (!filter_var($email, FILTER_VALIDATE_EMAIL)) return 'Correo electr&oacute;nico incorrecto';
-      if ($user_points >= 0) {
-         $up["user_puntos"] = intval($user_points);
-      } else return 'Los puntos del usuario no se reconocen';
-      if ($changenames >= 0) {
-         $up["user_name_changes"] = intval($changenames);
-      } else return 'Las disponibilidades de cambios de nombre de usuario deben ser num&eacute;ricas.';
-      if ($pointsxdar >= 0) {
-         $up["user_puntosxdar"] = intval($pointsxdar);
-      } else return 'Los puntos para dar no se reconocen';
-      if (!empty($password) && !empty($cpassword)) {
-         if (strlen($user_nick) < 3) return 'Nick demasiado corto.';
-         if (!preg_match('/^([A-Za-z0-9]+)$/', $user_nick)) return 'Nick inv&aacute;lido';
-         $up["user_name"] = $this->Core->setSecure($user_nick);
-         # Pass
-         if (strlen($password) < 6) return 'Contrase&ntilde;a no v&aacute;lida.';
-         if ($password != $cpassword) return 'Las contrase&ntilde;as no coinciden';
-         $up["user_password"] = $this->Core->setSecure(md5(md5($password) . strtolower($user_nick)));
-      }
-      # Guardamos los nuevos datos
-      $update = $this->Core->buildSqlSet($up);
-      if (db_exec([__FILE__, __LINE__], 'query', 'UPDATE `u_miembros` SET '.$update.' WHERE user_id = ' . $user_id)) {
-         if ($_POST['sendata']) {
-            mail($email, "Nuevos datos de acceso", "Sus datos de acceso a {$this->Core->settings['titulo']} han sido cambiados por un administrador. Los nuevos datos son: usuario: {$user_nick}, contraseña: {$password}. Disculpe las molestias", "From: {$this->Core->settings['titulo']} <no-reply@{$this->Core->settings['domain']}>");
-         }
-         return true;
-      }
-   }
-   public function deleteContent(int $user_id = 0){
-      #
-      $pass = md5(md5($_POST['password']) . strtolower($this->User->nick));
-      if(db_exec('num_rows', db_exec([__FILE__, __LINE__], 'query', 'SELECT user_id FROM u_miembros WHERE user_id = \''.$this->User->uid.'\' && user_password = \''.$pass.'\''))) {
-         # Nuevo formato mejorado (entendible)
-         $todo = isset($_POST['bocuenta']);
-         # Creamos un arreglo que tenga las tablas y columnas con datos
-         $arreglo = [
-            'boposts' => ['tabla' => 'p_posts', 'columna' => 'post_user'],
-            'bofotos' => ['tabla' => 'f_fotos', 'columna' => 'f_user'],
-            'boestados' => ['tabla' => 'u_muro', 'columna' => 'p_user_pub'],
-            'bocomposts' => ['tabla' => 'p_comentarios', 'columna' => 'c_user'],
-            'bocomfotos' => ['tabla' => 'f_comentarios', 'columna' => 'c_user'],
-            'bocomestados' => ['tabla' => 'u_muro_comentarios', 'columna' => 'c_user'],
-            'bolikes' => ['tabla' => 'u_muro_likes', 'columna' => 'user_id'],
-            'boseguidores' => ['tabla' => 'u_follows', 'columna' => 'f_type = 1 && f_id'],
-            'bosiguiendo' => ['tabla' => 'u_follows', 'columna' => 'f_type = 1 && f_user'],
-            'bofavoritos' => ['tabla' => 'p_favoritos', 'columna' => 'fav_user'],
-            'bovotosposts' => ['tabla' => 'p_votos', 'columna' => 'tuser'],
-            'bovotosfotos' => ['tabla' => 'f_votos', 'columna' => 'v_user'],
-            'boactividad' => ['tabla' => 'u_actividad', 'columna' => 'user_id'],
-            'boavisos' => ['tabla' => 'u_avisos', 'columna' => 'user_id'],
-            'bobloqueos' => ['tabla' => 'u_bloqueos', 'columna' => 'b_user'],
-            'bomensajes' => ['tabla' => ['u_mensajes', 'u_respuestas'], 'columna' => ['mp_from', 'mr_from']],
-            'bosesiones' => ['tabla' => 'u_sessions', 'columna' => 'session_user_id'],
-            'bovisitas' => ['tabla' => 'w_visitas', 'columna' => 'user']
-         ];
-         foreach($arreglo as $accion => $tipo) {
-            if($_POST[$accion] === 'on') {
-               if(is_array($tipo["tabla"]) OR is_array($tipo["columna"])) {
-                  foreach ($tipo["tabla"] as $t => $tabla) {
-                     db_exec([__FILE__, __LINE__], 'query', "DELETE FROM {$tipo["tabla"][$t]} WHERE {$tipo["columna"][$t]} = {$user_id}");
-                  }
-               } else {
-                  db_exec([__FILE__, __LINE__], 'query', "DELETE FROM {$tipo["tabla"]} WHERE {$tipo["columna"]} = {$user_id}");
-               }
-            }
-         }
-         //
-         if($todo && $this->User->uid != $user_id){
-            $array = [
-               ['tabla' => 'u_miembros', 'columna' => 'user_id'],
-               ['tabla' => 'u_perfil', 'columna' => 'user_id'],
-               ['tabla' => 'u_portal', 'columna' => 'user_id'],
-               ['tabla' => 'w_denuncias', 'columna' => 'd_user'],
-               ['tabla' => 'u_bloqueos', 'columna' => 'b_auser'],
-               ['tabla' => 'u_mensajes', 'columna' => 'b_auser'],
-               ['tabla' => 'w_visitas', 'columna' => 'type = 1 && for']
-            ];
-            foreach($array as $item) {
-               db_exec([__FILE__, __LINE__], 'query', "DELETE FROM {$item["tabla"]} WHERE {$item["columna"]} = {$user_id}");
-            }
-         }
-         #
-         $data = db_exec('fetch_row', db_exec([__FILE__, __LINE__], 'query', 'SELECT user_name FROM u_miembros WHERE user_id = '.$user_id));
-         $admin = db_exec('fetch_row', db_exec([__FILE__, __LINE__], 'query', 'SELECT user_email FROM u_miembros WHERE user_id = 1'));
-         # Insertamos el aviso
-         db_exec([__FILE__, __LINE__], 'query', 'INSERT INTO `u_avisos` (`user_id`, `av_subject`, `av_body`, `av_date`, `av_read`, `av_type`) VALUES (\'1\', \'Contenido eliminado\', \'Hola, le informamos que el administrador '.$this->User->nick.' ('.$this->User->uid.') ha eliminado '.($todo ? 'la cuenta' : 'varios contenidos').' de '.$data[0].'.\', \''.time().'\', \'0\', \'1\')');
-         # Enviamos el email
-         mail($admin[0], 'Contenido eliminado', '<html><head><title>Contenido de cierta cuenta han sido eliminados.</title></head><body><p>Hola, le informamos que el administrador '.$this->User->nick.' ('.$this->User->uid.') ha eliminado '.($todo ? 'la cuenta' : 'varios contenidos').' de '.$data[0].'</p></body></html>', 'Content-type: text/html; charset=iso-8859-15');
-         # Retornamos OK
-         return 'OK';
-      } else return 'Credenciales incorrectas';
-   }
-   public function getUserRango(int $user_id = 0) {
-      # CONSULTA
-      $data['user'] = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', 'SELECT u.user_rango, r.rango_id, r.r_name, r.r_color FROM u_miembros AS u LEFT JOIN u_rangos AS r ON u.user_rango = r.rango_id WHERE u.user_id = '.intval($user_id).' LIMIT 1'));
-      # RANGOS DISPONIBLES
-      $data['rangos'] = self::getAllRangos();
-      # Retornamos datos
-      return $data;
-   }
-   public function setUserFirma(int $user_id = 0) {
-      if (db_exec([__FILE__, __LINE__], 'query', 'UPDATE `u_perfil` SET user_firma = \'' . $this->Core->setSecure($_POST['firma']) . '\' WHERE user_id = ' . intval($user_id))) return true;
-   }
-   public function setUserInActivo() {
-      # Obtenemos la ID del usuair
-      $usuario = intval($_POST['uid']);
-      $data = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', 'SELECT user_activo FROM u_miembros WHERE user_id = ' . $usuario));
-      # Hacemos comprobaciones
-      $act = (intval($data['user_activo']) === 1) ? 0 : 1;
-      $txt = (intval($data['user_activo']) === 1) ? '2: Cuenta desactivada' : '1: Cuenta activada.';
-      //
-      return (db_exec([__FILE__, __LINE__], 'query', 'UPDATE u_miembros SET user_activo = '.$act.' WHERE user_id = ' . $usuario)) ? $txt : '0: Ocurri&oacute, un error';
-   }
    /**
     * ------------------------------
     * RANGOS
@@ -380,22 +219,21 @@ class tsAdmin {
     * setUserRango() :: Cambiamos de rangos a usuarios
     * ------------------------------ 
    */
-   public function getAllRangos() {
+   public function getAllRangos(): array {
       # RANGOS DISPONIBLES
-      $data = result_array(db_exec([__FILE__, __LINE__], 'query', 'SELECT `rango_id`, `r_name`, `r_color` FROM `u_rangos`'));
-      # Retornamos datos
-      return $data;
+      return DB::fetchAll('SELECT rango_id, r_name, r_color FROM u_rangos');
    }
 
-   public function setUserRango(int $user_id = 0) {
+   public function setUserRango(int $userId = 0): bool|string {
       # SOLO EL PRIMER ADMIN PUEDE PONER A OTROS ADMINS
-      $new_rango = intval($_POST['new_rango']);
-      if ($user_id === $this->User->uid) return 'No puedes cambiarte el rango a ti mismo';
+      $new_rango = (int)($_POST['new_rango'] ?? 0);
+      if ($userId === $this->User->uid) return 'No puedes cambiarte el rango a ti mismo';
       elseif ($this->User->uid !== 1 && $new_rango === 1) return 'Solo el primer Administrador puede crear más administradores principales';
       else {
-         if (db_exec([__FILE__, __LINE__], 'query', 'UPDATE u_miembros SET user_rango = '.$new_rango.' WHERE user_id = ' . intval($user_id))) return true;
+         return (!DB::update('u_miembros', ['user_rango' => $new_rango], "user_id = :uid", ['uid' => $userId]));
       }
    }
+
    /**
     * ------------------------------
     * SESIONES
@@ -414,6 +252,7 @@ class tsAdmin {
       # Retornamos datos
       return $data;
    }
+
    public function delSession() {
       # Obtenemos la session_id
       $session_id = $_POST['session_id'];
@@ -421,6 +260,7 @@ class tsAdmin {
          if (db_exec([__FILE__, __LINE__], 'query', 'DELETE FROM u_sessions WHERE session_id = \'' . $this->Core->setSecure($session_id) . '\'')) return '1: Eliminado';
       } else return '0: No existe esa sesi&oacute;n';
    }
+
    /**
     * ------------------------------
     * NICKS

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name c.actividad.php
+ * @name src/Class/c.actividad.php
  * @author PHPost Team
  * @copyright 2026
  */
@@ -226,9 +226,9 @@ class tsActividad {
 	 * @name makeConsulta
 	 * @access private
 	 * @params array
-	 * @return string/array
+	 * @return array
 	 */
-	private function makeConsulta(array $data = []) {
+	private function makeConsulta(array $data = []): array {
 		foreach (['obj_uno', 'obj_dos'] as $obj) {
 			$data[$obj] = (int) $data[$obj];
 		}
@@ -273,7 +273,7 @@ class tsActividad {
 	 * @params array
 	 * @return array
 	 */
-	private function makeOracion(array $data = []) {
+	private function makeOracion(array $data = []): array {
 		# VARIABLES LOCALES
 		$acType           = $data['ac_type'];
 		$siteUrl          = $this->Core->settings['url'];
@@ -315,8 +315,8 @@ class tsActividad {
 			$AvatarUno = $Avatar->get((int)$data['user_id']);
 			$AvatarDos = $Avatar->get((int)$data['avatar']);
 			// AVATARES
-			$ImgUno = "<img width=\"16\" height=\"16\" src=\"{$AvatarUno}\"/>";
-			$ImgDos = "<img width=\"16\" height=\"16\" src=\"{$AvatarDos}\"/>";
+			$ImgUno = "<img alt=\"Avatar del usuario\" width=\"16\" height=\"16\" src=\"{$AvatarUno}\"/>";
+			$ImgDos = "<img alt=\"Avatar del usuario\" width=\"16\" height=\"16\" src=\"{$AvatarDos}\"/>";
 			// ORACION
 			$oracion['text']  = $ImgUno . ' ' . $this->actividad[$acType]['text'] . ' ' . $ImgDos;
 			$oracion['link']  = $this->UrlHelper->buildPerfilUrl($data['user_name']);

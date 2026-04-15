@@ -21,7 +21,7 @@ function showMessage(message) {
 const afiliado = {
 	vars: [],
 	nuevo() {
-		$.get(`${route.url}/afiliado-form.php`, response => {
+		$.get(`${route.url}/afiliado-form`, response => {
 			dialog.init({
 				title: 'Nueva Afiliaci&oacute;n',
 				body: response,
@@ -69,7 +69,7 @@ const afiliado = {
 	},
 	enviando(params) {
 		$('#loading').fadeIn(250); 
-		$.post(`${route.url}/afiliado-nuevo.php`, params, response => {
+		$.post(`${route.url}/afiliado-nuevo`, params, response => {
 			const { status, message } = $.parseResponse(response);
 			if(status === 0) {
 				$('#AFStatus > span').fadeOut().text(message).fadeIn();
@@ -88,7 +88,7 @@ const afiliado = {
 	},
 	detalles(aid) {
 		$('#loading').fadeIn(250);
-		$.post(`${route.url}/afiliado-detalles.php`, { ref: aid }, response => {
+		$.post(`${route.url}/afiliado-detalles`, { ref: aid }, response => {
 			dialog.init({
 				title: 'Detalles',
 				body: response,
@@ -110,7 +110,7 @@ const afiliado = {
 		   return;
       } 
       $('#loading').fadeIn(250);
-      $.post(`${route.url}/afiliado-borrar.php`, { afid }, response => {
+      $.post(`${route.url}/afiliado-borrar`, { afid }, response => {
       	const { status, message } = $.parseResponse(response);
       	dialog.alert(status ? 'Hecho' : 'Opps', message, false);
       	if(status) {
@@ -122,7 +122,7 @@ const afiliado = {
    },
    activar(aid) {
    	$('#loading').fadeIn(250);
-      $.post(`${route.url}/afiliado-setactive.php`, { aid }, response => {
+      $.post(`${route.url}/afiliado-setactive`, { aid }, response => {
       	console.log(response)
       	const { status, message } = $.parseResponse(response);
       	dialog.alert(status ? 'Hecho' : 'Opps', message, false);

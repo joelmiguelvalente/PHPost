@@ -52,15 +52,21 @@ if($ctx->continue()) {
 			
 		break;
 		case 'agregar':
-			if(!empty($_POST['titulo'])){
-				$result = $tsFotos->newFoto();
-				$tsPage = 'aviso';
-				if(!is_array($result) && $result > 0){
-					$titulo = $tsCore->setSecure($_POST['titulo']);
-					$smarty->assign("tsAviso",array('titulo' => 'Foto Agregada', 'mensaje' => "La imagen <b>".$titulo."</b> fue agregada.", 'but' => 'Ver imagen', 'link' => "{$tsCore->settings['url']}/fotos/{$tsUser->nick}/{$result}/".$tsCore->setSEO($titulo).".html"));
-				} else {
-					$smarty->assign("tsAviso",array('titulo' => 'Opps...', 'mensaje' => $result, 'but' => 'Volver', 'link' => "{$tsCore->settings['url']}/fotos/agregar.php"));
+			if(!empty($_POST['title'])) {
+				$foto = $tsFotos->newFoto();
+				if(!is_array($foto) && $foto > 0){
+					$titulo = (new Extras)->slugify(trim($_POST['title'] ?? ''));
+					header("Location: {$tsCore->settings['url']}/fotos/{$tsUser->nick}/{$foto}/{$titulo}.html");
+					return;
 				}
+				$tsPage = 'aviso';
+				$smarty->assign("tsAviso", [
+					'titulo' => 'Opps...',
+					'mensaje' => $result,
+					'but' => 'Volver',
+					'link' => "{$tsCore->settings['url']}/fotos/agregar.php"
+				]);
+
 			}
 			
 		break;
@@ -87,20 +93,30 @@ if($ctx->continue()) {
 			// TITULO
 			$tsTitle = $tsFoto['foto']['f_title'].' - '.$tsFoto['foto']['user_name'].' - '.$tsCore->settings['titulo'];
 			
-			if($tsFoto['foto']['f_status'] == 1 && (!$tsUser->is_admod && $tsUser->permiso('moderacion.panel.acceso') == false)) {
-			$tsPage = 'aviso';
-			$smarty->assign("tsAviso",array('titulo' => 'Opps...', 'mensaje' => 'Esta foto se encuentra en revisi&oacute;n por acumulaci&oacute;n de denuncias', 'but' => 'Ir a Fotos', 'link' => "{$tsCore->settings['url']}/fotos/"));
-			}elseif($tsFoto['foto']['exist'] == 0){
-			$tsPage = 'aviso';
-			$smarty->assign("tsAviso",array('titulo' => 'Opps...', 'mensaje' => 'Esta foto no existe', 'but' => 'Ir a Fotos', 'link' => "{$tsCore->settings['url']}/fotos/"));
-			}else{
-			$smarty->assign("tsFoto", $tsFoto['foto']);
-			$smarty->assign("tsUFotos", $tsFoto['last']);
-			$smarty->assign("tsFFotos", $tsFoto['amigos']);
-			$smarty->assign("tsFComments", $tsFoto['comments']);
-			$smarty->assign("tsFVisitas", $tsFoto['visitas']);
-			$smarty->assign("tsFMedallas", $tsFoto['medallas']);
-			$smarty->assign("tsTMedallas", $tsFoto['m_total']);
+			if((int)$tsFoto['foto']['f_status'] === 1 && (!$tsUser->is_admod && $tsUser->permiso('moderacion.panel.acceso') == false)) {
+				$tsPage = 'aviso';
+				$smarty->assign("tsAviso", [
+					'titulo' => 'Opps...',
+					'mensaje' => 'Esta foto se encuentra en revisi&oacute;n por acumulaci&oacute;n de denuncias',
+					'but' => 'Ir a Fotos',
+					'link' => "{$tsCore->settings['url']}/fotos/"
+				]);
+			} elseif((int)$tsFoto['foto']['exist'] === 0) {
+				$tsPage = 'aviso';
+				$smarty->assign("tsAviso", [
+					'titulo' => 'Opps...',
+					'mensaje' => 'Esta foto no existe',
+					'but' => 'Ir a Fotos',
+					'link' => "{$tsCore->settings['url']}/fotos/"
+				]);
+			} else {
+				$smarty->assign("tsFoto", $tsFoto['foto']);
+				$smarty->assign("tsUFotos", $tsFoto['last']);
+				$smarty->assign("tsFFotos", $tsFoto['amigos']);
+				$smarty->assign("tsFComments", $tsFoto['comentarios']);
+				$smarty->assign("tsFVisitas", $tsFoto['visitas']);
+				$smarty->assign("tsFMedallas", $tsFoto['medallas']);
+				$smarty->assign("tsTMedallas", $tsFoto['m_total']);
 			}
 		break;
 		case 'album':

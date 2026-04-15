@@ -1,11 +1,18 @@
-<?php if ( ! defined('TS_HEADER')) exit('No se permite el acceso directo al script');
+<?php
+
 /**
- * Modelo para el control de los borradores
- *
- * @name    c.borradores.php
- * @author  PHPost Team
+ * @name src/Class/c.borradores.php
+ * @author PHPost Team
+ * @copyright 2026
  */
-class tsDrafts {
+
+declare(strict_types=1);
+
+if (!defined('TS_HEADER')) {
+	exit('No se permite el acceso directo al script');
+}
+
+class tsBorradores {
 
 	/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*\
 								BORRADORES

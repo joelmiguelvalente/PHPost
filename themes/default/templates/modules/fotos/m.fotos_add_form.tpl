@@ -1,72 +1,81 @@
-				{if ($tsAction == 'agregar' && ($tsUser->permiso('global.fotos.publicar') || $tsUser->is_admod)) || ($tsAction == 'editar' && ($tsUser->permiso('moderacion.fotos.editar') || $tsUser->is_admod))} 
-                <div id="centroDerecha" style="width: 630px; float: left;">
-                	<div class="">
-                        <h2 style="font-size: 15px;">{if $tsAction == 'agregar'}Agregar nueva{else}Editar{/if} foto</h2>
-                    </div>
-                    <form name="add_foto" method="post" action="" enctype="multipart/form-data" id="foto_form" class="form-add-post" autocomplete="off">
-                    <div class="loader">
-                        <img src="{$tsRoutes.tema.images}/loading_bar.gif" /><br />
+<div>
+{if ($tsAction == 'agregar' &&
+($tsUser->permiso('global.fotos.publicar') || $tsUser->is_admod)) ||
+($tsAction == 'editar' && ($tsUser->permiso('moderacion.fotos.editar') ||
+$tsUser->is_admod))}
+    <div class="box">
+        <div class="box-header">
+            <span class="box_txt">{if $tsAction == 'agregar'}Agregar nueva{else}Editar{/if} foto</span>
+        </div>
+        <div class="box-content" style="padding:0">
+            <form name="add_foto" method="POST" enctype="multipart/form-data" id="foto_form" class="form-add-post relative" autocomplete="off">
+
+                <div class="loader absolute">
+                    <div class="flex justify-center items-center gap-3 flex-col w-full h-full">
+                        <img src="{$tsRoutes.tema.images}/loading_bar.gif" />
                         <h2>Cargando foto, espere por favor....</h2>
                     </div>
-                    <div class="fade_out">
-                        <ul class="clearbeta">
-                            <li>
-                            <label for="ftitle">T&iacute;tulo</label>
-                            <span style="display: none;" class="errormsg"></span>
-                            <input type="text" tabindex="1" name="titulo" id="ftitle" maxlength="40" class="text-inp required" value="{$tsFoto.f_title}"/>
-                            </li>
-                        {if $tsAction != 'editar'}
-                            {if $tsConfig.c_allow_upload == 1}
-                            <li>
-                            <label for="ffile">Archivo</label>
-                            <input type="file" name="file" id="ffile" />
-                            </li>
-                            {else}
-                            <li>
-                            <label for="furl">URL</label>
-                            <span style="display: none;" class="errormsg"></span>
-                            <input type="text" tabindex="2" name="url" id="furl" maxlength="200" class="text-inp required" value="{$tsFoto.f_url}"/>
-                            </li>                            
-                            {/if}
-                        {/if}
-                            <li>
-                            <label for="fdesc">Descripci&oacute;n (<small>Max 500 car.</small>)</label>
-                            <span style="display: none;" class="errormsg"></span>
-                            <textarea name="desc" id="fdesc" cols="60" rows="5" onkeydown="return ControlLargo(this);" onkeyup="return ControlLargo(this);">{$tsFoto.f_description}</textarea>
-                            </li>
-                            <li>
-                            <label>Opciones</label>
-                            <div class="option clearbeta">  
-                                <input type="checkbox" class="floatL" id="sin_comentarios" name="closed"{if $tsFoto.f_closed == 1} checked="true"{/if}/>
-                                <p class="floatL">
-                                    <label for="sin_comentarios">Cerrar Comentarios</label>
-                                    Si no quieres recibir comentarios en tu foto.
-                                </p>
-                            </div>
-							<div class="option clearbeta">  
-                                <input type="checkbox" class="floatL" id="visitas" name="visitas"  {if $tsFoto.f_visitas == 1} checked="true"{/if}/>
-                                <p class="floatL">
-                                    <label for="visitas">&Uacute;ltimos visitantes</label>
-                                    Se mostrar&aacute;n los &uacute;ltimos visitantes.
-                                </p>
-                            </div>
-                            </li>
-                        </ul>
-						{if $tsUser->is_admod > 0 && $tsAction == 'editar' && $tsFoto.f_user  != $tsUser->uid}
-                                    <li style="clear:both;">
-                                    <label>Raz&oacute;n</label>
-                                    <input type="text" tabindex="8" name="razon" maxlength="150" size="60" class="text-inp" value=""/>
-                                     Si has modificado el contenido de esta foto, ingresa la raz&oacute;n.
-                                    </li>
-                                    {/if}
-                        <div class="end-form clearbeta">
-                        	<input type="button" style="width: auto; margin-left: 5px;" class="mBtn btnGreen" name="new" value="{if $tsAction == 'agregar'}Agregar foto{else}Guardar cambios{/if}" onclick="fotos.agregar()"/>
-                        </div>
-                    </div>                    
-                    </form>
                 </div>
-				{else}
-						<div class="alert-empty clearfix">
-                    	Lo sentimos, pero no puedes {if $tsAction == 'agregar'}agregar{else}editar{/if} una nueva foto.
-						</div>
-						{/if}
+
+                <div class="form-group" data-field="title">
+                    <label class="form-label" for="titulo">Título</label>
+                    <input type="text" id="titulo" name="title" class="form-control required" value="{$tsFoto.f_title}" data-role="field" required>
+                    <small class="form-helper" hidden></small>
+                </div>
+
+                {if $tsAction != 'editar'}
+                    {if $tsConfig.c_allow_upload == 1}
+                        <div class="form-group" data-field="file">
+                            <label class="form-label" for="archivo">Archivo</label>
+                            <input type="file" name="file" id="archivo" />
+                            <small class="form-helper" hidden></small>
+                        </div>
+                    {else}
+                        <div class="form-group" data-field="url">
+                            <label class="form-label" for="url">URL</label>
+                            <input type="text" id="url" name="url" class="form-control required" value="{$tsFoto.f_url}" data-role="field">
+                            <small class="form-helper" hidden></small>
+                        </div>
+                    {/if}
+                {/if}
+
+                <div class="form-group" data-field="description">
+                    <label class="form-label" for="descripcion">Descripci&oacute;n (<small>Max <span id="count">500</span> car.</small>)</label>
+                    <textarea id="descripcion" name="description" class="form-control" data-role="field" rows="5">{$tsFoto.f_description}</textarea>
+                    <small class="form-helper" hidden></small>
+                </div>
+
+                <div class="form-group" data-field="opciones">
+                    <h4>Opciones</h4>
+                    <label class="option">
+                        <input type="checkbox" id="sin_comentarios" name="closed"{if $tsFoto.f_closed} checked{/if}>
+                        <span>Cerrar Comentarios</span>
+                        <small class="block">Si no quieres recibir comentarios en tu foto.</small>
+                    </label>
+
+                    <label class="option">
+                        <input type="checkbox" name="visitas"{if $tsFoto.f_visitas} checked{/if}>
+                        <span>&Uacute;ltimos visitantes</span>
+                        <small class="block">Se mostrar&aacute;n los &uacute;ltimos visitantes.</small>
+                    </label>
+                </div>
+
+                {if $tsUser->is_admod > 0 && $tsAction == 'editar' && $tsFoto.f_user  != $tsUser->uid}
+                    <div class="form-group" data-field="razon">
+                        <label class="form-label" for="razon">Razón</label>
+                        <input type="text" id="razon" name="razon" maxlength="150" class="form-control" data-role="field">
+                        <small class="form-helper">Si has modificado el contenido de esta foto, ingresa la raz&oacute;n.</small>
+                    </div>
+                {/if}
+
+                <div class="end-form p-2">
+                    <!-- onclick="fotos.agregar()" -->
+                    <input type="button" name="{if $tsAction == 'agregar'}new{else}edit{/if}" class="btn btn-secondary" value="{if $tsAction == 'agregar'}Agregar foto{else}Guardar cambios{/if}">
+                </div>
+            </form>
+        </div>
+    </div>
+{else}
+    <div class="alert-empty clearfix">Lo sentimos, pero no puedes {if $tsAction == 'agregar'}agregar{else}editar{/if} una nueva foto.</div>
+{/if}
+</div>

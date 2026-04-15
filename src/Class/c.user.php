@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name c.user.php
+ * @name src/Class/c.user.php
  * @author PHPost Team
  * @copyright 2026
  */
@@ -77,33 +77,33 @@ class tsUser {
 	 * @return bool
 	 */
 	public function actualizarPuntos(): bool {
-	   $ultimaRecarga = (int)$this->info['user_nextpuntos'];
-	   $keepPoints = (int)$this->Core->settings['c_keep_points'] === 0;
-	   $points = (int)$this->permiso('global.limites.puntos_por_dia');
-	   $tiempoActual = time();
+		$ultimaRecarga = (int)$this->info['user_nextpuntos'];
+		$keepPoints = (int)$this->Core->settings['c_keep_points'] === 0;
+		$points = (int)$this->permiso('global.limites.puntos_por_dia');
+		$tiempoActual = time();
 
-	   // Si ya pasó el tiempo de recarga
-	   if ($ultimaRecarga < $tiempoActual) {
-	      // Calcular la próxima recarga: mañana a medianoche
-	      $sigRecarga = strtotime('tomorrow', $tiempoActual);
-	      if ($keepPoints) {
-	         // Reiniciar puntos a lo que da el permiso
-	         $nuevosPuntos = $points;
-	      } else {
-	         // Sumar puntos al valor actual (recuperar desde la base de datos)
-	         $nuevosPuntos = DB::select('u_miembros', 'user_puntosxdar', ['user_id' => $this->uid]);
-	         $nuevosPuntos = (int)($nuevosPuntos[0]['user_puntosxdar'] ?? 0) + $points;
-	      }
-	      // Actualizar base de datos
-	      $data = [
-	         'user_puntosxdar' => $nuevosPuntos,
-	         'user_nextpuntos' => $sigRecarga
-	      ];
-	      $param = ['uid' => $this->uid];
-	      DB::update('u_miembros', $data, 'user_id = :uid', $param);
-	      return true;
-	   }
-	   return false;
+		// Si ya pasó el tiempo de recarga
+		if ($ultimaRecarga < $tiempoActual) {
+			// Calcular la próxima recarga: mañana a medianoche
+			$sigRecarga = strtotime('tomorrow', $tiempoActual);
+			if ($keepPoints) {
+				// Reiniciar puntos a lo que da el permiso
+				$nuevosPuntos = $points;
+			} else {
+				// Sumar puntos al valor actual (recuperar desde la base de datos)
+				$nuevosPuntos = DB::select('u_miembros', 'user_puntosxdar', ['user_id' => $this->uid]);
+				$nuevosPuntos = (int)($nuevosPuntos[0]['user_puntosxdar'] ?? 0) + $points;
+			}
+			// Actualizar base de datos
+			$data = [
+				'user_puntosxdar' => $nuevosPuntos,
+				'user_nextpuntos' => $sigRecarga
+			];
+			$param = ['uid' => $this->uid];
+			DB::update('u_miembros', $data, 'user_id = :uid', $param);
+			return true;
+		}
+		return false;
 	}
 
 	private function getPermissions(): void {
@@ -182,28 +182,28 @@ class tsUser {
 	}
 
 	private function DarMedalla(int $uid): void {
-	   DB::begin();
-	   try {
-	   	$param = ['uid' => $uid];
-	      $q1 = DB::value("SELECT COUNT(wm.medal_id) FROM w_medallas AS wm LEFT JOIN w_medallas_assign AS wma ON wm.medal_id = wma.medal_id WHERE wm.m_type = 1 AND wma.medal_for = :uid", $param) ?: 0;
-	      $q2 = DB::value("SELECT COUNT(follow_id) FROM u_follows WHERE f_id = :uid AND f_type = 1", $param) ?: 0;
-	      $q3 = DB::value("SELECT COUNT(follow_id) FROM u_follows WHERE f_user = :uid AND f_type = 1", $param) ?: 0;
-	      $q4 = DB::value("SELECT COUNT(cid) FROM p_comentarios WHERE c_user = :uid AND c_status = 0", $param) ?: 0;
-	      $q5 = DB::value("SELECT COUNT(cid) FROM f_comentarios WHERE c_user = :uid", $param) ?: 0;
-	      $q6 = DB::value("SELECT COUNT(foto_id) FROM f_fotos WHERE f_status = 0 AND f_user = :uid", $param) ?: 0;
-	      $q7 = DB::value("SELECT COUNT(post_id) FROM p_posts WHERE post_user = :uid AND post_status = 0", $param) ?: 0;
-	      DB::commit();
-	   } catch (Exception $e) {
-	      DB::rollback();
-	      throw $e;
-	   }
-	   $medalla = new AsignarMedalla(1, $uid);
-	   $medalla->setOwnerUser($uid)
-	   ->setRango($this->info['user_rango'] ?? null)
-	   ->setNotificationType(15)
-	   ->addMetric(1, (int) $this->info['user_puntos'])->addMetric(2, $q2)
-	   ->addMetric(3, $q3)->addMetric(4, $q4)->addMetric(5, $q5)->addMetric(6, $q7)
-	   ->addMetric(7, $q6)->addMetric(8, $q1)->ejecutar();
+		DB::begin();
+		try {
+			$param = ['uid' => $uid];
+			$q1 = DB::value("SELECT COUNT(wm.medal_id) FROM w_medallas AS wm LEFT JOIN w_medallas_assign AS wma ON wm.medal_id = wma.medal_id WHERE wm.m_type = 1 AND wma.medal_for = :uid", $param) ?: 0;
+			$q2 = DB::value("SELECT COUNT(follow_id) FROM u_follows WHERE f_id = :uid AND f_type = 1", $param) ?: 0;
+			$q3 = DB::value("SELECT COUNT(follow_id) FROM u_follows WHERE f_user = :uid AND f_type = 1", $param) ?: 0;
+			$q4 = DB::value("SELECT COUNT(cid) FROM p_comentarios WHERE c_user = :uid AND c_status = 0", $param) ?: 0;
+			$q5 = DB::value("SELECT COUNT(cid) FROM f_comentarios WHERE c_user = :uid", $param) ?: 0;
+			$q6 = DB::value("SELECT COUNT(foto_id) FROM f_fotos WHERE f_status = 0 AND f_user = :uid", $param) ?: 0;
+			$q7 = DB::value("SELECT COUNT(post_id) FROM p_posts WHERE post_user = :uid AND post_status = 0", $param) ?: 0;
+			DB::commit();
+		} catch (Exception $e) {
+			DB::rollback();
+			throw $e;
+		}
+		$medalla = new AsignarMedalla(1, $uid);
+		$medalla->setOwnerUser($uid)
+		->setRango($this->info['user_rango'] ?? null)
+		->setNotificationType(15)
+		->addMetric(1, (int) $this->info['user_puntos'])->addMetric(2, $q2)
+		->addMetric(3, $q3)->addMetric(4, $q4)->addMetric(5, $q5)->addMetric(6, $q7)
+		->addMetric(7, $q6)->addMetric(8, $q1)->ejecutar();
 	}
 
 	/**
@@ -229,8 +229,8 @@ class tsUser {
 		$agent = $this->Core->setSecure((string) ($_SERVER['HTTP_USER_AGENT'] ?? ''));
 		$success = $success ? 1 : 0;
 		DB::raw(
-			"INSERT INTO u_login_attempts 
-			(user_id, identifier, ip, user_agent, success, created_at) 
+			"INSERT INTO u_login_attempts
+			(user_id, identifier, ip, user_agent, success, created_at)
 			VALUES (:uid, :identifier, INET6_ATON(:ip), :agent, :success, NOW())", [
 			'uid' => $userId,
 			'identifier' => $identifier,
@@ -336,7 +336,7 @@ class tsUser {
 		/* REDERIGIR */
 		if ($redirectTo !== NULL) {
 			$this->Core->redirectTo($redirectTo);
-		} 
+		}
 		return true;
 	}
 
@@ -426,7 +426,7 @@ class tsUser {
 	 * @return bool
 	 */
 	public function iFollow(int $userID = 0): bool {
-  		return DB::exists("SELECT 1 FROM u_follows WHERE f_id = :fid AND f_user = :fuser AND f_type = 1 LIMIT 1", ['fid' => $userID, 'fuser' => $this->uid]);
+		return DB::exists("SELECT 1 FROM u_follows WHERE f_id = :fid AND f_user = :fuser AND f_type = 1 LIMIT 1", ['fid' => $userID, 'fuser' => $this->uid]);
 	}
 
 	private function getUserStatus(int $lastActive, int $onlineLimit, int $inactiveLimit): array {
@@ -442,7 +442,7 @@ class tsUser {
 		if (!filter_var($IPBAN, FILTER_VALIDATE_IP)) {
 			exit('Su ip no se pudo validar.');
 		}
-  		$exists = DB::exists("SELECT 1 FROM w_blacklist WHERE type = 1 AND value = :value LIMIT 1", ['value' => $IPBAN]);
+		$exists = DB::exists("SELECT 1 FROM w_blacklist WHERE type = 1 AND value = :value LIMIT 1", ['value' => $IPBAN]);
 		if ($exists) {
 			die('Tu IP fue bloqueada por el administrador/moderador.');
 		}
@@ -454,70 +454,70 @@ class tsUser {
 	 * @return array
 	 */
 	public function getUsuarios(): array {
-	   $filters = [];
-	   $params = [];
-	   $paramIndex = 0;
-	   // --- TIEMPOS ---
-	   $lastActive = (int) $this->Core->settings['c_last_active'] * 60;
-	   $now = time();
-	   $onlineLimit = $now - $lastActive;
-	   $inactiveLimit = $now - ($lastActive * 2);
-	   // --- FILTROS ---
-	   if (($_GET['online'] ?? null) === 'true') {
-	      $filters[] = "u.user_lastactive > :lastactive";
-	      $params['lastactive'] = $onlineLimit;
-	   }
-	   if (($_GET['avatar'] ?? null) === 'true') {
-	      $filters[] = "p.p_avatar = :avatar";
-	      $params['avatar'] = 1;
-	   }
-	   if (!empty($_GET['sexo'])) {
-	      $sexo = $this->Core->setSecure(trim($_GET['sexo']));
-	      $filters[] = "p.user_sexo = :sexo";
-	      $params['sexo'] = $sexo;
-	   }
-	   if (!empty($_GET['pais'])) {
-	      $pais = $this->Core->setSecure($_GET['pais']);
-	      $filters[] = "p.user_pais = :pais";
-	      $params['pais'] = $pais;
-	   }
-	   if (!empty($_GET['rango'])) {
-	      $rango = (int) $_GET['rango'];
-	      $filters[] = "u.user_rango = :rango";
-	      $params['rango'] = $rango;
-	   }
-	   // --- WHERE BASE ---
-	   $where = "u.user_activo = 1 AND u.user_baneado = 0";
-	   if ($filters) {
-	      $where .= ' AND ' . implode(' AND ', $filters);
-	   }
-	   // --- TOTAL ---
-	   $totalSql = "SELECT COUNT(*) FROM u_miembros u LEFT JOIN u_perfil p ON u.user_id = p.user_id WHERE " . $where;
-	   $total = (int) DB::value($totalSql, $params);
-	   $pages = (new Paginator)->getPagination($total, 12);
-	   // --- DATA ---
-	   $dataSql = "SELECT u.user_id, u.user_name, p.user_pais, p.user_sexo, p.p_avatar, p.p_mensaje, u.user_rango, u.user_puntos, u.user_comentarios, u.user_posts, u.user_lastactive, u.user_baneado, r.r_name, r.r_color, r.r_image FROM u_miembros u LEFT JOIN u_perfil p ON u.user_id = p.user_id LEFT JOIN u_rangos r ON r.rango_id = u.user_rango WHERE " . $where . " ORDER BY u.user_id DESC LIMIT {$pages['limit']}";
-	   // Añadir los mismos parámetros para la consulta de datos
-	   $dataRows = DB::fetchAll($dataSql, $params);
+		$filters = [];
+		$params = [];
+		$paramIndex = 0;
+		// --- TIEMPOS ---
+		$lastActive = (int) $this->Core->settings['c_last_active'] * 60;
+		$now = time();
+		$onlineLimit = $now - $lastActive;
+		$inactiveLimit = $now - ($lastActive * 2);
+		// --- FILTROS ---
+		if (($_GET['online'] ?? null) === 'true') {
+			$filters[] = "u.user_lastactive > :lastactive";
+			$params['lastactive'] = $onlineLimit;
+		}
+		if (($_GET['avatar'] ?? null) === 'true') {
+			$filters[] = "p.p_avatar = :avatar";
+			$params['avatar'] = 1;
+		}
+		if (!empty($_GET['sexo'])) {
+			$sexo = $this->Core->setSecure(trim($_GET['sexo']));
+			$filters[] = "p.user_sexo = :sexo";
+			$params['sexo'] = $sexo;
+		}
+		if (!empty($_GET['pais'])) {
+			$pais = $this->Core->setSecure($_GET['pais']);
+			$filters[] = "p.user_pais = :pais";
+			$params['pais'] = $pais;
+		}
+		if (!empty($_GET['rango'])) {
+			$rango = (int) $_GET['rango'];
+			$filters[] = "u.user_rango = :rango";
+			$params['rango'] = $rango;
+		}
+		// --- WHERE BASE ---
+		$where = "u.user_activo = 1 AND u.user_baneado = 0";
+		if ($filters) {
+			$where .= ' AND ' . implode(' AND ', $filters);
+		}
+		// --- TOTAL ---
+		$totalSql = "SELECT COUNT(*) FROM u_miembros u LEFT JOIN u_perfil p ON u.user_id = p.user_id WHERE " . $where;
+		$total = (int) DB::value($totalSql, $params);
+		$pages = (new Paginator)->getPagination($total, 12);
+		// --- DATA ---
+		$dataSql = "SELECT u.user_id, u.user_name, p.user_pais, p.user_sexo, p.p_avatar, p.p_mensaje, u.user_rango, u.user_puntos, u.user_comentarios, u.user_posts, u.user_lastactive, u.user_baneado, r.r_name, r.r_color, r.r_image FROM u_miembros u LEFT JOIN u_perfil p ON u.user_id = p.user_id LEFT JOIN u_rangos r ON r.rango_id = u.user_rango WHERE " . $where . " ORDER BY u.user_id DESC LIMIT {$pages['limit']}";
+		// Añadir los mismos parámetros para la consulta de datos
+		$dataRows = DB::fetchAll($dataSql, $params);
 
-	   $data = [];
-	   foreach ($dataRows as $row) {
-	      $row['status'] = $this->getUserStatus((int) $row['user_lastactive'], $onlineLimit, $inactiveLimit);
-	      $row['rango'] = [
-	         'title' => $row['r_name'],
-	         'color' => $row['r_color'],
-	         'image' => $row['r_image'],
-	      ];
-	      $data[] = $row;
-	   }
-	   // --- TOTAL ACTUAL ---
-	   $offset = (int) explode(',', $pages['limit'])[0];
-	   $totalActual = $offset + count($data);
-	   return [
-	      'data' => $data,
-	      'pages' => $pages,
-	      'total' => $totalActual,
-	   ];
+		$data = [];
+		foreach ($dataRows as $row) {
+			$row['status'] = $this->getUserStatus((int) $row['user_lastactive'], $onlineLimit, $inactiveLimit);
+			$row['rango'] = [
+				'title' => $row['r_name'],
+				'color' => $row['r_color'],
+				'image' => $row['r_image'],
+			];
+			$data[] = $row;
+		}
+		// --- TOTAL ACTUAL ---
+		$offset = (int) explode(',', $pages['limit'])[0];
+		$totalActual = $offset + count($data);
+		return [
+			'data' => $data,
+			'pages' => $pages,
+			'total' => $totalActual,
+		];
 	}
 
 }

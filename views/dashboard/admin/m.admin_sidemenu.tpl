@@ -13,6 +13,7 @@
 		{include "dashboard/aside/Item.tpl" link="registro" label="Configuraci&oacute;n del registro"}
 		{include "dashboard/aside/Item.tpl" link="phpmailer" label="Configuraci&oacute;n del phpmailer"}
 		{include "dashboard/aside/Item.tpl" link="temas" label="Temas y apariencia"}
+		{include "dashboard/aside/Item.tpl" link="imageprovider" label="Proveedores de imagenes"}
 		{include "dashboard/aside/Item.tpl" link="news" label="Noticias"}
 		{include "dashboard/aside/Item.tpl" link="ads" label="Publicidad"}
 	</div>

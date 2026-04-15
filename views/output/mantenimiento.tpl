@@ -134,7 +134,7 @@ body {
 			<div class="hidden md:flex flex-1 justify-end gap-8">
 				{if $tsLogin}
 					<div class="flex items-center gap-9">
-						<a class="text-[#121517] dark:text-gray-300 text-sm font-medium leading-normal hover:text-primary transition-colors" href="{$tsRoutes.url}/login-salir.php">Cerrar sesión</a>
+						<a class="text-[#121517] dark:text-gray-300 text-sm font-medium leading-normal hover:text-primary transition-colors" href="{$tsRoutes.url}/login-salir">Cerrar sesión</a>
 					</div>
 				{/if}
 			</div>

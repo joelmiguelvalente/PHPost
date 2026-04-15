@@ -8,7 +8,7 @@
 	<div class="box_cuerpo">	
         {if $tsConfig.chat_id}<embed src="http://{$tsConfig.chat_id}.chatango.com/group" width="615" height="472" wmode="transparent" allowScriptAccess="always" allowNetworking="all" type="application/x-shockwave-flash" allowFullScreen="true" flashvars="cid={$tsConfig.chat_id}&v=0&w=0"></embed>
         {elseif $tsConfig.xat_id}
-		<embed src="http://www.xatech.com/web_gear/chat/chat.swf" quality="high" width="615" height="472" name="chat" FlashVars="id={$tsConfig.xat_id}" align="middle" allowScriptAccess="sameDomain" type="application/x-shockwave-flash" pluginspage="http://xat.com/update_flash.shtml" /><br><small><a target="_BLANK" href="http://xat.com/web_gear/chat/go_large.php?id={$tsConfig.xat_id}">Chat m&aacute;s amplio.</a></small><br>
+		<embed src="http://www.xatech.com/web_gear/chat/chat.swf" quality="high" width="615" height="472" name="chat" FlashVars="id={$tsConfig.xat_id}" align="middle" allowScriptAccess="sameDomain" type="application/x-shockwave-flash" pluginspage="http://xat.com/update_flash.shtml" /><br><small><a target="_BLANK" href="http://xat.com/web_gear/chat/go_large?id={$tsConfig.xat_id}">Chat m&aacute;s amplio.</a></small><br>
 		{else}
         <div class="alert-empty">Estamos por agregar el chat para que todos ustedes se puedan divertir y hacer nuevos amigos.</div>
         {/if}		

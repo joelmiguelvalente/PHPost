@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name c.themes.php
+ * @name src/Class/c.themes.php
  * @author PHPost Team
  * @copyright 2026
  */
@@ -15,6 +15,7 @@ if (!defined('TS_HEADER')) {
 class tsThemes {
    
    protected Themes $Themes;
+
    private string $path;
 
    public function __construct(
@@ -42,17 +43,14 @@ class tsThemes {
    }
 
    public function changeTema(): string {
-   	$tema = $this->path;
-      if(!db_exec([__FILE__, __LINE__], "query", "UPDATE w_configuracion SET tema = '{$tema['t_path']}' WHERE phpost_id = 1")) {
-      	return '0: Hubo un error al cambiar el theme.';
+      $tema = $this->path;
+      if(DB::update('w_configuracion', ['tema' => $tema], 'phpost_id = :id', ['id' => 1])) {
+         if(isset($_SESSION['theme_path'])) {
+            $_SESSION['theme_path'] = $tema;
+         }
+         return '1: Se cambio el theme correctamente.';
       }
-      return '1: Se cambio el theme correctamente.';
+      return '0: Hubo un error al cambiar el theme.';
    }
 
-   private function checkTheme(string $path) {
-      list($total) = db_exec('fetch_row', db_exec([__FILE__, __LINE__], 'query', "SELECT t_path FROM w_temas WHERE t_path = '$path'"));
-      if($total > 0) {
-      	return '0: El theme ya esta instalado';
-      }
-   }
 }

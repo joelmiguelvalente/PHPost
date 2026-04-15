@@ -1,238 +1,264 @@
-/* FOTOS */
-function ControlLargo(obj) {
-    if (obj.value.length > 1500) {
-        obj.value = obj.value.substr(0,1500);
-        showError(obj, 'La descripci&oacute;n no debe exeder los 500 caracteres.');
-    } else hideError(obj);
+'use strict';
+
+function showError(fieldName, msg) {
+    const $group = $(`.form-group[data-field="${fieldName}"]`);
+    $group.addClass('error').find('.form-helper').html(msg).prop('hidden', false);
+    $('html, body').animate({ scrollTop: $group.offset().top - 20 }, 400);
 }
-function countUpperCase(string) {
-	var len = string.length, strip = string.replace(/([A-Z])+/g, '').length, strip2 = string.replace(/([a-zA-Z])+/g, '').length, percent = (len  - strip) / (len - strip2) * 100;
-	return percent;
+
+function hideError(fieldName) {
+    $(`.form-group[data-field="${fieldName}"]`).removeClass('error').find('.form-helper').html('').prop('hidden', true);
 }
-function showError(obj, str) {
-	$(obj).parent('li').addClass('error').children('span.errormsg').html(str).show(); // TODO QUE ONDA
-	$.scrollTo($(obj).parent('li'), 500);
+
+function countUpperCasePercent(str) {
+    const len = str.length;
+    if (!len) return 0;
+    const noUpper   = str.replace(/[A-Z]/g, '').length;
+    const noLetters = str.replace(/[a-zA-Z]/g, '').length;
+    if (len === noLetters) return 0;
+    return (len - noUpper) / (len - noLetters) * 100;
 }
-//
-function hideError(obj) {
-	$(obj).parent('li').removeClass('error').children('span.errormsg').html('').hide();
+
+function getField(name) {
+    return $(`#foto_form [name="${name}"]`);
 }
-var fotos = {
-    validaUrl: function(obj, url){
-      var regex = /^(ht|f)tps?:\/\/\w+([\.\-\w]+)?\.([a-z]{2,3}|info|mobi|aero|asia|name)(:\d{2,5})?(\/)?((\/).+)?$/i;
-      var ext = url.substr(-3);
-      // URL VALIDA
-      if(regex.test(url) == false){
-        showError(obj, 'No es una direcci&oacute;n v&aacute;lida');
+
+const MAX_DESC             = 500;
+const MAX_TITULO_UPPERCASE = 90;
+const MIN_TITULO_LEN       = 5;
+
+function validarUrl(url) {
+    const regex = /^(ht|f)tps?:\/\/\w+([\.\-\w]+)?\.([a-z]{2,3}|info|mobi|aero|asia|name)(:\d{2,5})?(\/.*)?$/i;
+    const ext   = url.slice(-3).toLowerCase();
+    if (!regex.test(url)) {
+        showError('f_url', 'No es una dirección válida.');
         return false;
-      } else if(ext != 'gif' && ext != 'png' && ext != 'jpg'){
-        showError(obj, 'S&oacute;lo se permiten im&aacute;genes .gif, .png y .jpg');
-        return false; 
-      } else return true;
-    },
-    agregar: function(){
-        var error = false;
-        $('.required').each(function(){
-        	if (!$.trim($(this).val())) {
-        		showError(this, 'Este campo es obligatorio');
-        		$(this).parent('li').addClass('error');
-        		error = true;
-        		return false;
-        	} else if($(this).attr('name') == 'url'){
-        	   var rimg = fotos.validaUrl(this, $(this).val());
-                if(rimg != true) {
-                    error = true;
-                    return false;
-                } else error = false;
-        	}
-        });
-        //
-        if (error) {
-			return false;
-		} 
-        //
-        if ($('textarea[name=desc]').val().length > 1500) {
-			showError($('textarea[name=desc]').get(0), 'La descripci&oacute;n no debe exeder los 1500 caracteres.');
-			return false;
-		}
-        // ENVIAMOS
-        $('.fade_out').fadeOut("slow",function(){
-            $('.loader').fadeIn();  
-        })
-        //
+    }
+    if (!['gif', 'png', 'jpg', 'jpeg', 'webp', 'avif'].includes(ext)) {
+        showError('f_url', 'Sólo se permiten imágenes .gif, .png, .jpg, .jpeg, .webp y .avif');
+        return false;
+    }
+    return true;
+}
+
+const fotos = {
+
+    agregar() {
+        let ok = true;
+
+        // --- Título ---
+        const $titulo = getField('f_title');
+        if ($titulo.length) {
+            const val = $titulo.val().trim();
+            if (!val) {
+                showError('f_title', 'El título es obligatorio.');
+                ok = false;
+            } else if (val.length >= MIN_TITULO_LEN && countUpperCasePercent(val) > MAX_TITULO_UPPERCASE) {
+                showError('f_title', 'El título no debe estar en mayúsculas.');
+                ok = false;
+            } else {
+                hideError('f_title');
+            }
+        }
+
+        // --- URL (sólo cuando el campo existe, sin upload) ---
+        const $url = getField('f_url');
+        if ($url.length) {
+            const val = $url.val().trim();
+            if (!val) {
+                showError('f_url', 'La URL es obligatoria.');
+                ok = false;
+            } else if (!validarUrl(val)) {
+                ok = false;
+            } else {
+                hideError('f_url');
+            }
+        }
+
+        // --- Descripción ---
+        const $desc = getField('f_description');
+        if ($desc.length && $desc.val().length > MAX_DESC) {
+            showError('f_description', `La descripción no debe exceder los ${MAX_DESC} caracteres.`);
+            ok = false;
+        } else {
+            hideError('f_description');
+        }
+
+        if (!ok) return false;
+
+        // --- Enviar ---
+        $('.fade_out').fadeOut('slow', () => $('.loader').fadeIn());
         $('form[name=add_foto]').submit();
     },
-    comentar: function(){
-        // EVITAR FLOOD
-        $('#btnComment').attr({'disabled':'disabled'});
-        //
-        // CHECAMOS....
-        var textarea = $('#mensaje');
-    	var text = textarea.val();
-    	if(text == '' || text == textarea.attr('title')){
-    		textarea.focus();
-            $('#btnComment').attr({'disabled':''});
-    		return;
-    	}else if(text.length > 1000){
-    		alert("Tu comentario no puede ser mayor a 1000 caracteres.");
-    		textarea.focus();
-            $('#btnComment').attr({'disabled':''});
-    		return;
-    	}
-        // ENVIAMOS
-        var auser = $('input[name=auser_post]').val();
-        $('#loading').fadeIn(250); 
-       	$.ajax({
-    		type: 'POST',
-    		url: route.url + '/comentario-agregar.php?ts=true&do=fotos',
-    		data: 'comentario=' + encodeURIComponent(text) + '&fotoid=' + queryParam('fotoid') + '&auser=' + auser,
-    		success: function(h){
-    			switch(h.charAt(0)){
-    				case '0': //Error
-    					$('.form .error').html(h.substring(3)).show('slow');
-                        $('#btnComment').attr({'disabled':''});
-    					break;
-    				case '1': //OK
-    						$('#no-comments').hide();
-    						$('#mensajes').append(h.substring(3));
-                            $('.form').html('<div class="alert-empty">Tu comentario fue agregado correctamente :)</div>');
-    						// SUMAMOS
-    						var ncomments = parseInt($('#ncomments').text());
-    						$('#ncomments').text(ncomments + 1);
-                            $('#btnComment').attr({'disabled':''});
-                            // NO HAY COMMENTS REMOVE
-                            $('.noComments').remove();
-    					break;
-    			}
-                $('#loading').fadeOut(250); 
-    		}
-      });
-        
-    },
-    // VOTAR FOTO
-    votar: function(voto){
-        // FIX
-        voto = (voto == 'pos') ? 'pos' : 'neg';
-        // VARS
-    	var total_votos = parseInt($('#votos_total_' + voto).text());
-        total_votos = (isNaN(total_votos)) ? 0 : total_votos;
-        //
-        $('#loading').fadeIn(250); 
-    	$.ajax({
-    		type: 'POST',
-    		url: route.url + '/comentario-votar.php?do=fotos',
-    		data: 'voto=' + voto + '&fotoid=' + queryParam('fotoid'),
-    		success: function(h){
-    			switch(h.charAt(0)){
-    				case '0': //Error
-                        mydialog.alert('Votar Foto', h.substring(3));
-    					break;
-    				case '1': //OK
-    					total_votos = total_votos + 1;
-                        //
-    					$('#actions').html(h.substring(3)).fadeIn("fast");
-    					$('#votos_total_' + voto).text(total_votos);
-    					//
-    					break;
-    			}
-                $('#loading').fadeOut(250); 
-    		}
+
+    comentar() {
+        const $btn      = $('#btnComment').prop('disabled', true);
+        const $textarea = $('#mensaje');
+        const text      = $textarea.val().trim();
+
+        if (!text || text === $textarea.attr('title')) {
+            $textarea.trigger('focus');
+            $btn.prop('disabled', false);
+            return;
+        }
+        if (text.length > 1000) {
+            alert('Tu comentario no puede ser mayor a 1000 caracteres.');
+            $textarea.trigger('focus');
+            $btn.prop('disabled', false);
+            return;
+        }
+
+        const auser = $('input[name=auser_post]').val() ?? '';
+        $('#loading').fadeIn(250);
+
+        $.ajax({
+            type: 'POST',
+            url:  `${route.url}/comentario-agregar?ts=true&do=fotos`,
+            data: `comentario=${encodeURIComponent(text)}&fotoid=${queryParam('fotoid')}&auser=${auser}`,
+            success(h) {
+                const code = h.charAt(0);
+                const body = h.substring(3);
+                if (code === '0') {
+                    $('.form .error').html(body).show('slow');
+                    $btn.prop('disabled', false);
+                } else if (code === '1') {
+                    $('#no-comments').hide();
+                    $('#mensajes').append(body);
+                    $('.form').html('<div class="alert-empty">Tu comentario fue agregado correctamente :)</div>');
+                    $('#ncomments').text(parseInt($('#ncomments').text(), 10) + 1);
+                    $('.noComments').remove();
+                    $btn.prop('disabled', false);
+                }
+                $('#loading').fadeOut(250);
+            }
         });
     },
-    // BORRAR COMENTARIO/ FOTO
-    borrar:function(id, type){
-        //
-        var txt_type = (type == 'com') ? 'comentario' : 'foto';
-        var txt_aux = (type == 'com') ? 'este ' : 'esta ';
-        //
+
+    votar(voto) {
+        voto = (voto === 'pos') ? 'pos' : 'neg';
+        const $el   = $(`#votos_total_${voto}`);
+        let   total = parseInt($el.text(), 10);
+        if (isNaN(total)) total = 0;
+
+        $('#loading').fadeIn(250);
+
+        $.ajax({
+            type: 'POST',
+            url:  `${route.url}/comentario-votar?do=fotos`,
+            data: `voto=${voto}&fotoid=${queryParam('fotoid')}`,
+            success(h) {
+                if (h.charAt(0) === '0') {
+                    mydialog.alert('Votar Foto', h.substring(3));
+                } else if (h.charAt(0) === '1') {
+                    $('#actions').html(h.substring(3)).fadeIn('fast');
+                    $el.text(total + 1);
+                }
+                $('#loading').fadeOut(250);
+            }
+        });
+    },
+
+    borrar(id, type) {
+        const txtType = (type === 'com') ? 'comentario' : 'foto';
+        const txtAux  = (type === 'com') ? 'este '      : 'esta ';
         mydialog.mask_close = false;
         mydialog.show(true);
-		mydialog.title('Eliminar ' + txt_type);
-		mydialog.body('¿Seguro que quieres eliminar ' + txt_aux + txt_type);
-		mydialog.buttons(true, true, 'Eliminar ' + txt_type, 'fotos.del_' + txt_type + '(' + id + ')', true, true, true, 'Cancelar', 'close', true, false);
-		mydialog.center();
+        mydialog.title(`Eliminar ${txtType}`);
+        mydialog.body(`¿Seguro que quieres eliminar ${txtAux}${txtType}?`);
+        mydialog.buttons(
+            true, true, `Eliminar ${txtType}`, `fotos.del_${txtType}(${id})`,
+            true, true, true, 'Cancelar', 'close', true, false
+        );
+        mydialog.center();
     },
-    // ELIMINAR COMENTARIO
-    del_comentario: function(cid){
-        $('#loading').fadeIn(250); 
-    	$.ajax({
-    		type: 'POST',
-    		url: route.url + '/comentario-borrar.php?do=fotos',
-    		data: 'cid=' + cid,
-    		success: function(h){
-    			switch(h.charAt(0)){
-    				case '0': //Error
-                        mydialog.alert('Error:', h.substring(3));
-    					break;
-    				case '1': //OK
-						var ncomments = parseInt($('#ncomments').text());
-						$('#ncomments').text(ncomments - 1);
-                        //
-						$('#div_cmnt_' + cid).slideUp( 1500, 'easeInOutElastic');
-						$('#div_cmnt_' + cid).remove();
-    					//
-                        mydialog.close();
-                        //
-    					break;
-    			}
-                $('#loading').fadeOut(250); 
-    		}
+
+    del_comentario(cid) {
+        $('#loading').fadeIn(250);
+        $.ajax({
+            type: 'POST',
+            url:  `${route.url}/comentario-borrar?do=fotos`,
+            data: `cid=${cid}`,
+            success(h) {
+                if (h.charAt(0) === '0') {
+                    mydialog.alert('Error:', h.substring(3));
+                } else if (h.charAt(0) === '1') {
+                    $('#ncomments').text(parseInt($('#ncomments').text(), 10) - 1);
+                    $(`#div_cmnt_${cid}`).slideUp(1500, 'easeInOutElastic', function () {
+                        $(this).remove();
+                    });
+                    mydialog.close();
+                }
+                $('#loading').fadeOut(250);
+            }
         });
     },
-    // ELIMINAR FOTO
-    del_foto: function(fid){
-        $('#loading').fadeIn(250); 
-    	$.ajax({
-    		type: 'POST',
-    		url: route.url + '/fotos/borrar.php',
-    		data: 'fid=' + fid,
-    		success: function(h){
-    			switch(h.charAt(0)){
-    				case '0': //Error
-                        mydialog.alert('Error:', h.substring(3));
-    					break;
-    				case '1': //OK
-                        mydialog.close();
-                        location.href = route.url + '/fotos/';
-                        //
-    					break;
-    			}
-                $('#loading').fadeOut(250); 
-    		}
+
+    del_foto(fid) {
+        $('#loading').fadeIn(250);
+        $.ajax({
+            type: 'POST',
+            url:  `${route.url}/fotos/borrar`,
+            data: `fid=${fid}`,
+            success(h) {
+                if (h.charAt(0) === '0') {
+                    mydialog.alert('Error:', h.substring(3));
+                } else if (h.charAt(0) === '1') {
+                    mydialog.close();
+                    location.href = `${route.url}/fotos/`;
+                }
+                $('#loading').fadeOut(250);
+            }
+        });
+    }
+};
+
+/* ---------- DOM Ready ---------- */
+
+$(function () {
+
+    /* Botón submit */
+    $('#foto_form .btn[name="new"], #foto_form .btn[name="edit"]').on('click', () => fotos.agregar());
+
+    /* Contador de caracteres en descripción */
+    const $desc    = $('#descripcion');
+    const $counter = $('#count');
+    if ($desc.length && $counter.length) {
+        $counter.text(MAX_DESC);
+        $desc.on('input', function () {
+            const remaining = MAX_DESC - $(this).val().length;
+            $counter.text(Math.max(remaining, 0));
+            if (remaining < 0) {
+                showError('f_description', `La descripción no debe exceder los ${MAX_DESC} caracteres.`);
+            } else {
+                hideError('f_description');
+            }
         });
     }
 
-}
+    /* Limpiar error al escribir en cualquier campo */
+    $('#foto_form [data-role="field"]').on('input', function () {
+        const fieldName = $(this).closest('.form-group').data('field');
+        if (fieldName && $(this).val().trim()) hideError(fieldName);
+    });
 
-$(function(){
-    
-    // WIDTH TOOLS
-    var twidth = 0;
-    var tleft = 3;
-    $('#imagen').hover(function(){
-        if(twidth <= 0){
-            twidth = $('#imagen .img').css("width");
-            twidth = twidth.substring(-2);
-            twidth = parseInt(twidth) - 6;
-            tleft = ((568 - twidth) / 2);
-            $('.tools').css({"width": twidth + 'px', "left": tleft + 'px'})
+    /* Validación en vivo del título (mayúsculas) */
+    $('#titulo').on('input', function () {
+        const val = $(this).val();
+        if (val.length >= MIN_TITULO_LEN && countUpperCasePercent(val) > MAX_TITULO_UPPERCASE) {
+            showError('f_title', 'El título no debe estar en mayúsculas.');
+        } else {
+            hideError('f_title');
         }
     });
-    // AUTOGROW
-    $('.autorow').css('max-height', '140px');
-	// QUITAR LOS ERRORES
-	$('.required').on('keyup change',function(){
-		if ($.trim($(this).val())) {
-			hideError(this);
-		}
-	});
-	// CHECAR EL TITULO
-	$('input[name=titulo]').on('keyup',function(){
-		if ($(this).val().length >= 5 && countUpperCase($(this).val()) > 90) {
-			showError(this, 'El t&iacute;tulo no debe estar en may&uacute;sculas');
-		}
-		else {
-			hideError(this);
-		}
-	});
+
+    /* Ajuste visual de herramientas sobre la imagen */
+    let toolsReady = false;
+    $('#imagen').on('mouseenter', function () {
+        if (toolsReady) return;
+        const w    = parseInt($('#imagen .img').css('width'), 10) - 6;
+        const left = (568 - w) / 2;
+        $(this).find('.tools').css({ width: `${w}px`, left: `${left}px` });
+        toolsReady = true;
+    });
+
 });

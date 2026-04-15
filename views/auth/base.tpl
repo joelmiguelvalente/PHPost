@@ -32,7 +32,7 @@ const captcha = {
 <script src="{$recaptcha}"></script> 
 {/if}
 {load file=['jquery.min','jquery.plugins',$tsPage] type="js" cache=true}
-<script id="tailwind-config">
+<script id="tailwind-config" nonce="{$csp_nonce}">
 	tailwind.config = {
 		darkMode: "class",
       theme: {

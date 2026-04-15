@@ -1,295 +1,345 @@
+'use strict';
+
+function empty(val) {
+	if (val == null || val === false || val !== val) return true;
+	if (typeof val === 'string') return val === '' || val === '0';
+	if (typeof val === 'number' || typeof val === 'bigint') return val == 0;
+	if (Array.isArray(val)) return val.length === 0;
+	if (typeof val === 'object') return Object.keys(val).length === 0;
+	return false;
+}
+
 /**
- * Plugins globales que utilizará el script.
- * Los plugins: (fueron obtenidos desde https://locutus.io/php/)
- *  # Empty 
- *  # Htmlspecialchars_decode 
- *  # Number_format 
-*/
-empty = n => {let e,r,t;const f=[undefined,null,!1,0,"","0"];for(r=0,t=f.length;r<t;r++)if(n===f[r])return!0;if("object"==typeof n){for(e in n)if(n.hasOwnProperty(e))return!1;return!0}return!1}
-htmlspecialchars_decode = (e,E) => {let T=0,_=0,t=!1;void 0===E&&(E=2),e=e.toString().replace(/&lt;/g,"<").replace(/&gt;/g,">");const c={ENT_NOQUOTES:0,ENT_HTML_QUOTE_SINGLE:1,ENT_HTML_QUOTE_DOUBLE:2,ENT_COMPAT:2,ENT_QUOTES:3,ENT_IGNORE:4};if(0===E&&(t=!0),"number"!=typeof E){for(E=[].concat(E),_=0;_<E.length;_++)0===c[E[_]]?t=!0:c[E[_]]&&(T|=c[E[_]]);E=T}return E&c.ENT_HTML_QUOTE_SINGLE&&(e=e.replace(/&#0*39;/g,"'")),t||(e=e.replace(/&quot;/g,'"')),e=e.replace(/&amp;/g,"&")}
-number_format = (e,t,n,i) => {e=(e+"").replace(/[^0-9+\-Ee.]/g,"");const r=isFinite(+e)?+e:0,o=isFinite(+t)?Math.abs(t):0,a=void 0===i?",":i,d=void 0===n?".":n;let l="";return l=(o?function(e,t){if(-1===(""+e).indexOf("e"))return+(Math.round(e+"e+"+t)+"e-"+t);{const n=(""+e).split("e");let i="";return+n[1]+t>0&&(i="+"),(+(Math.round(+n[0]+"e"+i+(+n[1]+t))+"e-"+t)).toFixed(t)}}(r,o).toString():""+Math.round(r)).split("."),l[0].length>3&&(l[0]=l[0].replace(/\B(?=(?:\d{3})+(?!\d))/g,a)),(l[1]||"").length<o&&(l[1]=l[1]||"",l[1]+=new Array(o-l[1].length+1).join("0")),l.join(d)}
+ * htmlspecialchars_decode() — equivalente a PHP
+ * Convierte &amp; &lt; &gt; &quot; &#039; → & < > " '
+ */
+function htmlspecialchars_decode(str) {
+	if (typeof str !== 'string' || str.indexOf('&') === -1) return str;
+	return str.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#039;/g, "'");
+}
 
+/**
+ * number_format() — equivalente a PHP
+ * @param {number} num
+ * @param {number} decimals       — cifras decimales (default 0)
+ * @param {string} decPoint       — separador decimal (default '.')
+ * @param {string} thousandsSep   — separador de miles (default ',')
+ */
+function number_format(num, decimals = 0, decPoint = '.', thousandsSep = ',') {
+	const fixed = Math.abs(Number(num)).toFixed(decimals);
+	const [int, dec] = fixed.split('.');
+	const intFmt = int.replace(/\B(?=(\d{3})+(?!\d))/g, thousandsSep);
+	const result = dec !== undefined ? intFmt + decPoint + dec : intFmt;
+	return num < 0 ? '-' + result : result;
+}
 
-/* Easing 1.3 */
-jQuery.extend( jQuery.easing,{def: 'easeOutQuad',swing: function (x, t, b, c, d) {return jQuery.easing[jQuery.easing.def](x, t, b, c, d);},easeInQuad: function (x, t, b, c, d) {return c*(t/=d)*t + b;},easeOutQuad: function (x, t, b, c, d) {return -c *(t/=d)*(t-2) + b;},easeInOutQuad: function (x, t, b, c, d) {if ((t/=d/2) < 1) return c/2*t*t + b;return -c/2 * ((--t)*(t-2) - 1) + b;},easeInCubic: function (x, t, b, c, d) {return c*(t/=d)*t*t + b;},easeOutCubic: function (x, t, b, c, d) {return c*((t=t/d-1)*t*t + 1) + b;},easeInOutCubic: function (x, t, b, c, d) {if ((t/=d/2) < 1) return c/2*t*t*t + b;return c/2*((t-=2)*t*t + 2) + b;},easeInQuart: function (x, t, b, c, d) {return c*(t/=d)*t*t*t + b;},easeOutQuart: function (x, t, b, c, d) {return -c * ((t=t/d-1)*t*t*t - 1) + b;},easeInOutQuart: function (x, t, b, c, d) {if ((t/=d/2) < 1) return c/2*t*t*t*t + b;return -c/2 * ((t-=2)*t*t*t - 2) + b;},easeInQuint: function (x, t, b, c, d) {return c*(t/=d)*t*t*t*t + b;},easeOutQuint: function (x, t, b, c, d) {return c*((t=t/d-1)*t*t*t*t + 1) + b;},easeInOutQuint: function (x, t, b, c, d) {if ((t/=d/2) < 1) return c/2*t*t*t*t*t + b;return c/2*((t-=2)*t*t*t*t + 2) + b;},easeInSine: function (x, t, b, c, d) {return -c * Math.cos(t/d * (Math.PI/2)) + c + b;},easeOutSine: function (x, t, b, c, d) {return c * Math.sin(t/d * (Math.PI/2)) + b;},easeInOutSine: function (x, t, b, c, d) {return -c/2 * (Math.cos(Math.PI*t/d) - 1) + b;},easeInExpo: function (x, t, b, c, d) {return (t==0) ? b : c * Math.pow(2, 10 * (t/d - 1)) + b;},easeOutExpo: function (x, t, b, c, d) {return (t==d) ? b+c : c * (-Math.pow(2, -10 * t/d) + 1) + b;},easeInOutExpo: function (x, t, b, c, d) {if (t==0) return b;if (t==d) return b+c;if ((t/=d/2) < 1) return c/2 * Math.pow(2, 10 * (t - 1)) + b;return c/2 * (-Math.pow(2, -10 * --t) + 2) + b;},easeInCirc: function (x, t, b, c, d) {return -c * (Math.sqrt(1 - (t/=d)*t) - 1) + b;},easeOutCirc: function (x, t, b, c, d) {return c * Math.sqrt(1 - (t=t/d-1)*t) + b;},easeInOutCirc: function (x, t, b, c, d) {if ((t/=d/2) < 1) return -c/2 * (Math.sqrt(1 - t*t) - 1) + b;return c/2 * (Math.sqrt(1 - (t-=2)*t) + 1) + b;},easeInElastic: function (x, t, b, c, d) {var s=1.70158;var p=0;var a=c;if (t==0) return b;  if ((t/=d)==1) return b+c;  if (!p) p=d*.3;if (a < Math.abs(c)) { a=c; var s=p/4; }else var s = p/(2*Math.PI) * Math.asin (c/a);return -(a*Math.pow(2,10*(t-=1)) * Math.sin( (t*d-s)*(2*Math.PI)/p )) + b;},easeOutElastic: function (x, t, b, c, d) {var s=1.70158;var p=0;var a=c;if (t==0) return b;  if ((t/=d)==1) return b+c;  if (!p) p=d*.3;if (a < Math.abs(c)) { a=c; var s=p/4; }else var s = p/(2*Math.PI) * Math.asin (c/a);return a*Math.pow(2,-10*t) * Math.sin( (t*d-s)*(2*Math.PI)/p ) + c + b;},easeInOutElastic: function (x, t, b, c, d) {var s=1.70158;var p=0;var a=c;if (t==0) return b;  if ((t/=d/2)==2) return b+c;  if (!p) p=d*(.3*1.5);if (a < Math.abs(c)) { a=c; var s=p/4; }else var s = p/(2*Math.PI) * Math.asin (c/a);if (t < 1) return -.5*(a*Math.pow(2,10*(t-=1)) * Math.sin( (t*d-s)*(2*Math.PI)/p )) + b;return a*Math.pow(2,-10*(t-=1)) * Math.sin( (t*d-s)*(2*Math.PI)/p )*.5 + c + b;},easeInBack: function (x, t, b, c, d, s) {if (s == undefined) s = 1.70158;return c*(t/=d)*t*((s+1)*t - s) + b;},easeOutBack: function (x, t, b, c, d, s) {if (s == undefined) s = 1.70158;return c*((t=t/d-1)*t*((s+1)*t + s) + 1) + b;},easeInOutBack: function (x, t, b, c, d, s) {if (s == undefined) s = 1.70158; if ((t/=d/2) < 1) return c/2*(t*t*(((s*=(1.525))+1)*t - s)) + b;return c/2*((t-=2)*t*(((s*=(1.525))+1)*t + s) + 2) + b;},easeInBounce: function (x, t, b, c, d) {return c - jQuery.easing.easeOutBounce (x, d-t, 0, c, d) + b;},easeOutBounce: function (x, t, b, c, d) {if ((t/=d) < (1/2.75)) {return c*(7.5625*t*t) + b;} else if (t < (2/2.75)) {return c*(7.5625*(t-=(1.5/2.75))*t + .75) + b;} else if (t < (2.5/2.75)) {return c*(7.5625*(t-=(2.25/2.75))*t + .9375) + b;} else {return c*(7.5625*(t-=(2.625/2.75))*t + .984375) + b;}},easeInOutBounce: function (x, t, b, c, d) {if (t < d/2) return jQuery.easing.easeInBounce (x, t*2, 0, c, d) * .5 + b;return jQuery.easing.easeOutBounce (x, t*2-d, 0, c, d) * .5 + c*.5 + b;}});
+jQuery.extend(jQuery.easing, {
+	easeOutBounce: function(x, t, b, c, d) {
+		if ((t /= d) < (1 / 2.75)) {
+			return c * (7.5625 * t * t) + b;
+		} else if (t < (2 / 2.75)) {
+			return c * (7.5625 * (t -= (1.5 / 2.75)) * t + .75) + b;
+		} else if (t < (2.5 / 2.75)) {
+			return c * (7.5625 * (t -= (2.25 / 2.75)) * t + .9375) + b;
+		} else {
+			return c * (7.5625 * (t -= (2.625 / 2.75)) * t + .984375) + b;
+		}
+	}
+});
 
 $.parseResponse = (request) => {
-   const sepIndex = request.indexOf(':');
-   if (sepIndex === -1) return { status: 0, message: request }; // fallback
-   return { 
-      status: parseInt(request.substring(0, sepIndex), 10), 
-      message: request.substring(sepIndex + 1).trim()
-   };
+	const sepIndex = request.indexOf(':');
+	if (sepIndex === -1) return {
+		status: 0,
+		message: request
+	}; // fallback
+	return {
+		status: parseInt(request.substring(0, sepIndex), 10),
+		message: request.substring(sepIndex + 1).trim()
+	};
 };
 
 const youtubeId = (url) => {
-   // Validación estricta de entrada (OWASP Input Validation)
-   if (typeof url !== 'string' || !url.trim()) {
-      console.error('YouTube ID extractor: Entrada inválida. Se requiere URL string no vacía');
-      return false;
-   }
-   const regExp = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e|embed|watch)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
-   const match = url.match(regExp);
-   // Validación explícita del ID (11 caracteres válidos de YouTube)
-   return (match && match[1] && match[1].length === 11) ? match[1] : false;
+	// Validación estricta de entrada (OWASP Input Validation)
+	if (typeof url !== 'string' || !url.trim()) {
+		console.error('YouTube ID extractor: Entrada inválida. Se requiere URL string no vacía');
+		return false;
+	}
+	const regExp = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e|embed|watch)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+	const match = url.match(regExp);
+	// Validación explícita del ID (11 caracteres válidos de YouTube)
+	return (match && match[1] && match[1].length === 11) ? match[1] : false;
 };
 
 const dialog = {
-   default: {
-      show: true,
-      backdrop: true,
-      maskClose: true,
-      buttonClose: false,
-      classAux: '',
-      title: '',
-      body: '',
-      loading: false,
-      buttons: {
-         confirm: { action: 'close', text: 'Aceptar' },
-         cancel: { action: 'close', text: 'Cerrar' }
-      }
-   },
-   template: `<div class="dialog-mask"><div class="dialog"></div></div>`,
-   config: {},
-   open() {
-      if ($('.dialog-mask').length) {
-         $('.dialog').empty(); // <-- CLAVE
-         return;
-      }
-      $('body').append(this.template);
+	default: {
+		show: true,
+		backdrop: true,
+		maskClose: true,
+		buttonClose: false,
+		classAux: '',
+		title: '',
+		body: '',
+		loading: false,
+		buttons: {
+			confirm: {
+				action: 'close',
+				text: 'Aceptar'
+			},
+			cancel: {
+				action: 'close',
+				text: 'Cerrar'
+			}
+		}
+	},
+	template: `<div class="dialog-mask"><div class="dialog"></div></div>`,
+	config: {},
+	open() {
+		if ($('.dialog-mask').length) {
+			$('.dialog').empty();
+			return;
+		}
+		$('body').append(this.template);
 
-      if (this.config.maskClose) {
-         $('.dialog-mask').on('click', e => {
-            if ($(e.target).is('.dialog-mask')) this.close();
-         });
-      }
-   },
-   close() {
-      $('.dialog-mask').remove();
-   },
-   header(title) {
-      const btnClose = this.config.buttonClose ? `<button class="dialog-close">&times;</button>` : '';
-      const html = `<div class="dialog-header"><h3>${title}</h3>${btnClose}</div>`;
-      $('.dialog').append(html);
-      $('.dialog-close').on('click', () => this.close());
-   },
-   body(content) {
-      const html = `<div class="dialog-body">${content}</div>`;
-      $('.dialog').append(html);
-   },
-   footer(buttons) {
-      let html = `<div class="dialog-footer">`;
-      Object.entries(buttons).forEach(([key, btn]) => {
-         html += `<button class="btn-${key}">${btn.text}</button>`;
-      });
-      html += `</div>`;
-      $('.dialog').append(html);
-      Object.entries(buttons).forEach(([key, btn]) => {
-         $(`.btn-${key}`).on('click', () => {
-            if (btn.action === 'close') this.close();
-            else if (typeof btn.action === 'function') btn.action();
-            else if (typeof btn.action === 'string') eval(btn.action);
-         });
-      });
-   },
-   loadingView() {
-      const html = `<div class="dialog-loading"><span class="loading-spinner"></span><p>Cargando...</p></div>`;
-      $('.dialog').append(html);
-   },
-   init(args = {}) {
-      this.config = {
-         ...this.default,
-         ...args,
-         buttons: {
-            ...this.default.buttons,
-            ...args.buttons
-         }
-      };
-      if (!this.config.show) return;
-      this.open();
-      $('.dialog').addClass(this.config.classAux);
-      if (this.config.title) this.header(this.config.title);
-      if (this.config.loading) {
-         this.loadingView();
-         return;
-      }
-      if (this.config.body) this.body(this.config.body);
-      if (this.config.buttons) this.footer(this.config.buttons);
-   },
-   easy(title, body, text, action = 'close') {
-      this.init({ 
-         title, body, 
-         buttons: { 
-            confirm: { text, action }
-         }
-      });
-   },
-   alert(title, body, reload = false, buttons = null) {
-      this.close();
-      this.init({
-         title,
-         body,
-         buttons: buttons || {
-            confirm: { text: 'Aceptar', action: 'close' }
-         }
-      });
-      if(reload) {
-         setTimeout(() => location.reload(), 1500);
-      }
-   },
-   loading(body = 'Procesando', title = 'Espere...') {
-      this.close();
-      this.init({
-         title,
-         body,
-         loading: true,
-         buttonClose: false,
-         maskClose: false
-      });
-   },
-   reintentar(reintentar) {
-      setTimeout(function(){
-         dialog.close();
-         dialog.init({
-            title: 'Error',
-            body: 'Error al intentar procesar lo solicitado',
-            buttons: {
-               confirm: {
-                  text: 'Reintentar',
-                  action: () => reintentar
-               },
-               cancel: {
-                  text: 'Cancelar',
-                  action: 'close'
-               }
-            }
-         });
-      }, 200);
-   }
+		if (this.config.maskClose) {
+			$('.dialog-mask').on('click', e => {
+				if ($(e.target).is('.dialog-mask')) this.close();
+			});
+		}
+	},
+	close() {
+		$('.dialog-mask').remove();
+	},
+	header(title) {
+		const btnClose = this.config.buttonClose ? `<button class="dialog-close">&times;</button>` : '';
+		const html = `<div class="dialog-header"><h3>${title}</h3>${btnClose}</div>`;
+		$('.dialog').append(html);
+		$('.dialog-close').on('click', () => this.close());
+	},
+	body(content) {
+		const html = `<div class="dialog-body">${content}</div>`;
+		$('.dialog').append(html);
+	},
+	footer(buttons) {
+		let html = `<div class="dialog-footer">`;
+		Object.entries(buttons).forEach(([key, btn]) => {
+			html += `<button class="btn-${key}">${btn.text}</button>`;
+		});
+		html += `</div>`;
+		$('.dialog').append(html);
+		Object.entries(buttons).forEach(([key, btn]) => {
+			$(`.btn-${key}`).on('click', () => {
+				if (btn.action === 'close') this.close();
+				else if (typeof btn.action === 'function') btn.action();
+				else if (typeof btn.action === 'string') eval(btn.action);
+			});
+		});
+	},
+	loadingView() {
+		const html = `<div class="dialog-loading"><span class="loading-spinner"></span><p>Cargando...</p></div>`;
+		$('.dialog').append(html);
+	},
+	init(args = {}) {
+		this.config = {
+			...this.default,
+			...args,
+			buttons: {
+				...this.default.buttons,
+				...args.buttons
+			}
+		};
+		if (!this.config.show) return;
+		this.open();
+		$('.dialog').addClass(this.config.classAux);
+		if (this.config.title) this.header(this.config.title);
+		if (this.config.loading) {
+			this.loadingView();
+			return;
+		}
+		if (this.config.body) this.body(this.config.body);
+		if (this.config.buttons) this.footer(this.config.buttons);
+	},
+	easy(title, body, text, action = 'close') {
+		this.init({
+			title,
+			body,
+			buttons: {
+				confirm: {
+					text,
+					action
+				}
+			}
+		});
+	},
+	alert(title, body, reload = false, buttons = null) {
+		this.close();
+		this.init({
+			title,
+			body,
+			buttons: buttons || {
+				confirm: {
+					text: 'Aceptar',
+					action: 'close'
+				}
+			}
+		});
+		if (reload) {
+			setTimeout(() => location.reload(), 1500);
+		}
+	},
+	loading(body = 'Procesando', title = 'Espere...') {
+		this.close();
+		this.init({
+			title,
+			body,
+			loading: true,
+			buttonClose: false,
+			maskClose: false
+		});
+	},
+	reintentar(reintentar) {
+		setTimeout(function() {
+			dialog.close();
+			dialog.init({
+				title: 'Error',
+				body: 'Error al intentar procesar lo solicitado',
+				buttons: {
+					confirm: {
+						text: 'Reintentar',
+						action: () => reintentar
+					},
+					cancel: {
+						text: 'Cancelar',
+						action: 'close'
+					}
+				}
+			});
+		}, 200);
+	}
 };
 // complemento de dialog
-dialog.toast = function (options = {}) {
-   dialog.close();
-   const config = {
-      type: 'info',
-      title: '',
-      message: '',
-      duration: 3000,
-      position: 'top-right',
-      ...options
-   };
-   let $container = $(`.dialog-toast-container.toast-${config.position}`);
-   if (!$container.length) {
-      $container = $(`<div class="dialog-toast-container toast-${config.position}"></div>`);
-      $('body').append($container);
-   }
-   const $toast = $(`<div class="dialog-toast ${config.type}">${config.title ? `<h4>${config.title}</h4>` : ''}<div>${config.message}</div></div>`);
-   $container.append($toast);
-   setTimeout(() => {
-      $toast.css('animation', 'toastOut 0.2s ease forwards');
-      setTimeout(() => $toast.remove(), 200);
-   }, config.duration);
+dialog.toast = function(options = {}) {
+		dialog.close();
+		const config = {
+			type: 'info',
+			title: '',
+			message: '',
+			duration: 3000,
+			position: 'top-right',
+			...options
+		};
+		let $container = $(`.dialog-toast-container.toast-${config.position}`);
+		if (!$container.length) {
+			$container = $(`<div class="dialog-toast-container toast-${config.position}"></div>`);
+			$('body').append($container);
+		}
+		const $toast = $(`<div class="dialog-toast ${config.type}">${config.title ? `<h4>${config.title}</h4>` : ''}<div>${config.message}</div></div>`);
+	$container.append($toast);
+	setTimeout(() => {
+		$toast.css('animation', 'toastOut 0.2s ease forwards');
+		setTimeout(() => $toast.remove(), 200);
+	}, config.duration);
 };
 
 const api = (page, param, success, options = {}) => {
-   const settings = {
-      url: `${route.url}/${page}`,
-      type: (options.method || 'POST').toUpperCase(),
-      data: param,
-      dataType: options.type || 'text',
-      timeout: options.timeout || 10000,
-      headers: options.headers || {},
-      success: response => {
-         success(response);
-         $('#loading').fadeOut(350);
-      },
-      error: (xhr, status, error) => {
-         if (options.error) {
-            options.error({ xhr, status, error });
-            $('#loading').fadeOut(350);
-         }
-      },
-      beforeSend: options.beforeSend || (() => $('#loading').fadeIn(350))
-   };
+	const settings = {
+	  url: `${route.url}/${page}`,
+	  type: (options.method || 'POST').toUpperCase(),
+	  data: param,
+	  dataType: options.type || 'text',
+	  timeout: options.timeout || 10000,
+	  headers: options.headers || {},
+	  success: response => {
+		 success(response);
+		 $('#loading').fadeOut(350);
+	  },
+	  error: (xhr, status, error) => {
+		 if (options.error) {
+			options.error({ xhr, status, error });
+			$('#loading').fadeOut(350);
+		 }
+	  },
+	  beforeSend: options.beforeSend || (() => $('#loading').fadeIn(350))
+	};
 
-   // Solo permitir GET o POST
-   if (!['GET', 'POST'].includes(settings.type)) {
-      settings.type = 'POST';
-   }
+	// Solo permitir GET o POST
+	if (!['GET', 'POST'].includes(settings.type)) {
+	  settings.type = 'POST';
+	}
 
-   return $.ajax(settings);
+	return $.ajax(settings);
 };
 
 function initLazyLoading() {
-   const observer = new IntersectionObserver((entries, self) => {
-      entries.forEach((entry) => {
-         if (!entry.isIntersecting) return;
-         const img = entry.target;
-         // Primero activar todos los <source> del <picture> padre
-         const picture = img.closest('picture');
-         if (picture) {
-            picture.querySelectorAll('source[data-srcset]').forEach(source => {
-               source.srcset = source.getAttribute('data-srcset');
-               source.removeAttribute('data-srcset');
-            });
-         }
-         // Luego activar el <img> (dispara la evaluación de <picture>)
-         const dataSrc = img.getAttribute('data-src');
-         if (dataSrc) {
-            img.src = dataSrc;
-            img.removeAttribute('data-src');
-         }
-         self.unobserve(img);
-      });
-   }, { rootMargin: '200px' });
-   // Solo observar el <img>, él arrastra a sus <source>
-   document.querySelectorAll('picture img[data-src]').forEach(function(img) {
-      img.onerror = function () {
-         this.onerror = null;
-         this.src = this.dataset.fallbackPng;
+	const observer = new IntersectionObserver((entries, self) => {
+	  entries.forEach((entry) => {
+		 if (!entry.isIntersecting) return;
+		 const img = entry.target;
+		 // Primero activar todos los <source> del <picture> padre
+		 const picture = img.closest('picture');
+		 if (picture) {
+			picture.querySelectorAll('source[data-srcset]').forEach(source => {
+				source.srcset = source.getAttribute('data-srcset');
+				source.removeAttribute('data-srcset');
+			});
+		 }
+		 // Luego activar el <img> (dispara la evaluación de <picture>)
+		 const dataSrc = img.getAttribute('data-src');
+		 if (dataSrc) {
+			img.src = dataSrc;
+			img.removeAttribute('data-src');
+		 }
+		 self.unobserve(img);
+	  });
+	}, { rootMargin: '200px' });
+	// Solo observar el <img>, él arrastra a sus <source>
+	document.querySelectorAll('picture img[data-src]').forEach(function(img) {
+	  img.onerror = function () {
+		 this.onerror = null;
+		 this.src = this.dataset.fallbackPng;
 
-         const p = this.closest('picture');
-         if (p) {
-            const sources = p.querySelectorAll('source');
-            if (sources[0]) sources[0].srcset = this.dataset.fallbackAvif;
-            if (sources[1]) sources[1].srcset = this.dataset.fallbackWebp;
-         }
-      };
-      observer.observe(img);
-   });
+		 const p = this.closest('picture');
+		 if (p) {
+			const sources = p.querySelectorAll('source');
+			if (sources[0]) sources[0].srcset = this.dataset.fallbackAvif;
+			if (sources[1]) sources[1].srcset = this.dataset.fallbackWebp;
+		 }
+	  };
+	  observer.observe(img);
+	});
 }
 initLazyLoading();
 
 // Solo ejecutar si hay bloques pendientes
 if (document.querySelector('[data-bbcode-code]')) {
-    loadHighlightJS().then(() => {
-        // Resaltar solo bloques NO procesados
-        document.querySelectorAll('pre code[data-bbcode-code]').forEach(el => {
-            if (!el.hasAttribute('data-highlighted')) {
-               hljs.highlightElement(el);
-            }
-        });
-    });
+	loadHighlightJS().then(() => {
+		// Resaltar solo bloques NO procesados
+		document.querySelectorAll('pre code[data-bbcode-code]').forEach(el => {
+			if (!el.hasAttribute('data-highlighted')) {
+				hljs.highlightElement(el);
+			}
+		});
+	});
 }
 
 function loadHighlightJS() {
-    return new Promise((resolve) => {
-        if (window.hljs) return resolve();
+	return new Promise((resolve) => {
+		if (window.hljs) return resolve();
 
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = 'https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/default.min.css';
-        document.head.appendChild(link);
+		const link = document.createElement('link');
+		link.rel = 'stylesheet';
+		link.href = 'https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/default.min.css';
+		document.head.appendChild(link);
 
-        const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js';
-        script.onload = () => {
-            // Asegurar que hljs esté listo
-            if (typeof hljs !== 'undefined') {
-               hljs.configure({ ignoreUnescapedHTML: true }); // ⚠️ Clave: evita advertencias
-            }
-            resolve();
-        };
-        document.head.appendChild(script);
-    });
+		const script = document.createElement('script');
+		script.src = 'https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js';
+		script.onload = () => {
+			// Asegurar que hljs esté listo
+			if (typeof hljs !== 'undefined') {
+				hljs.configure({ ignoreUnescapedHTML: true }); // ⚠️ Clave: evita advertencias
+			}
+			resolve();
+		};
+		document.head.appendChild(script);
+	});
 }

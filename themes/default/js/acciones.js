@@ -1,3 +1,4 @@
+'use strict';
 function irACategoria(cat) {
 	if (cat === 'root' || cat === 'linea') return;
 	const baseUrl = route.url.replace(/\/$/, '');
@@ -176,7 +177,7 @@ const notifica = {
 		if ($target) {
 			$target.addClass('spinner');
 		}
-		api('notificaciones-ajax.php', params.join('&') + queryParam('userkey'), response => {
+		api('notificaciones-ajax', params.join('&') + queryParam('userkey'), response => {
 			if ($target) {
 				$target.removeClass('spinner');
 			}
@@ -234,7 +235,7 @@ const notifica = {
 		inputs.map((pos, input) => {
 			if($(input).prop('checked')) fid.push($(input).data('type'))
 		})
-		$.post(`${route.url}/notificaciones-filtro.php`, { fid })
+		$.post(`${route.url}/notificaciones-filtro`, { fid })
 		.fail(() => console.error('Error al filtrar notificaciones'));  
 	},
 	close() {
@@ -306,7 +307,7 @@ const mensaje = {
 	},
 	// POST
 	ajax(action, params, fn) {
-		api(`mensajes-${action}.php`, params, response => {
+		api(`mensajes-${action}`, params, response => {
 			fn(response);
 		});
 	},

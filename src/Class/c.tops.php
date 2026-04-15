@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name c.tops.php
+ * @name src/Class/c.tops.php
  * @author PHPost Team
  * @copyright 2026
  */

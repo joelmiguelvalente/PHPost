@@ -56,7 +56,7 @@ $changeAvatar.on('click', '.avatar-upload', async function () {
 			data.append('url', avatarState.imageUrl);
 		}
 
-		const rsp = await fetch(`${route.url}/upload-avatar.php`, {
+		const rsp = await fetch(`${route.url}/upload-avatar`, {
 			method: 'POST',
 			body: data
 		});
@@ -163,12 +163,12 @@ async function saveAvatarCrop() {
 	try {
 		dialog.loading('Guardando...');
 
-		const rsp = await fetch(`${route.url}/upload-crop.php`, {
+		const rsp = await fetch(`${route.url}/upload-crop`, {
 			method: 'POST',
 			body: data
 		});
-
 		const json = await rsp.json();
+
 		if (json.error !== 'success') throw json.error;
 
 		// Actualizar el avatar visible en la página sin recargar

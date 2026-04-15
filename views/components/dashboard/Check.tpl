@@ -20,6 +20,6 @@
    	{/if}{if $disabled} disabled{/if} class="mt-0.5 shrink-0 text-primary focus:ring-primary"/>
    <span class="flex flex-col">
       {$label}
-      {if $helper}<span class="text-xs text-gray-500 mt-0.5">{$helper}</span>{/if}
+      {if $helper && $type == 'checkbox'}<span class="text-xs text-gray-500 mt-0.5">{$helper}</span>{/if}
    </span>
 </label>

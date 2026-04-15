@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name functions.php
+ * @name src/Extras/functions.php
  * @author PHPost Team
  * @copyright 2026
  */

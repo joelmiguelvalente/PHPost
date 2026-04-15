@@ -46,7 +46,7 @@ if($ctx->continue()) {
 	} elseif(in_array($action, ['posts', 'users', 'mps', 'fotos'], true)) {
 		$smarty->assign("tsPlantilla", "report_$action");
       // DATOS EXTRA
-      require_once TS_EXTRA . '/datos.php';
+      require_once TS_EXTRAS . '/datos.php';
       // SEGUNDA ACCION
 		if(empty($act)){
 		 	$smarty->assign("tsReports", $tsMod->getDenuncias($action));

@@ -31,7 +31,7 @@
 						</div>
 						<div class="txt">
 							<a href="{$tsConfig.url}/posts/{$p.c_seo}/{$p.f_id}/{$p.post_title|seo}.html">{$p.post_title}</a><br />
-							<img src="{$tsRoutes.tema.images}/icons/cat/{$p.c_img}"/> <span class="grey">{$p.c_nombre}</span>
+							<img src="{$tsRoutes.tema.images}/icons/categories/{$p.c_img}"/> <span class="grey">{$p.c_nombre}</span>
 						</div>
 					</div>
 					<div class="action">

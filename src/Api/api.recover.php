@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @name api.recover.php
+ * @name src/Api/api.recover.php
  * @author PHPost Team
  * @copyright 2026
  */

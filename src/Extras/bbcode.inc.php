@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * @name src/Extras/bbcode.inc.php
+ * @author PHPost Team
+ * @copyright 2026
+ */
+
 require_once TS_LIBS . '/JBBCode/Parser.php';
 require_once TS_LIBS . '/JBBCode/InputValidator.php';
 $folders = ['validators', 'definitions'];
@@ -490,7 +496,7 @@ class BBCode {
 	  	];
 	  	foreach($smiles as $name => $image) {
 			$bbcode[] = $name; 
-			$html[] = "<img src=\"{$this->route}/smiles/$image.png\" />";
+			$html[] = "<img src=\"{$this->route}/smiles/$image.png\" alt=\"Smile {$name}\" width=\"16\" height=\"16\" />";
 	  	}
 		// REEMPLAZAMOS SMILEYS
 	  	$this->text = str_replace($bbcode, $html, $this->text);
