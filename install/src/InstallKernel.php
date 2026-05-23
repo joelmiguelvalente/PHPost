@@ -84,6 +84,7 @@ final class InstallKernel
 
         require_once dirname(__DIR__, 2) . '/config/Config.php';
         require_once dirname(__DIR__, 2) . '/src/Utils/Extras.php';
+        require_once dirname(__DIR__, 2) . '/src/Utils/Compat.php';
 
         // Autoload del instalador
         spl_autoload_register(function (string $class): void {
