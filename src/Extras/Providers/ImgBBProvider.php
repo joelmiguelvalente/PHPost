@@ -1,12 +1,12 @@
 <?php
 
-/**
- * @name src/Extras/Providers/ImgBBProvider.php
- * @author PHPost Team
- * @copyright 2026
- */
-
 declare(strict_types=1);
+
+/**
+ * @package    PHPost/Extras/Providers
+ * @author     PHPost Team & Miguel92
+ * @copyright  2026
+ */
 
 final class ImgBBProvider implements ImageProviderInterface
 {

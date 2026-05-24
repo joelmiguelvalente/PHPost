@@ -1,11 +1,13 @@
 <?php
 
-/**
- * @package   PHPost\Install\Steps
- * @copyright 2026
- */
-
 declare(strict_types=1);
+
+/**
+ * @package    PHPost
+ * @subpackage Install\src\Steps
+ * @author     PHPost Team & Miguel92
+ * @copyright  2026
+ */
 
 final class DatabaseHandler implements StepHandlerInterface
 {

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Layout principal del instalador.
  * Variables disponibles:
@@ -8,7 +11,6 @@
  *   $baseUrl string         — URL base del instalador
  *   $siteUrl string         — URL raíz del sitio
  */
-declare(strict_types=1);
 
 // Helper de escape para las vistas
 function e(mixed $val): string {

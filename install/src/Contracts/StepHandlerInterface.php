@@ -1,15 +1,13 @@
 <?php
 
-/**
- * ------------------------------------------------------------
- * StepHandlerInterface
- * ------------------------------------------------------------
- *
- * @package   PHPost\Install
- * @copyright 2026
- */
-
 declare(strict_types=1);
+
+/**
+ * @package    PHPost
+ * @subpackage Install\src\Contracts
+ * @author     PHPost Team & Miguel92
+ * @copyright  2026
+ */
 
 interface StepHandlerInterface
 {

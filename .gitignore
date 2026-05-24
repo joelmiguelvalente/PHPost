@@ -20,4 +20,3 @@ themes/*
 *.local*
 .local*
 sitemap.xml
-inc/config/Config.Database.php

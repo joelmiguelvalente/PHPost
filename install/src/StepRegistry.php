@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * ------------------------------------------------------------
  * StepRegistry
@@ -7,11 +9,11 @@
  * Registro centralizado de pasos del instalador.
  * Define el orden del flujo y proporciona los handlers.
  *
- * @package   PHPost\Install
- * @copyright 2026
+ * @package    PHPost
+ * @subpackage Install\src
+ * @author     PHPost Team & Miguel92
+ * @copyright  2026
  */
-
-declare(strict_types=1);
 
 final class StepRegistry
 {

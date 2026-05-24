@@ -1,12 +1,12 @@
 <?php
 
-/**
- * @name config/Config.Paths.php
- * @author PHPost Team
- * @copyright 2026
- */
-
 declare(strict_types=1);
+
+/**
+ * @package    Config
+ * @author     PHPost Team & Miguel92
+ * @copyright  2026
+ */
 
 define('SOURCEPATH', BASEPATH . '/src');
 

@@ -1,13 +1,12 @@
 <?php
 
-/**
- * @name src/Class/c.estadisticas.php
- * @author PHPost Team
- * @copyright 2026
- * > Si, tengo que mejorar estos bloques
- */
-
 declare(strict_types=1);
+
+/**
+ * @package    PHPost/Class
+ * @author     PHPost Team & Miguel92
+ * @copyright  2026
+ */
 
 if (!defined('TS_HEADER')) {
 	exit('No se permite el acceso directo al script');

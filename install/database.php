@@ -1,8 +1,12 @@
 <?php
+
+declare(strict_types=1);
+
 /**
- * @name database.php
- * @author PHPost Team & Miguel92
- * @copyright 2011-2025
+ * @package    PHPost
+ * @subpackage Install
+ * @author     PHPost Team & Miguel92
+ * @copyright  2026
  */
 
 $phpost_sql[] = "CREATE TABLE IF NOT EXISTS `f_comentarios` (

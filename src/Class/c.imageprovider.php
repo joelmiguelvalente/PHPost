@@ -1,12 +1,12 @@
 <?php
 
-/**
- * @name src/Class/c.imageprovider.php
- * @author PHPost Team
- * @copyright 2026
- */
-
 declare(strict_types=1);
+
+/**
+ * @package    PHPost/Class
+ * @author     PHPost Team & Miguel92
+ * @copyright  2026
+ */
 
 require_once TS_UTILS . '/Extras.php';
 

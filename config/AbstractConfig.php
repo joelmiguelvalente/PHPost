@@ -1,12 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 /**
- * @name config/AbstractConfig.php
- * @author PHPost Team
- * @copyright 2026
+ * @package    Config
+ * @author     PHPost Team & Miguel92
+ * @copyright  2026
  */
 
-declare(strict_types=1);
+namespace config;
+
+use ReflectionClass;
 
 abstract class AbstractConfig
 {

@@ -1,13 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 /**
- * @name buscador.php
- * @author PHPost Team
- * @copyright 2026
+ * @package    PHPost/Php
+ * @author     PHPost Team & Miguel92
+ * @copyright  2026
+ *
  * @note Desarrollado con asistencia de Claude (Anthropic)
  */
 
-declare(strict_types=1);
 
 require_once dirname(__DIR__, 2) . "/header.php";
 $tsTitle = "{$tsCore->settings['titulo']} - {$tsCore->settings['slogan']}";

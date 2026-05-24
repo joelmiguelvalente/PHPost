@@ -1,16 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * ------------------------------------------------------------
  * StepResult
  * ------------------------------------------------------------
  * Value object inmutable que cada StepHandler devuelve.
  *
- * @package   PHPost\Install
- * @copyright 2026
+ * @package    PHPost
+ * @subpackage Install\src
+ * @author     PHPost Team & Miguel92
+ * @copyright  2026
  */
-
-declare(strict_types=1);
 
 final class StepResult
 {

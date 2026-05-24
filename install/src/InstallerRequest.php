@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * ------------------------------------------------------------
  * InstallerRequest
@@ -7,11 +9,11 @@
  * Encapsula el input del instalador, sanitizando y tipando
  * cada valor de forma explícita.
  *
- * @package   PHPost\Install
- * @copyright 2026
+ * @package    PHPost
+ * @subpackage Install\src
+ * @author     PHPost Team & Miguel92
+ * @copyright  2026
  */
-
-declare(strict_types=1);
 
 final class InstallerRequest
 {

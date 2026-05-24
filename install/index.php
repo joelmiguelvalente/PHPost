@@ -1,12 +1,13 @@
 <?php
 
-/**
- * @name      index.php
- * @author    PHPost Team
- * @copyright 2026
- */
-
 declare(strict_types=1);
+
+/**
+ * @package    PHPost
+ * @subpackage Install
+ * @author     PHPost Team & Miguel92
+ * @copyright  2026
+ */
 
 define('TS_HEADER', true);
 

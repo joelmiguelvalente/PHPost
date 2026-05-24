@@ -1,12 +1,12 @@
 <?php
 
-/**
- * @name PostHelper.php
- * @author PHPost Team
- * @copyright 2026
- */
-
 declare(strict_types=1);
+
+/**
+ * @package    PHPost/Helpers
+ * @author     PHPost Team & Miguel92
+ * @copyright  2026
+ */
 
 if (!defined('TS_HEADER')) {
 	exit('No se permite el acceso directo al script');

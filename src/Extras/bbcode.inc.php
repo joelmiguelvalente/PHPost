@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 /**
- * @name src/Extras/bbcode.inc.php
- * @author PHPost Team
- * @copyright 2026
+ * @package    PHPost/Extras
+ * @author     PHPost Team & Miguel92
+ * @copyright  2026
  */
 
 require_once TS_LIBS . '/JBBCode/Parser.php';

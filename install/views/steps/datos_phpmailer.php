@@ -1,4 +1,7 @@
-<?php /** @var array $data */ $m = $data['mailer'] ?? []; ?>
+<?php
+/** @var array $data */
+$m = $data['mailer'] ?? [];
+?>
 
 <div class="step-intro">
 	<p>Configurá el servidor de correo para que tu comunidad pueda enviar emails. Podés omitir este paso y configurarlo más tarde desde el panel de administración.</p>

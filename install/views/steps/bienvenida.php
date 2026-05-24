@@ -1,5 +1,3 @@
-<?php /** @var array $data */ ?>
-
 <div class="step-intro">
 	<p>Para utilizar <strong><?= e(Config::app('app.name')) ?></strong> debés estar de acuerdo con nuestra licencia de uso. Leé el texto completo antes de continuar.</p>
 </div>

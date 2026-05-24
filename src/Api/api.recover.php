@@ -1,12 +1,12 @@
 <?php
 
-/**
- * @name src/Api/api.recover.php
- * @author PHPost Team
- * @copyright 2026
- */
-
 declare(strict_types=1);
+
+/**
+ * @package    src\Api
+ * @author     PHPost Team & Miguel92
+ * @copyright  2026
+ */
 
 $tsLevel = 1; // solo visitantes
 $tsLevelMsg = $tsCore->setLevel($tsLevel, true);

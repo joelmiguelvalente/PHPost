@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * ------------------------------------------------------------
  * InstallerException
@@ -7,11 +9,11 @@
  * Excepción tipada para el instalador de PHPost.
  * Permite distinguir errores de instalación de los del sistema.
  *
- * @package   PHPost\Install
- * @copyright 2026
+ * @package    PHPost
+ * @subpackage Install
+ * @author     PHPost Team & Miguel92
+ * @copyright  2026
  */
-
-declare(strict_types=1);
 
 final class InstallerException extends RuntimeException
 {

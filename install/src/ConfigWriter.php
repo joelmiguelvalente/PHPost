@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * ------------------------------------------------------------
  * ConfigWriter
@@ -9,11 +11,11 @@
  *
  * Sustituye el str_replace frágil del instalador anterior.
  *
- * @package   PHPost\Install
- * @copyright 2026
+ * @package    PHPost
+ * @subpackage Install\src
+ * @author     PHPost Team & Miguel92
+ * @copyright  2026
  */
-
-declare(strict_types=1);
 
 final class ConfigWriter
 {

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * ------------------------------------------------------------
  * InstallerSession
@@ -7,11 +9,11 @@
  * Gestiona el estado de la instalación en sesión.
  * Garantiza que no se pueda saltar pasos.
  *
- * @package   PHPost\Install
- * @copyright 2026
+ * @package    PHPost
+ * @subpackage Install\src
+ * @author     PHPost Team & Miguel92
+ * @copyright  2026
  */
-
-declare(strict_types=1);
 
 final class InstallerSession
 {

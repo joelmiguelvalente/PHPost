@@ -1,4 +1,7 @@
-<?php /** @var array $data */ $s = $data['site'] ?? []; ?>
+<?php
+/** @var array $data */
+$s = $data['site'] ?? [];
+?>
 
 <div class="form-grid">
 	<div class="form-field">

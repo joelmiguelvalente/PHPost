@@ -1,15 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 /**
- * @name generator.panel.php
- * @description Panel web del generador de secciones (admin)
- * @author PHPost Team
- * @copyright 2026
+ * @package    PHPost/Utils
+ * @author     PHPost Team & Miguel92
+ * @copyright  2026
  *
  * Requiere: src/Utils/Generator.php
  */
-
-declare(strict_types=1);
 
 define('TS_HEADER', true);
 

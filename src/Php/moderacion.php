@@ -1,12 +1,12 @@
-<?php 
-
-/**
- * @name moderacion.php
- * @author PHPost Team
- * @copyright 2026
- */
+<?php
 
 declare(strict_types=1);
+
+/**
+ * @package    PHPost/Php
+ * @author     PHPost Team & Miguel92
+ * @copyright  2026
+ */
 
 require_once dirname(__DIR__, 2) . "/header.php";
 $tsTitle = "Moderacion de {$tsCore->settings['titulo']}";

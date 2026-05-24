@@ -1,4 +1,7 @@
-<?php /** @var array $data */ $u = $data['user'] ?? []; ?>
+<?php
+/** @var array $data */
+$u = $data['user'] ?? [];
+?>
 
 <div class="step-intro">
 	<p>Creá tu cuenta de administrador. Más adelante podés completar el perfil con más información.</p>

@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 /**
- * @name src/Extras/polyfill.php
- * @author PHPost Team
- * @copyright 2026
+ * @package    PHPost/Extras
+ * @author     PHPost Team & Miguel92
+ * @copyright  2026
  *
  * Polyfill para Uri\Rfc3986\Uri (PHP 8.5+)
  * Implementación básica usando parse_url() para PHP < 8.5

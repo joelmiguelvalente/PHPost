@@ -1,12 +1,12 @@
 <?php
 
-/**
- * @name config/Config.Session.php
- * @author PHPost Team
- * @copyright 2026
- */
-
 declare(strict_types=1);
+
+/**
+ * @package    Config
+ * @author     PHPost Team & Miguel92
+ * @copyright  2026
+ */
 
 session_start([
 	'cookie_secure'   => Config::app('security.session.secure'),

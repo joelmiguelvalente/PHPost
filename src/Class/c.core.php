@@ -1,12 +1,12 @@
 <?php
 
-/**
- * @name src/Class/c.core.php
- * @author PHPost Team
- * @copyright 2026
- */
-
 declare(strict_types=1);
+
+/**
+ * @package    PHPost/Class
+ * @author     PHPost Team & Miguel92
+ * @copyright  2026
+ */
 
 if (!defined('TS_HEADER')) {
 	exit('No se permite el acceso directo al script');
@@ -394,7 +394,7 @@ class tsCore {
 		$restriction = match($type) {
 			'firma' => array_slice($bbcodes, 0, 11),
 			'news' => array_slice($bbcodes, 0, 5),
-			'normal' => $bbcodes,
+			default => $bbcodes,
 		};
 		$parser->setRestriction($restriction);
 		// Parsear menciones si el tipo es 'normal' o 'smiles'

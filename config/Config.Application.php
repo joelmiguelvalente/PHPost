@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * ------------------------------------------------------------
  * PHPost - Application Configuration
@@ -10,12 +12,14 @@
  *
  * Este archivo NO contiene lógica de negocio.
  *
- * @name config/Config.Application.php
- * @package   PHPost
- * @copyright 2026
+ * @package    Config
+ * @author     PHPost Team & Miguel92
+ * @copyright  2026
  */
 
-declare(strict_types=1);
+namespace config;
+
+use config\AbstractConfig;
 
 final class ConfigApplication extends AbstractConfig
 {
@@ -39,7 +43,7 @@ final class ConfigApplication extends AbstractConfig
 				'name'      	=> 'PHPost Risus',
 				'slogan'	   	=> 'Inteligencia recargada 2026',
 				'server'    	=> 'https://discord.gg/StWZtrt2DE',
-				'version'   	=> '3.5.50',
+				'version'   	=> '3.6.00',
 				'status'    	=> $APP_ENV,
 				'description'	=> 'Descubre nuestra plataforma completamente renovada. Actualizaciones constantes, nuevas funcionalidades y experiencia mejorada. En constante evolución para ofrecerte lo mejor.'
 			],

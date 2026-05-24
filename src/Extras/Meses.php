@@ -1,12 +1,10 @@
 <?php
 
 /**
- * @name src/Extras/Meses.php
- * @author PHPost Team
- * @copyright 2026
+ * @package    PHPost/Extras
+ * @author     PHPost Team & Miguel92
+ * @copyright  2026
  */
-
-declare(strict_types=1);
 
 /**
  * Lista de Meses

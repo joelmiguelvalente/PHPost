@@ -1,12 +1,12 @@
 <?php
 
-/**
- * @name PasswordHandler.php
- * @author PHPost Team
- * @copyright 2026
- */
-
 declare(strict_types=1);
+
+/**
+ * @package    PHPost/Utils
+ * @author     PHPost Team & Miguel92
+ * @copyright  2026
+ */
 
 class PasswordHandler {
 

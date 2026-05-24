@@ -1,12 +1,12 @@
-<?php 
-
-/**
- * @name portal.php
- * @author PHPost Team
- * @copyright 2026
- */
+<?php
 
 declare(strict_types=1);
+
+/**
+ * @package    PHPost/Php
+ * @author     PHPost Team & Miguel92
+ * @copyright  2026
+ */
 
 $tsTitle = "{$tsCore->settings['titulo']} - {$tsCore->settings['slogan']}";
 

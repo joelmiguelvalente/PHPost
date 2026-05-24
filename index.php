@@ -1,12 +1,12 @@
 <?php
 
-/**
- * @name index.php
- * @author PHPost Team
- * @copyright 2026
- */
-
 declare(strict_types=1);
+
+/**
+ * @package    PHPost/Utils
+ * @author     PHPost Team & Miguel92
+ * @copyright  2026
+ */
 
 // Verificamos si el sitio fue instalado
 if(!file_exists(__DIR__ . DIRECTORY_SEPARATOR . '.lock')) {

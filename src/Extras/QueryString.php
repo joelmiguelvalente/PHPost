@@ -1,12 +1,12 @@
 <?php
 
-/**
- * @name src/Extras/QueryString.php
- * @author PHPost Team
- * @copyright 2026
- */
-
 declare(strict_types=1);
+
+/**
+ * @package    PHPost/Extras
+ * @author     PHPost Team & Miguel92
+ * @copyright  2026
+ */
 
 /**
  * Limpieza y validación básica de solicitudes HTTP

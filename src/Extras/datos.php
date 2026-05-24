@@ -1,9 +1,9 @@
 <?php
 
 /**
- * @name src/Extras/datos.php
- * @author PHPost Team
- * @copyright 2026
+ * @package    PHPost/Extras
+ * @author     PHPost Team & Miguel92
+ * @copyright  2026
  */
 
 /**

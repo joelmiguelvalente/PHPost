@@ -1,5 +1,3 @@
-<?php /** @var array $data */ ?>
-
 <div class="step-intro">
     <p>
         Los siguientes directorios requieren permisos de escritura.

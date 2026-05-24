@@ -1,12 +1,12 @@
 <?php
 
-/**
- * @name src/Extras/upload.php
- * @author PHPost Team
- * @copyright 2026
- */
-
 declare(strict_types=1);
+
+/**
+ * @package    PHPost/Extras
+ * @author     PHPost Team & Miguel92
+ * @copyright  2026
+ */
 
 require_once dirname(__DIR__, 2) . '/header.php';
 require_once __DIR__ . '/Providers/ProviderInterface.php';
@@ -81,7 +81,7 @@ function jsonResponse(int $status, string $msg, string $imageUrl = ''): never
 // -------------------------------------------------------
 // Entrada
 // -------------------------------------------------------
-var_dump($_FILES);
+#var_dump($_FILES);
 if (!isset($_FILES['img']['tmp_name'])) {
     jsonResponse(0, 'Empty');
 }

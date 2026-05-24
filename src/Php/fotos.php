@@ -1,12 +1,12 @@
 <?php
 
-/**
- * @name fotos.php
- * @author PHPost Team
- * @copyright 2026
- */
-
 declare(strict_types=1);
+
+/**
+ * @package    PHPost/Php
+ * @author     PHPost Team & Miguel92
+ * @copyright  2026
+ */
 
 require_once dirname(__DIR__, 2) . "/header.php";
 $tsTitle = "{$tsCore->settings['titulo']} - {$tsCore->settings['slogan']}";

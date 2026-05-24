@@ -1,5 +1,12 @@
 <?php
+
+declare(strict_types=1);
+
 /**
+ * @package    PHPost/Logger
+ * @author     PHPost Team & Miguel92
+ * @copyright  2026
+ *
  * @name logs.view.php
  * @description Vista del visor de logs — integrar en sistema de vistas
  * 
@@ -9,8 +16,6 @@
  *   $activeFile → array con info del archivo activo
  *   $filter     → string nivel activo ('ALL', 'ERROR', etc.)
  */
-
-declare(strict_types=1);
 
 if (!defined('TS_HEADER')) {
    exit('No se permite el acceso directo al script');

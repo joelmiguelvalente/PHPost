@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * ------------------------------------------------------------
  * InstallerValidator
@@ -7,11 +9,11 @@
  * Centraliza todas las validaciones del instalador.
  * Métodos estáticos puros: no dependen de estado externo.
  *
- * @package   PHPost\Install
- * @copyright 2026
+ * @package    PHPost
+ * @subpackage Install
+ * @author     PHPost Team & Miguel92
+ * @copyright  2026
  */
-
-declare(strict_types=1);
 
 final class InstallerValidator
 {

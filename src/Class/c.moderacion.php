@@ -1,10 +1,17 @@
-<?php if ( ! defined('TS_HEADER')) exit('No se permite el acceso directo al script');
+<?php
+
+declare(strict_types=1);
+
 /**
- * Modelo para el control de las funciones de la moderación
- *
- * @name    c.moderacion.php
- * @author  PHPost Team
+ * @package    PHPost/Class
+ * @author     PHPost Team & Miguel92
+ * @copyright  2026
  */
+
+if ( ! defined('TS_HEADER')) {
+   exit('No se permite el acceso directo al script');
+}
+
 class tsMod {
 
    public function __construct(

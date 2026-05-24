@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * ------------------------------------------------------------
  * PHPost Configuration File
@@ -12,12 +14,14 @@
  * Este archivo debe ser incluido una sola vez desde
  * el bootstrap principal de la aplicación.
  *
- * @name      config/Config.Database.php
- * @author    Miguel92
- * @copyright 2026
+ * @package    Config
+ * @author     PHPost Team & Miguel92
+ * @copyright  2026
  */
 
-declare(strict_types=1);
+namespace config;
+
+use config\AbstractConfig;
 
 final class ConfigDatabase extends AbstractConfig
 {

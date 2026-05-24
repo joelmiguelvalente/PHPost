@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * ImageProcessor - Procesador de imágenes seguro y modular para aplicaciones web
  * 
@@ -15,11 +17,9 @@
  * - Inmutabilidad del objeto
  * - Configuración explícita y segura
  * 
- * @package PHPost
- * @subpackage ImageProcessing
- * @author Miguel92 - Desarrollador FullStack LAMP
- * @version 2.0.0
- * @license MIT
+ * @package    PHPost/Utils
+ * @author     PHPost Team & Miguel92
+ * @copyright  2026
  * 
  * @example 
  * // Procesar imagen para un post

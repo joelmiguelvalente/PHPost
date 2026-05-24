@@ -1,4 +1,7 @@
-<?php /** @var array $data */ $db = $data['db'] ?? []; ?>
+<?php
+/** @var array $data */
+$db = $data['db'] ?? [];
+?>
 
 <div class="step-intro">
 	<p>Ingresá los datos de conexión a tu base de datos MySQL. Si estás en localhost podés dejar la contraseña vacía.</p>

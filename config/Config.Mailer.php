@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * ------------------------------------------------------------
  * PHPost - Configuration File
@@ -11,12 +13,14 @@
  * Este archivo debe ser incluido una única vez
  * desde el bootstrap principal.
  *
- * @name config/Config.Mailer.php
- * @author    PHPost Team
- * @copyright 2026
+ * @package    Config
+ * @author     PHPost Team & Miguel92
+ * @copyright  2026
  */
 
-declare(strict_types=1);
+namespace config;
+
+use config\AbstractConfig;
 
 final class ConfigMailer extends AbstractConfig
 {

@@ -1,12 +1,12 @@
 <?php
 
-/**
- * @name config/Config.Errors.php
- * @author PHPost Team
- * @copyright 2026
- */
-
 declare(strict_types=1);
+
+/**
+ * @package    Config
+ * @author     PHPost Team & Miguel92
+ * @copyright  2026
+ */
 
 require_once TS_LOGGER . '/LogLevel.php';
 require_once TS_LOGGER . '/LoggerFormatter.php';
