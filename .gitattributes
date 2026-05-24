@@ -1,12 +1,32 @@
-# Normalizar todo a LF en el repositorio
-* text=auto
+# --------------------------------------------------
+# Text files
+# --------------------------------------------------
 
-# Archivos de texto específicos
-*.php text eol=lf
-*.js text eol=lf
-*.css text eol=lf
-*.tpl text eol=lf
-*.sql text eol=lf
-*.md text eol=lf
-*.gitignore text eol=lf
-*.gitattributes text eol=lf
+*.php          text eol=lf
+*.js           text eol=lf
+*.css          text eol=lf
+*.tpl          text eol=lf
+*.sql          text eol=lf
+*.md           text eol=lf
+*.json         text eol=lf
+*.yml          text eol=lf
+*.xml          text eol=lf
+*.htaccess     text eol=lf
+
+# --------------------------------------------------
+# Binary files
+# --------------------------------------------------
+
+*.png          binary
+*.jpg          binary
+*.jpeg         binary
+*.gif          binary
+*.webp         binary
+*.avif         binary
+*.ico          binary
+*.woff         binary
+*.woff2        binary
+*.ttf          binary
+*.eot          binary
+*.otf          binary
+*.zip          binary
