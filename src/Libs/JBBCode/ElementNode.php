@@ -14,30 +14,31 @@ require_once 'Node.php';
 class ElementNode extends Node
 {
     /** @var string The tagname of this element, for i.e. "b" in [b]bold[/b] */
-    protected $tagName;
+    protected string $tagName;
 
     /** @var string[] The attributes, if any, of this element node */
-    protected $attribute;
+    protected array $attribute = [];
 
     /** @var Node[] The child nodes contained within this element */
-    protected $children;
+    protected array $children = [];
 
     /** @var CodeDefinition The code definition that defines this element's behavior */
-    protected $codeDefinition;
+    protected ?CodeDefinition $codeDefinition = null;
 
     /** @var integer How deeply this node is nested */
-    protected $nestDepth;
+    protected int $nestDepth = 0;
 
     /**
      * Constructs the element node
      */
     public function __construct()
     {
-        $this->children = array();
+        $this->children = [];
+        $this->attribute = [];
         $this->nestDepth = 0;
     }
 
-    public function accept(NodeVisitor $nodeVisitor)
+    public function accept(NodeVisitor $nodeVisitor): void
     {
         $nodeVisitor->visitElementNode($this);
     }
@@ -47,7 +48,7 @@ class ElementNode extends Node
      *
      * @return CodeDefinition this element's code definition
      */
-    public function getCodeDefinition()
+    public function getCodeDefinition(): ?CodeDefinition
     {
         return $this->codeDefinition;
     }
@@ -57,7 +58,7 @@ class ElementNode extends Node
      *
      * @param CodeDefinition $codeDef the code definition that defines this element node
      */
-    public function setCodeDefinition(CodeDefinition $codeDef)
+    public function setCodeDefinition(CodeDefinition $codeDef): void
     {
         $this->codeDefinition = $codeDef;
         $this->setTagName($codeDef->getTagName());
@@ -68,7 +69,7 @@ class ElementNode extends Node
      *
      * @return string the element's tag name
      */
-    public function getTagName()
+    public function getTagName(): string
     {
         return $this->tagName;
     }
@@ -78,7 +79,7 @@ class ElementNode extends Node
      *
      * @return array the attributes of this element
      */
-    public function getAttribute()
+    public function getAttribute(): array
     {
         return $this->attribute;
     }
@@ -88,7 +89,7 @@ class ElementNode extends Node
      *
      * @return Node[] an array of this node's child nodes
      */
-    public function getChildren()
+    public function getChildren(): array
     {
         return $this->children;
     }
@@ -101,7 +102,7 @@ class ElementNode extends Node
      *
      * @return string the plain text representation of this node
      */
-    public function getAsText()
+    public function getAsText(): string
     {
         if ($this->codeDefinition) {
             return $this->codeDefinition->asText($this);
@@ -122,7 +123,7 @@ class ElementNode extends Node
      *
      * @return string the bbcode representation of this element
      */
-    public function getAsBBCode()
+    public function getAsBBCode(): string
     {
         $str = "[".$this->tagName;
         if (!empty($this->attribute)) {
@@ -155,13 +156,9 @@ class ElementNode extends Node
      *
      * @return string the html representation of this node
      */
-    public function getAsHTML()
+    public function getAsHTML(): string
     {
-        if ($this->codeDefinition) {
-            return $this->codeDefinition->asHtml($this);
-        } else {
-            return "";
-        }
+        return ($this->codeDefinition) ? $this->codeDefinition->asHtml($this) : "";
     }
 
     /**
@@ -171,7 +168,7 @@ class ElementNode extends Node
      *
      * @param Node $child the node to add as a child
      */
-    public function addChild(Node $child)
+    public function addChild(Node $child): void
     {
         $this->children[] = $child;
         $child->setParent($this);
@@ -182,7 +179,7 @@ class ElementNode extends Node
      *
      * @param Node $child the child node to remove
      */
-    public function removeChild(Node $child)
+    public function removeChild(Node $child): void
     {
         foreach ($this->children as $key => $value) {
             if ($value === $child) {
@@ -196,7 +193,7 @@ class ElementNode extends Node
      *
      * @param string $tagName the element's new tag name
      */
-    public function setTagName($tagName)
+    public function setTagName($tagName): void
     {
         $this->tagName = $tagName;
     }
@@ -206,7 +203,7 @@ class ElementNode extends Node
      *
      * @param string[] $attribute the attribute(s) of this element node
      */
-    public function setAttribute($attribute)
+    public function setAttribute($attribute): void
     {
         $this->attribute = $attribute;
     }
@@ -220,8 +217,11 @@ class ElementNode extends Node
      *
      * @return ElementNode|null the closest parent with the given tag name
      */
-    public function closestParentOfType($str)
+    public function closestParentOfType(string $str): ?ElementNode
     {
+        if(empty($str)) {
+            return null;
+        }
         $str = strtolower($str);
         $currentEl = $this;
 

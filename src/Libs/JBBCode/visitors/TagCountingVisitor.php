@@ -11,21 +11,21 @@ namespace JBBCode\visitors;
  */
 class TagCountingVisitor implements \JBBcode\NodeVisitor
 {
-    protected $frequencies = array();
+    protected array $frequencies = [];
 
-    public function visitDocumentElement(\JBBCode\DocumentElement $documentElement)
+    public function visitDocumentElement(\JBBCode\DocumentElement $documentElement): void
     {
         foreach ($documentElement->getChildren() as $child) {
             $child->accept($this);
         }
     }
 
-    public function visitTextNode(\JBBCode\TextNode $textNode)
+    public function visitTextNode(\JBBCode\TextNode $textNode): void
     {
         // Nothing to do here, text nodes do not have tag names or children
     }
 
-    public function visitElementNode(\JBBCode\ElementNode $elementNode)
+    public function visitElementNode(\JBBCode\ElementNode $elementNode): void
     {
         $tagName = strtolower($elementNode->getTagName());
 
@@ -49,12 +49,12 @@ class TagCountingVisitor implements \JBBcode\NodeVisitor
      *
      * @return integer
      */
-    public function getFrequency($tagName)
+    public function getFrequency(string $tagName): int
     {
         if (!isset($this->frequencies[$tagName])) {
             return 0;
         } else {
-            return $this->frequencies[$tagName];
+            return (int)$this->frequencies[$tagName];
         }
     }
 }

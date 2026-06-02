@@ -17,7 +17,7 @@ class DefaultCodeDefinitionSet implements CodeDefinitionSet
 {
 
     /** @var CodeDefinition[] The default code definitions in this set. */
-    protected $definitions = array();
+    protected array $definitions = [];
 
     /**
      * Constructs the default code definitions.
@@ -39,12 +39,12 @@ class DefaultCodeDefinitionSet implements CodeDefinitionSet
         $urlValidator = new \JBBCode\validators\UrlValidator();
 
         /* [url] link tag */
-        $builder = new CodeDefinitionBuilder('url', '<a href="{param}" target="_blank">{param}</a>');
+        $builder = new CodeDefinitionBuilder('url', '<a href="{param}">{param}</a>');
         $builder->setParseContent(false)->setBodyValidator($urlValidator);
         $this->definitions[] = $builder->build();
 
         /* [url=http://example.com] link tag */
-        $builder = new CodeDefinitionBuilder('url', '<a href="{option}" target="_blank">{param}</a>');
+        $builder = new CodeDefinitionBuilder('url', '<a href="{option}">{param}</a>');
         $builder->setUseOption(true)->setParseContent(true)->setOptionValidator($urlValidator);
         $this->definitions[] = $builder->build();
 
@@ -69,7 +69,7 @@ class DefaultCodeDefinitionSet implements CodeDefinitionSet
      *
      * @return CodeDefinition[]
      */
-    public function getCodeDefinitions()
+    public function getCodeDefinitions(): array
     {
         return $this->definitions;
     }

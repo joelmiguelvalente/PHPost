@@ -9,27 +9,27 @@ namespace JBBCode\visitors;
  */
 class HTMLSafeVisitor implements \JBBCode\NodeVisitor
 {
-    public function visitDocumentElement(\JBBCode\DocumentElement $documentElement)
+    public function visitDocumentElement(\JBBCode\DocumentElement $documentElement): void
     {
         foreach ($documentElement->getChildren() as $child) {
             $child->accept($this);
         }
     }
 
-    public function visitTextNode(\JBBCode\TextNode $textNode)
+    public function visitTextNode(\JBBCode\TextNode $textNode): void
     {
         $textNode->setValue($this->htmlSafe($textNode->getValue()));
     }
 
-    public function visitElementNode(\JBBCode\ElementNode $elementNode)
+    public function visitElementNode(\JBBCode\ElementNode $elementNode): void
     {
         $attrs = $elementNode->getAttribute();
-        if (is_array($attrs)) {
-            foreach ($attrs as &$el) {
-                $el = $this->htmlSafe($el);
+        if (is_array($attrs) && !empty($attrs)) {
+            $escapedAttrs = [];
+            foreach ($attrs as $key => $value) {
+                $escapedAttrs[$key] = $this->htmlSafe($value);
             }
-
-            $elementNode->setAttribute($attrs);
+            $elementNode->setAttribute($escapedAttrs);
         }
 
         foreach ($elementNode->getChildren() as $child) {
@@ -37,17 +37,14 @@ class HTMLSafeVisitor implements \JBBCode\NodeVisitor
         }
     }
 
-    protected function htmlSafe($str, $options = null)
+    protected function htmlSafe(string $str, ?int $options = null): string
     {
-        if (is_null($options)) {
+        if ($options === null) {
+            $options = ENT_QUOTES | ENT_HTML401;
             if (defined('ENT_DISALLOWED')) {
-                $options = ENT_QUOTES | ENT_DISALLOWED | ENT_HTML401;
-            } // PHP 5.4+
-            else {
-                $options = ENT_QUOTES;
-            }  // PHP 5.3
+                $options |= ENT_DISALLOWED;
+            }
         }
-
         return htmlspecialchars($str, $options, 'UTF-8');
     }
 }

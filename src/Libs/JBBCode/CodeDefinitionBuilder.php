@@ -14,19 +14,25 @@ class CodeDefinitionBuilder
 {
 
     /** @var string */
-    protected $tagName;
+    protected string $tagName;
+
     /** @var boolean */
-    protected $useOption = false;
+    protected bool $useOption = false;
+
     /** @var string */
-    protected $replacementText;
+    protected string $replacementText;
+
     /** @var boolean */
-    protected $parseContent = true;
+    protected bool $parseContent = true;
+
     /** @var integer */
-    protected $nestLimit = -1;
+    protected int $nestLimit = -1;
+
     /** @var array[string]InputValidator The input validators to run options through */
-    protected $optionValidator = array();
+    protected array $optionValidator = [];
+
     /** @var InputValidator */
-    protected $bodyValidator = null;
+    protected ?InputValidator $bodyValidator = null;
 
     /**
      * Construct a CodeDefinitionBuilder.
@@ -34,7 +40,7 @@ class CodeDefinitionBuilder
      * @param string $tagName  the tag name of the definition to build
      * @param string $replacementText  the replacement text of the definition to build
      */
-    public function __construct($tagName, $replacementText)
+    public function __construct(string $tagName, string $replacementText)
     {
         $this->tagName = $tagName;
         $this->replacementText = $replacementText;
@@ -46,7 +52,7 @@ class CodeDefinitionBuilder
      * @param string $tagName  the tag name for the new CodeDefinition
      * @return self
      */
-    public function setTagName($tagName)
+    public function setTagName(string $tagName): self
     {
         $this->tagName = $tagName;
         return $this;
@@ -59,7 +65,7 @@ class CodeDefinitionBuilder
      * @param string $replacementText  the replacement text for the new CodeDefinition
      * @return self
      */
-    public function setReplacementText($replacementText)
+    public function setReplacementText(string $replacementText): self
     {
         $this->replacementText = $replacementText;
         return $this;
@@ -72,7 +78,7 @@ class CodeDefinitionBuilder
      * @param boolean $option  true iff the definition includes an option
      * @return self
      */
-    public function setUseOption($option)
+    public function setUseOption(bool $option): self
     {
         $this->useOption = $option;
         return $this;
@@ -85,7 +91,7 @@ class CodeDefinitionBuilder
      * @param boolean $parseContent  true iff the content should be parsed
      * @return self
      */
-    public function setParseContent($parseContent)
+    public function setParseContent(bool $parseContent): self
     {
         $this->parseContent = $parseContent;
         return $this;
@@ -98,11 +104,10 @@ class CodeDefinitionBuilder
      * @throws \InvalidArgumentException  if the nest limit is invalid
      * @return self
      */
-    public function setNestLimit($limit)
+    public function setNestLimit(int $limit): self
     {
-        if (!is_int($limit) || ($limit <= 0 && -1 != $limit)) {
-            throw new \InvalidArgumentException("A nest limit must be a positive integer " .
-                                               "or -1.");
+        if ($limit <= 0 && -1 != $limit) {
+            throw new \InvalidArgumentException("A nest limit must be a positive integer or -1.");
         }
         $this->nestLimit = $limit;
         return $this;
@@ -114,7 +119,7 @@ class CodeDefinitionBuilder
      * @param InputValidator $validator  the InputValidator instance to use
      * @return self
      */
-    public function setOptionValidator(\JBBCode\InputValidator $validator, $option=null)
+    public function setOptionValidator(\JBBCode\InputValidator $validator, ?string $option = null): self
     {
         if (empty($option)) {
             $option = $this->tagName;
@@ -129,7 +134,7 @@ class CodeDefinitionBuilder
      * @param InputValidator $validator  the InputValidator instance to use
      * @return self
      */
-    public function setBodyValidator(\JBBCode\InputValidator $validator)
+    public function setBodyValidator(\JBBCode\InputValidator $validator): self
     {
         $this->bodyValidator = $validator;
         return $this;
@@ -139,9 +144,9 @@ class CodeDefinitionBuilder
      * Removes the attached option validator if one is attached.
      * @return self
      */
-    public function removeOptionValidator()
+    public function removeOptionValidator(): self
     {
-        $this->optionValidator = array();
+        $this->optionValidator = [];
         return $this;
     }
 
@@ -149,7 +154,7 @@ class CodeDefinitionBuilder
      * Removes the attached body validator if one is attached.
      * @return self
      */
-    public function removeBodyValidator()
+    public function removeBodyValidator(): self
     {
         $this->bodyValidator = null;
         return $this;
@@ -160,15 +165,16 @@ class CodeDefinitionBuilder
      *
      * @return CodeDefinition a new CodeDefinition instance
      */
-    public function build()
+    public function build(): CodeDefinition
     {
-        $definition = CodeDefinition::construct($this->tagName,
-                                                $this->replacementText,
-                                                $this->useOption,
-                                                $this->parseContent,
-                                                $this->nestLimit,
-                                                $this->optionValidator,
-                                                $this->bodyValidator);
-        return $definition;
+        return CodeDefinition::construct(
+            $this->tagName,
+            $this->replacementText,
+            $this->useOption,
+            $this->parseContent,
+            $this->nestLimit,
+            $this->optionValidator,
+            $this->bodyValidator
+        );
     }
 }

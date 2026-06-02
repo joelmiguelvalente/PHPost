@@ -28,7 +28,7 @@ class VideoDefinition extends JBBCode\CodeDefinition {
       $this->nestLimit = -1;
 	}
 
-	public function asHtml(JBBCode\ElementNode $el) {
+	public function asHtml(JBBCode\ElementNode $el): string {
 		$content = "";
 		foreach ($el->getChildren() as $child) {
 			$content .= $child->getAsBBCode();

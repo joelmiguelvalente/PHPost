@@ -14,10 +14,10 @@ class SizeValidator implements \JBBCode\InputValidator {
     /**
      * Validates numeric size values > 0
      *
-     * @param mixed $input
+     * @param string $input
      * @return bool
      */
-    public function validate($input): bool {
+    public function validate(string $input): bool {
         // is_numeric() ya cubre strings numéricos, floats, etc
         return is_numeric($input) && (float) $input > 0;
     }

@@ -29,7 +29,7 @@ class DocumentElement extends ElementNode
      *
      * @return string this document's bbcode representation
      */
-    public function getAsBBCode()
+    public function getAsBBCode(): string
     {
         $s = "";
         foreach ($this->getChildren() as $child) {
@@ -49,7 +49,7 @@ class DocumentElement extends ElementNode
      *
      * @return string the HTML representation of this document
      */
-    public function getAsHTML()
+    public function getAsHTML(): string
     {
         $s = "";
         foreach ($this->getChildren() as $child) {
@@ -59,7 +59,7 @@ class DocumentElement extends ElementNode
         return $s;
     }
 
-    public function accept(NodeVisitor $visitor)
+    public function accept(NodeVisitor $visitor): void
     {
         $visitor->visitDocumentElement($this);
     }

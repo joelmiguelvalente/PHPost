@@ -2,11 +2,11 @@
 
 namespace JBBCode\visitors;
 
-require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'CodeDefinition.php';
-require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'DocumentElement.php';
-require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'ElementNode.php';
-require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'NodeVisitor.php';
-require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'TextNode.php';
+require_once dirname(__DIR__, 1) . '/CodeDefinition.php';
+require_once dirname(__DIR__, 1) . '/DocumentElement.php';
+require_once dirname(__DIR__, 1) . '/ElementNode.php';
+require_once dirname(__DIR__, 1) . '/NodeVisitor.php';
+require_once dirname(__DIR__, 1) . '/TextNode.php';
 
 /**
  * This visitor is used by the jBBCode core to enforce nest limits after
@@ -20,21 +20,21 @@ class NestLimitVisitor implements \JBBCode\NodeVisitor
 {
 
     /** @var integer[] A map from tag name to current depth. */
-    protected $depth = array();
+    protected array $depth = [];
 
-    public function visitDocumentElement(\JBBCode\DocumentElement $documentElement)
+    public function visitDocumentElement(\JBBCode\DocumentElement $documentElement): void
     {
         foreach ($documentElement->getChildren() as $child) {
             $child->accept($this);
         }
     }
 
-    public function visitTextNode(\JBBCode\TextNode $textNode)
+    public function visitTextNode(\JBBCode\TextNode $textNode): void
     {
         /* Nothing to do. Text nodes don't have tag names or children. */
     }
 
-    public function visitElementNode(\JBBCode\ElementNode $elementNode)
+    public function visitElementNode(\JBBCode\ElementNode $elementNode): void
     {
         $tagName = strtolower($elementNode->getTagName());
 
@@ -47,7 +47,7 @@ class NestLimitVisitor implements \JBBCode\NodeVisitor
 
         /* Check if $elementNode is nested too deeply. */
         if ($elementNode->getCodeDefinition()->getNestLimit() != -1 &&
-                $elementNode->getCodeDefinition()->getNestLimit() < $this->depth[$tagName]) {
+            $elementNode->getCodeDefinition()->getNestLimit() < $this->depth[$tagName]) {
             /* This element is nested too deeply. We need to remove it and not visit any
              * of its children. */
             $elementNode->getParent()->removeChild($elementNode);

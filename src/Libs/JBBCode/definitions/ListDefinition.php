@@ -12,7 +12,7 @@ class ListDefinition extends JBBCode\CodeDefinition {
       $this->nestLimit = -1;
    }
 
-   public function asHtml(JBBCode\ElementNode $el) {
+   public function asHtml(JBBCode\ElementNode $el): string {
       $option = $el->getAttribute();
       if($this->option) $option = $option['list'];
       $tag = 'ul';

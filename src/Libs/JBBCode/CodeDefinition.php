@@ -12,35 +12,40 @@ namespace JBBCode;
 class CodeDefinition
 {
     /** @var string NOTE: THIS PROPERTY SHOULD ALWAYS BE LOWERCASE; USE setTagName() TO ENSURE THIS */
-    protected $tagName;
+    protected string $tagName;
 
     /** @var boolean Whether or not this CodeDefinition uses an option parameter. */
-    protected $useOption;
+    protected bool $useOption;
 
     /** @var string The replacement text to be used for simple CodeDefinitions */
-    protected $replacementText;
+    protected string $replacementText;
 
     /** @var boolean Whether or not to parse elements of this definition's contents */
-    protected $parseContent;
+    protected bool $parseContent;
 
     /** @var integer How many of this element type may be nested within each other */
-    protected $nestLimit;
+    protected int $nestLimit;
 
     /** @var integer How many of this element type have been seen */
-    protected $elCounter;
+    protected int $elCounter;
 
     /** @var array[string]InputValidator The input validators to run options through */
-    protected $optionValidator;
+    protected array $optionValidator;
 
     /** @var InputValidator The input validator to run the body ({param}) through */
-    protected $bodyValidator;
+    protected ?InputValidator $bodyValidator;
 
     /**
      * Constructs a new CodeDefinition.
      */
-    public static function construct($tagName, $replacementText, $useOption = false,
-            $parseContent = true, $nestLimit = -1, $optionValidator = array(),
-            $bodyValidator = null)
+    public static function construct(
+        string $tagName,
+        string $replacementText,
+        bool $useOption = false,
+        bool $parseContent = true,
+        int $nestLimit = -1,
+        array $optionValidator = [],
+        ?InputValidator $bodyValidator = null): self
     {
         $def = new CodeDefinition();
         $def->elCounter = 0;
@@ -81,7 +86,7 @@ class CodeDefinition
      * @param ElementNode $el  the ElementNode to validate
      * @return boolean true if the ElementNode's {option} and {param} are OK, false if they're not
      */
-    public function hasValidInputs(ElementNode $el)
+    public function hasValidInputs(ElementNode $el): bool
     {
         if ($this->usesOption() && $this->optionValidator) {
             $att = $el->getAttribute();
@@ -117,7 +122,7 @@ class CodeDefinition
      *
      * @return string the parsed html of this element (INCLUDING ITS CHILDREN)
      */
-    public function asHtml(ElementNode $el)
+    public function asHtml(ElementNode $el): string
     {
         if (!$this->hasValidInputs($el)) {
             return $el->getAsBBCode();
@@ -144,7 +149,7 @@ class CodeDefinition
         return $html;
     }
 
-    protected function getContent(ElementNode $el)
+    protected function getContent(ElementNode $el): string
     {
         if ($this->parseContent()) {
             $content = "";
@@ -168,7 +173,7 @@ class CodeDefinition
      *
      * @return string the text representation of $el
      */
-    public function asText(ElementNode $el)
+    public function asText(ElementNode $el): string
     {
         if (!$this->hasValidInputs($el)) {
             return $el->getAsBBCode();
@@ -186,7 +191,7 @@ class CodeDefinition
      *
      * @return string this definition's associated tag name
      */
-    public function getTagName()
+    public function getTagName(): string
     {
         return $this->tagName;
     }
@@ -198,7 +203,7 @@ class CodeDefinition
      *
      * @return string the replacement text of this CodeDefinition
      */
-    public function getReplacementText()
+    public function getReplacementText(): string
     {
         return $this->replacementText;
     }
@@ -208,7 +213,7 @@ class CodeDefinition
      *
      * @return boolean true if this CodeDefinition uses the option, false otherwise
      */
-    public function usesOption()
+    public function usesOption(): bool
     {
         return $this->useOption;
     }
@@ -219,7 +224,7 @@ class CodeDefinition
      *
      * @return boolean true if this CodeDefinition parses elements contained within itself
      */
-    public function parseContent()
+    public function parseContent(): bool
     {
         return $this->parseContent;
     }
@@ -232,7 +237,7 @@ class CodeDefinition
      *
      * @return integer
      */
-    public function getNestLimit()
+    public function getNestLimit(): int
     {
         return $this->nestLimit;
     }
@@ -244,7 +249,7 @@ class CodeDefinition
      *
      * @param string $tagName the new tag name of this definition
      */
-    public function setTagName($tagName)
+    public function setTagName(string $tagName): void
     {
         $this->tagName = strtolower($tagName);
     }
@@ -256,7 +261,7 @@ class CodeDefinition
      *
      * @param string $txt the new replacement text
      */
-    public function setReplacementText($txt)
+    public function setReplacementText(string $txt): void
     {
         $this->replacementText = $txt;
     }
@@ -268,7 +273,7 @@ class CodeDefinition
      *
      * @param boolean $bool
      */
-    public function setUseOption($bool)
+    public function setUseOption(bool $bool): void
     {
         $this->useOption = $bool;
     }
@@ -280,7 +285,7 @@ class CodeDefinition
      *
      * @param boolean $bool
      */
-    public function setParseContent($bool)
+    public function setParseContent(bool $bool): void
     {
         $this->parseContent = $bool;
     }
@@ -292,7 +297,7 @@ class CodeDefinition
      *
      * @return void
      */
-    public function incrementCounter()
+    public function incrementCounter(): void
     {
         $this->elCounter++;
     }
@@ -304,7 +309,7 @@ class CodeDefinition
      *
      * @return void
      */
-    public function decrementCounter()
+    public function decrementCounter(): void
     {
         $this->elCounter--;
     }
@@ -314,7 +319,7 @@ class CodeDefinition
      *
      * @deprecated
      */
-    public function resetCounter()
+    public function resetCounter(): void
     {
         $this->elCounter = 0;
     }
@@ -326,7 +331,7 @@ class CodeDefinition
      *
      * @return int
      */
-    public function getCounter()
+    public function getCounter(): int
     {
         return $this->elCounter;
     }

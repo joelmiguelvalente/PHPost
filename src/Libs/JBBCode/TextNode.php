@@ -12,19 +12,19 @@ require_once 'Node.php';
 class TextNode extends Node
 {
     /** @var string The value of this text node */
-    protected $value;
+    protected string $value;
 
     /**
      * Constructs a text node from its text string
      *
      * @param string $val
      */
-    public function __construct($val)
+    public function __construct(string $val)
     {
         $this->value = $val;
     }
 
-    public function accept(NodeVisitor $visitor)
+    public function accept(NodeVisitor $visitor): void
     {
         $visitor->visitTextNode($this);
     }
@@ -35,7 +35,7 @@ class TextNode extends Node
      *
      * @returns boolean true
      */
-    public function isTextNode()
+    public function isTextNode(): bool
     {
         return true;
     }
@@ -45,7 +45,7 @@ class TextNode extends Node
      *
      * @return string
      */
-    public function getValue()
+    public function getValue(): string
     {
         return $this->value;
     }
@@ -58,7 +58,7 @@ class TextNode extends Node
      *
      * @return string this node represented as text
      */
-    public function getAsText()
+    public function getAsText(): string
     {
         return $this->getValue();
     }
@@ -71,7 +71,7 @@ class TextNode extends Node
      *
      * @return string this node represented as bbcode
      */
-    public function getAsBBCode()
+    public function getAsBBCode(): string
     {
         return $this->getValue();
     }
@@ -84,7 +84,7 @@ class TextNode extends Node
      *
      * @return string this node represented as HTML
      */
-    public function getAsHTML()
+    public function getAsHTML(): string
     {
         return $this->getValue();
     }
@@ -94,7 +94,7 @@ class TextNode extends Node
      *
      * @param string $newValue  the new text value of the text node
      */
-    public function setValue($newValue)
+    public function setValue(string $newValue): void
     {
         $this->value = $newValue;
     }

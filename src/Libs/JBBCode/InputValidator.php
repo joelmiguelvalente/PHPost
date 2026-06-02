@@ -17,5 +17,5 @@ interface InputValidator
      * @param string $input
      * @return boolean
      */
-    public function validate($input);
+    public function validate(string $input): bool;
 }

@@ -19,7 +19,7 @@ abstract class Node
      *
      * @return Node the node's parent
      */
-    public function getParent()
+    public function getParent(): ?Node
     {
         return $this->parent;
     }
@@ -29,9 +29,9 @@ abstract class Node
      *
      * @return boolean true if this node has a parent, false otherwise
      */
-    public function hasParent()
+    public function hasParent(): bool
     {
-        return $this->parent != null;
+        return $this->parent !== null;
     }
 
     /**
@@ -40,7 +40,7 @@ abstract class Node
      *
      * @return boolean true if this node is a text node
      */
-    public function isTextNode()
+    public function isTextNode(): bool
     {
         return false;
     }
@@ -51,35 +51,35 @@ abstract class Node
      *
      * @param NodeVisitor $nodeVisitor the NodeVisitor traversing the graph
      */
-    abstract public function accept(NodeVisitor $nodeVisitor);
+    abstract public function accept(NodeVisitor $nodeVisitor): void;
 
     /**
      * Returns this node as text (without any bbcode markup)
      *
      * @return string the plain text representation of this node
      */
-    abstract public function getAsText();
+    abstract public function getAsText(): string;
 
     /**
      * Returns this node as bbcode
      *
      * @return string the bbcode representation of this node
      */
-    abstract public function getAsBBCode();
+    abstract public function getAsBBCode(): string;
 
     /**
      * Returns this node as HTML
      *
      * @return string the html representation of this node
      */
-    abstract public function getAsHTML();
+    abstract public function getAsHTML(): string;
 
     /**
      * Sets this node's parent to be the given node.
      *
      * @param Node $parent the node to set as this node's parent
      */
-    public function setParent(Node $parent)
+    public function setParent(Node $parent): void
     {
         $this->parent = $parent;
     }

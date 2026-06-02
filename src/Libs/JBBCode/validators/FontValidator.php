@@ -17,8 +17,8 @@ class FontValidator implements \JBBCode\InputValidator {
      *
      * @param $input string a validar
      */
-    public function validate($input) {
-        return preg_match('/^[a-zA-Z0-9\s\-_",.()]+$/',$input);
+    public function validate(string $input): bool {
+        return preg_match('/^[a-zA-Z0-9\s\-_\",.()]+$/',$input);
     }
 
 }

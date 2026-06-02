@@ -18,5 +18,5 @@ interface CodeDefinitionSet
      * Retrieves the CodeDefinitions within this set as an array.
      * @return CodeDefinition[]
      */
-    public function getCodeDefinitions();
+    public function getCodeDefinitions(): array;
 }

@@ -24,7 +24,7 @@ class AlignValidator implements \JBBCode\InputValidator {
      * @param string $input The alignment value to validate
      * @return bool
      */
-    public function validate($input): bool {
+    public function validate(string $input): bool {
         return isset(self::VALID_VALUES[$input]);
     }
 

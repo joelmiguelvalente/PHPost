@@ -10,9 +10,9 @@ namespace JBBCode;
  */
 interface NodeVisitor
 {
-    public function visitDocumentElement(DocumentElement $documentElement);
+    public function visitDocumentElement(DocumentElement $documentElement): void;
 
-    public function visitTextNode(TextNode $textNode);
+    public function visitTextNode(TextNode $textNode): void;
 
-    public function visitElementNode(ElementNode $elementNode);
+    public function visitElementNode(ElementNode $elementNode): void;
 }
