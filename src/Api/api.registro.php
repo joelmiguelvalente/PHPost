@@ -3,14 +3,12 @@
 declare(strict_types=1);
 
 /**
- * @package    src\Api
- * @author     PHPost Team & Miguel92
+ * @package    Api
+ * @author     Miguel92
  * @copyright  2026
  */
 
-if (!defined('TS_HEADER')) {
-	exit('No se permite el acceso directo al script');
-}
+defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
 const ACTIONS = [
    'registro-form'	 		=> ['nivel' => 1, 'template' => 'form', 'ajax' => true],
@@ -32,7 +30,7 @@ $tsAjax  = (int) $config['ajax'];
 $tsPage  = sprintf('p.registro.%s', $config['template']);
 	
 // DEPENDE EL NIVEL
-$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
+$tsLevelMsg = $tsUser->setLevel($tsLevel, true);
 if(!$tsLevelMsg) { 
 	echo '0: '.$tsLevelMsg; 
 	die();
@@ -47,7 +45,7 @@ switch($action) {
 	case 'registro-form':
 		if((int)$tsCore->settings['c_reg_active'] === 0) {
 			$tsAjax = true;
-			echo "0: El registro de nuevas cuentas en <strong>{$tsCore->settings['titulo']}</strong> est&aacute; desactivado.";
+			echo "0: El registro de nuevas cuentas en <strong>{$tsCore->settings['titulo']}</strong> está desactivado.";
 		} else {
 			$tsPaises = require_once TS_EXTRAS . "/Paises.php";
 			$tsMeses = require_once TS_EXTRAS . "/Meses.php";

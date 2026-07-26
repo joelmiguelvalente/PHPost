@@ -25,7 +25,7 @@
 						"Rango",
 						"Usuario",
 						"Email",
-						"&Uacute;ltima actividad ",
+						"última actividad ",
 						"Registro",
 						"IP",
 						"Estado",
@@ -79,13 +79,13 @@
 				{if !$tsType || $tsType == 1}
 					{include "dashboard/Legend.tpl" text="Vista general"}
 
-					{include "dashboard/FormGroup.tpl" id="user" label="Nombre de Usuario" name="user_name" helper="El nick s&oacute;lo se cambiar&aacute; si escribe una nueva contrase&ntilde;a" value=$tsUserD.user_name}
+					{include "dashboard/FormGroup.tpl" id="user" label="Nombre de Usuario" name="user_name" helper="El nick sólo se cambiará si escribe una nueva contrase&ntilde;a" value=$tsUserD.user_name}
 
 					{include "dashboard/FormGroupText.tpl" id="rank" label="Rango" text=$tsUserD.r_name style="color:#{$tsUserD.r_color}"}
 
 					{include "dashboard/FormGroupText.tpl" id="registro" label="Registrado" text=$tsUserD.user_registro|fecha:"full_datetime"}
 
-					{include "dashboard/FormGroupText.tpl" id="activity" label="&Uacute;ltima vez activo" text=$tsUserD.user_lastactive|hace}
+					{include "dashboard/FormGroupText.tpl" id="activity" label="última vez activo" text=$tsUserD.user_lastactive|hace}
 
 					{include "dashboard/FormGroup.tpl" id="points" label="Puntos" name="user_puntos" value=$tsUserD.user_puntos}
 
@@ -97,12 +97,12 @@
 
 					{include "dashboard/FormGroup.tpl" type="password" id="password" label="Nueva contrase&ntilde;a" name="user_password" helper="Debe tener entre 5 y 35 caracteres."}
 
-					{include "dashboard/FormGroup.tpl" type="password" id="password2" label="Confirmar contrase&ntilde;a" name="user_confirm" helper="Necesita confirmar su contrase&ntilde;a s&oacute;lo si la ha cambiado arriba."}
+					{include "dashboard/FormGroup.tpl" type="password" id="password2" label="Confirmar contrase&ntilde;a" name="user_confirm" helper="Necesita confirmar su contrase&ntilde;a sólo si la ha cambiado arriba."}
 
 					{include "dashboard/Check.tpl" type="checkbox" label="Informar al usuario" helper="Marque esta casilla si quiere enviar un e-mail al usuario con los nuevos datos" name="sendata" class="mb-3"}
 				{elseif $tsType == 5}
 					{include "dashboard/Legend.tpl" text="Modificar privacidad del usuario"}
-					<h2 class="active">&iquest;Qui&eacute;n puede...</h2>
+					<h2 class="active">&iquest;Quién puede...</h2>
 					<div class="field">
 						<dl>
 							<dt><label>ver su muro?</label></dt>
@@ -146,7 +146,7 @@
 					</div>
 					<div class="field">
 						<dl>
-							<dt><label>enviarles mensajes privados?</label><br /><span>Esta opci&oacute;n no se aplica a moderadores y administradores.</span></dt>
+							<dt><label>enviarles mensajes privados?</label><br /><span>Esta opción no se aplica a moderadores y administradores.</span></dt>
 							<dd>
 								<select name="rec_mps">
 									{foreach from=$tsPrivacidad key=val item=label}
@@ -154,14 +154,14 @@
 											<option value="{$val}"{if $tsPerfil.p_mensajes_privados == $val} selected{/if}>{$label}</option>
 										{/if}
 									{/foreach}
-									<option value="nobody"{if $tsPerfil.p_mensajes_privados == 'nobody'} selected{/if}>Deshabilitar mensajer&iacute;a (opci&oacute;n administrativa)</option>
+									<option value="nobody"{if $tsPerfil.p_mensajes_privados == 'nobody'} selected{/if}>Deshabilitar mensajería (opción administrativa)</option>
 								</select>
 							</dd>
 						</dl>
 					</div>
             	{elseif $tsType == 6}
-            		{include "dashboard/Legend.tpl" text="Eliminaci&oacute;n de contenidos"}
-					<input type="checkbox" id="bocuenta" name="bocuenta" onclick="$('#ext').slideToggle();"/><label style="font-weight:bold;" for="bocuenta">Cuenta Completa</label><label for="bocuenta"> &nbsp; Se eliminar&aacute; la cuenta y todo el contenido relacionado a {$tsUsername}.</label>
+            		{include "dashboard/Legend.tpl" text="Eliminación de contenidos"}
+					<input type="checkbox" id="bocuenta" name="bocuenta" onclick="$('#ext').slideToggle();"/><label style="font-weight:bold;" for="bocuenta">Cuenta Completa</label><label for="bocuenta"> &nbsp; Se eliminará la cuenta y todo el contenido relacionado a {$tsUsername}.</label>
 					<div id="ext">
 						{* Configurado en inc/extras/datos.php *}
 						{foreach $tsContenido item=del}

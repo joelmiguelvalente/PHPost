@@ -165,16 +165,16 @@ function saveBorrador() {
 	if (!borradorEnabled) return;
 	const borradorId = $('input[name="borrador_id"]').val();
 	const url = borradorId ? '/borradores-guardar' : '/borradores-agregar';
-	let data = buildBorradorParams();
-	if (borradorId) data += '&borrador_id=' + encodeURIComponent(borradorId);
+	const data = Object.fromEntries(new URLSearchParams(buildBorradorParams()));
+	data.status = 'borrador';
+	if (borradorId) data.borrador_id = borradorId;
 
 	$('#borrador-guardado').text('Guardando...');
 	disableBorradorSave();
 	resetBorradorTimeout(60000);
 
-	$.post(route.url + url, data, handleBorradorResponse)
-		.fail(() => dialog.reintentar('saveBorrador()'))
-		.done(() => clearCookie());
+	api(url.slice(1), data, handleBorradorResponse, { error: () => dialog.reintentar('saveBorrador()') })
+		.always(() => clearCookie());
 }
 
 function handleBorradorResponse(response) {
@@ -217,15 +217,14 @@ $(() => {
 
 	$('input[name="title"]').on('keyup', validateTitle);
 
-	$('input[name="title"]').on('blur', () => {
+	$('input[name="title"]').on('blur', function () {
 		const param = { query: this.value };
-		$.post(`${route.url}/posts-genbus?do=search`, param,
-			response => $('#repost').html(response));
+		api('posts-genbus?do=search', param, response => $('#repost').html(response));
 	});
 
 	$('input[name="tags"]').on('click', function () {
 		const param = { query: $('input[name="title"]').val() };
-		$.post(`${route.url}/posts-genbus?do=generador`, param, response => {
+		api('posts-genbus?do=generador', param, response => {
 			$('input[name="tags"]').val(response);
 			tagsGenerated = true;
 		});
@@ -237,7 +236,7 @@ $(() => {
 		}
 		dialog.alert('Vista previa', `Cargando vista previa...<br><br><img src="${route.img}/loading_bar.gif">`);
 		const param = { cuerpo: $('textarea[name="body"]').bbcode() };
-		$.post(`${route.url}/posts-preview?ts=true`, param, response => {
+		api('posts-preview?ts=true', param, response => {
 			dialog.easy($('input[name="title"]').val(), response, 'Publicar post', () => postSave());
 		});
 	});

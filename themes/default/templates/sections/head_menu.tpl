@@ -54,7 +54,7 @@
             </div>
             {if $tsAvisos}
                <div class="relative">
-                  <a title="Avisos" href="{$tsConfig.url}/mensajes/avisos/"><img src="{$tsRoutes.assets.images}/icons/megaphone.png" /></a>
+                  <a title="Avisos" href="{$tsConfig.url}/mensajes/avisos/"><img src="{$tsRoutes['assets:images']}/icons/megaphone.png" /></a>
                   <div id="alerta_avs" class="alertas"><a title="{$tsAvisos} aviso{if $tsAvisos != 1}s{/if}"><span>{$tsAvisos}</span></a></div>
                </div>
             {/if}

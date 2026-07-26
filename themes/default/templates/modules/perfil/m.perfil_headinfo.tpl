@@ -76,7 +76,7 @@
 			{/if}
 			{if $tsUser->is_admod == 1}
 				<a class="absolute" style="top: 0.5rem;right: 1rem;" href="{$tsConfig.url}/admin/users?act=show&uid={$tsInfo.uid}">
-					<img title="Editar a {$tsInfo.nick}" src="{$tsRoutes.assets.images}/icons/editar.png"/>
+					<img title="Editar a {$tsInfo.nick}" src="{$tsRoutes['assets:images']}/icons/editar.png"/>
 				</a>
 			{/if}
 		</div>

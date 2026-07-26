@@ -3,14 +3,12 @@
 declare(strict_types=1);
 
 /**
- * @package    PHPost/Utils
- * @author     PHPost Team & Miguel92
+ * @package    Utils
+ * @author     Miguel92
  * @copyright  2026
  */
 
-if (!defined('TS_HEADER')) {
-   exit('No se permite el acceso directo al script');
-}
+defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
 class AsignarMedalla {
 

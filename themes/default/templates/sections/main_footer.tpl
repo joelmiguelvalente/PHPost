@@ -20,12 +20,13 @@
       tomará al sitio como una web sin copyright 
       *}
       <div id="pp_copyright">
-         <a href="{$tsConfig.url}"><strong>{$tsConfig.titulo}</strong></a> &copy; {$smarty.now|date_format:"Y"} - Powered by <a href="https://github.com/joelmiguelvalente/PHPost/" target="_blank"><strong>PHPost</strong></a>
+         <a href="{$tsConfig.url}"><strong>{$tsConfig.titulo}</strong></a> &copy; 2025- - Powered by <a href="{Config::app('app.contact.repository')}" target="_blank"><strong>PHPost</strong></a>
+         <small style="display: block;font-family: monospace;">Script v{Config::app('app.version')} - Modo: {Config::app('app.development') ? 'development' : 'production'}</small>
       </div>
    </div>
   
    {if $tsUser->is_admod && $tsConfig.c_see_mod && $tsModerar.total}
-      <div id="stickymsg" onmouseover="$('#brandday').css('opacity',0.5);" onmouseout="$('#brandday').css('opacity',1);" onclick="location.href = '{$tsConfig.url}/moderacion/'" style="cursor:default;">Hay {$tsModerar.total} contenido{if $tsModerar.total != 1}s{/if} esperando revisi&oacute;n</div>
+      <a id="stickymsg" href="{$tsConfig.url}/moderacion/" title="Hay {$tsModerar.total} contenido{if $tsModerar.total != 1}s{/if} esperando" rel="internal">Hay {$tsModerar.total} contenido{if $tsModerar.total != 1}s{/if} esperando revisi&oacute;n</a>
    {/if}
 
 </body>

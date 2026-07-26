@@ -3,16 +3,16 @@
 								</div>
 								<div id="res" class="boxy-content">
 									{if !$tsAct}
-									 Esa herramienta le mostrar&aacute; las coindicencias del contenido o ip en una publicaci&oacute;n de un muro, usuario, post, foto o comentario.
+									 Esa herramienta le mostrará las coindicencias del contenido o ip en una publicación de un muro, usuario, post, foto o comentario.
 									 <hr>
 									 <p style="font-weight:bold;">IP</p>
-									 <p>Se mostrar&aacute; todo el contenido relacionado con la IP introducida, si es parecida (parcial), o exactamente la misma (exacta).
+									 <p>Se mostrará todo el contenido relacionado con la IP introducida, si es parecida (parcial), o exactamente la misma (exacta).
 									 <hr>
 									 <p style="font-weight:bold;">Texto</p>
-									 <p>El usuario se mostrar&aacute; por nombre.</p>
-									 <p>En el muro, se buscar&aacute; por contenido de la publicaci&oacute;n</p>
-									 <p>En los posts y las fotos, se buscar&aacute; por t&iacute;tulo o contenido/descripci&oacute;n.</p>
-									 <p>En los comentarios, se buscar&aacute; por contenido o autor del comentario. Para buscar al autor, se introduce el ID de &eacute;ste.</p>
+									 <p>El usuario se mostrará por nombre.</p>
+									 <p>En el muro, se buscará por contenido de la publicación</p>
+									 <p>En los posts y las fotos, se buscará por título o contenido/descripción.</p>
+									 <p>En los comentarios, se buscará por contenido o autor del comentario. Para buscar al autor, se introduce el ID de éste.</p>
 									<hr class="separator" />
 									<form action="" method="post">
 										<input type="search" name="texto" required>
@@ -54,7 +54,7 @@
                                                 <td><a href="http://oxi.mx/g/{$u.user_last_ip}" class="geoip" title="Información de IP" target="_blank">{$u.user_last_ip}</a></td>
 												<td>{$u.user_lastlogin|hace:true}</td>
                                                 <td class="admin_actions">
-                                               <a href="#" onclick="moderacion.users.action({$u.user_id}, 'ban', false); return false;"><img src="{$tsRoutes.tema.images}/icons/power_off.png" title="Suspender Usuario" /></a>
+                                               <a href="#" onclick="moderacion.users.action({$u.user_id}, 'ban', false); return false;"><img src="{$tsRoutes['tema:images']}/icons/power_off.png" title="Suspender Usuario" /></a>
                                                 </td>
                                             </tr>
                                             {/foreach}{else}
@@ -110,7 +110,7 @@
                                                 <td><a href="http://oxi.mx/g/{$p.post_ip}" class="geoip" title="Información de IP" target="_blank">{$p.post_ip}</a></td>
 												<td>{$p.post_date|hace:true}</td>
                                                 <td class="admin_actions">
-													<a href="#" onclick="moderacion.posts.borrar({$p.post_id}, 'posts'); return false"><img src="{$tsRoutes.tema.images}/icons/close.png" title="Borrar Post" /></a>
+													<a href="#" onclick="moderacion.posts.borrar({$p.post_id}, 'posts'); return false"><img src="{$tsRoutes['tema:images']}/icons/close.png" title="Borrar Post" /></a>
                                                 </td>
                                             </tr>
                                             {/foreach}{else}
@@ -140,7 +140,7 @@
                                                 <td><a href="http://oxi.mx/g/{$f.f_ip}" class="geoip" title="Información de IP" target="_blank">{$f.f_ip}</a></td>
 												<td>{$f.f_date|hace:true}</td>
                                                 <td class="admin_actions">
-														<a href="#" onclick="moderacion.fotos.borrar({$f.foto_id}); return false"><img src="{$tsRoutes.tema.images}/icons/close.png" title="Borrar Foto" /></a>                                                </td>
+														<a href="#" onclick="moderacion.fotos.borrar({$f.foto_id}); return false"><img src="{$tsRoutes['tema:images']}/icons/close.png" title="Borrar Foto" /></a>                                                </td>
                                             </tr>
                                             {/foreach}{else}
                                             <tr>
@@ -169,7 +169,7 @@
                                                 <td><a href="http://oxi.mx/g/{$c.c_ip}" class="geoip" title="Información de IP" target="_blank">{$c.c_ip}</a></td>
 												<td>{$c.c_date|hace:true}</td>
                                                 <td class="admin_actions">
-                                                    <a href="#" onclick="ocultar_com({$c.cid}, {$c.user_id}); return false"><img src="{$tsRoutes.tema.images}/reactivar.png" title="Mostrar/Ocultar Comentario" /></a>
+                                                    <a href="#" onclick="ocultar_com({$c.cid}, {$c.user_id}); return false"><img src="{$tsRoutes['tema:images']}/reactivar.png" title="Mostrar/Ocultar Comentario" /></a>
                                                 </td>
                                             </tr>
                                             {/foreach}{else}

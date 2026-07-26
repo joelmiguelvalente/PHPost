@@ -110,7 +110,7 @@ function validateField(selector, response) {
 const endpoint = (element, input, param) => {
 	displayMessage(element, `Comprobando ${input}...`, STATUS.WARNING);
 	const endpoint = `${route.url}/registro-check-${element}?ajax=true`;
-	$.post(endpoint, param, response => approved[input] = validateField(input, response));
+	api(endpoint, param, response => approved[input] = validateField(input, response));
 }
 
 /**
@@ -262,7 +262,7 @@ function createAccount() {
 	onLoader(true);
 	let formData = $form.serializeArray();
 	// Petición de creación de cuenta
-	$.post(`${route.url}/registro-nuevo?ajax=true`, $.param(formData), response => {
+	api('registro-nuevo?ajax=true', formData, response => {
 		const { status, message } = $.parseResponse(response);
 		onDialog(message);
 	
@@ -287,10 +287,11 @@ function createAccount() {
 		}
 
 
-	}).catch(error => {
-		onDialog('Fallo al enviar la solicitud al servidor.');
-		onLoader(false);
-		buttonLoader();
+	}, { error: error => {
+			onDialog('Fallo al enviar la solicitud al servidor.');
+			onLoader(false);
+			buttonLoader();
+		} 
 	}); 
 }
 

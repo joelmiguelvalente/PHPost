@@ -3,30 +3,26 @@
 declare(strict_types=1);
 
 /**
- * @package    PHPost/Extras
- * @author     PHPost Team & Miguel92
+ * @package    Extras
+ * @author     Miguel92
  * @copyright  2026
  */
 
 require_once dirname(__DIR__, 2) . '/header.php';
-require_once __DIR__ . '/Providers/ProviderInterface.php';
-require_once __DIR__ . '/Providers/CloudinaryProvider.php';
-require_once __DIR__ . '/Providers/ImgurProvider.php';
-require_once __DIR__ . '/Providers/ImgBBProvider.php';
 
-const ALLOWED_MIME_TYPES = [
-    'image/jpeg', 'image/png', 'image/gif', 'image/bmp',
-    'image/webp', 'image/avif', 'image/tiff', 'image/heic',
-];
+// Para cachearlo con opcache
+require_once __DIR__ . '/Providers/ProviderInterface.php';
+
+const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/bmp', 'image/webp', 'image/avif', 'image/tiff', 'image/heic',];
 
 /**
  * Mapa slug → clase del proveedor.
  * Para agregar uno nuevo: solo añadir la entrada acá y crear su Provider.
  */
 const PROVIDER_MAP = [
-    'imgur' => ImgurProvider::class,
-    'imgbb' => ImgBBProvider::class,
-    'cloudinary' => CloudinaryProvider::class,
+    'imgur'      => Container::get(ImgurProvider::class),
+    'imgbb'      => Container::get(ImgBBProvider::class),
+    'cloudinary' => Container::get(CloudinaryProvider::class),
 ];
 
 function validateUploadedFile(array $file): void
@@ -45,9 +41,7 @@ function validateUploadedFile(array $file): void
  */
 function resolveProvider(): ImageProviderInterface
 {
-    $row = DB::fetch(
-        "SELECT provider_slug, api_key FROM w_image_providers WHERE is_active = 1 LIMIT 1"
-    );
+    $row = DB::fetch("SELECT provider_slug, api_key FROM w_image_providers WHERE is_active = :active LIMIT 1", ['active' => 1]);
 
     if (!$row) {
         throw new RuntimeException('No hay ningún proveedor de imágenes activo.');
@@ -65,7 +59,7 @@ function resolveProvider(): ImageProviderInterface
 
 function jsonResponse(int $status, string $msg, string $imageUrl = ''): never
 {
-    header('Content-Type: application/json');
+    Container::get(Response::class)->contentType('application/json');
 
     $response = ['status' => $status, 'msg' => $msg];
 
@@ -81,7 +75,7 @@ function jsonResponse(int $status, string $msg, string $imageUrl = ''): never
 // -------------------------------------------------------
 // Entrada
 // -------------------------------------------------------
-#var_dump($_FILES);
+
 if (!isset($_FILES['img']['tmp_name'])) {
     jsonResponse(0, 'Empty');
 }
@@ -95,10 +89,7 @@ try {
     $isIframe = !empty($_POST['id_frame']);
 
     if ($isIframe) {
-        echo sprintf(
-            '<html><body>OK<script>window.parent.$("#%s").insertImage("%s","%s").closeModal().updateUI();</script></body></html>',
-            $idArea, $imgUrl, $imgUrl
-        );
+        echo sprintf('<html><body>OK<script>window.parent.$("#%s").insertImage("%s","%s").closeModal().updateUI();</script></body></html>', $idArea, $imgUrl, $imgUrl);
     } else {
         jsonResponse(1, 'OK', $imgUrl);
     }

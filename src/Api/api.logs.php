@@ -3,14 +3,12 @@
 declare(strict_types=1);
 
 /**
- * @package    src\Api
- * @author     PHPost Team & Miguel92
+ * @package    Api
+ * @author     Miguel92
  * @copyright  2026
  */
 
-if (!defined('TS_HEADER')) {
-	exit('No se permite el acceso directo al script');
-}
+defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
 const ACTIONS = [
    'logs-borrar' => ['nivel' => 4, 'template' => '', 'ajax' => false]
@@ -26,7 +24,7 @@ $tsLevel = $config['nivel'];
 $tsAjax  = (int)$config['ajax'];
 
 // Verificar nivel admin
-$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
+$tsLevelMsg = $tsUser->setLevel($tsLevel, true);
 if (!$tsLevelMsg) {
    echo json_encode(['status' => false, 'message' => 'Sin permisos']);
    die();
@@ -44,7 +42,7 @@ switch ($action) {
          die();
       }
 
-      $logsDir  = Config::app('paths.logs');
+      $logsDir  = Config::app('paths.logs.full_path');
       $filepath = realpath($logsDir . '/' . basename($file));
    
       // Verificar que el archivo esté dentro del directorio de logs

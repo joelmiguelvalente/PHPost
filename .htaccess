@@ -23,6 +23,12 @@ IndexIgnore *
 # --------------------
 LimitRequestBody 10485760
 
+# --- DevBroken: ficha técnica aislada ---
+
+<Files "devbroken">
+    Require all denied
+</Files>
+
 # ==============================
 # Rewrite engine
 # ==============================
@@ -40,6 +46,7 @@ RewriteEngine On
 # --------------------
 RewriteCond %{THE_REQUEST} \s.+\.(php|phtml|php5|php7)\s [NC]
 RewriteCond %{THE_REQUEST} !index\.php [NC]
+
 # EXCEPCIÓN: Permitir el cargador del editor visual
 RewriteCond %{REQUEST_URI} !src/Extras/upload\.php [NC]
 RewriteRule ^ - [F,L]
@@ -54,6 +61,8 @@ RewriteCond %{REQUEST_FILENAME} !-f
 # Application routing
 # ==============================
 
+RewriteRule ^devbroken.html$ devbroken.php [QSA,L]
+
 RewriteRule ^$ index.php?do=home [QSA,L]
 RewriteRule ^pagina([0-9]+)$ index.php?page=$1 [QSA,L]
 RewriteRule ^index\.php$ index.php?do=home [QSA,L]
@@ -62,8 +71,8 @@ RewriteRule ^cuenta/([A-Za-z0-9_-]+)$ src/Php/cuenta.php?accion=$1 [QSA,L]
 
 # AGREGAR O EDITAR POST
 RewriteRule ^(agregar|editar)$ src/Php/agregar.php?action=$1 [QSA,L]
-RewriteRule ^fotos/(agregar|editar)$ src/Php/fotos.php?action=$1 [QSA,L]
 RewriteRule ^editar/([0-9_-]+)$ src/Php/agregar.php?action=editar&id=$1 [QSA,L]
+RewriteRule ^fotos/(agregar|editar)$ src/Php/fotos.php?action=$1 [QSA,L]
 
 # PERFIL
 RewriteRule ^(perfil/|@)([A-Za-z0-9_-]+)$ src/Php/perfil.php?user=$2 [QSA,L]
@@ -123,7 +132,7 @@ RewriteRule ^([A-Za-z0-9_-]+)/([A-Za-z0-9_-]+)/([0-9]+)$ src/Php/$1.php?action=$
 # --------------------
 # Bloquear extensiones sensibles
 # --------------------
-<FilesMatch "\.(ini|log|cfg|tpl|cache|version|md|sql|bak|backup|old|tmp|swp)$">
+<FilesMatch "\.(ini|log|cfg|tpl|cache|bak|backup|old|tmp|swp|sql)$">
     Require all denied
 </FilesMatch>
 
@@ -144,7 +153,7 @@ RewriteRule ^([A-Za-z0-9_-]+)/([A-Za-z0-9_-]+)/([0-9]+)$ src/Php/$1.php?action=$
 # --------------------
 # Variables de entorno y auth
 # --------------------
-<FilesMatch "(\.env|\.gitignore|\.htaccess|\.htpasswd)$">
+<FilesMatch "(\.env|\.git|\.htaccess|\.htpasswd)$">
     Require all denied
 </FilesMatch>
 
@@ -154,16 +163,15 @@ RewriteRule ^([A-Za-z0-9_-]+)/([A-Za-z0-9_-]+)/([0-9]+)$ src/Php/$1.php?action=$
 Header always set X-Frame-Options "SAMEORIGIN"
 Header always set X-Content-Type-Options "nosniff"
 Header always set Referrer-Policy "strict-origin-when-cross-origin"
-Header always set Permissions-Policy "geolocation=()"
+Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
 
-# Ajustar CSP según los dominios externos que uses (CDNs, fuentes, etc.)
-Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://www.google.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://www.google.com https://www.gstatic.com; img-src 'self' data: blob: *; media-src *; frame-src *; object-src 'none';"
+# CSP se gestiona via PHP (Response::csp()) con nonce dinámico
 
 # --------------------
 # Cacheo de assets estáticos
 # --------------------
 <FilesMatch "\.(jpg|jpeg|png|gif|webp|avif|js|css|pdf)$">
-    Header set Cache-Control "public, max-age=31536000, immutable"
+    Header set Cache-Control "public, max-age=31536000"
 </FilesMatch>
 
 # --------------------

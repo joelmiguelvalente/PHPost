@@ -1,17 +1,17 @@
 /**
  * Actualizar comentarios
-*/
+ */
 function actualizar_comentarios() {
 	const $lista = $('#ult_comm')
-   $('#loading').fadeIn(250);
-   $lista.html('<div class="alert-empty">Esperando...</div>')
-   $.get(`${route.url}/posts-last-comentarios`, response => {
-   	$lista.html(response);
-   })
-   .fail(() => {
-   	$('#ult_comm, #ult_comm > ol:first').slideDown({duration: 1000, easing: 'easeOutBounce'});
-   	$('#loading').fadeOut(350);
-   });
+    $('#loading').fadeIn(250);
+    $lista.html('<div class="alert-empty">Esperando...</div>')
+    api('posts-last-comentarios', null, response => {
+    	$lista.html(response);
+    }, { method: 'GET' })
+    .fail(() => {
+    	$('#ult_comm, #ult_comm > ol:first').slideDown({duration: 1000, easing: 'easeOutBounce'});
+    	$('#loading').fadeOut(350);
+    });
 	$('#loading').fadeOut(350);
 }
 /**

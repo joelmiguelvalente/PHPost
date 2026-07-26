@@ -3,14 +3,12 @@
 declare(strict_types=1);
 
 /**
- * @package    src\Api
- * @author     PHPost Team & Miguel92
+ * @package    Api
+ * @author     Miguel92
  * @copyright  2026
  */
 
-if (!defined('TS_HEADER')) {
-	exit('No se permite el acceso directo al script');
-}
+defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
 const ACTIONS = [
    'mensajes-validar' 	=> ['nivel' => 2, 'template' => '', 'ajax' => false],
@@ -32,7 +30,7 @@ $tsAjax  = (int) $config['ajax'];
 $tsPage  = sprintf('p.mensajes.%s', $config['template']);
 
 // DEPENDE EL NIVEL
-$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
+$tsLevelMsg = $tsUser->setLevel($tsLevel, true);
 if(!$tsLevelMsg) { 
 	echo '0: '.$tsLevelMsg; 
 	die();
@@ -41,18 +39,18 @@ if(!$tsLevelMsg) {
 // CODIGO
 switch($action){
 	case 'mensajes-validar':
-		echo $tsMP->getValid();
+		echo $tsMensajes->getValid();
 	break;
 	case 'mensajes-enviar':
-		echo $tsMP->newMensaje();
+		echo $tsMensajes->newMensaje();
 	break;
 	case 'mensajes-respuesta':
-		$smarty->assign("mp",$tsMP->newRespuesta());
+		$smarty->assign("mp",$tsMensajes->newRespuesta());
 	break;
 	case 'mensajes-lista':
-		$smarty->assign("tsMensajes", $tsMP->getMensajes(1, false, 'monitor'));
+		$smarty->assign("tsMensajes", $tsMensajes->getMensajes(1, false, 'monitor'));
 	break;
 	case 'mensajes-editar':
-		echo $tsMP->editMensajes();
+		echo $tsMensajes->editMensajes();
 	break;
 }

@@ -8,24 +8,22 @@ declare(strict_types=1);
  * @copyright  2026
  */
 
-if (!defined('TS_HEADER')) {
-	exit('No se permite el acceso directo al script');
-}
-require_once __DIR__ . '/CoreHelper.php';
-require_once TS_UTILS . '/IP.php';
+defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
 final class MuroHelper {
 
 	private string $url;
-	protected tsCore $Core;
-	protected tsUser $User;
-	protected CoreHelper $CoreHelper;
 
-	public function __construct(tsCore $Core, tsUser $User) {
+	private string $myIP;
+
+	public function __construct(
+		protected tsCore $Core,
+		protected tsUser $User,
+		protected CoreHelper $CoreHelper,
+		protected IP $IP
+	) {
 		$this->url = $Core->settings['url'];
-		$this->Core = $Core;
-		$this->User = $User;
-		$this->CoreHelper = new CoreHelper;
+		$this->myIP = $this->IP->getIPBinary();
 	}
 
 	/**
@@ -88,9 +86,7 @@ final class MuroHelper {
    	if ($context['isMe'] || $this->User->is_admod) {
    	   return;
    	}
-   	$this->evaluatePrivacyRule(
-      	$type,
-      	$context,
+   	$this->evaluatePrivacyRule($type, $context,
       	function(string $message) use (&$privacidad) {
             $privacidad['muro']['status'] = false;
             $privacidad['muro']['message'] = $message;
@@ -133,7 +129,7 @@ final class MuroHelper {
 	}
 
 	public function sanitizeUrl(?string $url): string {
-	   return $this->Core->setSecure(trim((string)$url), true);
+	   return Html::escape(trim((string)$url), true);
 	}
 
 	public function checkImage(string $url, bool $return): string {
@@ -163,7 +159,7 @@ final class MuroHelper {
 	      return '0: La url es demasiado larga.';
 	   }
 	   $html =  $this->CoreHelper->getUrlContent($url);
-	   if ($html === null) { /* error */ }
+	   if ($html === null) { return "0: No se ha podido extraer la información"; }
 		$meta = $this->extractMeta($html);
 		$title = $meta['title'] ?? '';
 		$description = $meta['description'] ?? rawurldecode($url);
@@ -217,14 +213,14 @@ final class MuroHelper {
 	   $youtubeUrl = 'https://www.youtube.com/watch?v=' . $videoId; // Sin espacios, safe para urlencode
 	   // 
 	   $html =  $this->CoreHelper->getUrlContent($youtubeUrl);
-	   if ($html === null) { /* error */ }
+	   if ($html === null) { return "0: No se ha podido extraer la información"; }
 		$meta = $this->extractMeta($html);
 		$title = $meta['title'] ?? '';
 		if (empty($title) || $title === 'YouTube') {
 		   return '0: Video no encontrado';
 		}
-		$title = $this->Core->setSecure($title, true);
-		$desc  = $meta['description'] ? $this->Core->setSecure(substr($meta['description'], 0, 160)) : '';
+		$title = Html::escape($title, true);
+		$desc  = $meta['description'] ? Html::escape(substr($meta['description'], 0, 160)) : '';
 	   if ($return) {
 	      return ['ID' => $videoId, 'title' => $title, 'desc' => $desc];
 	   }
@@ -244,7 +240,7 @@ final class MuroHelper {
 			'p_body' => $body,
 			'p_date' => $date,
 			'p_type' => $type,
-			'p_ip' => (new IP)->executeIP(),
+			'p_ip' => $this->myIP,
 			'p_visibility' => $visibility,
 			'p_adult' => $adult
 		])) {

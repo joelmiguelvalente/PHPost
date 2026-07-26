@@ -50,13 +50,13 @@
 
 				{include "dashboard/Legend.tpl" text="Editar afiliado"}
 
-				{include "dashboard/FormGroup.tpl" id="a_titulo" label="T&iacute;tulo de afiliado" required=true name="a_titulo" value=$tsAfiliado.a_titulo}
+				{include "dashboard/FormGroup.tpl" id="a_titulo" label="Título de afiliado" required=true name="a_titulo" value=$tsAfiliado.a_titulo}
 
-				{include "dashboard/FormGroup.tpl" id="a_url" label="Direcci&oacute;n" required=true name="a_url" value=$tsAfiliado.a_url}
+				{include "dashboard/FormGroup.tpl" id="a_url" label="Dirección" required=true name="a_url" value=$tsAfiliado.a_url}
 
 				{include "dashboard/FormGroup.tpl" id="a_banner" label="Banner" helper="Imagen del afiliado" required=true name="a_banner" value=$tsAfiliado.a_banner}
 
-				{include "dashboard/FormGroupTextarea.tpl" id="a_descripcion" label="Descripci&oacute;n" helper="Descripci&oacute;n de la comunidad afiliada" name="a_descripcion" value=$tsAfiliado.a_descripcion}
+				{include "dashboard/FormGroupTextarea.tpl" id="a_descripcion" label="Descripción" helper="Descripción de la comunidad afiliada" name="a_descripcion" value=$tsAfiliado.a_descripcion}
 
 				{include "dashboard/Button.tpl" submit_text="Guardar Cambios" back_url="/admin/afs"}
 			</fieldset>

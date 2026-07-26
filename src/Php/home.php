@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * @package    PHPost/Php
+ * @package    Php
  * @author     PHPost Team & Miguel92
  * @copyright  2026
  */
@@ -15,31 +15,12 @@ $tsTitle = "{$tsCore->settings['titulo']} - {$tsCore->settings['slogan']}";
  * Inicializamos variable
  */
 
-$ctx = Controller::page('home')->everybody();
-// sincronizamos
-$ctx->exportLegacy();
-
-$tsLevelMsg = $tsCore->setLevel($ctx->getLevel(), true);
-if (is_array($tsLevelMsg)) {
-   $ctx->changePage('aviso');
-   $ctx->stop();
-   $smarty->assign("tsAviso", $tsLevelMsg);
-   // sincroniza nuevamente
-   $ctx->exportLegacy();
-}
+$ctx = Controller::init('home', 'everybody');
 
 if($ctx->continue()) {
 
-	// Afiliados
-	require_once TS_CLASS . "/c.afiliado.php";
-	require_once TS_CLASS . "/c.comentarios.php";
-	require_once TS_CLASS . "/c.fotos.php";
-	require_once TS_CLASS . "/c.home.php";
-	require_once TS_CLASS . "/c.posts.php";
-	require_once TS_CLASS . "/c.tops.php";
-
 	// Afiliado Class
-	$tsAfiliado = new tsAfiliado($tsCore, $tsUser);
+	$tsAfiliado = Container::get(tsAfiliado::class);
 		
 	// Referido?
 	if(!empty($_GET['ref'])) {
@@ -51,14 +32,14 @@ if($ctx->continue()) {
 	
 	// Post anterior/siguiente
 	if(isset($_GET['action']) && in_array($_GET['action'], ['next', 'prev', 'random'])) {
-		(new tsPosts($tsCore, $tsUser))->navigatePost();
+		Container::get(tsPosts::class)->navigatePost();
 	}
 
 	// CLASE TOPS
-	$tsHome = new tsHome($tsCore, $tsUser);
-	$tsComentarios = new tsComentarios($tsCore, $tsUser);
-	$tsTops = new tsTops($tsCore);
-	$tsFotos = new tsFotos($tsCore, $tsUser);
+	$tsHome = Container::get(tsHome::class);
+	$tsComentarios = Container::get(tsComentarios::class);
+	$tsTops = Container::get(tsTops::class);
+	$tsFotos = Container::get(tsFotos::class);
 	// PAGINA
 	$tsPage = "home";
 	
@@ -94,16 +75,11 @@ if($ctx->continue()) {
 	
 	// AFILIADOS
 	$smarty->assign("tsAfiliados", $tsAfiliado->getAfiliados());
-	// DO <= PARA EL MENU
-	$smarty->assign("tsDo", $_GET['do'] ?? '');
 
-	require_once TS_LOGGER . '/LogWidget.php';
 	if ($tsUser->is_admod === 1) {
-	   $smarty->assign('logWidget', LogWidget::getData());
+		require_once TS_LOGGER . '/LogWidget.php';
+		$smarty->assign('logWidget', LogWidget::getData());
 	}
 }
 
-if($tsAjax) {
-	$smarty->assign("tsTitle", $tsTitle);
-   require_once TS_ROOT . "/footer.php";
-}
+Controller::render($tsAjax, $tsTitle, $tsPage);

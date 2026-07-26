@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 /**
- * @package    src\Api
- * @author     PHPost Team & Miguel92
+ * @package    Api
+ * @author     Miguel92
  * @copyright  2026
  */
 

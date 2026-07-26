@@ -3,58 +3,64 @@
 declare(strict_types=1);
 
 /**
- * @package    PHPost/Class
- * @author     PHPost Team & Miguel92
+ * @package    Class
+ * @author     Miguel92
  * @copyright  2026
  */
 
-if (!defined('TS_HEADER')) {
-	exit('No se permite el acceso directo al script');
-}
+defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
 class tsBloqueos {
-	
-	protected Paginator $Paginator;
+
 	private int $id;
+
+	private string $myIP;
 
 	public function __construct(
 		protected tsCore $Core, 
-		protected tsUser $User
+		protected tsUser $User,
+		protected Paginator $Paginator,
+		protected IP $IP
 	) {
-		$this->Paginator = new Paginator($this->Core->settings['url']);
 		$this->id = (int)($_GET['id'] ?? $_POST['bid'] ?? 0);
+		$this->myIP = $this->myIP = $this->IP->getIPBinary();
 	}
 
 	public function getBlackList(): array {
 		$max = 20; // MAXIMO A MOSTRAR
 		$limit = $this->Paginator->setPageLimit($max, true);
 		//
-		$data['data'] = result_array(db_exec([__FILE__, __LINE__], 'query', "SELECT u.user_id, u.user_name, b.* FROM w_blacklist AS b LEFT JOIN u_miembros AS u ON b.author = u.user_id ORDER BY b.date DESC, b.id DESC LIMIT $limit"));
+		$data['data'] = DB::fetchAll("SELECT u.user_id, u.user_name, b.id, b.type, b.value, b.reason, b.author, b.date FROM w_blacklist AS b LEFT JOIN u_miembros AS u ON b.author = u.user_id ORDER BY b.date DESC, b.id DESC LIMIT :limit", [
+			'limit' => 20
+		]);
 		// PAGINAS
-		list($total) = db_exec('fetch_row', db_exec([__FILE__, __LINE__], 'query', 'SELECT COUNT(*) FROM w_blacklist'));
-		$this->Paginator->route = $this->Core->settings['url'];
+		$total = DB::numRows("SELECT COUNT(*) FROM w_blacklist");
 		$data['pages'] = $this->Paginator->pageIndex("/admin/blacklist?", (int)($_GET['s']??0), (int)$total, (int)$max);
 		//
 		return $data;
    }
 
 	public function getBlock(): array {
-		$data = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', "SELECT type, value, reason FROM w_blacklist WHERE id = {$this->id} LIMIT 1"));
-		return $data;
+		return DB::fetch("SELECT type, value, reason FROM w_blacklist WHERE id = :id LIMIT 1", [
+			'id' => $this->id
+		]);
 	}
 
 	private function checkEntries(): string|array {
 		$type = (int)($_POST['type'] ?? 0);
-		$value = $this->Core->setSecure(trim($_POST['value'] ?? ''));
-		$reason = $this->Core->setSecure(trim($_POST['reason'] ?? ''));
+		$value = Html::escape($_POST['value'] ?? '');
+		$reason = Html::escape($_POST['reason'] ?? '');
 		if(empty($value) || $type === 0 || (isset($_POST['reason']) && empty($reason))) {
 			return 'Debe rellenar todos los campos';
 		}
-		if ($type === 1 && $value === (new IP)->getIP()) {
+		if ($type === 1 && $value === $this->myIP) {
 			return 'No puedes bloquear tu propia IP';
 		}
-		if (db_exec('num_rows', db_exec([__FILE__, __LINE__], 'query', "SELECT id FROM w_blacklist WHERE type = {$data['type']} AND value = '{$data['value']}'"))) {
-			return 'Ya existe un bloqueo as&iacute;';
+		if (DB::numRows("SELECT id FROM w_blacklist WHERE type = :type AND value = :value", [
+			'type' => $type,
+			'value' => $value
+		])) {
+			return 'Ya existe un bloqueo así';
 		}
 		return [
 			'value' => $value,
@@ -65,9 +71,8 @@ class tsBloqueos {
 
 	public function saveBlock(): string|bool {
 		$data = $this->checkEntries();
-   	$data['author'] = $this->User->uid;
-   	$columns = $this->Core->buildSqlSet($data);
-		if (db_exec([__FILE__, __LINE__], 'query', "UPDATE w_blacklist SET $columns WHERE id = {$this->id}")) {
+   		$data['author'] = $this->User->uid;
+		if (DB::update('w_blacklist', $data, 'id = :id', ['id' => $this->id])) {
 			return true;
 		}
 		return $data;
@@ -76,13 +81,28 @@ class tsBloqueos {
 	public function newBlock(): string|bool {
 		$data = $this->checkEntries();
 		$time = time();
-		if (!db_exec([__FILE__, __LINE__], 'query', "INSERT INTO w_blacklist (type, value, reason, author, date) VALUES ({$data['type']}, '{$data['value']}', '{$data['reason']}', {$this->User->uid}, $time)")) {
-			return 'Ya existe un bloqueo as&iacute;';
+		if (!DB::insert('w_blacklist', [
+			'type' => $data['type'],
+			'value' => $data['value'],
+			'reason' => $data['reason'],
+			'author' => $this->User->uid,
+			'date' => $time
+		])) {
+			return 'Ya existe un bloqueo así';
 		}
 		return true;		
 	}
 
 	public function deleteBlock(): string {
-		return (db_exec([__FILE__, __LINE__], 'query', "DELETE FROM w_blacklist WHERE id = {$this->id}")) ? '1: Bloqueo retirado' : '0: Hubo un error al borrar';
+		DB::begin();
+		try {
+			DB::delete('w_blacklist', 'id = :id', ['id' => $this->id]);
+			DB::commit();
+			return '1: Bloqueo retirado';
+		} catch (Exception $e) {
+			DB::rollback();
+			Logger::warning('Error', ['message' => $e->getMessage()]);
+			return '0: Hubo un error al borrar';
+		}
 	}
 }

@@ -3,14 +3,12 @@
 declare(strict_types=1);
 
 /**
- * @package    PHPost/Helpers
- * @author     PHPost Team & Miguel92
+ * @package    Helpers
+ * @author     Miguel92
  * @copyright  2026
  */
 
-if (!defined('TS_HEADER')) {
-	exit('No se permite el acceso directo al script');
-}
+defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
 final class CoreHelper {
 

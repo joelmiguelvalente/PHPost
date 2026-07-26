@@ -5,15 +5,15 @@
 	<div class="foto">
 		<div class="v_user">
 			<div class="avatar-box">
-				<a href="{$tsConfig.url}/@{$tsFoto.user_name}"><img src="{$tsRoutes.storage.avatar}/avatar_{$tsFoto.user_id}.webp"/></a>
+				<a href="{$tsConfig.url}/@{$tsFoto.user_name}"><img src="{$tsRoutes['storage:avatar']}/avatar_{$tsFoto.user_id}.webp"/></a>
 			</div>
 			<div class="v_info">
 				<a href="{$tsConfig.url}/@{$tsFoto.user_name}" class="user">{$tsFoto.user_name}</a>
 				<div class="links">
-					<span style="background-image:url({$tsRoutes.tema.images}/icons/ranks/{$tsFoto.r_image});color:#{$tsFoto.r_color}"><strong>{$tsFoto.r_name}</strong></span>
-					<span style="background-image:url({$tsRoutes.tema.images}/flags/{$tsFoto.user_pais.0|lower}.png);">{$tsFoto.user_pais.1}</span>
-					<span style="background-image:url({$tsRoutes.tema.images}/icons/{if $tsFoto.user_sexo == 0}fe{/if}male.png);">{if $tsFoto.user_sexo == 1}Hombre{else}Mujer{/if}</span>
-					{if $tsUser->is_member && $tsUser->uid != $tsFoto.f_user}<span style="background-image:url({$tsRoutes.tema.images}/icon-mensajes-recibidos.gif);"><a href="#" onclick="mensaje.nuevo('{$tsFoto.user_name}','','',''); return false;">Enviar Mensaje</a></span>{/if}
+					<span style="background-image:url({$tsRoutes['tema:images']}/icons/ranks/{$tsFoto.r_image});color:#{$tsFoto.r_color}"><strong>{$tsFoto.r_name}</strong></span>
+					<span style="background-image:url({$tsRoutes['tema:images']}/flags/{$tsFoto.user_pais.0|lower}.png);">{$tsFoto.user_pais.1}</span>
+					<span style="background-image:url({$tsRoutes['tema:images']}/icons/{if $tsFoto.user_sexo == 0}fe{/if}male.png);">{if $tsFoto.user_sexo == 1}Hombre{else}Mujer{/if}</span>
+					{if $tsUser->is_member && $tsUser->uid != $tsFoto.f_user}<span style="background-image:url({$tsRoutes['tema:images']}/icon-mensajes-recibidos.gif);"><a href="#" onclick="mensaje.nuevo('{$tsFoto.user_name}','','',''); return false;">Enviar Mensaje</a></span>{/if}
 				</div>
 				{if $tsUser->uid != $tsFoto.f_user && $tsUser->is_member}
 					<div class="v_follow">
@@ -31,9 +31,9 @@
 			{if $tsFoto.f_user == $tsUser->uid || $tsUser->is_admod || $tsUser->permiso('moderacion.fotos.eliminar') || $tsUser->permiso('moderacion.fotos.editar')}
 				<div class="tools">
 				{if $tsFoto.f_status != 2 && ($tsUser->is_admod || $tsUser->permiso('moderacion.fotos.eliminar') || $tsFoto.f_user == $tsUser->uid)}<a href="#" onclick="{if $tsUser->uid == $tsFoto.f_user}fotos.borrar({$tsFoto.foto_id}, 'foto'); {else}moderacion.fotos.borrar({$tsFoto.foto_id}, 'foto');  {/if}return false;">
-				  <img alt="Borrar" src="{$tsRoutes.tema.images}/borrar.png"/> Borrar</a>{/if}
+				  <img alt="Borrar" src="{$tsRoutes['tema:images']}/borrar.png"/> Borrar</a>{/if}
 				{if $tsUser->is_admod || $tsUser->permiso('moderacion.fotos.editar') || $tsFoto.f_user == $tsUser->uid}<a href="#" onclick="location.href='{$tsConfig.url}/fotos/editar?id={$tsFoto.foto_id}'; return false">
-				  <img alt="Editar" src="{$tsRoutes.tema.images}/editar.png"/> Editar</a>{/if}
+				  <img alt="Editar" src="{$tsRoutes['tema:images']}/editar.png"/> Editar</a>{/if}
 				</div>
 			{/if}
 			<img class="img" src="{$tsFoto.f_url}" />
@@ -41,7 +41,7 @@
 		<h2 class="floatL">{$tsFoto.f_title}</h2>
 		<span class="floatR"><b>{$tsFoto.f_date|date_format:"d/m/Y"}</b></span>
 		<div class="clearBoth"></div>
-		<p style="word-wrap: break-word;">{$tsFoto.f_description|nl2br}</p>
+		<p style="word-wrap: break-word;">{$tsFoto.f_description|raw|nl2br}</p>
 		<span class="spacer"></span>
 		<div class="infoPost">
 			<div style="width:12%" class="rateBox">
@@ -89,13 +89,13 @@
 					{foreach from=$tsFComments item=c}
 						<div class="item" id="div_cmnt_{$c.cid}">
 							<a href="{$tsConfig.url}/@{$c.user_name}">
-								<img src="{$tsRoutes.storage.avatar}/avatar_{$c.user_id}.webp" width="50" height="50" class="floatL"/>
+								<img src="{$tsRoutes['storage:avatar']}/avatar_{$c.user_id}.webp" width="50" height="50" class="floatL"/>
 							</a>
 							<div class="firma">
 								<div class="options">
 									{if $tsFoto.f_user == $tsUser->info.user_id || $tsUser->is_admod || $tsUser->permiso('moderacion.fotos.eliminar_comentarios')}
 									<a href="#" onclick="fotos.borrar({$c.cid}, 'com'); return false" class="floatR" style="margin:8px 5px">
-									  <img title="Borrar Comentario" alt="borrar" src="{$tsRoutes.tema.images}/borrar.png"/>
+									  <img title="Borrar Comentario" alt="borrar" src="{$tsRoutes['tema:images']}/borrar.png"/>
 									</a>
 									{/if}
 								</div>
@@ -121,7 +121,7 @@
 			{elseif $tsUser->is_member}
 			<div class="form">
 				<div class="avatar-box">
-					<img src="{$tsRoutes.storage.avatar}/avatar_{$tsUser->uid}.webp" width="50" height="50"/>
+					<img src="{$tsRoutes['storage:avatar']}/avatar_{$tsUser->uid}.webp" width="50" height="50"/>
 				</div>
 				<form method="post" action="" name="firmar">
 					<label for="mensaje" style="font-size:12px"><b>Mensaje</b></label>

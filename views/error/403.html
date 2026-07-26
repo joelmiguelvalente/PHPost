@@ -3,23 +3,201 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Error 403 - Acceso prohibido</title>
-<link rel="stylesheet" href="./assets/css/base.css">
-<link rel="stylesheet" href="./assets/css/error.css">
+<meta name="description" content="Error de permisos 403 - No tienes autorización para acceder a este recurso">
+<title>Error 403 - Acceso Prohibido</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+<style>
+	.permission-error {
+		background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+	}
+	.permission-card {
+		background: white;
+		border-radius: 16px;
+		box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+		padding: 40px;
+		max-width: 450px;
+		width: 90%;
+		text-align: center;
+	}
+	.permission-icon {
+		width: 80px;
+		height: 80px;
+		background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+		border-radius: 50%;
+		margin: 0 auto 20px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 32px;
+		color: white;
+	}
+	.permission-code {
+		font-size: 60px;
+		font-weight: 700;
+		color: #dc2626;
+		margin: 0 0 10px;
+	}
+	.permission-title {
+		font-size: 28px;
+		font-weight: 600;
+		color: #1e293b;
+		margin: 0 0 15px;
+	}
+	.permission-message {
+		font-size: 16px;
+		color: #64748b;
+		margin: 0 0 25px;
+		line-height: 1.6;
+	}
+	.permission-check {
+		background: #fef2f2;
+		border-radius: 8px;
+		padding: 20px;
+		margin: 20px 0;
+		text-align: left;
+	}
+	.permission-check h4 {
+		margin: 0 0 10px;
+		color: #991b1b;
+		font-size: 14px;
+	}
+	.permission-item {
+		display: flex;
+		align-items: flex-start;
+		gap: 10px;
+		margin: 8px 0;
+		font-size: 14px;
+		color: #7f1d1d;
+	}
+	.permission-item span {
+		flex-shrink: 0;
+		width: 20px;
+		height: 20px;
+		background: #fecaca;
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 12px;
+	}
+	.permission-actions {
+		display: flex;
+		gap: 12px;
+		justify-content: center;
+		flex-wrap: wrap;
+		margin-top: 30px;
+	}
+	.btn {
+		padding: 12px 24px;
+		border: none;
+		border-radius: 8px;
+		font-size: 14px;
+		font-weight: 600;
+		cursor: pointer;
+		transition: all 0.3s ease;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		text-decoration: none;
+	}
+	.btn-primary {
+		background: #dc2626;
+		color: white;
+	}
+	.btn-primary:hover {
+		background: #b91c1c;
+		transform: translateY(-2px);
+		box-shadow: 0 5px 15px rgba(220, 38, 38, 0.4);
+	}
+	.btn-secondary {
+		background: #64748b;
+		color: white;
+	}
+	.btn-secondary:hover {
+		background: #475569;
+		transform: translateY(-2px);
+		box-shadow: 0 5px 15px rgba(100, 116, 139, 0.4);
+	}
+	.permission-footer {
+		margin-top: 25px;
+		padding-top: 20px;
+		border-top: 1px solid #fee2e2;
+		font-size: 13px;
+		color: #fca5a5;
+	}
+	.permission-footer a {
+		color: #dc2626;
+		text-decoration: none;
+	}
+	.permission-footer a:hover {
+		text-decoration: underline;
+	}
+	@media (max-width: 480px) {
+		.permission-card {
+			padding: 25px;
+		}
+		.permission-code {
+			font-size: 48px;
+		}
+		.permission-title {
+			font-size: 22px;
+		}
+		.permission-actions {
+			flex-direction: column;
+		}
+		.btn {
+			width: 100%;
+		}
+	}
+	@keyframes fadeInUp {
+		from {
+			opacity: 0;
+			transform: translateY(20px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+	.permission-card {
+		animation: fadeInUp 0.6s ease-out;
+	}
+</style>
 </head>
-<body class="d-flex justify-content-center align-items-center w-100 vh-100" data-font-family="{$tsThemeFont.family}" data-font-size="{$tsThemeFont.size}">
-	
-	<section class="error_image_show body-bg rounded shadow position-relative">
-	
-		<h1 class="text-center position-relative py-4 w-100">ERROR <strong>403</strong></h1>
-
-		<div class="contant_box d-flex justify-content-center align-items-center flex-column py-4">
-			<h3 class="h3">Acceso prohibido</h3>
-			<p>No tienes permiso para acceder a esta página.</p>
-			<a href="./" class="btn">Volver a la página principal</a>
+<body class="d-flex justify-content-center align-items-center w-100 vh-100 permission-error">
+	<div class="permission-card">
+		<div class="permission-icon">
+			🚫
 		</div>
-	
-	</section>
+		<div class="permission-code">403</div>
+		<h1 class="permission-title">Acceso Prohibido</h1>
+		<p class="permission-message">Lo sentimos, no tienes permiso para acceder a este recurso. Esto puede deberse a insuficientes privilegios o restricciones de acceso.</p>
 
+		<div class="permission-check">
+			<h4>🔍 Qué puedes hacer</h4>
+			<div class="permission-item">
+				<span>1</span>
+				Contacta con el administrador del sitio para solicitar acceso
+			</div>
+			<div class="permission-item">
+				<span>2</span>
+				Verifica si estás conectado a la cuenta correcta
+			</div>
+			<div class="permission-item">
+				<span>3</span>
+				Si crees que esto es un error, por favor reportalo
+			</div>
+		</div>
+
+		<div class="permission-actions">
+			<a href="javascript:history.back()" class="btn btn-primary">Volver atrás</a>
+			<a href="./" class="btn btn-secondary">Ir al inicio</a>
+		</div>
+
+		<div class="permission-footer">
+			¿Problemas de permisos? Contacta con soporte técnico<br>
+			ID de error: perm-<?= strtoupper(substr(md5(microtime()), 0, 8)) ?>-<?= date('YmdHis') ?>
+		</div>
+	</div>
 </body>
 </html>

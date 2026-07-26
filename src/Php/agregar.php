@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * @package    PHPost/Php
+ * @package    Php
  * @author     PHPost Team & Miguel92
  * @copyright  2026
  */
@@ -15,21 +15,11 @@ $tsTitle = "{$tsCore->settings['titulo']} - {$tsCore->settings['slogan']}";
  * Inicializamos variable
  */
 
-$ctx = Controller::page('agregar')->members();
-// sincronizamos
-$ctx->exportLegacy();
-
-$tsLevelMsg = $tsCore->setLevel($ctx->getLevel(), true);
-if (is_array($tsLevelMsg)) {
-   $ctx->changePage('aviso');
-   $ctx->stop();
-   $smarty->assign("tsAviso", $tsLevelMsg);
-   // sincroniza nuevamente
-   $ctx->exportLegacy();
-}
+$ctx = Controller::init('agregar', 'members');
 
 if(!$tsUser->is_member) {
-	header("Location: {$tsCore->settings['url']}");
+	Container::get(Response::class)->redirect($Routes->route('url'));
+	die;
 }
 
 if($ctx->continue()) {
@@ -92,12 +82,13 @@ if($ctx->continue()) {
 			if(!$tsUser->is_admod && ($tsUser->permiso('global.posts.revisar') || (int)$tsCore->settings['c_desapprove_post'] === 1)) {
 				$smarty->assign("tsAviso", [
 					'titulo' => 'Bien!', 
-					'mensaje' => "El post <b>{$_POST['title']}</b> fue agregado. \nDeber&aacute; esperar su aprobaci&oacute;n.", 
+					'mensaje' => "El post <b>{$_POST['title']}</b> fue agregado. \nDeberá esperar su aprobación.",
 					'but' => 'Volver a la home', 
 					'link' => $tsCore->settings['url']
 				]);
 			} else {
-				header("Location: $link");
+				Container::get(Response::class)->redirect($link);
+				die;
 			}
 		} elseif($tsPost == -1){
 			$smarty->assign("tsAviso", [
@@ -109,7 +100,7 @@ if($ctx->continue()) {
 		} else {
 			$smarty->assign("tsAviso", [
 				'titulo' => 'Oops!', 
-				'mensaje' => "Ha ocurrido un error intentalo m&aacute;s tarde.\n<b>Error</b>: $tsPost",
+				'mensaje' => "Ha ocurrido un error intentalo más tarde.\n<b>Error</b>: $tsPost",
 				'but' => 'Volver', 
 				'link' => 'javascript:history.go(-1)'
 			]);
@@ -117,7 +108,4 @@ if($ctx->continue()) {
 	}
 }
 
-if($tsAjax) {
-	$smarty->assign("tsTitle", $tsTitle);
-   require_once TS_ROOT . "/footer.php";
-}
+Controller::render($tsAjax, $tsTitle, $tsPage);

@@ -21,7 +21,7 @@ function showMessage(message) {
 const afiliado = {
 	vars: [],
 	nuevo() {
-		$.get(`${route.url}/afiliado-form`, response => {
+		api('afiliado-form', null, response => {
 			dialog.init({
 				title: 'Nueva Afiliaci&oacute;n',
 				body: response,
@@ -30,7 +30,7 @@ const afiliado = {
 					cancel: { text: 'Cancelar', action: 'close' }
 				}
 			});
-		});
+		}, { method: 'GET' });
 	},
 	enviar() {
 		const inputs = $('#AFormInputs').find(':input[name]').not(':button, :submit, :reset');
@@ -40,22 +40,18 @@ const afiliado = {
 	      const $field = $(field);
 	      const name = $field.attr('name');
 	      let value = ($field.val() ?? '').toString().trim();
-	      // valor por defecto
 	      if (name === 'a_sid' && value === '') {
 	         value = 'offKey';
 	      }
-	      // requerido
 	      if (value === '' && status) {
 	         const label = $field.parent().find('label').text();
 	         status = showMessage(`No has completado el campo ${label}`);
-	         return false; // ✔ corta el each
+	         return false;
 	      }
-	      // validación URL
 	      if (status && name === 'a_url' && !isValidUrl(value)) {
 	         status = showMessage('La URL ingresada no es válida');
 	         return false;
 	      }
-	      // validación banner
 	      if (status && name === 'a_banner' && !isImageUrl(value)) {
 	      	status = showMessage('El banner debe ser una URL de imagen válida');
 	      	return false;
@@ -68,8 +64,8 @@ const afiliado = {
 	   }
 	},
 	enviando(params) {
-		$('#loading').fadeIn(250); 
-		$.post(`${route.url}/afiliado-nuevo`, params, response => {
+		$('#loading').fadeIn(250);
+		api('afiliado-nuevo', params, response => {
 			const { status, message } = $.parseResponse(response);
 			if(status === 0) {
 				$('#AFStatus > span').fadeOut().text(message).fadeIn();
@@ -83,34 +79,33 @@ const afiliado = {
 				$('#AFStatus > span').fadeOut().text('Faltan datos').fadeIn();
 				return;
 			}
-			$('#loading').fadeOut(350); 
+			$('#loading').fadeOut(350);
 		});
 	},
 	detalles(aid) {
 		$('#loading').fadeIn(250);
-		$.post(`${route.url}/afiliado-detalles`, { ref: aid }, response => {
+		api('afiliado-detalles', { ref: aid }, response => {
 			dialog.init({
 				title: 'Detalles',
 				body: response,
 				buttons: { confirm: { text: 'Aceptar', action: () => 'close' } }
 			});
-			$('#loading').fadeOut(350); 
-		}); 
+			$('#loading').fadeOut(350);
+		});
 	},
-	// admin
 	borrar(afid, gew) {
     	if(!gew) {
-			dialog.init({ 
-				title: 'Borrar Afiliado', 
+			dialog.init({
+				title: 'Borrar Afiliado',
 				body: '&#191;Quiere borrar este afiliado?',
 		      buttons: {
 		         confirm: { text: 'Borrar afiliado', action: () => afiliado.borrar(afid, true) },
 		      }
 		   });
 		   return;
-      } 
+      }
       $('#loading').fadeIn(250);
-      $.post(`${route.url}/afiliado-borrar`, { afid }, response => {
+      api('afiliado-borrar', { afid }, response => {
       	const { status, message } = $.parseResponse(response);
       	dialog.alert(status ? 'Hecho' : 'Opps', message, false);
       	if(status) {
@@ -118,12 +113,10 @@ const afiliado = {
       	}
       });
       $('#loading').fadeOut(350);
-         
    },
    activar(aid) {
    	$('#loading').fadeIn(250);
-      $.post(`${route.url}/afiliado-setactive`, { aid }, response => {
-      	console.log(response)
+      api('afiliado-setactive', { aid }, response => {
       	const { status, message } = $.parseResponse(response);
       	dialog.alert(status ? 'Hecho' : 'Opps', message, false);
       	if(status === 1 || status === 2) {

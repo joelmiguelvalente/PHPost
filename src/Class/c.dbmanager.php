@@ -3,14 +3,12 @@
 declare(strict_types=1);
 
 /**
- * @package    PHPost/Class
- * @author     PHPost Team & Miguel92
+ * @package    Class
+ * @author     Miguel92
  * @copyright  2026
  */
 
-if (!defined('TS_HEADER')) {
-	exit('No se permite el acceso directo al script');
-}
+defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
 class tsDBManager
 {
@@ -43,23 +41,14 @@ class tsDBManager
 		return Database::instance()->connection();
 	}
 
-	/* =============================================================
-	 * TABLAS
-	 * ============================================================= */
+	/* TABLAS */
 
 	/**
 	 * Devuelve tablas agrupadas por prefijo con info de tamaño
 	 */
 	public function getTablesInfo(): array
 	{
-		$rows = DB::fetchAll(
-			"SELECT TABLE_NAME, TABLE_ROWS,
-					ROUND((DATA_LENGTH + INDEX_LENGTH) / 1024, 2) AS size_kb,
-					ENGINE, TABLE_COLLATION
-			 FROM information_schema.TABLES
-			 WHERE TABLE_SCHEMA = DATABASE()
-			 ORDER BY TABLE_NAME ASC"
-		);
+		$rows = DB::fetchAll("SELECT TABLE_NAME, TABLE_ROWS, ROUND((DATA_LENGTH + INDEX_LENGTH) / 1024, 2) AS size_kb, ENGINE, TABLE_COLLATION FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() ORDER BY TABLE_NAME ASC");
 
 		$tables = [];
 		foreach ($rows as $row) {
@@ -75,9 +64,12 @@ class tsDBManager
 		return $tables;
 	}
 
-	/* =============================================================
-	 * BACKUP
-	 * ============================================================= */
+	private function sanitizeTableName(string $table, array $realTables): ?string {
+	    $clean = preg_replace('/[^a-zA-Z0-9_]/', '', $table);
+	    return in_array($clean, $realTables, true) ? $clean : null;
+	}
+
+	/* BACKUP */
 
 	/**
 	 * Genera un archivo .sql de backup y lo guarda en storage/backups/
@@ -105,7 +97,7 @@ class tsDBManager
 		$conn = $this->conn();
 		$db   = DB::value('SELECT DATABASE()');
 
-		fwrite($handle, "-- PHPostV3 - Database Backup\n");
+		fwrite($handle, "-- PHPost V".Config::app('app.version')." - Database Backup\n");
 		fwrite($handle, "-- Date: " . date('Y-m-d H:i:s') . "\n");
 		fwrite($handle, "-- Database: {$db}\n");
 		fwrite($handle, "-- Tables: " . implode(', ', $tables) . "\n\n");
@@ -116,9 +108,7 @@ class tsDBManager
 			DB::fetchAll("SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE()"), 'TABLE_NAME');
 
 		foreach ($tables as $table) {
-			$table = preg_replace('/[^a-zA-Z0-9_]/', '', $table);
-			if (!in_array($table, $realTables, true)) continue;
-
+			$table = $this->sanitizeTableName($table, $realTables);
 			// Estructura (SHOW CREATE no soporta prepared statements)
 			$createResult = $conn->query("SHOW CREATE TABLE `{$table}`");
 			$createRow    = $createResult->fetch_row();
@@ -178,7 +168,7 @@ class tsDBManager
 	/**
 	 * Elimina un backup por nombre de archivo
 	 */
-	public function deleteBackup(): string
+	public function deleteBackup(): string|bool
 	{
 		$filename = trim($_POST['filename'] ?? '');
 		$storageBackupPath = TS_BACKUPS;
@@ -186,15 +176,10 @@ class tsDBManager
 		$filename = basename($filename);
 		if (!preg_match('/^backup_[\w\-]+\.sql$/', $filename)) return false;
 		$path = rtrim($storageBackupPath, '/') . '/' . $filename;
-		if(file_exists($path) && unlink($path)) {
-			return '1: Backup eliminado.';
-		}
-		return '0: No se pudo eliminar.';
+		return (file_exists($path) && unlink($path)) ? '1: Backup eliminado.' : '0: No se pudo eliminar.';
 	}
 
-	/* =============================================================
-	 * MANTENIMIENTO
-	 * ============================================================= */
+	/* MANTENIMIENTO */
 
 	/**
 	 * OPTIMIZE TABLE en las tablas seleccionadas
@@ -203,7 +188,7 @@ class tsDBManager
 	{
 		$results = [];
 		foreach ($tables as $table) {
-			$table  = preg_replace('/[^a-zA-Z0-9_]/', '', $table);
+			$table = $this->sanitizeTableName($table, $realTables);
 			$result = $this->conn()->query("OPTIMIZE TABLE `{$table}`");
 			$row    = $result ? $result->fetch_assoc() : null;
 			$results[$table] = $row['Msg_type'] ?? 'error';
@@ -215,7 +200,7 @@ class tsDBManager
 	{
 		$results = [];
 		foreach ($tables as $table) {
-			$table  = preg_replace('/[^a-zA-Z0-9_]/', '', $table);
+			$table = $this->sanitizeTableName($table, $realTables);
 			$result = $this->conn()->query("REPAIR TABLE `{$table}`");
 			$row    = $result ? $result->fetch_assoc() : null;
 			$results[$table] = $row['Msg_type'] ?? 'error';
@@ -227,7 +212,7 @@ class tsDBManager
 	{
 		$results = [];
 		foreach ($tables as $table) {
-			$table  = preg_replace('/[^a-zA-Z0-9_]/', '', $table);
+			$table = $this->sanitizeTableName($table, $realTables);
 			$result = $this->conn()->query("CHECK TABLE `{$table}`");
 			$row    = $result ? $result->fetch_assoc() : null;
 			$results[$table] = [
@@ -243,7 +228,7 @@ class tsDBManager
 		if (in_array($table, self::PROTECTED_TABLES, true)) {
 			return ['ok' => false, 'message' => "La tabla '{$table}' está protegida."];
 		}
-		$table = preg_replace('/[^a-zA-Z0-9_]/', '', $table);
+		$table = $this->sanitizeTableName($table, $realTables);
 		$conn  = $this->conn();
 		$conn->query("SET FOREIGN_KEY_CHECKS=0");
 		$conn->query("TRUNCATE TABLE `{$table}`");
@@ -255,9 +240,7 @@ class tsDBManager
 		return ['ok' => true, 'message' => "Tabla '{$table}' vaciada correctamente."];
 	}
 
-	/* =============================================================
-	 * HELPERS
-	 * ============================================================= */
+	/* HELPERS */
 
 	private function getPrefix(string $table): string
 	{

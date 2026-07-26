@@ -12,8 +12,8 @@
                             <a href="{$tsConfig.url}/monitor/" class="systemicons monitor">Notificaciones (<b>{$tsNots}</b>)</a>
                             <a href="{$tsConfig.url}/mensajes/" class="systemicons mps">Mensajes nuevos (<b>{$tsMPs}</b>)</a>
                             <hr class="divider"/>
-                            <a href="{$tsConfig.url}/agregar/" style="background:url({$tsRoutes.assets.images}/icons/posts.png) no-repeat left center;">Agregar post</a>
-                            <a href="{$tsConfig.url}/fotos/agregar" style="background:url({$tsRoutes.assets.images}/icons/photo.png) no-repeat left center;">Agregar foto</a>
+                            <a href="{$tsConfig.url}/agregar/" style="background:url({$tsRoutes['assets:images']}/icons/posts.png) no-repeat left center;">Agregar post</a>
+                            <a href="{$tsConfig.url}/fotos/agregar" style="background:url({$tsRoutes['assets:images']}/icons/photo.png) no-repeat left center;">Agregar foto</a>
                             <hr class="divider"/>
                             <a href="{$tsConfig.url}/cuenta/" class="systemicons micuenta">Editar mi cuenta</a>
                             <a href="{$tsConfig.url}/login-salir" class="salir">Cerrar sesi&oacute;n</a>

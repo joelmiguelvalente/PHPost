@@ -24,6 +24,6 @@
    {if $helper}<p class="mt-1 text-xs text-gray-500">{$helper}</p>{/if}
   	</label>
   	<div class="md:col-span-2">
-      <textarea name="{$name}" id="{$name}" rows={$rows} cols={$cols} class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-surface px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" placeholder="{$value}">{$value}</textarea>
+      <textarea name="{$name}" id="{$name}" rows={$rows} cols={$cols} class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-surface px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" placeholder="{$value|escape}">{$value}</textarea>
   	</div>
 </div>

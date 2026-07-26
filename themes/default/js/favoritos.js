@@ -130,51 +130,46 @@ var favoritos = {
 
 	eliminados_force_order: false,
 	eliminados: new Array(), //Guardo los favoritos eliminados, por si quiere reactivar alguno
-	eliminar: function(fav_id, obj){
+eliminar: function(fav_id, obj){
 	   $('#loading').fadeIn(250);
-		$.ajax({
-			type: 'POST',
-			url: route.url + '/favoritos-borrar',
-			data: 'fav_id=' + fav_id + queryParam('userkey'),
-			success: function(h){
-				switch(h.charAt(0)){
-					case '0': //Error
-						mydialog.alert('Error', h.substring(3));
-						break;
-					case '1': //OK
-						for(var i=0, s=favoritos.r.length; i<s; ++i){
-							if(favoritos.r[i]['fav_id'] == fav_id){
-								favoritos.eliminados.push(favoritos.r[i]);
-								favoritos.counts[favoritos.r[i]['categoria']]['count']--;
-								favoritos.r.splice(i, 1);
-								break;
-							}
+		api('favoritos-borrar', { fav_id, userkey: queryParam('userkey') }, h => {
+			switch(h.charAt(0)){
+				case '0': //Error
+					mydialog.alert('Error', h.substring(3));
+					break;
+				case '1': //OK
+					for(var i=0, s=favoritos.r.length; i<s; ++i){
+						if(favoritos.r[i]['fav_id'] == fav_id){
+							favoritos.eliminados.push(favoritos.r[i]);
+							favoritos.counts[favoritos.r[i]['categoria']]['count']--;
+							favoritos.r.splice(i, 1);
+							break;
 						}
+					}
 
-						for(var i=0, s=favoritos_data.length; i<s; ++i){
-							if(favoritos_data[i]['fav_id'] == fav_id){
-								favoritos_data.splice(i, 1);
-								break;
-							}
+					for(var i=0, s=favoritos_data.length; i<s; ++i){
+						if(favoritos_data[i]['fav_id'] == fav_id){
+							favoritos_data.splice(i, 1);
+							break;
 						}
+					}
 
-						$(obj).children().attr({'src': global_data.img + 'images/reactivar.png',
+					$(obj).children().attr({'src': global_data.img + 'images/reactivar.png',
 																		'title': 'Reactivar',
 																		'alt': 'reactivar'
 																	});
-						$(obj).parent().parent().css('opacity', '0.5');
-						$(obj).removeAttr('onclick').off('click').on('click', function(){ favoritos.reactivar(fav_id, this); return false; });
-/*
-						//Quedaba solo un borrador
-						if(borradores_data.length==1)
-							$('div#borradores div#res').html('<div class="alert-empty">No tienes ning&uacute;n borrador ni post eliminado</div>');
-*/
-						//Actualizo la impresion de contadores
-						favoritos.printCounts();
-						break;
-				}
-                $('#loading').fadeOut(350);
-			},
+					$(obj).parent().parent().css('opacity', '0.5');
+					$(obj).removeAttr('onclick').off('click').on('click', function(){ favoritos.reactivar(fav_id, this); return false; });
+					//Actualizo la impresion de contadores
+					favoritos.printCounts();
+					break;
+			}
+            $('#loading').fadeOut(350);
+		}, { error: function(){	
+			mydialog.alert('Error', 'Hubo un error al intentar procesar lo solicitado');
+            $('#loading').fadeOut(350);
+		} });
+	},
 			error: function(){	
 				mydialog.alert('Error', 'Hubo un error al intentar procesar lo solicitado');
                 $('#loading').fadeOut(350);

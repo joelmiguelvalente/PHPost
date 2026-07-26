@@ -3,29 +3,23 @@
 declare(strict_types=1);
 
 /**
- * @package    PHPost/Class
- * @author     PHPost Team & Miguel92
+ * @package    Class
+ * @author     Miguel92
  * @copyright  2026
  */
 
-if (!defined('TS_HEADER')) {
-	exit('No se permite el acceso directo al script');
-}
-
-require_once TS_HELPERS . '/UrlHelper.php';
-require_once TS_UTILS . '/Avatar.php';
+defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
 class tsActividad {
 
 	private array $actividad = [];
-   protected UrlHelper $UrlHelper;
 
-   public function __construct(
-      protected tsCore $Core,
-      protected tsUser $User
-   ) {
-      $this->UrlHelper = new UrlHelper($Core);
-   }
+	public function __construct(
+		protected tsCore $Core,
+		protected tsUser $User,
+		protected UrlHelper $UrlHelper
+	) {
+	}
 
 	/**
 	 * @name makeActividad
@@ -37,28 +31,28 @@ class tsActividad {
 		# ACTIVIDAD CON FORMATO | ID => array(TEXT, LINK, CSS_CLASS)
 		$this->actividad = [
 			// POSTS
-			1  => ['text' => 'Cre&oacute; un nuevo post', 'css' => 'post'],
-			2  => ['text' => 'Agreg&oacute; a favoritos el post', 'css' => 'star'],
-			3  => ['text' => ['Dej&oacute;', 'puntos en el post'], 'css' => 'points'],
-			4  => ['text' => 'Recomend&oacute; el post', 'css' => 'share'],
-			5  => ['text' => ['Coment&oacute;', 'el post'], 'css' => 'comment_post'],
-			6  => ['text' => ['Vot&oacute;', 'un comentario en el post'], 'css' => 'voto_'],
-			7  => ['text' => 'Est&aacute; siguiendo el post', 'css' => 'follow_post'],
+			1  => ['text' => 'Creó un nuevo post', 'css' => 'post'],
+			2  => ['text' => 'Agregó a favoritos el post', 'css' => 'star'],
+			3  => ['text' => ['Dejó', 'puntos en el post'], 'css' => 'points'],
+			4  => ['text' => 'Recomendó el post', 'css' => 'share'],
+			5  => ['text' => ['Comentó', 'el post'], 'css' => 'comment_post'],
+			6  => ['text' => ['Votó', 'un comentario en el post'], 'css' => 'voto_'],
+			7  => ['text' => 'Está siguiendo el post', 'css' => 'follow_post'],
 			// FOLLOWS
-			8  => ['text' => 'Est&aacute; siguiendo a', 'css' => 'follow'],
+			8  => ['text' => 'Está siguiendo a', 'css' => 'follow'],
 			// FOTOS
-			9  => ['text' => 'Subi&oacute; una nueva foto', 'css' => 'photo'],
+			9  => ['text' => 'Subió una nueva foto', 'css' => 'photo'],
 			// MURO
 			10 => [
-				0 => ['text' => 'Public&oacute; en su', 'link' => 'muro', 'css' => 'status'],
-				1 => ['text' => 'Coment&oacute; su', 'link' => 'publicaci&oacute;n', 'css' => 'w_comment'],
-				2 => ['text' => 'Public&oacute; en el muro de', 'css' => 'wall_post'],
-				3 => ['text' => 'Coment&oacute; la publicaci&oacute;n de', 'css' => 'w_comment'],
+				0 => ['text' => 'Publicó en su', 'link' => 'muro', 'css' => 'status'],
+				1 => ['text' => 'Comentó su', 'link' => 'publicación', 'css' => 'w_comment'],
+				2 => ['text' => 'Publicó en el muro de', 'css' => 'wall_post'],
+				3 => ['text' => 'Comentó la publicación de', 'css' => 'w_comment'],
 			],
 			11 => ['text' => 'Le gusta', 'css' => 'w_like',
-				0	=> ['text' => 'su', 'link' => 'publicaci&oacute;n'],
+				0	=> ['text' => 'su', 'link' => 'publicación'],
 				1	=> ['text' => 'su comentario'],
-				2	=> ['text' => 'la publicaci&oacute;n de'],
+				2	=> ['text' => 'la publicación de'],
 				3	=> ['text' => 'el comentario'],
 			],
 		];
@@ -76,7 +70,7 @@ class tsActividad {
 		# BUSCAMOS ACTIVIDADES
 		$data = DB::fetchAll("SELECT `ac_id` FROM `u_actividad` WHERE user_id = :uid ORDER BY ac_date DESC", ['uid' => $this->User->uid]);
 		//
-		$ntotal = count($data ?? 1);
+		$ntotal = count($data ?? []);
 		// ID DE ULTIMA NOTIFICACION
 		$delid = $data[(int) $ntotal - 1]['ac_id'] ?? null;
 		// ELIMINAR ACTIVIDADES?
@@ -96,14 +90,13 @@ class tsActividad {
 			}
 		}
 		# INSERCION DE DATOS
-		if(DB::insert('u_actividad', [
+		return (DB::insert('u_actividad', [
 			'user_id' => $this->User->uid,
 			'obj_uno' => $objUno,
 			'obj_dos' => $objDos,
 			'ac_type' => $acType,
 			'ac_date' => $acDate
-		])) return true;
-		return false;
+		]));
 	}
 
 	/**
@@ -156,7 +149,7 @@ class tsActividad {
 		$data = DB::fetchAll("SELECT a.*, u.user_name AS usuario FROM u_actividad AS a LEFT JOIN u_miembros AS u ON a.user_id = u.user_id WHERE a.user_id IN(:amigos) ORDER BY ac_date DESC LIMIT :start, 25", ['amigos' => $amigos, 'start' => $start]);
 		# ARMAR ACTIVIDAD
 		if (empty($data)) {
-			return 'No hay actividad o no sigues a ning&uacute;n usuario.';
+			return 'No hay actividad o no sigues a ningún usuario.';
 		}
 		$actividad = $this->armActividad($data);
 		# RETORNAR ACTIVIDAD
@@ -191,13 +184,13 @@ class tsActividad {
 	private function armActividad(array $data = []): array {
 		# VARIABLES LOCALES
 		$actividad = [
-			'total' => count($data ?? 0),
+			'total' => count($data),
 			'data'  => [
 				'today'     => ['title' => 'Hoy', 'data' => []],
 				'yesterday' => ['title' => 'Ayer', 'data' => []],
-				'week'      => ['title' => 'D&iacute;as Anteriores', 'data' => []],
+				'week'      => ['title' => 'Días Anteriores', 'data' => []],
 				'month'     => ['title' => 'Semanas Anteriores', 'data' => []],
-				'old'       => ['title' => 'Actividad m&aacute;s antigua', 'data' => []],
+				'old'       => ['title' => 'Actividad más antigua', 'data' => []],
 			],
 		];
 		# PARA CADA VALOR CREAR UNA CONSULTA
@@ -284,77 +277,75 @@ class tsActividad {
 		$oracion['uid']   = $data['user_id'];
 		# CON UN SWITCH ESCOGEMOS QUE ORACION CONSTRUIR
 		switch ($acType) {
-		# DEL TIPO 1-2, 4 y 7 USAMOS LA MISMA
-		case 1:
-		case 2:
-		case 4:
-		case 7:
-			$oracion['text']  = $this->actividad[$acType]['text'];
-			$oracion['link']  = $this->UrlHelper->buildPostUrl($data);
-			$oracion['ltext'] = $data['post_title'];
+			# DEL TIPO 1-2, 4 y 7 USAMOS LA MISMA
+			case 1:
+			case 2:
+			case 4:
+			case 7:
+				$oracion['text']  = $this->actividad[$acType]['text'];
+				$oracion['link']  = $this->UrlHelper->buildPostUrl($data);
+				$oracion['ltext'] = $data['post_title'];
 			break;
-		# DEL TIPO 3, 5 y 6 USAMOS EL MISMO
-		case 3:
-		case 5:
-		case 6:
-			$extra_text = match (true) {
-				($acType === 3) => $data['obj_dos'],
-				($acType === 5) => ($data['obj_dos'] === 0) ? '' : ($data['obj_dos'] + 1) . ' veces',
-				default         =>($data['obj_dos'] === 0) ? 'negativo' : 'positivo'
-			};
-			//
-			$oracion['text']  = $this->actividad[$acType]['text'][0] . " <strong>{$extra_text}</strong> " . $this->actividad[$acType]['text'][1];
-			$oracion['link']  = $this->UrlHelper->buildPostUrl($data);
-			$oracion['ltext'] = $data['post_title'];
-			// ESTILO
-			$oracion['style'] = ($acType === 6) ? 'voto_' . $extra_text : $oracion['style'];
+			# DEL TIPO 3, 5 y 6 USAMOS EL MISMO
+			case 3:
+			case 5:
+			case 6:
+				$extra_text = match (true) {
+					($acType === 3) => $data['obj_dos'],
+					($acType === 5) => ($data['obj_dos'] === 0) ? '' : ($data['obj_dos'] + 1) . ' veces',
+					default         =>($data['obj_dos'] === 0) ? 'negativo' : 'positivo'
+				};
+				//
+				$oracion['text']  = $this->actividad[$acType]['text'][0] . " <strong>{$extra_text}</strong> " . $this->actividad[$acType]['text'][1];
+				$oracion['link']  = $this->UrlHelper->buildPostUrl($data);
+				$oracion['ltext'] = $data['post_title'];
+				// ESTILO
+				$oracion['style'] = ($acType === 6) ? 'voto_' . $extra_text : $oracion['style'];
 			break;
-		# ESTA SIGUIENDO A..
-		case 8:
-			$Avatar = new Avatar;
-			$AvatarUno = $Avatar->get((int)$data['user_id']);
-			$AvatarDos = $Avatar->get((int)$data['avatar']);
-			// AVATARES
-			$ImgUno = "<img alt=\"Avatar del usuario\" width=\"16\" height=\"16\" src=\"{$AvatarUno}\"/>";
-			$ImgDos = "<img alt=\"Avatar del usuario\" width=\"16\" height=\"16\" src=\"{$AvatarDos}\"/>";
-			// ORACION
-			$oracion['text']  = $ImgUno . ' ' . $this->actividad[$acType]['text'] . ' ' . $ImgDos;
-			$oracion['link']  = $this->UrlHelper->buildPerfilUrl($data['user_name']);
-			$oracion['ltext'] = $data['user_name'];
-			$oracion['style'] = '';
+			# ESTA SIGUIENDO A..
+			case 8:
+      			$Avatar = Container::get(AvatarHelper::class)->loadAvatar()->getTags([
+      				'user1' => (int)$data['user_id'],
+      				'user2' => (int)$data['avatar']
+      			]);
+				// ORACION
+				$oracion['text']  = "{$Avatar['user1']} {$this->actividad[$acType]['text']} {$Avatar['user2']}";
+				$oracion['link']  = $this->UrlHelper->buildPerfilUrl($data['user_name']);
+				$oracion['ltext'] = $data['user_name'];
+				$oracion['style'] = '';
 			break;
-		# SUBIO NUEVA FOTO
-		case 9:
-			$oracion['text']  = $this->actividad[$acType]['text'];
-			$oracion['link']  = $this->UrlHelper->buildFotoUrl($data);
-			$oracion['ltext'] = $data['f_title'];
+			# SUBIO NUEVA FOTO
+			case 9:
+				$oracion['text']  = $this->actividad[$acType]['text'];
+				$oracion['link']  = $this->UrlHelper->buildFotoUrl($data);
+				$oracion['ltext'] = $data['f_title'];
 			break;
-		# MURO POSTS
-		case 10:
-			// SEC TYPE
-			$sec_type  = $data['obj_dos'];
-			$link_text = $this->actividad[$acType][$sec_type]['link'];
-			//
-			$oracion['text']  = $this->actividad[$acType][$sec_type]['text'];
-			$oracion['link']  = $this->UrlHelper->buildPerfilUrl($data['user_name'], (string)$data['pub_id']);
-			$oracion['ltext'] = empty($link_text) ? $data['user_name'] : $link_text;
-			$oracion['style'] = $this->actividad[$acType][$sec_type]['css'];
+			# MURO POSTS
+			case 10:
+				// SEC TYPE
+				$sec_type  = $data['obj_dos'];
+				$link_text = $this->actividad[$acType][$sec_type]['link'];
+				//
+				$oracion['text']  = $this->actividad[$acType][$sec_type]['text'];
+				$oracion['link']  = $this->UrlHelper->buildPerfilUrl($data['user_name'], (string)$data['pub_id']);
+				$oracion['ltext'] = empty($link_text) ? $data['user_name'] : $link_text;
+				$oracion['style'] = $this->actividad[$acType][$sec_type]['css'];
 			break;
-		# LIKES
-		case 11:
-			// SEC TYPE
-			$sec_type  = (int) $data['obj_dos'];
-			$link_text = $this->actividad[$acType][$sec_type]['link'];
-			//
-			$oracion['text'] = "{$this->actividad[$acType]['text']} {$this->actividad[$acType][$sec_type]['text']}";
-			$oracion['link'] = $this->UrlHelper->buildPerfilUrl($data['user_name'], "?pid={$data['pub_id']}");
-			//
-			if ($data['obj_dos'] === 0 || $data['obj_dos'] === 2) {
-				$oracion['ltext'] = $link_text ?? $data['user_name'];
-			} else {
-				$end_text         = (strlen($data['c_body']) > 35) ? '...' : '';
-				$oracion['ltext'] = substr($data['c_body'], 0, 30) . $end_text;
-			}
+			# LIKES
+			case 11:
+				// SEC TYPE
+				$sec_type  = (int) $data['obj_dos'];
+				$link_text = $this->actividad[$acType][$sec_type]['link'];
+				//
+				$oracion['text'] = "{$this->actividad[$acType]['text']} {$this->actividad[$acType][$sec_type]['text']}";
+				$oracion['link'] = $this->UrlHelper->buildPerfilUrl($data['user_name'], "?pid={$data['pub_id']}");
+				//
+				if ($data['obj_dos'] === 0 || $data['obj_dos'] === 2) {
+					$oracion['ltext'] = $link_text ?? $data['user_name'];
+				} else {
+					$end_text         = (strlen($data['c_body']) > 35) ? '...' : '';
+					$oracion['ltext'] = substr($data['c_body'], 0, 30) . $end_text;
+				}
 			break;
 		}
 		//

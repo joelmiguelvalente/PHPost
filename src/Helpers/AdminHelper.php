@@ -3,16 +3,12 @@
 declare(strict_types=1);
 
 /**
- * @package    PHPost/Helpers
- * @author     PHPost Team & Miguel92
+ * @package    Helpers
+ * @author     Miguel92
  * @copyright  2026
  */
 
-if (!defined('TS_HEADER')) {
-	exit('No se permite el acceso directo al script');
-}
-
-require_once TS_UTILS . '/Permissions.php';
+defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
 final class AdminHelper {
 
@@ -31,7 +27,7 @@ final class AdminHelper {
     * Agregamos esta función ya que se repite 2 veces,
     * extraemos las imagenes
    */
-   public function getExtraIcons(string $folder = 'cat', int $size = 16) {
+   public function getExtraIcons(string $folder = 'cat', int $size = 16): array {
       # Accedemos a la carpeta de icons
       $carpeta = opendir( TS_ASSETS . "/images/icons/{$folder}" );
       # Recorremos la carpeta

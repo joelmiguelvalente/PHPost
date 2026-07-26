@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * @package    PHPost/Php
+ * @package    Php
  * @author     PHPost Team & Miguel92
  * @copyright  2026
  */
@@ -15,23 +15,14 @@ $tsTitle = "{$tsCore->settings['titulo']} - {$tsCore->settings['slogan']}";
  * Inicializamos variable
  */
 
-$ctx = Controller::page('perfil')->everybody();
-// sincronizamos
-$ctx->exportLegacy();
-
-$tsLevelMsg = $tsCore->setLevel($ctx->getLevel(), true);
-if (is_array($tsLevelMsg)) {
-   $ctx->changePage('aviso');
-   $ctx->stop();
-   $smarty->assign("tsAviso", $tsLevelMsg);
-   // sincroniza nuevamente
-   $ctx->exportLegacy();
-}
+$ctx = Controller::init('perfil', 'everybody');
 
 if($ctx->continue()) {
 
-	$username = $tsCore->setSecure($_GET['user'] ?? '');
-	$usuario = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', "SELECT user_id, user_name, user_activo, user_baneado FROM u_miembros WHERE user_name = '{$username}'"));
+	$username = $_GET['user'] ?? '';
+	$usuario = DB::fetch("SELECT user_id, user_name, user_activo, user_baneado FROM u_miembros WHERE user_name = :name", [
+		'name' => $username
+	]);
 	// EXISTE?
 	if(empty($usuario['user_id']) || ((int)$usuario['user_activo'] !== 1 && 
 		!$tsUser->permiso('moderacion.usuarios.ver_desactivados') && !$tsUser->is_admod) || ((int)$usuario['user_baneado'] !== 0 && !$tsUser->permiso('moderacion.usuarios.ver_suspendidos') && !$tsUser->is_admod)) {
@@ -40,17 +31,14 @@ if($ctx->continue()) {
 		$smarty->assign("tsAviso", [
 			'titulo' => 'Opps!', 
 			'mensaje' => (empty($usuario['user_id']) ? 'El usuario no existe' : 'La cuenta de '.$usuario['user_name'].' se encuentra inhabilitada' ), 
-			'but' => 'Ir a p&aacute;gina principal'
+			'but' => 'Ir a página principal'
 		]);
 	} else {
 		//
-		require_once TS_HELPERS . "/UserHelper.php";
-		require_once TS_CLASS . "/c.cuenta.php";
-		require_once TS_CLASS . "/c.muro.php";
 		$tsPaises = require_once TS_EXTRAS . "/Paises.php";
 
-		$tsCuenta = new tsCuenta($tsCore, $tsUser);
-		$UserHelper = new UserHelper($tsCore);
+		$tsCuenta = Container::get(tsCuenta::class);
+		$UserHelper = Container::get(UserHelper::class);
 
 		$tsInfo = $tsCuenta->loadHeadInfo((int)$usuario['user_id']);
 		$tsInfo['uid'] = (int)$usuario['user_id'];
@@ -72,7 +60,7 @@ if($ctx->continue()) {
 		$smarty->assign("tsGeneral", $tsGeneral);
 		
 		// MURO
-		$tsMuro = new tsMuro($tsCore, $tsUser);
+		$tsMuro = Container::get(tsMuro::class);
 		// PERMISOS
 		$privacidad = $tsMuro->getPrivacity((int)$tsInfo['user_id'], $username, (int)$tsInfo['follow'], (int)$tsInfo['yfollow']);
 		// SE PERMITE VER EL MURO?
@@ -109,7 +97,4 @@ if($ctx->continue()) {
 	}
 }
 
-if($tsAjax) {
-	$smarty->assign("tsTitle", $tsTitle);
-   require_once TS_ROOT . "/footer.php";
-}
+Controller::render($tsAjax, $tsTitle, $tsPage);

@@ -3,22 +3,23 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>{$tsTitle}</title>
-<link rel="shortcut icon" href="{$tsRoutes.tema.images}/favicon.ico" type="image/x-icon" />
-<link rel="preload" href="{$tsRoutes.assets.base}/fonts/Inter.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="shortcut icon" href="{$tsRoutes['tema:images']}/favicon.ico" type="image/x-icon" />
+<link rel="preload" href="{$tsRoutes['assets:base']}/fonts/Inter.woff2" as="font" type="font/woff2" crossorigin="anonymous">
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
 {load file=['dialog'] type="css"}
-<script>
+<script nonce="{CSP_NONCE}">
 const global_data = {
    app: {
-      domain:'{$tsRoutes.domain}',
+      domain: '{$tsRoutes['domain']}',
       title: '{$tsConfig.titulo}',
       slogan: '{$tsConfig.slogan}'
-   }
+   },
+	csrf_token: '{$tsCsrf}',
 };
 const route = {
    url:'{$tsConfig.url}',
-   img:'{$tsRoutes.tema.images}',
+   img:'{$tsRoutes['tema:images']}',
    smiles:'{$tsConfig.url}/files/smiles'
 }
 {if $tsPage == 'registro'}
@@ -32,7 +33,7 @@ const captcha = {
 <script src="{$recaptcha}"></script> 
 {/if}
 {load file=['jquery.min','jquery.plugins',$tsPage] type="js" cache=true}
-<script id="tailwind-config" nonce="{$csp_nonce}">
+<script id="tailwind-config" nonce="{CSP_NONCE}">
 	tailwind.config = {
 		darkMode: "class",
       theme: {
@@ -152,7 +153,7 @@ const captcha = {
 			</div>
 			<div class="hidden md:flex flex-1 justify-end gap-8">
 				<div class="flex items-center gap-9">
-					<a class="text-[#121517] dark:text-gray-300 text-sm font-medium leading-normal hover:text-primary transition-colors" href="{$tsRoutes.url}">Ir al sitio</a>
+					<a class="text-[#121517] dark:text-gray-300 text-sm font-medium leading-normal hover:text-primary transition-colors" href="{$tsConfig.url}">Ir al sitio</a>
 				</div>
 			</div>
 		</header>
@@ -160,10 +161,10 @@ const captcha = {
 			<div class="w-full max-w-[440px] flex flex-col gap-6">
 				{include "$tsPage.tpl"}
 				<div class="flex flex-wrap justify-center gap-x-6 gap-y-2 pb-10">
-					<a class="text-[#657686] text-xs hover:text-primary transition-colors" href="{$tsRoutes.url}/pages/terminos-y-condiciones/">Términos</a>
-					<a class="text-[#657686] text-xs hover:text-primary transition-colors" href="{$tsRoutes.url}/pages/privacidad/">Privacidad</a>
-					<a class="text-[#657686] text-xs hover:text-primary transition-colors" href="{$tsRoutes.url}/pages/protocolo/">Protocolo</a>
-					<a class="text-[#657686] text-xs hover:text-primary transition-colors" href="{$tsRoutes.url}/pages/ayuda/">Ayuda</a>
+					<a class="text-[#657686] text-xs hover:text-primary transition-colors" href="{$tsConfig.url}/pages/terminos-y-condiciones/">Términos</a>
+					<a class="text-[#657686] text-xs hover:text-primary transition-colors" href="{$tsConfig.url}/pages/privacidad/">Privacidad</a>
+					<a class="text-[#657686] text-xs hover:text-primary transition-colors" href="{$tsConfig.url}/pages/protocolo/">Protocolo</a>
+					<a class="text-[#657686] text-xs hover:text-primary transition-colors" href="{$tsConfig.url}/pages/ayuda/">Ayuda</a>
 				</div>
 			</div>
 		</main>

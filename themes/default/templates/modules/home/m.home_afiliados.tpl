@@ -1,4 +1,4 @@
-<script src="{$tsRoutes.assets.js}/afiliados.js"></script>
+<script src="{$tsRoutes['assets:js']}/afiliados.js"></script>
 <div class="box">
 	<div class="box-header">
 		<span class="box_txt" title="Afiliados">Afiliados</span>

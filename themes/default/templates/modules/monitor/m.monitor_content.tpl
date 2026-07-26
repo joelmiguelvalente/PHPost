@@ -10,7 +10,7 @@
 						<li class="listado-item grid gap-3 p-2 mb-2 rounded{if $noti.unread > 0} unread{/if}">
 							<a class="block" href="{$tsConfig.url}/@{$noti.user}" title="{$noti.user}" rel="internal">
 								<picture class="profile-avatar">
-	  								<img src="{$tsRoutes.assets.images}/phpost/main-64.png" data-src="{$noti.avatar}" alt="{$noti.user}" width="48" height="48" loading="lazy" decoding="async">
+	  								<img src="{$tsRoutes['assets:images']}/phpost/main-64.png" data-src="{$noti.avatar}" alt="{$noti.user}" width="48" height="48" loading="lazy" decoding="async">
 	  							</picture>
 							</a>
 							<div class="notification-info flex justify-center items-start gap-1 flex-col">

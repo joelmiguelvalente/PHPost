@@ -1,4 +1,7 @@
-<?php if ( ! defined('TS_HEADER')) exit('No se permite el acceso directo al script');
+<?php
+
+defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
+
 /**
  * Controlador AJAX
  *
@@ -38,7 +41,7 @@
 \*********************************/
 	
 	// DEPENDE EL NIVEL
-	$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
+	$tsLevelMsg = $tsUser->setLevel($tsLevel, true);
 	if($tsLevelMsg != 1) { echo '0: '.$tsLevelMsg['mensaje']; die();}
 	// CLASE
 	require('../class/c.borradores.php');
@@ -53,7 +56,7 @@
 				$_GET['action'] = $_POST['borrador_id'];
 				$tsBorrador = $tsBorradores->getDraft(0);
 				echo '1: <div style="text-align:left; padding-left:15px;">
-	<strong>T&iacute;tulo:</strong><br />
+	<strong>Título:</strong><br />
 	<input type="text" value="'.$tsBorrador['b_title'].'" style="width:480px" onfocus="this.select()" /><br />
 	<strong>Cuerpo:</strong><br />
 	<textarea style="width:490px; height:140px" onfocus="this.select()">'.$tsBorrador['b_body'].'</textarea>

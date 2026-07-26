@@ -3,41 +3,216 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Esta página no existe</title>
+<meta name="description" content="Error 404 - La página que buscas no ha sido encontrada">
+<title>Error 404 - Página No Encontrada</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
 <style>
-section {
-	width: 60%;
-	position: relative;
-	box-sizing: content-box;
-}
-section h1 {
-	margin-top: 1rem;
-	position: absolute;
-	color: #444;
-	font-size: 4rem;
-}
-.error_image_show {
- 	background: url('../../assets/images/error404.gif') no-repeat top center / contain;
-}
-.contant_box {
-   margin-top: 350px;
-}
+	.page-error {
+		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+	}
+	.page-card {
+		background: white;
+		border-radius: 16px;
+		box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+		padding: 40px;
+		max-width: 500px;
+		width: 90%;
+		text-align: center;
+	}
+	.page-icon {
+		width: 80px;
+		height: 80px;
+		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+		border-radius: 50%;
+		margin: 0 auto 20px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 32px;
+		color: white;
+	}
+	.page-code {
+		font-size: 60px;
+		font-weight: 700;
+		color: #2563eb;
+		margin: 0 0 10px;
+	}
+	.page-title {
+		font-size: 28px;
+		font-weight: 600;
+		color: #1e293b;
+		margin: 0 0 15px;
+	}
+	.page-message {
+		font-size: 16px;
+		color: #64748b;
+		margin: 0 0 25px;
+		line-height: 1.6;
+	}
+	.page-help {
+		background: #f0f9ff;
+		border-radius: 8px;
+		padding: 20px;
+		margin: 20px 0;
+		text-align: left;
+	}
+	.page-help h4 {
+		margin: 0 0 10px;
+		color: #0369a1;
+		font-size: 14px;
+	}
+	.page-suggestion {
+		display: flex;
+		align-items: flex-start;
+		gap: 10px;
+		margin: 8px 0;
+		font-size: 14px;
+		color: #075985;
+	}
+	.page-suggestion span {
+		flex-shrink: 0;
+		width: 20px;
+		height: 20px;
+		background: #e0f2fe;
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 12px;
+	}
+	.page-search {
+		margin: 20px 0;
+	}
+	.page-search input {
+		width: 100%;
+		padding: 12px 15px;
+		border: 2px solid #e2e8f0;
+		border-radius: 8px;
+		font-size: 14px;
+		transition: border-color 0.3s ease;
+	}
+	.page-search input:focus {
+		outline: none;
+		border-color: #2563eb;
+	}
+	.page-actions {
+		display: flex;
+		gap: 12px;
+		justify-content: center;
+		flex-wrap: wrap;
+		margin-top: 30px;
+	}
+	.btn {
+		padding: 12px 24px;
+		border: none;
+		border-radius: 8px;
+		font-size: 14px;
+		font-weight: 600;
+		cursor: pointer;
+		transition: all 0.3s ease;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		text-decoration: none;
+	}
+	.btn-primary {
+		background: #2563eb;
+		color: white;
+	}
+	.btn-primary:hover {
+		background: #1d4ed8;
+		transform: translateY(-2px);
+		box-shadow: 0 5px 15px rgba(37, 99, 235, 0.4);
+	}
+	.btn-secondary {
+		background: #64748b;
+		color: white;
+	}
+	.btn-secondary:hover {
+		background: #475569;
+		transform: translateY(-2px);
+		box-shadow: 0 5px 15px rgba(100, 116, 139, 0.4);
+	}
+	.page-footer {
+		margin-top: 25px;
+		padding-top: 20px;
+		border-top: 1px solid #e2e8f0;
+		font-size: 13px;
+		color: #94a3b8;
+	}
+	.page-footer a {
+		color: #2563eb;
+		text-decoration: none;
+	}
+	.page-footer a:hover {
+		text-decoration: underline;
+	}
+	@media (max-width: 480px) {
+		.page-card {
+			padding: 25px;
+		}
+		.page-code {
+			font-size: 48px;
+		}
+		.page-title {
+			font-size: 22px;
+		}
+		.page-actions {
+			flex-direction: column;
+		}
+		.btn {
+			width: 100%;
+		}
+	}
+	@keyframes fadeInUp {
+		from {
+			opacity: 0;
+			transform: translateY(20px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+	.page-card {
+		animation: fadeInUp 0.6s ease-out;
+	}
 </style>
 </head>
-<body class="d-flex justify-content-center align-items-center w-100 vh-100 bg-secondary">
-	
-	<section class="error_image_show bg-white rounded shadow position-relative">
-	
-		<h1 class="text-center position-relative py-4 w-100">ERROR <strong>404</strong></h1>
-
-		<div class="contant_box d-flex justify-content-center align-items-center flex-column py-4">
-			<h3 class="h3">Parece que estás perdido</h3>
-			<p>la pagina que buscas no esta disponible!</p>
-			<a href="./" class="btn btn-primary">Volver a la página principal</a>
+<body class="d-flex justify-content-center align-items-center w-100 vh-100 page-error">
+	<div class="page-card">
+		<div class="page-icon">
+			🔍
 		</div>
-	
-	</section>
+		<div class="page-code">404</div>
+		<h1 class="page-title">Página No Encontrada</h1>
+		<p class="page-message">Lo sentimos, no pudimos encontrar la página que buscas. Puede que haya sido movida, renombrada o que nunca haya existido.</p>
 
+		<div class="page-help">
+			<h4>💡 Qué puedes hacer</h4>
+			<div class="page-suggestion">
+				<span>1</span>
+				Verifica la URL por posibles errores tipográficos
+			</div>
+			<div class="page-suggestion">
+				<span>2</span>
+				Usa el menú de navegación o nuestro buscador para encontrar lo que necesitas
+			</div>
+			<div class="page-suggestion">
+				<span>3</span>
+				Regresa a la página principal para continuar navegando
+			</div>
+		</div>
+
+		<div class="page-actions">
+			<a href="./" class="btn btn-primary">Ir al inicio</a>
+			<a href="javascript:history.back()" class="btn btn-secondary">Volver atrás</a>
+		</div>
+
+		<div class="page-footer">
+			¿Página no encontrada? Contacta con nuestro equipo<br>
+			ID de error: notf-<?= strtoupper(substr(md5(microtime()), 0, 8)) ?>-<?= date('YmdHis') ?>
+		</div>
+	</div>
 </body>
 </html>

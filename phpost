@@ -18,12 +18,12 @@ define('TS_HEADER', true);
 
 // ─── Autodetectar raíz ───────────────────────────────────────────────────────
 $root = dirname(__FILE__);
-if (!file_exists($root . '/src/Utils/Generator.php')) {
+if (!file_exists($root . '/src/Utils/Misc/Generator.php')) {
     fwrite(STDERR, "[ERROR] No se encontró src/Utils/Generator.php\n");
     fwrite(STDERR, "        Asegúrate de ejecutar este comando desde la raíz del proyecto.\n");
     exit(1);
 }
-require_once $root . '/src/Utils/Generator.php';
+require_once $root . '/src/Utils/Misc/Generator.php';
 
 // ─── Colores ANSI ────────────────────────────────────────────────────────────
 function c(string $text, string $color): string {
@@ -74,7 +74,7 @@ foreach ($args as $arg) {
 }
 
 // ─── Validar nombre ──────────────────────────────────────────────────────────
-if (!PHPostGenerator::validateName($name)) {
+if (!Generator::validateName($name)) {
     fwrite(STDERR, c("[ERROR]", 'red') . " El nombre '$name' no es válido.\n");
     fwrite(STDERR, "        Solo letras minúsculas, números y guión bajo. Mínimo 2 caracteres.\n");
     exit(1);
@@ -85,7 +85,7 @@ echo "\n";
 echo c("PHPost CLI", 'cyan') . " — Generando sección: " . c($name, 'yellow') . "\n";
 echo str_repeat('─', 50) . "\n";
 
-$generator = new PHPostGenerator($name, $options, $root, $theme);
+$generator = new Generator($name, $options, $root, $theme);
 $result    = $generator->run();
 
 foreach ($result['created'] as $file) {

@@ -22,15 +22,15 @@
 							<td align="left">{if $s.user_name}<a href="{$tsConfig.url}/perfil/{$s.user_name}" class="hovercard" uid="{$s.user_id}">{$s.user_name}</a>{else} Visitante{/if}</td>
 							<td><a href="{$tsConfig.url}/moderacion/buscador/1/1/{$s.session_ip}" class="geoip" target="_blank">{$s.session_ip}</a></td>
 							<td>{$s.session_time|hace:true}</td>
-							<td>{if $s.session_autologin == 0}<font color="red">NO</font>{else}<font color="green">S&Iacute;</font>{/if}</td>
+							<td>{if $s.session_autologin == 0}<font color="red">NO</font>{else}<font color="green">Sí</font>{/if}</td>
 							<td class="admin_actions">
-                        <a href="#" onclick="admin.sesiones.borrar('{$s.session_id}'); return false"><img src="{$tsRoutes.tema.images}/icons/power_off.png" title="Cerrar sesi&oacute;n de {if $s.user_name}{$s.user_name}{else}este visitante{/if}"/></a>
+                        <a href="#" onclick="admin.sesiones.borrar('{$s.session_id}'); return false"><img src="{$tsRoutes['tema:images']}/icons/power_off.png" title="Cerrar sesión de {if $s.user_name}{$s.user_name}{else}este visitante{/if}"/></a>
 							</td>
 						</tr>
 					{/foreach}
 				</tbody>
 				<tfoot>
-					<td colspan="7">P&aacute;ginas: {$tsAdminSessions.pages}</td>
+					<td colspan="7">Páginas: {$tsAdminSessions.pages}</td>
 				</tfoot>
 			</table>
 		{/if}

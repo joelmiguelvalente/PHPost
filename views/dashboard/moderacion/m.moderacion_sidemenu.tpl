@@ -1,7 +1,7 @@
 <div class="sidebar-group">
 	{include "dashboard/aside/Toggle.tpl" icon="dashboard" label="Principal"}
    <div class="sidebar-submenu mt-1 ml-8 space-y-1 hidden">
-   	{include "dashboard/aside/Item.tpl" label="Centro de Moderaci&oacute;n"}
+   	{include "dashboard/aside/Item.tpl" label="Centro de Moderación"}
    </div>
 </div>
 <div class="sidebar-group">
@@ -17,7 +17,7 @@
 $tsUser->permiso('moderacion.usuarios.ver_baneados') || 
 $tsUser->permiso('moderacion.usuarios.buscador')}
 	<div class="sidebar-group">
-  		{include "dashboard/aside/Toggle.tpl" icon="account_tree" label="Gesti&oacute;n"}
+  		{include "dashboard/aside/Toggle.tpl" icon="account_tree" label="Gestión"}
 	   <div class="sidebar-submenu mt-1 ml-8 space-y-1 hidden">
 	   	{if $tsUser->is_admod || $tsUser->permiso('moderacion.usuarios.ver_baneados')}
 	   		{include "dashboard/aside/Item.tpl" link="banusers" label="Usuarios" total=$tsModerar.suspusers flex=true}

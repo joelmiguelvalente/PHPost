@@ -5,10 +5,10 @@
 !$tsUser->permiso('moderacion.posts.editar')}
 	<div class="mod-actions flex justify-start items-center gap-2 p-3">
 		<strong>Acciones del Post:</strong>
-		<span data-action="delete" data-post-id="{$tsPost.post_id}" class="action-btn pointer delete"><img alt="Borrar" src="{$tsRoutes.tema.images}/borrar.png"/> Borrar</span>
-		<a href="{$tsConfig.url}/editar?id={$tsPost.post_id}"><img alt="Borrar" src="{$tsRoutes.tema.images}/editar.png"/> Editar</a>
+		<span data-action="delete" data-post-id="{$tsPost.post_id}" class="action-btn pointer delete"><img alt="Borrar" src="{$tsRoutes['tema:images']}/borrar.png"/> Borrar</span>
+		<a href="{$tsConfig.url}/editar?id={$tsPost.post_id}"><img alt="Borrar" src="{$tsRoutes['tema:images']}/editar.png"/> Editar</a>
 	</div>
-{elseif ($tsUser->is_admod && $tsPost.post_status == 0) || 
+{elseif ($tsUser->is_admod && $tsPost.post_status == 'publicado') ||
 $tsUser->permiso('moderacion.posts.fijar') || 
 $tsUser->permiso('moderacion.posts.abrir_cerrar') || 
 $tsUser->permiso('moderacion.posts.ocultar') || 

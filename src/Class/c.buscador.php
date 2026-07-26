@@ -3,15 +3,13 @@
 declare(strict_types=1);
 
 /**
- * @package    PHPost/Class
- * @author     PHPost Team & Miguel92
+ * @package    Class
+ * @author     Miguel92
  * @copyright  2026
  * @note Desarrollado con asistencia de Claude (Anthropic)
  */
 
-if (!defined('TS_HEADER')) {
-	exit('No se permite el acceso directo al script');
-}
+defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
 class tsBuscador {
 
@@ -29,10 +27,12 @@ class tsBuscador {
 
 	public function __construct(
 		protected tsCore $Core,
-		protected tsUser $User
-	) {}
+		protected tsUser $User,
+		protected Paginator $Paginator
+	) {
+	}
 
-	// ─── Parámetros comunes ────────────────────────────────────────────────────
+	// Parámetros comunes
 
 	private function getParamsSearching(): array {
 		$engine = trim($_GET['engine'] ?? 'web');
@@ -53,20 +53,14 @@ class tsBuscador {
 		];
 	}
 
-	// ─── Helpers ───────────────────────────────────────────────────────────────
+	// Helpers
 
 	/**
 	 * Resuelve IDs de usuarios por coincidencia parcial de nombre.
 	 * Retorna array de ints. El wildcard % se arma en PHP, no en SQL.
 	 */
 	private function resolveAuthorIds(string $autor): array {
-		$rows = DB::fetchAll(
-			"SELECT user_id FROM u_miembros
-			 WHERE user_name LIKE :autor
-			 AND user_activo = 1 AND user_baneado = 0
-			 LIMIT 50",
-			['autor' => '%' . $autor . '%']
-		);
+		$rows = DB::fetchAll("SELECT user_id FROM u_miembros WHERE user_name LIKE :autor AND user_activo = 1 AND user_baneado = 0 LIMIT 50", ['autor' => '%' . $autor . '%']);
 		return array_map('intval', array_column($rows, 'user_id'));
 	}
 
@@ -79,12 +73,12 @@ class tsBuscador {
 		return empty($ids) ? null : implode(',', $ids);
 	}
 
-	// ─── Posts (web / tags) ────────────────────────────────────────────────────
+	// Posts (web / tags)
 
 	public function getQuery(): array {
 		$filter = $this->getTypeFilter();
 		$query  = $filter['query'];
-		$params = ['status' => 0];
+		$params = ['status' => 'publicado'];
 
 		$conditions = ['p.post_status = :status'];
 
@@ -112,11 +106,8 @@ class tsBuscador {
 		$where   = 'WHERE ' . implode(' AND ', $conditions);
 		$orderBy = 'ORDER BY p.post_date DESC';
 
-		$total = (int) DB::value(
-			"SELECT COUNT(p.post_id) FROM p_posts AS p {$where}",
-			$params
-		);
-		$pages = (new Paginator)->getPagination($total, self::POSTS_PER_PAGE);
+		$total = (int) DB::value("SELECT COUNT(p.post_id) FROM p_posts AS p {$where}", $params);
+		$pages = $this->Paginator->getPagination($total, self::POSTS_PER_PAGE);
 
 		[$offset, $perPage] = array_map('intval', explode(',', $pages['limit']));
 		$params['offset']  = $offset;
@@ -131,7 +122,7 @@ class tsBuscador {
 		];
 	}
 
-	// ─── Usuarios ──────────────────────────────────────────────────────────────
+	// Usuarios
 
 	public function getUsuarios(): array {
 		$p    = $this->getParamsSearching();
@@ -144,7 +135,7 @@ class tsBuscador {
 		$params = ['term' => '%' . $term . '%', 'activo' => 1, 'baneado' => 0];
 
 		$total = (int) DB::value("SELECT COUNT(user_id) FROM u_miembros WHERE user_activo = :activo AND user_baneado = :baneado AND user_name LIKE :term", $params);
-		$pages = (new Paginator)->getPagination($total, self::USERS_PER_PAGE);
+		$pages = $this->Paginator->getPagination($total, self::USERS_PER_PAGE);
 
 		[$offset, $perPage] = array_map('intval', explode(',', $pages['limit']));
 		$params['offset']  = $offset;
@@ -159,7 +150,7 @@ class tsBuscador {
 		];
 	}
 
-	// ─── Fotos ─────────────────────────────────────────────────────────────────
+	// Fotos
 
 	public function getFotos(): array {
 		$p      = $this->getParamsSearching();
@@ -183,7 +174,7 @@ class tsBuscador {
 		$where = 'WHERE ' . implode(' AND ', $conditions);
 
 		$total = (int) DB::value("SELECT COUNT(f.foto_id) FROM f_fotos AS f {$where}", $params);
-		$pages = (new Paginator)->getPagination($total, self::FOTOS_PER_PAGE);
+		$pages = $this->Paginator->getPagination($total, self::FOTOS_PER_PAGE);
 
 		[$offset, $perPage] = array_map('intval', explode(',', $pages['limit']));
 		$params['offset']  = $offset;
@@ -198,7 +189,7 @@ class tsBuscador {
 		];
 	}
 
-	// ─── Muro ──────────────────────────────────────────────────────────────────
+	// Muro
 
 	public function getMuro(): array {
 		$p      = $this->getParamsSearching();
@@ -222,7 +213,7 @@ class tsBuscador {
 		$where = 'WHERE ' . implode(' AND ', $conditions);
 
 		$total = (int) DB::value("SELECT COUNT(m.pub_id) FROM u_muro AS m {$where}", $params);
-		$pages = (new Paginator)->getPagination($total, self::MURO_PER_PAGE);
+		$pages = $this->Paginator->getPagination($total, self::MURO_PER_PAGE);
 
 		[$offset, $perPage] = array_map('intval', explode(',', $pages['limit']));
 		$params['offset']  = $offset;
@@ -237,7 +228,7 @@ class tsBuscador {
 		];
 	}
 
-	// ─── Tags (devuelve los posts que tienen el tag buscado) ──────────────────
+	// Tags (devuelve los posts que tienen el tag buscado)
 
 	public function getTags(): array {
 		$p     = $this->getParamsSearching();
@@ -248,12 +239,12 @@ class tsBuscador {
 		}
 
 		$params = [
-			'status'     => 0,
+			'status'     => 'publicado',
 			'query_like' => '%' . $query . '%',
 		];
 
 		$total = (int) DB::value("SELECT COUNT(p.post_id) FROM p_posts AS p WHERE p.post_status = :status AND p.post_tags LIKE :query_like AND p.post_tags != ''", $params);
-		$pages = (new Paginator)->getPagination($total, self::POSTS_PER_PAGE);
+		$pages = $this->Paginator->getPagination($total, self::POSTS_PER_PAGE);
 
 		[$offset, $perPage] = array_map('intval', explode(',', $pages['limit']));
 		$params['offset']  = $offset;
@@ -268,7 +259,7 @@ class tsBuscador {
 		];
 	}
 
-	// ─── Conteos para badges de pestañas ──────────────────────────────────────
+	// Conteos para badges de pestañas
 
 	public function getCounts(): array {
 		$p     = $this->getParamsSearching();
@@ -283,8 +274,8 @@ class tsBuscador {
 		$authorIds = !empty($autor) ? $this->resolveAuthorIds($autor) : [];
 		$authorIn  = $this->buildInClause($authorIds);
 
-		// ── Posts ──
-		$pPost  = ['status' => 0];
+		// Posts
+		$pPost  = ['status' => 'publicado'];
 		$wPost  = ['post_status = :status'];
 		if (!empty($query)) {
 			// FULLTEXT no admite placeholder, usamos escape()
@@ -294,7 +285,7 @@ class tsBuscador {
 		if ($authorIn) $wPost[] = "post_user IN ({$authorIn})";
 		$countPosts = (int) DB::value("SELECT COUNT(post_id) FROM p_posts WHERE " . implode(' AND ', $wPost), $pPost);
 
-		// ── Fotos ──
+		// Fotos
 		$pFoto = ['status' => 0, 'closed' => 0];
 		$wFoto = ['f_status = :status', 'f_closed = :closed'];
 		if (!empty($query)) {
@@ -304,11 +295,11 @@ class tsBuscador {
 		if ($authorIn) $wFoto[] = "f_user IN ({$authorIn})";
 		$countFotos = (int) DB::value("SELECT COUNT(foto_id) FROM f_fotos WHERE " . implode(' AND ', $wFoto), $pFoto);
 
-		// ── Usuarios ──
+		// Usuarios
 		$term = !empty($autor) ? $autor : $query;
 		$countUsuarios = empty($term) ? 0 : (int) DB::value("SELECT COUNT(user_id) FROM u_miembros WHERE user_activo = :activo AND user_baneado = :baneado AND user_name LIKE :term", ['activo' => 1, 'baneado' => 0, 'term' => '%' . $term . '%']);
 
-		// ── Muro ──
+		// Muro
 		$pMuro = ['visibility' => 'everyone'];
 		$wMuro = ['p_visibility = :visibility', 'p_body IS NOT NULL'];
 		if (!empty($query)) {
@@ -318,8 +309,11 @@ class tsBuscador {
 		if ($authorIn) $wMuro[] = "p_user IN ({$authorIn})";
 		$countMuro = (int) DB::value("SELECT COUNT(pub_id) FROM u_muro WHERE " . implode(' AND ', $wMuro), $pMuro);
 
-		// ── Tags ──
-		$countTags = empty($query) ? 0 : (int) DB::value("SELECT COUNT(post_id) FROM p_posts WHERE post_status = :status AND post_tags LIKE :q AND post_tags != ''", ['status' => 0, 'q' => '%' . $query . '%']);
+		// Tags
+		$countTags = empty($query) ? 0 : (int) DB::value("SELECT COUNT(post_id) FROM p_posts WHERE post_status = :status AND post_tags LIKE :q AND post_tags != ''", [
+			'status' => 'publicado',
+			'q' => '%' . $query . '%'
+		]);
 
 		return [
 			'posts'    => $countPosts,

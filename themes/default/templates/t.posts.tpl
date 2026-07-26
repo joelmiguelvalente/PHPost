@@ -1,8 +1,8 @@
 {include "main_header.tpl"}
-<script src="{$tsRoutes.assets.js}/lite-youtube.js"></script>
+<script src="{$tsRoutes['assets:js']}/lite-youtube.js"></script>
 <a name="cielo"></a>
-{if $tsPost.post_status > 0 || $tsAutor.user_activo != 1}
-	<div class="alert-empty">Este post se encuentra {if $tsPost.post_status == 2}eliminado{elseif $tsPost.post_status == 1} inactivo por acomulaci&oacute;n de denuncias{elseif $tsPost.post_status == 3} en revisi&oacute;n{elseif $tsPost.post_status == 3} en revisi&oacute;n{elseif $tsAutor.user_activo != 1} oculto porque pertenece a una cuenta desactivada{/if}, t&uacute; puedes verlo porque {if $tsUser->is_admod == 1}eres Administrador{elseif $tsUser->is_admod == 2}eres Moderador{else}tienes permiso{/if}.</div><br>
+{if $tsPost.post_status != 'publicado' || $tsAutor.user_activo != 1}
+	<div class="alert-empty">Este post se encuentra {if $tsPost.post_status == 'eliminado'}eliminado{elseif $tsPost.post_status == 'oculto'} inactivo por acomulaci&oacute;n de denuncias{elseif $tsPost.post_status == 'revision'} en revisi&oacute;n{elseif $tsPost.post_status == 3} en revisi&oacute;n{elseif $tsAutor.user_activo == 0} oculto porque pertenece a una cuenta desactivada{/if}, t&uacute; puedes verlo porque {if $tsUser->is_admod == 1}eres Administrador{elseif $tsUser->is_admod == 2}eres Moderador{else}tienes permiso{/if}.</div><br>
 {/if}
 <div class="post-wrapper">
 	<div class="post-wrapper-content">

@@ -9,10 +9,10 @@
 		<a href="{$tsConfig.url}/@{$tsAutor.user_name}" class="given-name" style="text-decoration:none;color:#{$tsAutor.rango.r_color}">{$tsAutor.user_name}</a>
 		<span class="title">{$tsAutor.rango.r_name}</span>
 		<div class="box-autor-badges flex justify-center items-center gap-2 py-2">
-			<img src="{$tsRoutes.tema.images}/space.gif" class="status {$tsAutor.status.css}" title="{$tsAutor.status.t}"/>
-			<img src="{$tsRoutes.assets.images}/icons/ranks/{$tsAutor.rango.r_image}" title="{$tsAutor.rango.r_name}" />
-			<img src="{$tsRoutes.assets.images}/icons/{if $tsAutor.user_sexo == 0}female{else}male{/if}.png" title="{if $tsAutor.user_sexo == 0}Mujer{else}Hombre{/if}" />
-			<img src="{$tsRoutes.assets.images}/flags/{$tsAutor.pais.icon}.png" style="padding:2px" title="{$tsAutor.pais.name}" />
+			<img src="{$tsRoutes['tema:images']}/space.gif" class="status {$tsAutor.status.css}" title="{$tsAutor.status.t}"/>
+			<img src="{$tsRoutes['assets:images']}/icons/ranks/{$tsAutor.rango.r_image}" title="{$tsAutor.rango.r_name}" />
+			<img src="{$tsRoutes['assets:images']}/icons/{if $tsAutor.user_sexo == 0}female{else}male{/if}.png" title="{if $tsAutor.user_sexo == 0}Mujer{else}Hombre{/if}" />
+			<img src="{$tsRoutes['assets:images']}/flags/{$tsAutor.pais.icon}.png" style="padding:2px" title="{$tsAutor.pais.name}" />
 		</div>
 
 		<div class="buttons flex justify-center items-center gap-2 py-3">
@@ -23,7 +23,7 @@
 				{else}
 					{* No se puede usar `href="javascript:...` *}
 					<span style="cursor: pointer;" onclick="mensaje.nuevo('{$tsAutor.user_name|escape:javascript}');">
-						<img title="Enviar mensaje privado" src="{$tsRoutes.tema.images}/icon-mensajes-recibidos.gif"/>
+						<img title="Enviar mensaje privado" src="{$tsRoutes['tema:images']}/icon-mensajes-recibidos.gif"/>
 					</span>
 
 					<span id="followUser" role="button" 

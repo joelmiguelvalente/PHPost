@@ -9,7 +9,7 @@
 				<table class="min-w-full border-collapse text-sm">					
 					{include "dashboard/table/Thead.tpl" fields=[
 						"ID",
-						"T&iacute;tulo",
+						"Título",
 						"Autor",
 						"Fecha",
 						'<a class="qtip" title="Ordenar por estado ascendente" href="{$tsConfig.url}/admin/posts?order=estado&modo=asc"><</a> Estado <a class="qtip" title="Ordenar por estado descendente" href="{$tsConfig.url}/admin/posts?order=estado&modo=desc">></a>',
@@ -29,7 +29,7 @@
 									{elseif $p.post_status == 2} bg-red-100 text-red-800
 									{elseif $p.post_status == 1} bg-orange-100 text-orange-800
 									{else} bg-green-100 text-green-800
-									{/if} px-2 py-0.5 text-xs font-medium">{if $p.post_status == 3}Oculto{elseif $p.post_status == 2}Eliminado{elseif $p.post_status == 1}En revisi&oacute;n{else}Activo{/if}</span>
+									{/if} px-2 py-0.5 text-xs font-medium">{if $p.post_status == 3}Oculto{elseif $p.post_status == 2}Eliminado{elseif $p.post_status == 1}En revisión{else}Activo{/if}</span>
 								</td>
    							<td class="px-3 py-2" id="moreinfo1_2">
    								<a href="{$tsConfig.url}/moderacion/buscador/1/1/{$p.post_ip}" target="_blank">{$p.post_ip}</a>

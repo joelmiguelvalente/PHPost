@@ -3,14 +3,12 @@
 declare(strict_types=1);
 
 /**
- * @package    src\Api
- * @author     PHPost Team & Miguel92
+ * @package    Api
+ * @author     Miguel92
  * @copyright  2026
  */
 
-if (!defined('TS_HEADER')) {
-	exit('No se permite el acceso directo al script');
-}
+defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
 const ACTIONS = [
    'muro-stream'	=> ['nivel' => 2, 'template' => 'stream', 'ajax' => true],
@@ -29,7 +27,7 @@ $tsAjax  = (int) $config['ajax'];
 $tsPage  = sprintf('p.muro.%s', $config['template']);
 
 // DEPENDE EL NIVEL
-$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
+$tsLevelMsg = $tsUser->setLevel($tsLevel, true);
 if(!$tsLevelMsg) { 
 	echo '0: '.$tsLevelMsg; 
 	die();

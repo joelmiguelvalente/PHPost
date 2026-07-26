@@ -3,30 +3,23 @@
 declare(strict_types=1);
 
 /**
- * @package    PHPost/Class
- * @author     PHPost Team & Miguel92
+ * @package    Class
+ * @author     Miguel92
  * @copyright  2026
- */
-
-require_once TS_UTILS . '/Extras.php';
-
-/**
+ *
  * Gestiona los proveedores de subida de imágenes.
  *
  * Permite listar, crear, editar, eliminar y activar proveedores
  * como Imgur, ImgBB o Cloudinary desde el panel de administración.
- *
- * @package PHPost
  */
+
 class ImageProvider
 {
     private const TABLE = 'w_image_providers';
 
     private const COLUMNS = 'provider_id, provider_slug, provider_name, api_key, is_active';
 
-    // =========================================================
     // Lectura
-    // =========================================================
 
     /**
      * Retorna un proveedor por su ID (usado para prellenar el formulario de edición).
@@ -35,12 +28,10 @@ class ImageProvider
      */
     public function getProvider(): ?array
     {
-        $id = (int) ($_GET['id'] ?? 0);
-
+        $id = (int)($_GET['id'] ?? 0);
         if ($id <= 0) {
             return null;
         }
-
         return DB::fetch("SELECT " . self::COLUMNS . " FROM " . self::TABLE . " WHERE provider_id = :id", ['id' => $id]);
     }
 
@@ -64,9 +55,7 @@ class ImageProvider
         return DB::fetch("SELECT " . self::COLUMNS . " FROM " . self::TABLE . " WHERE is_active = 1 LIMIT 1");
     }
 
-    // =========================================================
     // Escritura
-    // =========================================================
 
     /**
      * Activa un proveedor y desactiva el resto en una transacción.
@@ -81,10 +70,8 @@ class ImageProvider
         }
 
         DB::begin();
-
         try {
             DB::query("UPDATE " . self::TABLE . " SET is_active = 0");
-
             DB::update(
                 self::TABLE,
                 [
@@ -95,10 +82,8 @@ class ImageProvider
                 'provider_id = :provider_id',
                 ['provider_id' => $providerId]
             );
-
             DB::commit();
             return true;
-
         } catch (Throwable) {
             DB::rollback();
             return false;
@@ -123,11 +108,9 @@ class ImageProvider
     public function editProvider(): bool|int
     {
         $id = (int) ($_POST['provider_id'] ?? 0);
-
         if ($id <= 0) {
             return false;
         }
-
         return DB::update(self::TABLE, $this->getProviderData(), 'provider_id = :id', ['id' => $id]);
     }
 
@@ -144,29 +127,20 @@ class ImageProvider
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             return false;
         }
-
         $id = (int) ($_POST['provider_id'] ?? 0);
-
         if ($id <= 0) {
             return false;
         }
-
         // Protección: no eliminar el proveedor activo
-        $isActive = (bool) DB::value(
-            "SELECT is_active FROM " . self::TABLE . " WHERE provider_id = :id",
-            ['id' => $id]
-        );
+        $isActive = (bool) DB::value("SELECT is_active FROM " . self::TABLE . " WHERE provider_id = :id", ['id' => $id]);
 
         if ($isActive) {
             return false;
         }
-
         return DB::delete(self::TABLE, 'provider_id = :id', ['id' => $id]);
     }
 
-    // =========================================================
     // Privado
-    // =========================================================
 
     /**
      * Construye el array de datos del proveedor desde $_POST.
@@ -187,7 +161,7 @@ class ImageProvider
 
         return [
             'provider_name' => $name,
-            'provider_slug' => (new Extras)->slugify($name),
+            'provider_slug' => Extras::slugify($name),
             'api_key'       => trim($_POST['api_key'] ?? ''),
             'is_active'     => $isActive,
             'updated_at'    => time(),

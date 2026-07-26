@@ -4,7 +4,7 @@
 
 	<h2 class="comments-title">
 		Comentarios <span class="comments-count" id="ncomments">{$tsPost.post_comments}</span>
-		<img src="{$tsRoutes.tema.images}/cargando.gif" id="commentsLoads"/>
+		<img src="{$tsRoutes['tema:images']}/cargando.gif" id="commentsLoads"/>
 	</h2>
 
 	{if $tsPost.post_comments > $tsConfig.c_max_com}

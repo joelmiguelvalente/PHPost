@@ -14,7 +14,7 @@
 						"ID",
 						"Tipo",
 						"Texto",
-						"Raz&oacute;n",
+						"Razón",
 						"Autor",
 						"Fecha",
 						"Acciones"
@@ -65,7 +65,7 @@
 
 				{include "dashboard/FormGroup.tpl" id="value" label="Valor" name="value" value=$tsBloqueo.value}
 												
-				{include "dashboard/FormGroupTextarea.tpl" id="reason" label="Raz&oacute;n" helper="Indica el motivo por el cual quiere agregarlo a la lista negra" name="reason" value=$tsBloqueo.reason}
+				{include "dashboard/FormGroupTextarea.tpl" id="reason" label="Razón" helper="Indica el motivo por el cual quiere agregarlo a la lista negra" name="reason" value=$tsBloqueo.reason}
 				
 				{include "dashboard/Button.tpl" submit_text="{if $tsAct == 'editar'}Guardar{else}Agregar{/if}"}
 			</fieldset>

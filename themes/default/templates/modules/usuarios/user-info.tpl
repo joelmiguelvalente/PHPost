@@ -1,7 +1,7 @@
 <div class="user box">
 	<h4 class="flex justify-between items-center">
 		<a class="flex justify-start items-start gap-2" href="{$tsConfig.url}/@{$u.user_name}" style="color:#{$u.rango.color}">
-			<img src="{$tsRoutes.assets.images}/icons/ranks/{$u.rango.image}" alt="{$u.rango.title}">{$u.user_name}
+			<img src="{$tsRoutes['assets:images']}/icons/ranks/{$u.rango.image}" alt="{$u.rango.title}">{$u.user_name}
 		</a>
 		<div class="flex justify-end items-center gap-2">
 			{$u.status.t} <strong class="status {$u.status.css} inline-bloc">&nbsp;</strong>

@@ -3,14 +3,12 @@
 declare(strict_types=1);
 
 /**
- * @package    src\Api
- * @author     PHPost Team & Miguel92
+ * @package    Api
+ * @author     Miguel92
  * @copyright  2026
  */
 
-if (!defined('TS_HEADER')) {
-	exit('No se permite el acceso directo al script');
-}
+defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
 const ACTIONS = [
    'perfil-wall'       => ['nivel' => 0, 'template' => 'wall', 'ajax' => true],
@@ -34,7 +32,7 @@ $tsAjax  = (int) $config['ajax'];
 $tsPage  = sprintf('p.perfil.%s', $config['template']);
 
 // DEPENDE EL NIVEL
-$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
+$tsLevelMsg = $tsUser->setLevel($tsLevel, true);
 if(!$tsLevelMsg) { 
 	echo '0: '.$tsLevelMsg; 
 	die();

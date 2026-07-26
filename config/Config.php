@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 /**
  * @package    Config
- * @author     PHPost Team & Miguel92
+ * @author     Miguel92
  * @copyright  2026
  */
 
@@ -38,4 +38,5 @@ final class Config
 		self::$mail ??= new \config\ConfigMailer();
 		return self::$mail->get($key, $default);
 	}
+
 }

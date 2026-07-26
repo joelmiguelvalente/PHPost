@@ -1,4 +1,12 @@
-<?php 
+<?php
+
+declare(strict_types=1);
+
+/**
+ * @package    PHPost
+ * @subpackage Migration
+ * @author     Miguel92
+*/
 
 // Prevenir acceso directo no autorizado
 if (!defined('TS_HEADER') && basename($_SERVER['SCRIPT_NAME']) === basename(__FILE__)) {
@@ -34,7 +42,7 @@ if (strpos($script_path, $base_path_real) !== 0) {
 }
 
 // Cargar configuraciones de forma segura
-$config_paths_file = BASEPATH . '/config/Config.Paths.php';
+$config_paths_file = BASEPATH . '/config/bootstrap.php';
 if (!file_exists($config_paths_file) || !is_readable($config_paths_file)) {
 	exit('Configuration not available');
 }
@@ -44,7 +52,7 @@ require_once $config_paths_file;
 // Validar que las constantes de configuración existen y son válidas
 $config_files = [
 	TS_CONFIG . '/Config.php',
-	TS_CONFIG . '/Config.Session.php',
+	TS_CONFIG . '/bootstrap.session.php',
 	TS_CONFIG . '/Config.Errors.php'
 ];
 

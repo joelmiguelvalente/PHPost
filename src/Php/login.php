@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * @package    PHPost/Php
+ * @package    Php
  * @author     PHPost Team & Miguel92
  * @copyright  2026
  */
@@ -15,27 +15,13 @@ $tsTitle = "{$tsCore->settings['titulo']} - {$tsCore->settings['slogan']}";
  * Inicializamos variable
  */
 
-$ctx = Controller::page('login')->guest();
-// sincronizamos
-$ctx->exportLegacy();
-
-$tsLevelMsg = $tsCore->setLevel($ctx->getLevel(), true);
-if (is_array($tsLevelMsg)) {
-   $ctx->changePage('aviso');
-   $ctx->stop();
-   $smarty->assign("tsAviso", $tsLevelMsg);
-   // sincroniza nuevamente
-   $ctx->exportLegacy();
-}
+$ctx = Controller::init('login', 'guest');
 
 if($tsUser->is_member) {
-   header("Location: {$tsCore->route('url')}");
+   Container::get(Response::class)->redirect($Routes->route('url'));
    die;
 }
 
 if($ctx->continue()) {}
 
-if($tsAjax) {
-	$smarty->assign("tsTitle", $tsTitle);
-   require_once TS_ROOT . "/footer.php";
-}
+Controller::render($tsAjax, $tsTitle, $tsPage);

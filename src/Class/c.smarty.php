@@ -3,16 +3,14 @@
 declare(strict_types=1);
 
 /**
- * @package    PHPost/Class
- * @author     PHPost Team & Miguel92
+ * @package    Class
+ * @author     Miguel92
  * @copyright  2026
  */
 
-if (!defined('TS_HEADER')) {
-	exit('No se permite el acceso directo al script');
-}
+defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
-require_once TS_LIBS . '/smarty/autoload.php';
+require_once TS_LIBS . '/smarty/functions.php';
 require_once TS_LIBS . '/extensiones/SmartyExtensiones.php';
 
 class tsSmarty extends \Smarty\Smarty {
@@ -36,15 +34,19 @@ class tsSmarty extends \Smarty\Smarty {
 		parent::__construct();
 
 		// Habilita la comprobación de compilación para un rendimiento óptimo
-		$this->setCompileCheck(TRUE);
+		$compiled = Config::app('app.development') ? TRUE : \Smarty\Smarty::COMPILECHECK_OFF;
+		$this->setCompileCheck($compiled);
 
 		// Agrega directorio de plugins Smarty
 		$this->loadPlugins();
 
-		$this->addExtension(new SmartyExtensiones());
+		$this->addExtension(Container::get(SmartyExtensiones::class));
 
 		// Suprime advertencias de variables indefinidas o nulas
 		$this->muteUndefinedOrNullWarnings();
+
+		// Auto-escape
+		$this->setEscapeHtml(true);
 	}
 
 	public function setTheme(string $theme): void {
@@ -89,16 +91,37 @@ class tsSmarty extends \Smarty\Smarty {
 	/**
 	 * Modifica el comportamiento de salida de la plantilla, opcionalmente aplica filtro de eliminación de espacios en blanco.
 	 *
-	 * @param bool $loadFilter Determina si aplicar el filtro de eliminación de espacios en blanco
-	*/
-	public function output($loadFilter = false) {
-		if ($loadFilter) $this->loadFilter('output', 'trimwhitespace');
+	 * @param bool $loadFilter Determina si aplicar filtro de eliminación de espacios en blanco
+	 */
+	public function output(bool $loadFilter = false): void {
+		if ($loadFilter) {
+			$this->registerFilter('output', [new \Smarty\Filter\Output\TrimWhitespace(), 'filter']);
+		}
+
+		// Agregar filtro CSP nonce a la salida HTML
+		$this->registerFilter('output', fn($content) => $this->injectCspNonce($content));
+	}
+
+	/**
+	 * Inyecta el nonce CSP en las etiquetas HTML
+	 */
+	private function injectCspNonce(string $content): string {
+		$nonce = CSP_NONCE;
+
+		// Inyectar nonce en <script> (solo opening tag)
+		$content = preg_replace(
+			'/(<script\b(?![^>]*\bnonce=)[^>]*)(>)/i',
+			'$1 nonce="' . $nonce . '"$2',
+			$content
+		);
+
+		return $content;
 	}
 
 	private function resolvePage(string $page, bool $useExtension): string {
 		$file = match ($page) {
-			'registro', 'login' 	 => 'base.tpl',
-			'admin', 'moderacion' => 'main.tpl',
+			'registro', 'login', 'reset_password' => 'base.tpl',
+			'admin', 'moderacion' 	 => 'main.tpl',
 			'logs' 			 		 => 'views/output/logs.tpl',
 			'suspension' 			 => 'views/output/suspension.tpl',
 			'mantenimiento' 		 => 'views/output/mantenimiento.tpl',
@@ -158,12 +181,7 @@ class tsSmarty extends \Smarty\Smarty {
 			$template = $this->resolvePage($page, $useExtension);
 			$this->display($template);
 		} catch (Exception $e) {
-			$mensaje = preg_replace_callback(
-				"/'([^']+)'/",
-				fn ($message) => "'<strong>{$message[1]}</strong>'",
-				$e->getMessage()
-			);
-
+			$mensaje = preg_replace_callback("/'([^']+)'/", fn ($message) => "'<strong>{$message[1]}</strong>'", $e->getMessage());
 			$show = "
 				Lo sentimos, se produjo un error al cargar la plantilla <strong>t.$page.tpl</strong>.
 				<br>Debido al error:<br>
@@ -181,7 +199,7 @@ class tsSmarty extends \Smarty\Smarty {
 	 *
 	 * @param string $template Nombre de la plantilla compilada a borrar
 	*/
-	public function clearCompiled($template) {
+	public function clearCompiled(string $template): void {
 		$this->clearCompiledTemplate($template);
 	}
 

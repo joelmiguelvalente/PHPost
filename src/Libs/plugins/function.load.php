@@ -38,6 +38,7 @@ function smarty_function_load(array $params, Smarty\Template $template): string 
 	}
 
 	$routes = $template->getTemplateVars('tsRoutes');
+
 	if (!is_array($routes)) {
 		throw new RuntimeException('smarty_function_load: tsRoutes no está definido o es inválido');
 	}
@@ -119,15 +120,15 @@ function findAssetFile(string $name, string $type, array $routes): ?string {
 	$locations = [
 		[
 			'path' => TS_THEMES . '/' . TS_TEMA,
-			'url'  => $routes['tema']['base'],
+			'url'  => $routes['tema:base'],
 		],
 		[
 			'path' => TS_THEMES . '/' . TS_TEMA . "/$type",
-			'url'  => $routes['tema'][$type],
+			'url'  => $routes["tema:{$type}"],
 		],
 		[
 			'path' => TS_ASSETS . "/$type",
-			'url'  => $routes['assets'][$type],
+			'url'  => $routes["assets:{$type}"],
 		],
 	];
 
@@ -147,6 +148,9 @@ function generateAssetTags(array $files, string $type, array $routes, bool $useC
 	$output = '';
 	$cacheParam = $useCache ? '?t=' . time() : '';
 
+	// Obtener nonce (from PHP global)
+    $cspNonce = defined('CSP_NONCE') ? CSP_NONCE : '';
+
 	foreach ($files as $filename) {
 		$fileUrl = findAssetFile($filename, $type, $routes);
 		
@@ -155,11 +159,9 @@ function generateAssetTags(array $files, string $type, array $routes, bool $useC
 		}
 
 		if ($type === 'css') {
-			$output .= '<link href="' . htmlspecialchars($fileUrl . $cacheParam) . 
-					  '" rel="stylesheet" type="text/css">' . PHP_EOL;
+			$output .= '<link href="' . htmlspecialchars($fileUrl . $cacheParam) . '" rel="stylesheet" type="text/css" nonce="' . htmlspecialchars($cspNonce) . '">' . PHP_EOL;
 		} elseif ($type === 'js') {
-			$output .= '<script src="' . htmlspecialchars($fileUrl . $cacheParam) . 
-					  '" defer></script>' . PHP_EOL;
+			$output .= '<script src="' . htmlspecialchars($fileUrl . $cacheParam) . '" defer nonce="' . htmlspecialchars($cspNonce) . '"></script>' . PHP_EOL;
 		}
 	}
 

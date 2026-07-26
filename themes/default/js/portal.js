@@ -29,22 +29,17 @@ var portal = {
 		});
         //
         $('#loading').fadeIn(250);
-        $.ajax({
-        	type: 'POST',
-        	url: route.url + '/portal-posts_config',
-        	data: 'cids=' + cat_ids,
-        	success: function(h){
-        		switch(h.charAt(0)){
-        			case '0': //Error
-                        mydialog.alert('Error', h.substring(3));
-        				break;
-        			case '1': //OK
-                        $('#config_posts').slideUp();
-                        portal.posts_page('posts',1, false);
-        				break;
-        		}
-                $('#loading').fadeOut(350);
+        api('portal-posts_config', { cids: cat_ids }, h => {
+        	switch(h.charAt(0)){
+        		case '0': //Error
+                    mydialog.alert('Error', h.substring(3));
+    				break;
+        		case '1': //OK
+                    $('#config_posts').slideUp();
+                    portal.posts_page('posts',1, false);
+    				break;
         	}
+            $('#loading').fadeOut(350);
         });                
     },
     // PAGINAS PARA LOS ULTIMOS POSTS
@@ -54,19 +49,15 @@ var portal = {
   		if(scroll == true) $.scrollTo('#cuerpocontainer', 250);
         if(typeof portal.cache[type + '_' + page] == 'undefined'){
             $('#loading').fadeIn(250);
-    		$.ajax({
-    			type: 'GET',
-    			url: route.url + '/portal-' + type + '_pages?page=' + page,
-    			success: function(h){
-    			    // CACHE
+    		api('portal-' + type + '_pages?page=' + page, null, h => {
+    		    // CACHE
                     portal.cache[type + '_' + page] = h;
                     $('#portal_' + type).attr('status', 'activo');
                     // CARGAMOS
    				    $('#portal_' + type + '_content').html(h);
                     // OCULTAMOS MENSAJE CARGA
                     $('#loading').fadeOut(350);
-    			}
-    		});
+    		}, { method: 'GET' });
         } else {
             $('#portal_' + type + '_content').html(portal.cache[type + '_' + page]);
         }

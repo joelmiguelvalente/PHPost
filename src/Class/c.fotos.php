@@ -3,28 +3,25 @@
 declare(strict_types=1);
 
 /**
- * @package    PHPost/Class
- * @author     PHPost Team & Miguel92
+ * @package    Class
+ * @author     Miguel92
  * @copyright  2026
  */
 
-if (!defined('TS_HEADER')) {
-	exit('No se permite el acceso directo al script');
-}
+defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
 class tsFotos {
 
-	protected Paginator $Paginator;
-	protected IP $IP;
 	private string $myIP;
 
 	public function __construct(
 		protected tsCore $Core,
-		protected tsUser $User
+		protected tsUser $User,
+		protected Paginator $Paginator,
+		protected IP $IP,
+		protected tsSmarty $Smarty
 	) {
-		$this->Paginator = new Paginator;
-		$this->IP = new IP;
-		$this->myIP = $this->IP->getIP();
+		$this->myIP = $this->IP->getIPBinary();
 	}
 
 	private function isUserLogin(): bool {
@@ -38,10 +35,10 @@ class tsFotos {
 	private function collectPostData(): array {
 		$title = trim($_POST['title'] ?? '');
 		return [
-			'title' => $this->Core->setSecure($this->Core->parseBadWords($title), true),
-			'url' => $this->Core->setSecure($this->Core->parseBadWords($_POST['url'] ?? ''), true),
+			'title' => Html::escape($this->Core->parseBadWords($title), true),
+			'url' => Html::escape($this->Core->parseBadWords($_POST['url'] ?? ''), true),
 			'file' => $_FILES['file'] ?? null,
-			'description' => $this->Core->setSecure($this->Core->parseBadWords(substr($_POST['description'] ?? '', 0, 500)), true),
+			'description' => Html::escape($this->Core->parseBadWords(substr($_POST['description'] ?? '', 0, 500)), true),
 			'closed' => (int)($_POST['closed'] ?? 0),
 			'visitas' => (int)($_POST['visitas'] ?? 0),
 			'ip' => $this->myIP
@@ -82,7 +79,7 @@ class tsFotos {
 			return ['status' => 0, 'msg' => 'No has ingresado ninguna URL.'];
 		}
 		// Anti-flood del core
-		$this->Core->antiFlood(true, 'foto', 'Para el carro, chacho...');
+		$this->User->antiFlood(true, 'foto', 'Para el carro, chacho...');
 		try {
 			if ($isFile && $hasFile) {
 				require_once TS_EXTRAS . '/upload.php';
@@ -189,7 +186,7 @@ class tsFotos {
 		getFotoEdit()
 	*/
 	public function getFotoEdit(): array|string {
-		$fid = (int)$this->Core->setSecure($_GET['id']);
+		$fid = (int)Html::escape($_GET['id']);
 
 		// Obtener datos de la foto
 		$data = DB::fetch("SELECT * FROM f_fotos WHERE foto_id = :fid LIMIT 1", ['fid' => $fid]);
@@ -227,12 +224,12 @@ class tsFotos {
 		}
 
 		$fData = [
-			'titulo' => $this->Core->setSecure($this->Core->parseBadWords($_POST['titulo']), true),
-			'desc' => $this->Core->setSecure($this->Core->parseBadWords(substr($_POST['desc'], 0, 1500)), true),
+			'titulo' => Html::escape($this->Core->parseBadWords($_POST['titulo']), true),
+			'desc' => Html::escape($this->Core->parseBadWords(substr($_POST['desc'], 0, 1500)), true),
 			'privada' => empty($_POST['privada']) ? 0 : 1,
 			'closed' => empty($_POST['closed']) ? 0 : 1,
 			'visitas' => empty($_POST['visitas']) ? 0 : 1,
-			'razon' => empty($_POST['razon']) ? 'undefined' : $this->Core->setSecure($_POST['razon'], true),
+			'razon' => empty($_POST['razon']) ? 'undefined' : Html::escape($_POST['razon'], true),
 		];
 
 		// Actualizar foto
@@ -262,7 +259,7 @@ class tsFotos {
 		delFoto()
 	*/
 	public function delFoto(): string {
-		$fid = (int)$this->Core->setSecure($_POST['fid']);
+		$fid = (int)Html::escape($_POST['fid']);
 
 		// Obtener datos de la foto
 		$data = DB::fetch("SELECT foto_id, f_user FROM f_fotos WHERE foto_id = :fid LIMIT 1", ['fid' => $fid]);
@@ -297,7 +294,7 @@ class tsFotos {
 	/*
 		getFoto() - Obtener datos de una foto
 	*/
-	public function getFoto__() {
+	public function getFoto__(): array {
         //
         $fid = (int)($_GET['fid'] ?? 0);
         $isAdmod = $this->User->is_admod || $this->User->permiso('moderacion.panel.acceso') ? '' : "AND f.f_status = 0 AND u.user_activo = 1";
@@ -334,14 +331,13 @@ class tsFotos {
         $data['foto']['f_comments'] = count($comments);
 
         // MEDALLAS
-        $query = db_exec([__FILE__, __LINE__], 'query', 'SELECT m.*, a.* FROM w_medallas AS m LEFT JOIN w_medallas_assign AS a ON a.medal_id = m.medal_id WHERE a.medal_for = \''.(int)$fid.'\' AND m.m_type = \'3\' ORDER BY a.medal_date DESC LIMIT 10');
-        $data['medallas'] = result_array($query);
+        $data['medallas'] = DB::fetchAll('SELECT m.*, a.* FROM w_medallas AS m LEFT JOIN w_medallas_assign AS a ON a.medal_id = m.medal_id WHERE a.medal_for = :fid AND m.m_type = :type ORDER BY a.medal_date DESC LIMIT 10', ['fid' => (int)$fid, 'type' => '3']);
         $data['m_total'] = count($data['medallas']);
 
         //VISITANTES RECIENTES
         $data['visitas'] = 0;
 		if ($data['foto']['f_visitas']) {
-			$data['visitas'] = DB::fetchAll("SELECT v.*, u.user_id, u.user_name FROM w_visitas AS v LEFT JOIN u_miembros AS u ON v.user = u.user_id WHERE v.for = :fid AND v.type = 3 AND v.user > 0 ORDER BY v.date DESC LIMIT 15", ['fid' => $fid]);
+			$data['visitas'] = DB::fetchAll("SELECT v.*, u.user_id, u.user_name FROM w_visitas AS v LEFT JOIN u_miembros AS u ON v.user = u.user_id WHERE v.target_id = :fid AND v.type = 3 AND v.user > 0 ORDER BY v.date DESC LIMIT 15", ['fid' => $fid]);
 		}
         // Registrar visita
 		$this->registrarVisita($fid);
@@ -410,13 +406,13 @@ class tsFotos {
 			$params['uid'] = $this->User->uid;
 		}
 
-		$visitado = DB::exists("SELECT 1 FROM w_visitas WHERE `for` = :fid AND type = '3' AND {$whereCondition} LIMIT 1", $params);
+		$visitado = DB::exists("SELECT 1 FROM w_visitas WHERE target_id = :fid AND type = '3' AND {$whereCondition} LIMIT 1", $params);
 
 		if ($this->User->is_member && !$visitado) {
 			// Insertar nueva visita (evitamos problemas con palabras reservadas)
-			DB::query("INSERT INTO w_visitas (`user`, `for`, `type`, `date`, `ip`) VALUES (:user, :for, :type, :date, :ip)", [
+			DB::query("INSERT INTO w_visitas (`user`, `target_id`, `type`, `date`, `ip`) VALUES (:user, :target, :type, :date, :ip)", [
 				'user' => $this->User->uid,
-				'for' => $fid,
+				'target' => $fid,
 				'type' => 3,
 				'date' => time(),
 				'ip' => $this->myIP
@@ -426,15 +422,14 @@ class tsFotos {
 			DB::query("UPDATE f_fotos SET f_hits = f_hits + 1 WHERE foto_id = :fid AND f_user != :uid", ['fid' => $fid, 'uid' => $this->User->uid]);
 		} elseif ($visitado) {
 			// Actualizar fecha de visita existente
-			DB::update('w_visitas', ['date' => time(), 'ip' => $this->myIP], "`for` = :fid AND `type` = 3", ['fid' => $fid]
-			);
+			DB::update('w_visitas', ['date' => time(), 'ip' => $this->myIP], "`target_id` = :target AND `type` = 3", ['target' => $fid]);
 		}
 
 		// Visitas de invitados
 		if ((int)$this->Core->settings['c_hits_guest'] === 1 && !$this->User->is_member && !$visitado) {
 			DB::insert('w_visitas', [
 				'user' => 0,
-				'for' => $fid,
+				'target_id' => $fid,
 				'type' => 3,
 				'date' => time(),
 				'ip' => $this->myIP
@@ -537,8 +532,8 @@ class tsFotos {
 			return '0: Lo sentimos, para poder votar debes estar registrado.';
 		}
 
-		$fid = (int)$this->Core->setSecure($_POST['fotoid']);
-		$voto = $this->Core->setSecure($_POST['voto']);
+		$fid = (int)Html::escape($_POST['fotoid']);
+		$voto = Html::escape($_POST['voto']);
 
 		// Determinar tipo de voto
 		$votoColumn = ($voto === 'pos') ? 'f_votos_pos' : 'f_votos_neg';
@@ -595,7 +590,7 @@ class tsFotos {
 		}
 
 		// Obtener datos
-		$comentario = $this->Core->setSecure(substr($_POST['comentario'], 0, 1500), true);
+		$comentario = Html::escape(substr($_POST['comentario'], 0, 1500), true);
 		$fid = (int)$_POST['fotoid'];
 
 		// Validar comentario
@@ -622,7 +617,7 @@ class tsFotos {
 		}
 
 		// Anti-flood
-		$this->Core->antiFlood();
+		$this->User->antiFlood();
 
 		// Insertar comentario
 		$fecha = time();
@@ -658,7 +653,7 @@ class tsFotos {
 		delComentario()
 	*/
 	public function delComentario(): string {
-		$cid = (int)$this->Core->setSecure($_POST['cid']);
+		$cid = (int)Html::escape($_POST['cid']);
 
 		// Obtener datos del comentario
 		$data = DB::fetch(
@@ -690,30 +685,134 @@ class tsFotos {
 		return '0: Error al eliminar el comentario';
 	}
 
-	function getLastFotos(){
+	public function getLastFotos(): array {
 		//
 		$max = 10; // MAXIMO A MOSTRAR
 		$limit = $this->Paginator->setPageLimit($max, true);
 		// PAGINAS
-		$query = db_exec([__FILE__, __LINE__], 'query', 'SELECT COUNT(f.foto_id) FROM f_fotos AS f LEFT JOIN u_miembros AS u ON u.user_id = f.f_user '.($this->User->is_admod && $this->Core->settings['c_see_mod'] == 1 ? '' : 'WHERE f.f_status = \'0\' AND u.user_activo = \'1\' && u.user_baneado = \'0\''));
-		list ($total) = db_exec('fetch_row', $query);
+		$where = ($this->User->is_admod && $this->Core->settings['c_see_mod'] == 1) ? '' : 'WHERE f.f_status = :status AND u.user_activo = :activo AND u.user_baneado = :baneado';
+		$params = ($this->User->is_admod && $this->Core->settings['c_see_mod'] == 1) ? [] : ['status' => '0', 'activo' => '1', 'baneado' => '0'];
+		$total = (int)DB::value("SELECT COUNT(f.foto_id) FROM f_fotos AS f LEFT JOIN u_miembros AS u ON u.user_id = f.f_user {$where}", $params);
 
-		$data['pages'] = $this->Paginator->pageIndex($this->Core->settings['url']."/fotos/?",(int)($_GET['s'] ?? 0),(int)$total,(int)$max);
+		$data['pages'] = $this->Paginator->pageIndex("/fotos/?",(int)($_GET['s'] ?? 0),(int)$total,(int)$max);
 		//
-		$query = 'SELECT f.foto_id, f.f_title, f.f_date, f.f_description, f.f_url, f.f_status, u.user_name, u.user_activo, u.user_baneado FROM f_fotos AS f LEFT JOIN u_miembros AS u ON u.user_id = f.f_user '.($this->User->is_admod && $this->Core->settings['c_see_mod'] == 1 ? '' : 'WHERE f.f_status = \'0\' AND u.user_activo = \'1\' && u.user_baneado = \'0\'').' ORDER BY f.foto_id DESC LIMIT '.$limit;
-		$data['data'] = result_array(db_exec([__FILE__, __LINE__], 'query', $query));
+		$sql = 'SELECT f.foto_id, f.f_title, f.f_date, f.f_description, f.f_url, f.f_status, u.user_name, u.user_activo, u.user_baneado FROM f_fotos AS f LEFT JOIN u_miembros AS u ON u.user_id = f.f_user '.$where.' ORDER BY f.foto_id DESC LIMIT '.$limit;
+		$data['data'] = DB::fetchAll($sql, $params);
 
 
 		//
 		return $data;
 	}
 
-	function getLastComments(){
+	public function getLastComments(): array {
 		//
-		$query = db_exec([__FILE__, __LINE__], 'query', 'SELECT c.cid, c.c_user, f.foto_id, f.f_title, f.f_status, u.user_name, u.user_activo FROM f_comentarios AS c LEFT JOIN f_fotos AS f ON c.c_foto_id = f.foto_id LEFT JOIN u_miembros AS u ON f.f_user = u.user_id '.($this->User->is_admod && $this->Core->settings['c_see_mod'] == 1 ? '' : 'WHERE f.f_status = \'0\' && u.user_activo = \'1\' && u.user_baneado = \'0\'').' ORDER BY c.c_date DESC LIMIT 10');
-		$data = result_array($query);
+		$where = ($this->User->is_admod && $this->Core->settings['c_see_mod'] == 1) ? '' : 'WHERE f.f_status = :status AND u.user_activo = :activo AND u.user_baneado = :baneado';
+		$params = ($this->User->is_admod && $this->Core->settings['c_see_mod'] == 1) ? [] : ['status' => '0', 'activo' => '1', 'baneado' => '0'];
+		$data = DB::fetchAll("SELECT c.cid, c.c_user, f.foto_id, f.f_title, f.f_status, u.user_name, u.user_activo FROM f_comentarios AS c LEFT JOIN f_fotos AS f ON c.c_foto_id = f.foto_id LEFT JOIN u_miembros AS u ON f.f_user = u.user_id {$where} ORDER BY c.c_date DESC LIMIT 10", $params);
 
 		//
 		return $data;
+	}
+
+	/**
+   	* Acción: '' (home de fotos)
+   	*/
+	public function renderHome(): void {
+	    $this->Smarty->assign("tsLastFotos", $this->getLastFotos());
+	    $this->Smarty->assign("tsLastComments", $this->getLastComments());
+	    $stats = DB::fetch("SELECT stats_miembros, stats_fotos, stats_foto_comments FROM w_stats WHERE stats_no = :no", [
+	    	'no' => 1
+	    ]);
+	    $this->Smarty->assign("tsStats", $stats);
+	 }
+
+	/**
+	 * Acción: 'agregar'
+	 */
+	public function handleAgregar(): void {
+	    if (empty($_POST['title'])) {
+	    	return;
+	    }
+	    $foto = $this->newFoto();
+	    if (!is_array($foto) && $foto > 0) {
+	      	$titulo = Extras::slugify(trim($_POST['title'] ?? ''));
+	      	$link = "{$this->Core->settings['url']}/fotos/{$this->User->nick}/{$foto}/{$titulo}.html";
+	      	Container::get(Response::class)->redirect($link);
+	    }
+	    $this->assignAviso($smarty, is_string($foto) ? $foto : 'No se pudo publicar la foto.');
+	  }
+
+	/**
+	 * Acción: 'editar'
+	 */
+	public function handleEditar(): void {
+	  	if (empty($_POST['titulo'])) {
+	    	$tsFoto = $this->getFotoEdit();
+	      	if (!is_array($tsFoto)) {
+	       		$this->assignAviso($smarty, $tsFoto, 'Ir a Fotos', "{$this->Core->settings['url']}/fotos/");
+	        	return;
+	      	}
+	      	$this->Smarty->assign("tsFoto", $tsFoto);
+	      	return;
+	    }
+	    $resultado = $this->editFoto();
+	    $this->assignAviso($smarty, $resultado, 'Ir a Fotos', "{$this->Core->settings['url']}/fotos/");
+	  }
+
+	/**
+	 * Acción: 'ver'
+	 */
+	public function handleVer(): ?array {
+		$tsFoto = $this->getFoto();
+		$tsTitle = "{$tsFoto['foto']['f_title']} - {$tsFoto['foto']['user_name']} - {$this->Core->settings['titulo']}";
+
+	    $sinAcceso = (int)$tsFoto['foto']['f_status'] === 1 && !$this->User->is_admod && $this->User->permiso('moderacion.panel.acceso') === false;
+
+	    if ($sinAcceso) {
+	   		$this->assignAviso($smarty, 'Esta foto se encuentra en revisi&oacute;n por acumulaci&oacute;n de denuncias', 'Ir a Fotos', "{$this->Core->settings['url']}/fotos/");
+	      	return ['tsPage' => 'aviso'];
+	    }
+	    if ((int)$tsFoto['foto']['exist'] === 0) {
+	      	$this->assignAviso($smarty, 'Esta foto no existe', 'Ir a Fotos', "{$this->Core->settings['url']}/fotos/");
+	      	return ['tsPage' => 'aviso'];
+	    }
+
+		$this->Smarty->assign("tsFoto", $tsFoto['foto']);
+		$this->Smarty->assign("tsUFotos", $tsFoto['last']);
+		$this->Smarty->assign("tsFFotos", $tsFoto['amigos']);
+		$this->Smarty->assign("tsFComments", $tsFoto['comentarios']);
+		$this->Smarty->assign("tsFVisitas", $tsFoto['visitas']);
+		$this->Smarty->assign("tsFMedallas", $tsFoto['medallas']);
+		$this->Smarty->assign("tsTMedallas", $tsFoto['m_total']);
+
+		return ['tsTitle' => $tsTitle];
+	}
+
+	/**
+	 * Acción: 'album'
+	 */
+	public function handleAlbum(): void {
+		$username = (string)($_GET['user'] ?? '');
+		$userId = (int)$this->User->getUserID($username);
+
+		if (empty($userId)) {
+		  $this->assignAviso($smarty, 'Este usuario no existe.', 'Ir a Fotos', "{$this->Core->settings['url']}/fotos/");
+		  return;
+		}
+		$this->Smarty->assign("tsFotos", $this->getFotos($userId));
+		$this->Smarty->assign("tsFUser", [$userId, $username]);
+	}
+
+	/**
+	 * Helper interno: arma el bloque 'tsAviso' que se repetía, con
+	 * variaciones mínimas, en cada rama de error del switch original.
+	 */
+	public function assignAviso(tsSmarty $smarty, string $mensaje, string $boton = 'Volver', ?string $link = null ): void {
+	    $this->Smarty->assign("tsAviso", [
+	    	'titulo'  => 'Opps...',
+	    	'mensaje' => $mensaje,
+	    	'but'     => $boton,
+	    	'link'    => $link ?? "{$this->Core->settings['url']}/fotos/"
+	    ]);
 	}
 }

@@ -1,38 +1,37 @@
 {*
  * @name m.buscador_resultados.tpl
- * @description Renderiza los resultados del buscador según el engine activo:
- *              web, tags, usuarios, fotos y muro.
- * @author PHPost Team
+ * @description Renderiza los resultados del buscador según el engine activo: web, tags, usuarios, fotos y muro.
+ * @author Miguel92
  * @copyright 2026
  * @note Desarrollado con asistencia de Claude (Anthropic)
 *}
 <div id="resultados">
 	<div id="showResult">
 
-		{* ── POSTS (web) ─────────────────────────────────────── *}
+		{* POSTS (web) *}
 		{if $tsEngine == 'web'}
 			{if $tsResults.data}
 				<div class="results-list results-posts">
 					{foreach from=$tsResults.data item=r}
 						<div id="div_{$r.post_id}" class="result-item result-post">
 							<a class="result-title" href="{$tsConfig.url}/posts/{$r.c_seo}/{$r.post_id}/{$r.post_title|seo}.html">
-								<img class="cat-icon" src="{$tsRoutes.assets.images}/icons/categories/{$r.c_img}" alt="{$r.c_nombre}"/>
+								<img class="cat-icon" src="{$tsRoutes['assets:images']}/icons/categories/{$r.c_img}" alt="{$r.c_nombre}"/>
 								{$r.post_title}
 							</a>
 							<div class="result-meta">
 								<span class="meta-item">
-									<img src="{$tsRoutes.assets.images}/icons/clock.png" alt=""/> {$r.post_date|hace:true}
+									<img src="{$tsRoutes['assets:images']}/icons/clock.png" alt=""/> {$r.post_date|hace:true}
 								</span>
 								<span class="meta-sep">·</span>
 								<span class="meta-item">
-									<img src="{$tsRoutes.assets.images}/icons/autor.png" alt=""/>
+									<img src="{$tsRoutes['assets:images']}/icons/autor.png" alt=""/>
 									<a href="{$tsConfig.url}/@{$r.user_name}">{$r.user_name}</a>
 								</span>
 								<span class="meta-sep">·</span>
 								<span class="meta-item meta-cat">{$r.c_nombre}</span>
 								<span class="meta-sep">·</span>
 								<span class="meta-item">
-									<img src="{$tsRoutes.assets.images}/icons/relacionados.png" alt=""/>
+									<img src="{$tsRoutes['assets:images']}/icons/relacionados.png" alt=""/>
 									<a href="{$tsConfig.url}/buscador/?query={$r.post_title|seo}&engine={$tsEngine}&category={$tsCategory}&autor={$tsAutor}">Relacionados</a>
 								</span>
 							</div>
@@ -45,23 +44,23 @@
 				<p class="empty">¿Qué tipo de búsqueda quieres realizar?</p>
 			{/if}
 
-		{* ── TAGS ───────────────────────────────────────────────────── *}
+		{* TAGS *}
 		{elseif $tsEngine == 'tags'}
 			{if $tsResults.data}
 				<div class="results-list results-posts">
 					{foreach from=$tsResults.data item=r}
 						<div id="div_{$r.post_id}" class="result-item result-post">
 							<a class="result-title" href="{$tsConfig.url}/posts/{$r.c_seo}/{$r.post_id}/{$r.post_title|seo}.html">
-								<img class="cat-icon" src="{$tsRoutes.assets.images}/icons/categories/{$r.c_img}" alt="{$r.c_nombre}"/>
+								<img class="cat-icon" src="{$tsRoutes['assets:images']}/icons/categories/{$r.c_img}" alt="{$r.c_nombre}"/>
 								{$r.post_title}
 							</a>
 							<div class="result-meta">
 								<span class="meta-item">
-									<img src="{$tsRoutes.assets.images}/icons/clock.png" alt="Tiempo"/> {$r.post_date|hace:true}
+									<img src="{$tsRoutes['assets:images']}/icons/clock.png" alt="Tiempo"/> {$r.post_date|hace:true}
 								</span>
 								<span class="meta-sep">·</span>
 								<span class="meta-item">
-									<img src="{$tsRoutes.assets.images}/icons/autor.png" alt=""/>
+									<img src="{$tsRoutes['assets:images']}/icons/autor.png" alt=""/>
 									<a href="{$tsConfig.url}/@{$r.user_name}">{$r.user_name}</a>
 								</span>
 								<span class="meta-sep">·</span>
@@ -76,7 +75,7 @@
 				<p class="empty">Escribe una etiqueta para buscar posts relacionados.</p>
 			{/if}
 
-		{* ── USUARIOS ───────────────────────────────────────────────── *}
+		{* USUARIOS *}
 		{elseif $tsEngine == 'usuarios'}
 			{if $tsResults.data}
 				<div class="results-grid results-usuarios">
@@ -103,7 +102,7 @@
 				<p class="empty">Escribe un nombre de usuario para buscar.</p>
 			{/if}
 
-		{* ── FOTOS ──────────────────────────────────────────────────── *}
+		{* FOTOS *}
 		{elseif $tsEngine == 'fotos'}
 			{if $tsResults.data}
 				<div class="results-grid results-fotos">
@@ -111,7 +110,7 @@
 						<a class="result-foto-card" href="{$tsConfig.url}/fotos/{$f.foto_id}/">
 							<div class="foto-thumb-wrap">
 								<img class="foto-thumb"
-									src="{$tsRoutes.assets.fotos}/{$f.f_url}"
+									src="{$tsRoutes['assets:fotos']}/{$f.f_url}"
 									alt="{$f.f_title}"
 									onerror="this.parentNode.classList.add('no-img')"/>
 							</div>
@@ -135,7 +134,7 @@
 				<p class="empty">Escribe algo para buscar fotos.</p>
 			{/if}
 
-		{* ── MURO ───────────────────────────────────────────────────── *}
+		{* MURO *}
 		{elseif $tsEngine == 'muro'}
 			{if $tsResults.data}
 				<div class="results-list results-muro">
@@ -171,7 +170,7 @@
 
 	</div>{* /showResult *}
 
-	{* ── Paginación (común) ─────────────────────────────────────────────── *}
+	{* Paginación (común) *}
 	{if $tsResults.data}
 		<div class="paginadorCom">
 			{if $tsResults.pages.prev != 0}

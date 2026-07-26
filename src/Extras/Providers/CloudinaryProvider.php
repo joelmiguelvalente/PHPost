@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 /**
- * @package    PHPost/Extras/Providers
- * @author     PHPost Team & Miguel92
+ * @package    Providers
+ * @author     Miguel92
  * @copyright  2026
  */
 

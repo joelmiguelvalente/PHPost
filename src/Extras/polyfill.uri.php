@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 /**
- * @package    PHPost/Extras
- * @author     PHPost Team & Miguel92
+ * @package    Extras
+ * @author     Miguel92
  * @copyright  2026
  *
  * Polyfill para Uri\Rfc3986\Uri (PHP 8.5+)

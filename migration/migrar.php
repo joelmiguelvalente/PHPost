@@ -1,4 +1,13 @@
 <?php
+
+declare(strict_types=1);
+
+/**
+ * @package    PHPost
+ * @subpackage Migration
+ * @author     Miguel92
+*/
+
 require_once __DIR__ . '/app.php'; // La conexion a la base de datos
 
 // Obtener el nombre de migración específico si se proporciona
@@ -52,18 +61,32 @@ if ($migracion_a_ejecutar) {
 			'migration' => $migracion_a_ejecutar, 
 			'executed_at' => date('Y-m-d H:i:s', $time)
 		])) {
-			echo json_encode(['success' => true, 'message' => "Migración '{$migracion_a_ejecutar}' ejecutada"]);
+			echo json_encode([
+				'success' => true,
+				'message' => "Migración '{$migracion_a_ejecutar}' ejecutada"
+			]);
 		} else {
-			echo json_encode(['success' => false, 'message' => "Error al registrar migración '{$migracion_a_ejecutar}'"]);
+			echo json_encode([
+				'success' => false,
+				'message' => "Error al registrar migración '{$migracion_a_ejecutar}'"
+			]);
 		}
 	} else {
-		echo json_encode(['success' => false, 'message' => "Archivo de migración no encontrado: {$ruta_archivo}"]);
+		echo json_encode([
+			'success' => false,
+			'message' => "Archivo de migración no encontrado: {$ruta_archivo}"
+		]);
 	}
 } else {
 	if ($migration_solicitada) {
-		echo json_encode(['success' => false, 'message' => "La migración '{$migration_solicitada}' no está disponible o ya fue ejecutada"]);
+		echo json_encode([
+			'success' => false,
+			'message' => "La migración '{$migration_solicitada}' no está disponible o ya fue ejecutada"
+		]);
 	} else {
-		echo json_encode(['success' => false, 'message' => 'No hay migraciones pendientes para ejecutar']);
+		echo json_encode([
+			'success' => false,
+			'message' => 'No hay migraciones pendientes para ejecutar'
+		]);
 	}
 }
-?>

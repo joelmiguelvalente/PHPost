@@ -1,0 +1,104 @@
+BRAND
+    [NAME]         DevBroken
+    [TYPE]         Software
+    [FOCUS]        Community Platforms
+    [SPECIALTY]    PHP, Smarty, MySQL, jQuery, JavaScript
+    [MISSION]      Build modern, maintainable web applications
+
+PROJECT
+    [NAME]        PHPost Risus
+    [SLOGAN]      Inteligencia colectiva
+    [TYPE]        Community Platforms
+    [CATEGORY]    Link-Sharing Platform (Taringa! style)
+    [STATUS]      Development
+    [VERSION]     3.9.9
+    [CREATED]     24.01.2026
+    [UPDATED]     25.07.2026
+    [LICENSE]     MIT
+
+AUTHOR
+    [AUTHOR]      Miguel92
+    [EMAIL]       portfoliomiguel92@gmail.com
+    [GITHUB]      https://github.com/DevBroken/PHPost
+    [WEBSITE]     https://phpost.infinityfreeapp.com/
+
+TECH STACK
+    [PHP]         v8.3 / v8.4 / v8.5
+    [ENGINE]      Smarty 5.8.4
+    [DATABASE]    MySQL/MariaDB (mysqli)
+    [JS]          jQuery 4.0.0 + Vanilla JS
+    [CSS]         CSS3 (CSS Variables, Dark Mode)
+    [BBCode]      JBBCode
+
+BACKEND
+    [RUNTIME]     PHP tradicional (Apache)
+    [PATTERN]     MVC custom + DI Container + Service Layer
+    [CLASSES]     Prefijo ts (legacy) + utilidades modernas
+    [API]         REST API (27 archivos de endpoints)
+    [AUTLOAD]     spl_autoload_register (estilo PSR)
+
+DATABASE
+    [DRIVER]      mysqli (prepared statements con named parameters)
+    [ABSTRACTION] Fachada DB (fetch, insert, update, delete, upsert)
+    [SECURITY]    Hash de contraseñas con Argon2id
+    [EVENTS]      Limpieza programada (sesiones, activaciones, intentos de login)
+
+TEMPLATING
+    [THEMES]      default (v3.8)
+    [VIEWS]       Archivos .tpl (views/ + themes/*/templates/)
+    [PLUGINS]     14 plugins custom de Smarty + 6 compiladores de extensiones
+    [PAGES]       18 plantillas de páginas + 6 plantillas de secciones
+
+FRONTEND
+    [JS]          jQuery 4.0.0 + plugins custom
+    [EDITOR]      WYSIWYG BBCode (wysibb)
+    [UPLOADS]     Cropper.js para recorte de imágenes
+    [ICONS]       Material Symbols Outlined
+    [FONTS]       Inter, DM Sans, PlayfairDisplay
+    [RESPONSIVE]  Breakpoints con CSS custom properties
+
+ARCHITECTURE
+    [TYPE]        MVC tradicional con DI Container
+    [PATTERNS]    Service Layer, Repository, DTO, Hook System
+    [ENTRY]       index.php -> header.php -> bootstrap -> Controller -> footer.php
+    [CONTROLLERS] src/Php/ (21 controladores de páginas)
+    [SERVICES]    src/Class/ (38 clases de lógica de negocio)
+    [UTILITIES]   src/Utils/ (HTTP, Security, Theme, Html, Misc, Media)
+
+SECURITY
+    [AUTH]        Basado en sesiones (modo estricto, regeneración cada 30min)
+    [CSRF]        Validación de tokens (CsrfToken.php)
+    [CSP]         Content Security Policy con nonce por request
+    [XSS]         Smarty auto-escape + Html::escape()
+    [SQL]         Prepared statements con named parameters (fachada DB)
+    [LOGIN]       Throttling por IP (20/15min), por usuario (5/10min), global (100/hr)
+    [HEADERS]     X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy
+    [PASSWORDS]   Argon2id (128MB memoria, 4 iteraciones, 2 threads)
+
+DEPLOY
+    [HOSTING]     InfinityFree (Apache)
+    [SSL]         HTTPS
+    [SERVER]      PHP 8.3+ / MySQL
+
+DOCUMENTATION
+    [FORMAT]      Markdown
+    [SPEC]        Funcional, Técnica, Seguridad, Branding, UX, API
+
+QUALITY
+    [AUDITS]      Arquitectura, Seguridad, Rendimiento, Accesibilidad, SEO
+
+DESIGN
+    [THEME]       CSS custom con CSS Variables
+    [MODES]       Claro / Oscuro (atributo data-theme)
+    [TYPOGRAPHY]  Inter, DM Sans, PlayfairDisplay
+    [ICONS]       Material Symbols Outlined
+
+PROJECT GOALS
+    [MOBILE]      Mobile First
+    [SEO]         Habilitado
+    [PWA]         Planeado
+    [A11Y]        WCAG AA
+    [I18N]        Planeado
+
+STATUS
+    [CURRENT]     Desarrollo activo

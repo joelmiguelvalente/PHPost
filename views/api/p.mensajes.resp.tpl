@@ -7,7 +7,7 @@
 	   <div class="mensaje-autor">
 		   <a href="{$tsConfig.url}/@{$mp.user_name}" class="autor-name">{$mp.user_name}</a>
 	   </div>
-	   <div class="mensaje-cuerpo my-1">{$mp.mp_body|nl2br}</div>
+	   <div class="mensaje-cuerpo my-1">{$mp.mp_body|raw|nl2br}</div>
 	   <div class="mensaje-fecha">
 		   {if $tsUser->is_admod && $mp.mp_ip != ''}
 			   <a href="{$tsConfig.url}/moderacion/buscador/1/1/{$mp.mp_ip}">{$mp.mp_ip}</a> | 

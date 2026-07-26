@@ -75,20 +75,20 @@
 	&.patrocinado {
 		border-left: 4px solid var(--color-primary);
 	}
-	&.post_status1,&.post_status2,&.post_status3,&.user_activo,&.user_baneado {
+	&.post_oculto,&.post_eliminado,&.post_revision,&.user_activo,&.user_baneado {
 		--border: transparent;
 		border-left: 4px solid var(--border);
 		opacity: .8;
 	}
-	&.post_status1 {
+	&.post_oculto {
 		--border: #F59F42;
 		background: #FEE2C4;
 	}
-	&.post_status2 {
+	&.post_eliminado {
 		--border: #F23A3A;
 		background: #FBB6B6;
 	}
-	&.post_status3 {
+	&.post_revision {
 		--border: #B4B1B1;
 		background: #f1f1f1;
 	}
@@ -146,20 +146,20 @@
 	&.patrocinado {
 		border-left: 4px solid var(--color-primary);
 	}
-	&.post_status1,&.post_status2,&.post_status3,&.user_activo,&.user_baneado {
+	&.post_oculto,&.post_oculto,&.post_revision,&.user_activo,&.user_baneado {
 		--border: transparent;
 		border-left: 4px solid var(--border);
 		opacity: .8;
 	}
-	&.post_status1 {
+	&.post_oculto {
 		--border: #F59F42;
 		background: #FEE2C4;
 	}
-	&.post_status2 {
+	&.post_oculto {
 		--border: #F23A3A;
 		background: #FBB6B6;
 	}
-	&.post_status3 {
+	&.post_revision {
 		--border: #B4B1B1;
 		background: #f1f1f1;
 	}

@@ -11,11 +11,11 @@
 					</div>
 				</a>
 				<div class="actions flex justify-center items-center flex-col gap-3">
-					<span role="button" class="read marcar" title="Marcar como le&iacute;do" onclick="mensaje.marcar('{$mp.mp_id}','{$mp.mp_type}', 0, 1, this)"{if $mp.mp_read_to == 1} style="display:none"{/if}><img src="{$tsRoutes.assets.images}/mensajes/read.svg" width="16" height="16" alt="Marcar como le&iacute;do" /></span>
+					<span role="button" class="read marcar" title="Marcar como le&iacute;do" onclick="mensaje.marcar('{$mp.mp_id}','{$mp.mp_type}', 0, 1, this)"{if $mp.mp_read_to == 1} style="display:none"{/if}><img src="{$tsRoutes['assets:images']}/mensajes/read.svg" width="16" height="16" alt="Marcar como le&iacute;do" /></span>
 
-					<span role="button" class="unread marcar" title="Marcar como no le&iacute;do" onclick="mensaje.marcar('{$mp.mp_id}','{$mp.mp_type}', 1, 1, this)"{if $mp.mp_read_to == 0} style="display:none"{/if}><img src="{$tsRoutes.assets.images}/mensajes/unread.svg" width="16" height="16" alt="Marcar como no le&iacute;do" /></span>
+					<span role="button" class="unread marcar" title="Marcar como no le&iacute;do" onclick="mensaje.marcar('{$mp.mp_id}','{$mp.mp_type}', 1, 1, this)"{if $mp.mp_read_to == 0} style="display:none"{/if}><img src="{$tsRoutes['assets:images']}/mensajes/unread.svg" width="16" height="16" alt="Marcar como no le&iacute;do" /></span>
 
-					<span role="button" title="Eliminar" onclick="mensaje.eliminar('{$mp.mp_id}:{$mp.mp_type}',1)"><img src="{$tsRoutes.assets.images}/mensajes/delete.svg" width="16" height="16" alt="Eliminar" /></span>
+					<span role="button" title="Eliminar" onclick="mensaje.eliminar('{$mp.mp_id}:{$mp.mp_type}',1)"><img src="{$tsRoutes['assets:images']}/mensajes/delete.svg" width="16" height="16" alt="Eliminar" /></span>
 				</div>
 			</div>
 		{/foreach}

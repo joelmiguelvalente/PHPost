@@ -60,7 +60,7 @@ function smarty_function_meta(array $params, Smarty\Template $template): string 
 		$config['title'] = $template->getTemplateVars('tsTitle') ?: '';
 	}
 	if (empty($config['description'])) {
-		$config['description'] = $template->getTemplateVars('tsDescription') ?: '';
+		$config['description'] = $template->getTemplateVars('tsDescription') ?: Config::app('app.description');
 	}
 	if (empty($config['url'])) {
 		$config['url'] = $template->getTemplateVars('tsCanonical') ?: getCurrentUrl();
@@ -288,9 +288,8 @@ function generateCustomMeta(array $data): string {
  * Obtiene la URL actual
  */
 function getCurrentUrl(): string {
-	$protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
-	$host = $_SERVER['HTTP_HOST'] ?? '';
-	$uri = $_SERVER['REQUEST_URI'] ?? '';
+	$scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
+	$uri = $scheme . ($_SERVER['HTTP_HOST'] ?? '') . ($_SERVER['REQUEST_URI'] ?? '');
 	
-	return $protocol . $host . $uri;
+	return $scheme . $uri;
 }

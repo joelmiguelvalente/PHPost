@@ -3,27 +3,27 @@
 declare(strict_types=1);
 
 /**
- * @package    PHPost/Class
- * @author     PHPost Team & Miguel92
+ * @package    Class
+ * @author     Miguel92
  * @copyright  2026
  */
 
-if (!defined('TS_HEADER')) {
-	exit('No se permite el acceso directo al script');
-}
+defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
 class tsVisitas {
 
 	private int $userID;
-	private string $IP;
+
+	private string $myIP;
 
 	public function __construct(
 		protected tsCore $Core, 
-		protected tsUser $User
+		protected tsUser $User,
+		protected IP $IP
 	) {
 		//
 		$this->userID = (int)$this->User->uid;
-		$this->IP = (new IP)->executeIP();
+		$this->myIP = $this->IP->getIPBinary();
 	}
 
 	/**
@@ -32,20 +32,36 @@ class tsVisitas {
 	 * @return int
 	 */
 	private function isVisited(int $id, int $type = 1): int {
-		$ip = "`ip` LIKE '$this->IP'";
-		$like = $this->User->is_member ? "(`user` = {$this->userID} OR $ip)" : $ip;
-		$visitado = db_exec('num_rows', db_exec([__FILE__, __LINE__], 'query', "SELECT id FROM `w_visitas` WHERE `for` = $id AND `type` = $type AND $like LIMIT 1"));
-		return $visitado;
+		$ipCondition = "`ip` LIKE :ip";
+	    $params = [
+	        'target'  => $id,
+	        'type' => $type,
+	        'ip'   => $this->myIP
+	    ];
+
+	    if ($this->User->is_member) {
+	        $condition = "(`user` = :user OR $ipCondition)";
+	        $params['user'] = $this->userID;
+	    } else {
+	        $condition = $ipCondition;
+	    }
+
+		return DB::numRows("SELECT id FROM `w_visitas` WHERE `target_id` = :target AND `type` = :type AND $condition LIMIT 1", $params);
 	}
 
 	private function addView(int $id, int $type = 1): void {
-		$time = time();
-		db_exec([__FILE__, __LINE__], 'query', "INSERT INTO w_visitas (`user`, `for`, `type`, `date`, `ip`) VALUES ({$this->userID}, $id, $type, $time, '{$this->IP}')");
+		DB::insert('w_visitas', [
+			'user' => $this->userID,
+			'target_id' => $id,
+			'type' => $type,
+			'date' => time(),
+			'ip' => $this->myIP
+		]);
 	}
 
 	private function updateViewPost(int $id): void {
 		$sql = (!$this->User->is_member) ? "" : " AND post_user != {$this->User->uid}";
-		db_exec([__FILE__, __LINE__], 'query', "UPDATE p_posts SET post_hits = post_hits + 1 WHERE post_id = $id $sql");
+		DB::raw("UPDATE p_posts SET post_hits = post_hits + 1 WHERE post_id = :pid $sql", ['pid' => $id]);
 	}
 
 	public function updateViews(int $id, int $type = 1): int {
@@ -64,7 +80,12 @@ class tsVisitas {
 			if ($type === 2 && $this->User->is_member) {
 			   $whereUser = "AND `user` = {$this->userID}";
 			}
-			db_exec([__FILE__, __LINE__], 'query', "UPDATE `w_visitas` SET `date` = $time, ip = '{$this->IP}' WHERE `for` = $forId AND `type` = $type $whereUser");
+			DB::raw("UPDATE `w_visitas` SET `date` = :date, ip = :ip WHERE `target_id` = :target AND `type` = :type $whereUser", [
+				'date' => $time,
+				'ip' => $this->myIP,
+				'target' => $forId,
+				'type' => $type
+			]);
 		}
 		return $visitado;
 	}
@@ -77,14 +98,17 @@ class tsVisitas {
 	}
 
 	public function getLastViews(int $id, int $type = 1): array {
-		$query = "SELECT v.*, u.user_id, u.user_name FROM w_visitas AS v LEFT JOIN u_miembros AS u ON v.user = u.user_id WHERE v.for = {$id} AND v.type = {$type} AND v.user > 0 ORDER BY v.date DESC LIMIT 10";
-		return result_array(db_exec([__FILE__, __LINE__], 'query', $query));
+		$query = "SELECT v.*, u.user_id, u.user_name FROM w_visitas AS v LEFT JOIN u_miembros AS u ON v.user = u.user_id WHERE v.target_id = :target AND v.type = :type AND v.user > 0 ORDER BY v.date DESC LIMIT 10";
+		return DB::fetchAll($query, [
+			'target' => $id,
+			'type' => $type
+		]);
 	}
 
 	# Es más para el portal que visitas, solo post
 	public function addViewPortal(int $id): void {
 		if((int)$this->Core->settings['c_allow_portal'] === 1 AND $this->User->is_member) {
-			$data = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', "SELECT last_posts_visited as visited FROM u_portal WHERE user_id = {$this->User->uid} LIMIT 1"));
+			$data = DB::fetch("SELECT last_posts_visited as visited FROM u_portal WHERE user_id = :uid LIMIT 1", ['uid' => $this->User->uid]);
 			//
 			$visited = [];
 			if ($data && !empty($data['visited'])) {
@@ -100,7 +124,7 @@ class tsVisitas {
 			}
 			//
 			$visited = json_encode($visited);
-			db_exec([__FILE__, __LINE__], 'query', "UPDATE u_portal SET last_posts_visited = '$visited' WHERE user_id = {$this->User->uid}");
+			DB::update('u_portal', ['last_posts_visited' => $visited], 'user_id = :id', ['id' => $this->User->uid]);
 		}
 	}
 

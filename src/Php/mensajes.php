@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * @package    PHPost/Php
+ * @package    Php
  * @author     PHPost Team & Miguel92
  * @copyright  2026
  */
@@ -14,40 +14,30 @@ $tsTitle = "{$tsCore->settings['titulo']} - {$tsCore->settings['slogan']}";
 /**
  * Inicializamos variable
  */
-
-$ctx = Controller::page('mensajes')->members();
-// sincronizamos
-$ctx->exportLegacy();
-
-$tsLevelMsg = $tsCore->setLevel($ctx->getLevel(), true);
-if (is_array($tsLevelMsg)) {
-   $ctx->changePage('aviso');
-   $ctx->stop();
-   $smarty->assign("tsAviso", $tsLevelMsg);
-   // sincroniza nuevamente
-   $ctx->exportLegacy();
-}
+$ctx = Controller::init('mensajes', 'members');
 
 if($ctx->continue()) {
 
 	$unread = (isset($_GET['qt']) && $_GET['qt'] === 'unread');
 	$action = trim($_GET['action'] ?? '');
 
-	switch($action){
+	$first = match($action) {
+		'enviados' 	  => 3,
+		'respondidos' => 4,
+		'search' 	  => 5,
+		default 	  => 2
+	};
+	$second = ($action === '') ? $unread : '';
+
+	switch($action) {
 		case '':
-			$smarty->assign("tsMensajes",$tsMP->getMensajes(2, $unread));
-		break;
 		case 'enviados':
-			$smarty->assign("tsMensajes",$tsMP->getMensajes(3));
-		break;
 		case 'respondidos':
-			$smarty->assign("tsMensajes",$tsMP->getMensajes(4));
-		break;
 		case 'search':
-			$smarty->assign("tsMensajes",$tsMP->getMensajes(5));
+			$smarty->assign("tsMensajes",$tsMensajes->getMensajes($first, $second));
 		break;
 		case 'leer':
-			$smarty->assign("tsMensajes",$tsMP->readMensaje());
+			$smarty->assign("tsMensajes",$tsMensajes->readMensaje());
 		break;
 		case 'avisos':
 			$aid = (int)($_GET['aid'] ?? 0);
@@ -69,7 +59,4 @@ if($ctx->continue()) {
 	
 }
 
-if($tsAjax) {
-	$smarty->assign("tsTitle", $tsTitle);
-   require_once TS_ROOT . "/footer.php";
-}
+Controller::render($tsAjax, $tsTitle, $tsPage);

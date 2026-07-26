@@ -14,7 +14,7 @@ declare(strict_types=1);
  * desde el bootstrap principal.
  *
  * @package    Config
- * @author     PHPost Team & Miguel92
+ * @author     Miguel92
  * @copyright  2026
  */
 
@@ -44,9 +44,12 @@ final class ConfigMailer extends AbstractConfig
 		 *   SMTP_USER: string,
 		 *   SMTP_PASS: string,
 		 *   SMTP_FROM: string,
+		 *   SMTP_FROM_NAME: string,
 		 *   SMTP_PORT: int,
 		 *   SMTP_SECURE: string,
-		 *   SMTP_CHARSET: string
+		 *   SMTP_CHARSET: string,
+		 *   SMTP_TIMEOUT: int,
+		 *   SMTP_DEBUG: bool
 		 * }
 		 */
       $this->items = [
@@ -74,6 +77,11 @@ final class ConfigMailer extends AbstractConfig
 			'SMTP_FROM' => 'smtpfrom',
 
 			/**
+			 * Remitente
+			 */
+    		'SMTP_FROM_NAME'=> 'PHPost team',
+
+			/**
 			 * Método de cifrado de la conexión
 			 * Valores comunes: tls | ssl
 			 */
@@ -84,7 +92,13 @@ final class ConfigMailer extends AbstractConfig
 			 * 587 => TLS
 			 * 465 => SSL
 			 */
-			'SMTP_PORT' => 587
+			'SMTP_PORT' => 587,
+
+			'SMTP_CHARSET'  => 'UTF-8',
+
+			'SMTP_TIMEOUT'  => 10,
+
+			'SMTP_DEBUG'    => false,
 		];
 		parent::__construct();
 	}

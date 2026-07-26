@@ -12,7 +12,7 @@ $tsUser->is_admod))}
 
                 <div class="loader absolute">
                     <div class="flex justify-center items-center gap-3 flex-col w-full h-full">
-                        <img src="{$tsRoutes.tema.images}/loading_bar.gif" />
+                        <img src="{$tsRoutes['tema:images']}/loading_bar.gif" />
                         <h2>Cargando foto, espere por favor....</h2>
                     </div>
                 </div>

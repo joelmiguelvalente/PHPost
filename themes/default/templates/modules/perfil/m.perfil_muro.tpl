@@ -20,7 +20,7 @@
 			<div class="more-pubs">
 				<div class="content">
 					<button role="button" class="btnAction" data-action="loadMore" data-argument="wall">Publicaciones m&aacute;s antiguas</button>
-					<img width="20" height="20" style="display: none;" alt="Cargando publicaciones antiguas" src="{$tsRoutes.assets.images}/loader.gif"/>
+					<img width="20" height="20" style="display: none;" alt="Cargando publicaciones antiguas" src="{$tsRoutes['assets:images']}/loader.gif"/>
 				</div>
 			</div>
 		{elseif $tsMuro.total == 0 && $tsUser->is_member}

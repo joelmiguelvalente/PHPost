@@ -18,7 +18,7 @@
             {foreach $tsPerfil.redes key=name item=red}
                <div class="flex justify-start items-center gap-2">
                   <div class="icon">
-                  	<img src="{$tsRoutes.assets.images}/redes/{$name}.svg" width="24" height="24" />
+                  	<img src="{$tsRoutes['assets:images']}/redes/{$name}.svg" width="24" height="24" />
                   </div>
                   <input type="text" class="form-control" value="{$tsPerfil.p_socials.$name}" placeholder="{$red}" name="red[{$name}]">
                </div>

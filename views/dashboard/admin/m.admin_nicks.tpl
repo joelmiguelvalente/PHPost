@@ -4,7 +4,7 @@
 <div id="res" class="boxy-content" style="position:relative">
 	{if !$tsAct}
 		{if !$tsAdminNicks.data}
-			<div class="phpostAlfa">No hay cambios esperando aprobaci&oacute;n</div>
+			<div class="phpostAlfa">No hay cambios esperando aprobación</div>
 		{else}
 			<table cellpadding="0" cellspacing="0" border="0" class="admin_table" width="100%" align="center">
 				<thead>
@@ -22,26 +22,26 @@
 							<td>{$n.time|hace:true}</td>
 							<td><a href="http://www.geoiptool.com/?IP={$n.ip}" class="geoip" target="_blank">{$n.ip}</a></td>
 							<td class="admin_actions">
-								<a href="#" onclick="admin.nicks.accion('{$n.id}', 'aprobar'); return false"><img src="{$tsRoutes.tema.images}/icons/power_on.png" title="Aprobar"/></a>
-								<a href="#" onclick="admin.nicks.accion('{$n.id}', 'denegar'); return false"><img src="{$tsRoutes.tema.images}/icons/power_off.png" title="Denegar"/></a>
+								<a href="#" onclick="admin.nicks.accion('{$n.id}', 'accepted'); return false"><img src="{$tsRoutes['tema:images']}/icons/power_on.png" title="Aprobar"/></a>
+								<a href="#" onclick="admin.nicks.accion('{$n.id}', 'rejected'); return false"><img src="{$tsRoutes['tema:images']}/icons/power_off.png" title="Denegar"/></a>
 							</td>
 						</tr>
 					{/foreach}
 				</tbody>
 				<tfoot>
-					<td colspan="7">P&aacute;ginas: {$tsAdminNicks.pages}</td>
+					<td colspan="7">Páginas: {$tsAdminNicks.pages}</td>
 				</tfoot>
 			</table>
 		{/if}
-		<a href="{$tsConfig.url}/admin/nicks?act=realizados" class="mBtn btnYellow">Ver decisiones tomadas</a>
-	{elseif $tsAct == 'realizados'}
+		<a href="{$tsConfig.url}/admin/nicks?act=accepted" class="mBtn btnYellow">Ver decisiones tomadas</a>
+	{elseif $tsAct == 'accepted'}
 		{if !$tsAdminNicks.data}
 			<div class="phpostAlfa">No hay cambios hasta ahora</div>
 		{else}
 			<table cellpadding="0" cellspacing="0" border="0" class="admin_table" width="100%" align="center">
 				<thead>
 					<th>Nick antes</th>
-					<th>Nick despu&eacute;s</th>
+					<th>Nick después</th>
 					<th>Fecha</th>
 					<th>Estado</th>
 					<th>IP</th>
@@ -58,7 +58,7 @@
 					{/foreach}
 				</tbody>
 				<tfoot>
-					<td colspan="7">P&aacute;ginas: {$tsAdminNicks.pages}</td>
+					<td colspan="7">Páginas: {$tsAdminNicks.pages}</td>
 				</tfoot>
 			</table>
 		{/if}

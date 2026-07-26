@@ -290,81 +290,61 @@ const muro = {
 		settings.continue = 1;
 		// MANDAMOS
 		$('#loading').slideDown(250); 
-		$.ajax({
-			type: 'POST',
-			url: route.url + '/muro-likes',
-			dataType: 'json',
-			data: 'id=' + id + '&type=' + type,
-			success: function(h){
-			   if(h['status'] == 'ok'){
-				   // I LIKE / NO
-				   $(obj).text(h['link']);
-				   //
-				   if(type == 'pub'){
-					   $('#lk_' + id).html(h['text']);
-					   if(h['text'] != '') {
-						   $('#lk_' + id).parent().parent().show();
-						   $('#cb_' + id).show();
-					   } else 
-						   $('#lk_' + id).parent().parent().hide();
-				   } else {
-					   $('#lk_cm_'+id).text(h['text']);
-					   //
-					   if(h['text'] == '') 
-							$('#lk_cm_'+id).parent().hide();
-						else 
-							$('#lk_cm_'+id).parent().show();
-							
-				   }
-			   } else {
-				   dialog.alert('Error:', h['text'].substring(3));
-			   }
-			   $('#loading').slideUp(350); 
-			},
-			complete: function (){
-				// STATUS
-				settings.continue = false;
+		api('muro-likes', { id, type }, h => {
+			if(h['status'] == 'ok'){
+				// I LIKE / NO
+				$(obj).text(h['link']);
+				//
+				if(type == 'pub'){
+					$('#lk_' + id).html(h['text']);
+					if(h['text'] != '') {
+						$('#lk_' + id).parent().parent().show();
+						$('#cb_' + id).show();
+					} else 
+						$('#lk_' + id).parent().parent().hide();
+				} else {
+					$('#lk_cm_'+id).text(h['text']);
+					//
+					if(h['text'] == '') 
+						$('#lk_cm_'+id).parent().hide();
+					else 
+						$('#lk_cm_'+id).parent().show();
+						
+				}
+			} else {
+				dialog.alert('Error:', h['text'].substring(3));
 			}
-		});
+			$('#loading').slideUp(350); 
+		}, { dataType: 'json' });
 	},
 	show_likes: function(id, type){
 		settings.continue = 1;
 		// MANDAMOS
 		$('#loading').fadeIn(250); 
-		$.ajax({
-			type: 'POST',
-			url: route.url + '/muro-likes?do=show',
-			dataType: 'json',
-			data: 'id=' + id + '&type=' + type,
-			success: function(h){
-				switch(h.status){
-					case 0: //Error
-						dialog.alert('Error', h['data']);
-						break;
-					case 1: //OK
-						var html = '<ul id="show_likes">';
-						for(var i = 0; i < h.data.length; i++){
-							html += '<li>'
-							html += '<a href="' + route.url + '/@' + h.data[i].user_name + '"><img src="' + route.url + '/storage/avatar/user_' + h.data[i].user_id + '/thumb_avatar.png" /></a>'
-							html += '<div class="name"><a href="' + route.url + '/perfil/' + h.data[i].user_name + '">' + h.data[i].user_name + '</a></div>' 
-							html += '</li>'; 
-						}
-						html += '</ul>';
-						// MOSTRAMOS
-						mydialog.show(true);
-						mydialog.title('Personas a las que les gusta');
-						mydialog.body(html);
-						mydialog.buttons(true, true, 'Cerrar', 'close', true, true);
-						mydialog.center();
-						break;
-				}
-				$('#loading').fadeOut(350); 
-			},
-			complete: function (){
-				// STATUS
-				settings.continue = false;
+		api('muro-likes?do=show', { id, type }, h => {
+			switch(h.status){
+				case 0: //Error
+					dialog.alert('Error', h['data']);
+					break;
+				case 1: //OK
+					var html = '<ul id="show_likes">';
+					for(var i = 0; i < h.data.length; i++){
+						html += '<li>'
+						html += '<a href="' + route.url + '/@' + h.data[i].user_name + '"><img src="' + route.url + '/storage/avatar/user_' + h.data[i].user_id + '/thumb_avatar.png" /></a>'
+						html += '<div class="name"><a href="' + route.url + '/perfil/' + h.data[i].user_name + '">' + h.data[i].user_name + '</a></div>' 
+						html += '</li>'; 
+					}
+					html += '</ul>';
+					// MOSTRAMOS
+					mydialog.show(true);
+					mydialog.title('Personas a las que les gusta');
+					mydialog.body(html);
+					mydialog.buttons(true, true, 'Cerrar', 'close', true, true);
+					mydialog.center();
+					break;
 			}
-		});
+			$('#loading').fadeOut(350); 
+		}, { dataType: 'json' });
    
 	},
 	show_comment_box: function(id){
@@ -382,27 +362,17 @@ const muro = {
 		}
 		//
 		$('#loading').fadeIn(250); 
-		$.ajax({
-			type: 'POST',
-			url: route.url + '/muro-stream?do=repost',
-			data: 'data=' + encodeURIComponent(val) + '&pid=' + id,
-			success: function(h){
-				switch(h.charAt(0)){
-					case '0': //Error
-						dialog.alert('Error:', h.substring(3));
-						break;
-					case '1': //OK
-						$('#cl_' + id).append($(h.substring(3)).fadeIn('slow'));
-						$('#cf_' + id).val('');
-						break;
-				}
-				$('#loading').fadeOut(250); 
-			},
-			complete: function (){
-				// STATUS
-				settings.continue = false;
-				$('#loading').fadeOut(350); 
+		api('muro-stream?do=repost', { data: val, pid: id }, h => {
+			switch(h.charAt(0)){
+				case '0': //Error
+					dialog.alert('Error:', h.substring(3));
+					break;
+				case '1': //OK
+					$('#cl_' + id).append($(h.substring(3)).fadeIn('slow'));
+					$('#cf_' + id).val('');
+					break;
 			}
+			$('#loading').fadeOut(250); 
 		});
 	},
 	//
@@ -412,26 +382,16 @@ const muro = {
 		$(obj).parent().find('img').show();
 		//
 		$('#loading').fadeIn(250); 
-		$.ajax({
-			type: 'POST',
-			url: route.url + '/muro-stream?do=more_comments',
-			data: 'pid=' + id,
-			success: function(h){
-				switch(h.charAt(0)){
-					case '0': //Error
-						dialog.alert('Error:', h.substring(3));
-						break;
-					case '1': //OK
-						$('#cl_' + id).html(h.substring(3));
-						break;
-				}
-				$('#loading').fadeOut(350); 
-			},
-			complete: function (){
-				// STATUS
-				settings.continue = false;
-				$('#loading').fadeOut(550); 
+		api('muro-stream?do=more_comments', { pid: id }, h => {
+			switch(h.charAt(0)){
+				case '0': //Error
+					dialog.alert('Error:', h.substring(3));
+					break;
+				case '1': //OK
+					$('#cl_' + id).html(h.substring(3));
+					break;
 			}
+			$('#loading').fadeOut(350); 
 		});
 	},
 	// MOSTRAR VIDEO DEL MURO
@@ -468,27 +428,17 @@ const muro = {
 		var snd_type = (type == 1) ? 'pub' : 'cmt';
 		//
 		$('#loading').slideDown(250); 
-		$.ajax({
-			type: 'POST',
-			url: route.url + '/muro-stream?do=delete',
-			data: 'id=' + id + '&type=' + snd_type,
-			success: function(h){
-				switch(h.charAt(0)){
-					case '0': //Error
-						dialog.alert('Error:', h.substring(3));
-						break;
-					case '1': //OK
-						mydialog.close();
-						$('#' + snd_type + '_' + id).hide().remove();
-						break;
-				}
-				$('#loading').slideUp(450); 
-			},
-			complete: function (){
-				// STATUS
-				settings.continue = false;
-				$('#loading').slideUp(350); 
+		api('muro-stream?do=delete', { id, type: snd_type }, h => {
+			switch(h.charAt(0)){
+				case '0': //Error
+					dialog.alert('Error:', h.substring(3));
+					break;
+				case '1': //OK
+					mydialog.close();
+					$('#' + snd_type + '_' + id).hide().remove();
+					break;
 			}
+			$('#loading').slideUp(450); 
 		});
 	}
 	//

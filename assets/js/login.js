@@ -62,7 +62,8 @@ function iniciarSesion() {
 	showLoader(true);
 	setButtonLoading(true);
 
-	$.post(`${route.url}/login-user`, $.param(params), response => {
+	api('login-user', params, response => {
+		console.log(response);
 		const { status, message } = $.parseResponse(response);
 		if (status === 1) {
 			// Obtener el parámetro redirect
@@ -77,11 +78,11 @@ function iniciarSesion() {
 		}
 		dialog.alert('Atención', message);
 		resetUI();
-	})
-	.fail(() => {
+	}, {
+		error: ({ xhr, status, error }) => {
 		dialog.alert('Error', 'Error al procesar la petición');
 		resetUI();
-	});
+	} });
 }
 
 function togglePasswordVisibility() {
@@ -121,12 +122,12 @@ function remindResend(confirmed = false, type) {
 	      }
 	   });
 	} else {
-		const email = encodeURIComponent($('#r_email').val());
-		$.post(`${route.url}/recover-${config.page}`, `r_email=${email}`, response => {
+		const email = $('#r_email').val();
+		api(`recover-${config.page}`, { r_email: email }, response => {
 			const { status, message } = $.parseResponse(response);
 			const alertTitle = status === 0 ? 'Oops!' : 'Hecho';
 			dialog.alert(alertTitle, message);
-		});
+		}, { method: 'POST' });
 	}
 }
 

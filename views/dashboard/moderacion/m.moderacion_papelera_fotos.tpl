@@ -7,10 +7,10 @@
 								{else}
 								<table cellpadding="0" cellspacing="0" border="0" class="admin_table" width="100%" align="center">
 									<thead>
-										<th>T&iacute;tulo</th>
+										<th>Título</th>
 										<th>Autor</th>
 										<th>Moderador</th>
-										<th>Raz&oacute;n</th>
+										<th>Razón</th>
 										<th>Fecha</th>
 										<th>IP</th>
 										<th>Acciones</th>
@@ -25,13 +25,13 @@
 											<td>{$f.date|hace:true}</td>                
    										    <td>{$f.mod_ip}</td>
 											<td class="admin_actions">
-                                                    <a href="#" onclick="mod.reboot({$f.foto_id}, 'fotos', 'reboot', false); return false;"><img src="{$tsRoutes.tema.images}/icons/reboot.png" title="Reactivar Foto" /></a>
+                                                    <a href="#" onclick="mod.reboot({$f.foto_id}, 'fotos', 'reboot', false); return false;"><img src="{$tsRoutes['tema:images']}/icons/reboot.png" title="Reactivar Foto" /></a>
 											</td>
 										</tr>
 										{/foreach}
 									</tbody>
 									<tfoot>
-										<td colspan="7">P&aacute;ginas: {$tsFopelera.pages}</td>
+										<td colspan="7">Páginas: {$tsFopelera.pages}</td>
 									</tfoot>
 								</table>
 								{/if}

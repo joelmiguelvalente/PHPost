@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * @package    PHPost/Php
+ * @package    Php
  * @author     PHPost Team & Miguel92
  * @copyright  2026
  */
@@ -15,28 +15,17 @@ $tsTitle = "{$tsCore->settings['titulo']} - {$tsCore->settings['slogan']}";
  * Inicializamos variable
  */
 
-$ctx = Controller::page('monitor')->members();
-// sincronizamos
-$ctx->exportLegacy();
-
-$tsLevelMsg = $tsCore->setLevel($ctx->getLevel(), true);
-if (is_array($tsLevelMsg)) {
-   $ctx->changePage('aviso');
-   $ctx->stop();
-   $smarty->assign("tsAviso", $tsLevelMsg);
-   // sincroniza nuevamente
-   $ctx->exportLegacy();
-}
+$ctx = Controller::init('monitor', 'members');
 
 if($ctx->continue()) {
 
 	$action = trim($_GET['action'] ?? '');
 
 	if(empty($action)) {
-      $tsMonitor->show_type = 2;
+      	$tsMonitor->show_type = 2;
 		$notificaciones = $tsMonitor->getNotificaciones();
 		$smarty->assign("tsData", $notificaciones);
-      $smarty->assign("tsStatus", $_COOKIE);
+      	$smarty->assign("tsStatus", $_COOKIE);
    } else {
 		$smarty->assign("tsData", $tsMonitor->getFollows($action));
 	}
@@ -45,7 +34,4 @@ if($ctx->continue()) {
 	
 }
 
-if($tsAjax) {
-	$smarty->assign("tsTitle", $tsTitle);
-   require_once TS_ROOT . "/footer.php";
-}
+Controller::render($tsAjax, $tsTitle, $tsPage);

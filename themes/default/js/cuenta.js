@@ -1,8 +1,7 @@
 function desactivate(next = false) {
 	if(next) {
-		const param = $.param({ validar: true });
 		$('#loading').fadeIn(250); 
-		api(`cuenta-desactivar`, param, response => {
+		api(`cuenta-desactivar`, { validar: true }, response => {
 			const { status, message } = $.parseResponse(response);
 			dialog.toast({
 				type: (status ? 'success' : 'danger'),
@@ -26,19 +25,19 @@ const cuenta = {
 			//Obtengo las estados
 			$(estado).html('');
 			$('#loading').fadeIn(250);
-			$.get(`${route.url}/registro-geo?pais_code=${pais}`, response => {
+			api('registro-geo', { pais_code: pais }, response => {
 				const { status, message } = $.parseResponse(response);
 				if(status === 1) {
 					estado.val('').append(message).removeAttr('disabled').focus();
 				}
 				$('#loading').fadeOut(250);
-			});
+			}, { method: 'GET' });
 		}
 	},
 	guardar_datos: () => {
 		$('#loading').slideDown(250);
-		const formData = $("form[name=editarcuenta]").serialize();
-		$.post(`${route.url}/cuenta-guardar`, formData, response => {
+		const formData = Object.fromEntries(new URLSearchParams($("form[name=editarcuenta]").serialize()));
+		api('cuenta-guardar', formData, response => {
 			const { status, message } = $.parseResponse(response);
 			dialog.toast({
 				type: (status ? 'success' : 'danger'),

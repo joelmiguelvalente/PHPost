@@ -4,7 +4,7 @@
 
      {if $tsAct == ''}
         <section class="mb-6 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-surface p-5 shadow-sm">
-            <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Si necesitas hacer un comunicado a todos los usuarios en general, desde aqu&iacute; podr&aacute;s administrar tus anuncios y los usuarios sin importar donde se encuentren navegando podr&aacute;n visualizarlos.</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Si necesitas hacer un comunicado a todos los usuarios en general, desde aquí podrás administrar tus anuncios y los usuarios sin importar donde se encuentren navegando podrán visualizarlos.</p>
         </section>
 
         <hr class="my-3" />

@@ -17,7 +17,7 @@
 							{if $p.user_name == $tsUser->nick}{$tsUser->nick}{else}{$p.user_name}{/if}
 						</a>
 					</div>
-					<span class="block py-2 px-3">{$p.p_body|html_decode}</span>
+					<span class="block py-2 px-3">{$p.p_body|raw}</span>
 					{if $p.p_type != 1}
 						<div class="mvm p-2">
 							{if $p.p_type == 2}
@@ -67,7 +67,7 @@
 								<div class="more_comments clearfix">
 									<i></i>
 									<a href="#" class="a_blue floatL" onclick="muro.more_comments({$p.pub_id}, this); return false">Ver los {$p.p_comments} comentarios</a>
-									<img width="20" height="20" src="{$tsRoutes.assets.images}/loader.gif"/>
+									<img width="20" height="20" src="{$tsRoutes['assets:images']}/loader.gif"/>
 								</div>
 							</li>
 						{/if}

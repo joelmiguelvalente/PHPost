@@ -3,32 +3,28 @@
 declare(strict_types=1);
 
 /**
- * @package    PHPost/Class
- * @author     PHPost Team & Miguel92
+ * @package    Class
+ * @author     Miguel92
  * @copyright  2026
  */
 
-if (!defined('TS_HEADER')) {
-	exit('No se permite el acceso directo al script');
-}
+defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
 require_once __DIR__ . '/c.moderacion.php';
-require_once TS_UTILS . '/Extras.php';
 
 class tsAgregar {
 	
-	protected Extras $Extras;
-	protected IP $IP;
-
 	public int $postId;
+
+	private string $myIP;
 
 	public function __construct(
 		protected tsCore $Core, 
-		protected tsUser $User
+		protected tsUser $User,
+		protected IP $IP
 	) {
-		$this->Extras = new Extras;
-		$this->IP = new IP;
 		$this->postId = $this->getPostId();
+		$this->myIP = $this->IP->getIPBinary();
 	}
 
 	/**
@@ -73,7 +69,7 @@ class tsAgregar {
 			return '';
 		}
 		$where = $this->activeUserSqlCondition(); 
-		$data = DB::fetchAll("SELECT p.post_id, p.post_title, c.c_seo FROM p_posts AS p LEFT JOIN u_miembros AS u ON u.user_id = p.post_user LEFT JOIN p_categorias AS c ON c.cid = p.post_category WHERE p.post_status = 0 $where AND MATCH(p.post_title) AGAINST(:search IN BOOLEAN MODE) ORDER BY RAND() DESC LIMIT 5", ['search' => $search]);
+		$data = DB::fetchAll("SELECT p.post_id, p.post_title, c.c_seo FROM p_posts AS p LEFT JOIN u_miembros AS u ON u.user_id = p.post_user LEFT JOIN p_categorias AS c ON c.cid = p.post_category WHERE p.post_status = 'publicado' $where AND MATCH(p.post_title) AGAINST(:search IN BOOLEAN MODE) ORDER BY RAND() DESC LIMIT 5", ['search' => $search]);
 		return $data;
 	}
 
@@ -104,7 +100,7 @@ class tsAgregar {
 		getPreview()
 	*/
 	public function getPreview(): string {
-		$cuerpo = $this->Core->setSecure($_POST['cuerpo'], true);
+		$cuerpo = Html::escape($_POST['cuerpo'], true);
 		return $this->Core->parseBadWords($this->Core->parseBBCode($cuerpo), true);
 	}
 
@@ -116,7 +112,7 @@ class tsAgregar {
 			array_map('trim', explode(',', $tags)),
 			static fn($tag) => $tag !== ''
 		);
-		if (count($items) < $min) {
+		if (count($items ?? []) < $min) {
 			return false;
 		}
 		foreach ($items as $tag) {
@@ -137,8 +133,9 @@ class tsAgregar {
 			'post_title' => $this->Core->parseBadWords($this->normalizeLineBreaks($_POST['title'])),
 			'post_portada' => trim((string)$_POST['portada'] ?? ''),
 			'post_body' => $this->normalizeLineBreaks($_POST['body']),
-			'post_tags' => $this->Core->parseBadWords($this->Core->setSecure($_POST['tags'], true)),
+			'post_tags' => $this->Core->parseBadWords(Html::escape($_POST['tags'], true)),
 			'post_category' => (int)$_POST['category'],
+			'post_status' => $_POST['status'] ?? 'publicado'
 		];
 		if($newPost) {
 			$postData['post_date'] = time();
@@ -173,15 +170,15 @@ class tsAgregar {
 		}
 	}
 
-	private function moderatePost(int $postId) {
+	private function moderatePost(int $postId): void {
 		DB::insert('w_historial', [
 			'pofid' => $postId,
 			'action' => 3,
 			'type' => 1,
 			'mod' => $this->User->uid,
-			'reason' => 'Revisi&oacute;n al publicar',
+			'reason' => 'Revisión al publicar',
 			'date' => time(),
-			'mod_ip' => $this->IP->executeIP()
+			'mod_ip' => $this->myIP
 		]);
 	}
 	
@@ -210,7 +207,7 @@ class tsAgregar {
 		}
 		// EXISTE LA CATEGORIA?
 		$query = DB::exists("SELECT 1 FROM p_categorias WHERE cid = :cid LIMIT 1", ['cid' => $postData['post_category']]);
-		if(!$query) return 'La categor&iacute;a especificada no existe.';
+		if(!$query) return 'La categoría especificada no existe.';
 		// INSERTAMOS
 		$time = time();
 		DB::begin();
@@ -224,15 +221,14 @@ class tsAgregar {
 				'post_portada' => $postData['post_portada'],
 				'post_date' => time(),
 				'post_tags' => $postData['post_tags'],
-				'post_ip' => $this->IP->executeIP(),
+				'post_ip' => $this->myIP,
 				'post_private' => $postData['post_private'],
 				'post_block_comments' => $postData['post_block_comments'],
 				'post_sponsored' => $postData['post_sponsored'],
 				'post_sticky' => $postData['post_sticky'],
 				'post_smileys' => $postData['post_smileys'],
 				'post_visitantes' => $postData['post_visitantes'],
-				'post_status' => $this->postApproved() ? 3 : 0,
-				'post_draft' => (int)($_POST['draft'] ?? 0)
+				'post_status' => $this->postApproved() ? 'revision' : $postData['post_status']
 			]);
 			// Si está oculto, lo creamos en el historial e.e
 			if($this->postApproved()) $this->moderatePost($postId);
@@ -257,11 +253,11 @@ class tsAgregar {
 	/*
 		savePost()
 	*/
-	public function savePost() {
+	public function savePost(): string|int {
 		$postId = $this->postId;
 		$data = DB::fetch("SELECT post_user, post_sponsored, post_sticky, post_status FROM p_posts WHERE post_id = :pid LIMIT 1", ['pid' => $postId]);
 		//
-		if((int)$data['post_status'] !== 0 && !$this->User->is_admod && !$this->User->permiso('moderacion.posts.editar')) {
+		if($data['post_status'] !== 'publicado' && !$this->User->is_admod && !$this->User->permiso('moderacion.posts.editar')) {
 			return 'El post no puede ser editado.';
 		}
 		$postData = $this->collectPostData(false);
@@ -278,8 +274,8 @@ class tsAgregar {
 			// GUARDAR EN EL HISTORIAL	DE MODERACION
 			$razon = (string)($_POST['razon'] ?? 'Sin motivo');
 			if(($this->User->is_admod || $this->User->permiso('moderacion.posts.editar')) && $this->User->uid !== (int)$data['post_user'] && $razon) {
-				$tsMod = new tsMod($this->Core, $this->User);
-				return $tsMod->setHistory('editar', 'post', [
+				$tsModeracion = Container::get(tsModeracion::class);
+				return $tsModeracion->setHistory('editar', 'post', [
 					'post_id' => $postId, 
 					'title' => $postData['post_title'], 
 					'autor' => $data['post_user'], 
@@ -293,14 +289,14 @@ class tsAgregar {
 	/*
 		getEditPost()
 	*/
-	public function getEditPost() {
+	public function getEditPost(): string|array {
 		$pid = $this->postId;
 		$post = DB::fetch("SELECT * FROM p_posts WHERE post_id = :pid LIMIT 1", ['pid' => $pid]);
 		//
 		if(empty($post['post_id'])) {
 			return 'El post elegido no existe.';
 		}
-		if((int)$post['post_status'] !== 0 && !$this->User->is_admod && !$this->User->permiso('moderacion.posts.editar')) {
+		if($post['post_status'] !== 'publicado' && !$this->User->is_admod && !$this->User->permiso('moderacion.posts.editar')) {
 			return 'El post no puede ser editado.';
 		}
 		if(($this->User->uid !== (int)$post['post_user']) && !$this->User->is_admod && !$this->User->permiso('moderacion.posts.editar')) {
@@ -316,7 +312,7 @@ class tsAgregar {
 			['cat' => (int)($_POST['category'] ?? 0)
 		]);
 		//
-		$seoTitle = (new Extras)->slugify($_POST['title'], '-');
+		$seoTitle = Extras::slugify($_POST['title'], '-');
 		return "{$this->Core->settings['url']}/posts/{$tsCat['c_seo']}/$pid/{$seoTitle}.html";
 	}
 

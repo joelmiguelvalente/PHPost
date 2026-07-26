@@ -3,14 +3,12 @@
 declare(strict_types=1);
 
 /**
- * @package    PHPost/Database
- * @author     PHPost Team & Miguel92
+ * @package    Database
+ * @author     Miguel92
  * @copyright  2026
  */
 
-if (!defined('TS_HEADER')) {
-	exit('No se permite el acceso directo al script');
-}
+defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
 final class Database {
 
@@ -40,23 +38,45 @@ final class Database {
 		mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
 		try {
-			$this->connection = new mysqli(
+			$mysqli = mysqli_init();
+			$mysqli->options(
+	            MYSQLI_OPT_CONNECT_TIMEOUT,
+	            Config::db('timeout') ?? 5
+	        );
+			// SSL
+			if (!empty(Config::db('ssl.ca')) || !empty(Config::db('ssl.cert'))) {
+			    $mysqli->ssl_set(
+			        Config::db('ssl.key') ?? null,
+			        Config::db('ssl.cert') ?? null,
+			        Config::db('ssl.ca') ?? null,
+			        null,
+			        null
+			    );
+			}
+			$mysqli->real_connect(
 				Config::db('hostname'),
 				Config::db('username'),
 				Config::db('password'),
-				Config::db('database')
+				Config::db('database'),
+				Config::db('port') ?? 3306,
+				Config::db('socket')
 			);
-
-			$this->connection->set_charset(
-				Config::db('charset') ?? 'utf8mb4'
-			);
-
+			$mysqli->set_charset(Config::db('charset') ?? 'utf8mb4');
+			$this->connection = $mysqli;
 		} catch (mysqli_sql_exception) {
 			show_error('Error de conexión a la base de datos.', 'db');
 		}
 	}
 
-	/* ================= Named Prepared ================= */
+	// Sección: Named Prepared --------------------------------------------------
+
+	private function getParamType(mixed $value): string {
+	    return match (true) {
+	        is_int($value)   => 'i',
+	        is_float($value) => 'd',
+	        default          => 's',
+	    };
+	}
 
 	public function preparedQuery(string $sql, array $params = []): mysqli_stmt {
 		try {
@@ -72,15 +92,7 @@ final class Database {
 					}
 					$value = $params[$key];
 					$usedParams[] = $key;
-					if (is_int($value)) {
-						$types .= 'i';
-					} elseif (is_float($value)) {
-						$types .= 'd';
-					} elseif (is_null($value)) {
-						$types .= 's';
-					} else {
-						$types .= 's';
-					}
+					$types .= $this->getParamType($value);
 					$values[] = $value;
 					return '?';
 				},
@@ -104,7 +116,7 @@ final class Database {
     	}
 	}
 
-	/* ================= Raw Query ================= */
+	// Sección: Raw Query --------------------------------------------------
 
 	public function rawQuery(string $sql): mysqli_result|bool {
 		try {
@@ -123,16 +135,15 @@ final class Database {
 		return $this->connection->insert_id;
 	}
 
-	public function lastError(string $type): string|int {
-		return match ($type) {
+	public function lastError(): array {
+		return [
 			'errno'    => $this->connection->errno,
 			'error'    => $this->connection->error,
-			'sqlstate' => $this->connection->sqlstate,
-			default    => '',
-		};
+			'sqlstate' => $this->connection->sqlstate
+		];
 	}
 
-	/* ================= Modern Helpers ================= */
+	// Sección: Modern Helpers --------------------------------------------------
 
 	public function prepare(string $sql): mysqli_stmt {
 		return $this->connection->prepare($sql);
@@ -155,27 +166,27 @@ final class Database {
 	}
 
 	private function getCaller(): array {
-	   $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 15);
-	   foreach ($trace as $frame) {
-	   	if (!isset($frame['file'])) {
-	         continue;
-	      }
-	      // Ignorar cualquier llamada dentro de Database.php o DB.php
-	      if (str_contains($frame['file'], 'Database.php') || str_contains($frame['file'], 'DB.php')) {
-	         continue;
-	      }
-	      return [
-	         'file' => $frame['file'],
-	         'line' => $frame['line'] ?? null,
-	         'function' => $frame['function'] ?? null,
-	         'class' => $frame['class'] ?? null
-	      ];
+		$trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 15);
+		foreach ($trace as $frame) {
+	   		if (!isset($frame['file'])) {
+	         	continue;
+	      	}
+	    	// Ignorar cualquier llamada dentro de Database.php o DB.php
+	    	if (str_contains($frame['file'], 'Database.php') || str_contains($frame['file'], 'DB.php')) {
+	    		continue;
+	    	}
+	    	return [
+	    		'file' => $frame['file'],
+	    		'line' => $frame['line'] ?? null,
+	    		'function' => $frame['function'] ?? null,
+	    		'class' => $frame['class'] ?? null
+	    	];
 	    }
 
 	    return [];
 	}
 
-	/* ================= Prepared Fetch Helpers ================= */
+	// Sección: Prepared Fetch Helpers --------------------------------------------------
 
 	public function preparedFetch(string $sql, array $params = []): ?array {
 		$stmt = $this->preparedQuery($sql, $params);
@@ -203,7 +214,7 @@ final class Database {
 		return $result;
 	}
 
-	/* ================= Transactions ================= */
+	// Sección: Transactions --------------------------------------------------
 
 	public function beginTransaction(): void {
 		$this->connection->begin_transaction();
@@ -217,25 +228,25 @@ final class Database {
 		$this->connection->rollback();
 	}
 
-	/* ================= Low-level ================= */
+	// Sección: Low Level --------------------------------------------------
 
 	public function connection(): mysqli {
 		return $this->connection;
 	}
 
 	private function handleException(Throwable $e, string $query): void {
-	   global $tsUser, $tsAjax;
+	   	global $tsUser, $tsAjax;
 
-	   $caller = $this->getCaller();
+	   	$caller = $this->getCaller();
 
-	   if (!$tsAjax && Config::app('debug.active') && ($tsUser->is_admod || Config::app('debug.active'))) {
+	   	if (!$tsAjax && Config::app('debug.active') && $tsUser->is_admod) {
 	     	show_error('Error en consulta SQL.', 'db', [
-	     	   'file'  => $caller['file'],
-	     	   'line'  => $caller['line'],
-	     	   'query' => $query,
-	     	   'error' => $e->getMessage()
+	     		'file'  => $caller['file'],
+	     		'line'  => $caller['line'],
+	     		'query' => $query,
+	     		'error' => $e->getMessage()
 	     	]);
-	   }
+	   	}
 	}
 
 }

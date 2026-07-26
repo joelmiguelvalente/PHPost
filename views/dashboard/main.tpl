@@ -3,30 +3,31 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>{$tsTitle}</title>
-<link rel="shortcut icon" href="{$tsRoutes.tema.images}/favicon.ico" type="image/x-icon" />
+<link rel="shortcut icon" href="{$tsRoutes['tema:images']}/favicon.ico" type="image/x-icon" />
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link rel="preload" href="{$tsRoutes.assets.base}/fonts/Inter.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="{$tsRoutes['assets:base']}/fonts/Inter.woff2" as="font" type="font/woff2" crossorigin="anonymous">
 {load file=['main','dialog'] type="css"}
-<script>
+<script nonce="{CSP_NONCE}">
 const global_data = {
    app: {
-      domain:'{$tsRoutes.domain}',
-      title: '{$tsConfig.titulo}',
-      slogan: '{$tsConfig.slogan}',
+		domain: {$tsRoutes.domain|json_encode nofilter},
+		title: {$tsConfig.titulo|json_encode nofilter},
+		slogan: {$tsConfig.slogan|json_encode nofilter},
    	publicKey: '{$publicKey}'
-   }
+   },
+	csrf_token: {$tsCsrf|json_encode nofilter},
 };
 const route = {
-   url:'{$tsConfig.url}',
-   img:'{$tsRoutes.tema.images}',
-   smiles:'{$tsConfig.url}/files/smiles'
+	url: {$tsConfig.url|json_encode nofilter},
+	img: {$tsRoutes["tema:images"]|json_encode nofilter},
+	smiles: {$tsRoutes["assets:images"]|json_encode nofilter} + '\/smiles'
 }
 </script>
 {if $tsPage == 'registro'}
 <script src="https://www.google.com/recaptcha/api.js?render={$publicKey}"></script>
 {/if}
 {load file=['jquery.min','jquery.plugins','main',$tsPage] type="js"}
-<script id="tailwind-config"> 
+<script id="tailwind-config" nonce="{CSP_NONCE}">
 tailwind.config = { 
 	darkMode: "class", 
 	theme: { 

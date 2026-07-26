@@ -1,0 +1,37 @@
+# .readignore - Filtros para lectura del codebase
+# Ignora archivos/directorios sin relevancia para análisis
+
+# Storage (runtime data)
+/storage/
+
+# Logs
+/log.local/
+
+# Archivos locales
+*.local*
+dev.local
+analisis-calidad.html
+analisis-phpost.html
+
+# Archivos de build/backup
+*.zip
+*.lock
+*.sh
+
+# Fonts (static assets)
+/assets/fonts/
+
+# Images (static assets)
+/assets/images/
+/assets/sounds/
+
+# Smarty library (third-party)
+/src/Libs/smarty/
+/src/Libs/phpmailer/
+/src/Libs/JBBCode/
+
+# Migration (separate module)
+/migration/
+
+# Showcase (UI demos)
+/showcase/

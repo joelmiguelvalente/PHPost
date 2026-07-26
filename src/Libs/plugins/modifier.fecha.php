@@ -66,6 +66,7 @@ function smarty_modifier_fecha(int $timestamp, string $format = 'default'): stri
       'long' => fn () => $date->format('d') . ' de ' . $months[(int)$date->format('n')] . ' de ' . $date->format('Y'),
       // 20/04/2024
       'short' => fn () => $date->format('d/m/Y'),
+      'year' => fn () => $date->format('Y'),
       // 2024-04-20
       'iso' => fn () => $date->format('Y-m-d'),
       // 20 abril

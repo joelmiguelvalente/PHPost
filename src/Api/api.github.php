@@ -3,14 +3,12 @@
 declare(strict_types=1);
 
 /**
- * @package    src\Api
- * @author     PHPost Team & Miguel92
+ * @package    Api
+ * @author     Miguel92
  * @copyright  2026
  */
 
-if (!defined('TS_HEADER')) {
-	exit('No se permite el acceso directo al script');
-}
+defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
 const ACTIONS = [
    'github-commit' => ['nivel' => 2, 'template' => '', 'ajax' => false]
@@ -25,7 +23,7 @@ $config  = ACTIONS[$action];
 $tsLevel = $config['nivel'];
 $tsAjax  = (int)$config['ajax'];
 
-$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
+$tsLevelMsg = $tsUser->setLevel($tsLevel, true);
 if (!$tsLevelMsg) {
    echo json_encode(['state' => 0, 'data' => 'Sin permisos']);
    die();

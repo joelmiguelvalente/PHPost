@@ -3,14 +3,12 @@
 declare(strict_types=1);
 
 /**
- * @package    src\Api
- * @author     PHPost Team & Miguel92
+ * @package    Api
+ * @author     Miguel92
  * @copyright  2026
  */
 
-if (!defined('TS_HEADER')) {
-	exit('No se permite el acceso directo al script');
-}
+defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
 const ACTIONS = [
 	'moderacion-posts' => ['nivel' => 3, 'template' => 'main', 'ajax' => true],
@@ -31,15 +29,14 @@ $tsAjax  = (int) $config['ajax'];
 $tsPage  = sprintf('p.moderacion.%s', $config['template']);
 
 // DEPENDE EL NIVEL
-$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
+$tsLevelMsg = $tsUser->setLevel($tsLevel, true);
 if(!$tsLevelMsg) { 
 	echo '0: '.$tsLevelMsg; 
 	die();
 }
 
 // CLASE
-require_once TS_CLASS . "/c.moderacion.php";
-$tsMod = new tsMod($tsCore, $tsUser);
+$tsModeracion = Container::get(tsModeracion::class);
 
 $do = trim($_GET['do'] ?? '');
 // CODIGO
@@ -56,18 +53,18 @@ switch($action){
 		switch($do){
 			case 'view':
 				$tsPage = 'p.posts.preview';
-				$preview = $tsMod->getPreview($pid);
+				$preview = $tsModeracion->getPreview($pid);
 				$smarty->assign("tsPreview",$preview);
 			break;
 			case 'ocultar':
-				echo $tsMod->OcultarPost($pid, $tsCore->setSecure($_POST['razon']));
+				echo $tsModeracion->OcultarPost($pid, Html::escape($_POST['razon']));
 			break;
 			case 'reboot':
-				echo $tsMod->rebootPost($pid);
+				echo $tsModeracion->rebootPost($pid);
 			break;
 			case 'borrar':
 				if(isset($_POST['razon'])) {
-					echo $tsMod->deletePost($pid);
+					echo $tsModeracion->deletePost($pid);
 				} else {
 					require_once TS_EXTRAS . "/datos.php";
 					$tsPage = 'p.posts.mod';
@@ -75,10 +72,10 @@ switch($action){
 				}
 			break;
 			case 'sticky':
-				echo $tsMod->setSticky($pid);
+				echo $tsModeracion->setSticky($pid);
 			break;
 			case 'openclosed':
-				echo $tsMod->setOpenClosed($pid);
+				echo $tsModeracion->setOpenClosed($pid);
 			break;
 		}
 	break;
@@ -95,29 +92,29 @@ switch($action){
 					$aviso = "{$_POST['av_body']}\n\nStaff: {$tsUser->nick}";
 					$aviso_resp = $tsMonitor->setAviso($user_id, $subject, $aviso, $type);
 					if(!$aviso_resp) echo "0: Error al enviar el aviso a <strong>$username</strong>.";
-					else echo "1: El avioso fue enviado con &eacute;xito a <strong>$username</strong>.";
+					else echo "1: El avioso fue enviado con éxito a <strong>$username</strong>.";
 				} else $smarty->assign("tsUsername", $tsUser->getUserName($user_id));
 			break;
 			case 'ban':
 				if(isset($_POST['b_causa'])) {
 					$tsAjax = false;
-					echo $tsMod->banUser($user_id);
+					echo $tsModeracion->banUser($user_id);
 				}  else $smarty->assign("tsUsername", $tsUser->getUserName($user_id));
 			break;
 			case 'unban':
 				$tsAjax = false;
-				echo $tsMod->rebootUser($_POST['id'], 'unban');
+				echo $tsModeracion->rebootUser($_POST['id'], 'unban');
 			break;
 			case 'reboot':
 				$tsAjax = false;
-				echo $tsMod->rebootUser($_POST['id'], 'reboot');
+				echo $tsModeracion->rebootUser($_POST['id'], 'reboot');
 			break;
 			case 'info':
-				$smarty->assign("tsIUser", $tsMod->InfoUser($_POST['user_id']));
+				$smarty->assign("tsIUser", $tsModeracion->InfoUser($_POST['user_id']));
 			break;
 			case 'editar':
 				$tsAjax = false;
-				echo $tsMod->EditarUser($_POST['user_id']);
+				echo $tsModeracion->EditarUser($_POST['user_id']);
 			break;
 		}
 		$smarty->assign("tsDo",$do);
@@ -127,7 +124,7 @@ switch($action){
 		$mid = $_POST['mpid'];
 		// ACCIONES SECUNDARIAS
 		$tsAjax = false;
-		echo ($do === 'reboot') ? $tsMod->rebootMps($_POST['id']) : $tsMod->deleteMps($mid);
+		echo ($do === 'reboot') ? $tsModeracion->rebootMps($_POST['id']) : $tsModeracion->deleteMps($mid);
 	break;
 	case 'moderacion-fotos':
 		$fid = (int)$_POST['fid'];
@@ -135,12 +132,12 @@ switch($action){
 			switch($do){
 				case 'reboot':
 					$tsAjax = false;
-					echo $tsMod->rebootFoto($_POST['id']);
+					echo $tsModeracion->rebootFoto($_POST['id']);
 				break;
 				case 'borrar':
 					if($_POST['razon']) {
 						$tsAjax = false;
-						echo $tsMod->deleteFoto($fid);
+						echo $tsModeracion->deleteFoto($fid);
 					} else {
 						require_once TS_EXTRAS . '/datos.php';
 						$tsPage = 'p.fotos.mod';

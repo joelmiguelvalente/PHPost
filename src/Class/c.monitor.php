@@ -3,23 +3,14 @@
 declare(strict_types=1);
 
 /**
- * @package    PHPost/Class
- * @author     PHPost Team & Miguel92
+ * @package    Class
+ * @author     Miguel92
  * @copyright  2026
  */
 
-if (!defined('TS_HEADER')) {
-	exit('No se permite el acceso directo al script');
-}
-
-require_once TS_UTILS . '/Avatar.php';
-require_once TS_HELPERS . '/UrlHelper.php';
+defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
 class tsMonitor {
-	
-	protected Avatar $Avatar;
-	protected UrlHelper $UrlHelper;
-	protected Paginator $Paginator;
 
 	/**
 	 * @name notificaciones 
@@ -56,13 +47,15 @@ class tsMonitor {
 	*/
 	public function __construct(
 		protected tsCore $Core,
-		protected tsUser $User
+		protected tsUser $User,
+		protected UrlHelper $UrlHelper,
+		protected Paginator $Paginator,
+		protected Avatar $Avatar
 	) {
-		$this->Avatar = new Avatar;
-		$this->UrlHelper = new UrlHelper($Core);
-		$this->Paginator = new Paginator;
 		// VISITANTE?
-		if($this->User->is_member === 0) return false;
+		if($this->User->is_member === 0) {
+			return false;
+		}
 		// NOTIFICACIONES
 		$this->notificaciones = DB::value("SELECT COUNT(not_id) FROM u_monitor WHERE user_id = :uid AND not_menubar > 0", ['uid' => $this->User->uid]);
 		// AVISOS
@@ -77,23 +70,23 @@ class tsMonitor {
 	 */
 	private function makeMonitor(): void {
 		$this->monitor = [
-			1 => ['text' => 'agreg&oacute; a favoritos tu', 'ln_text' => 'post', 'css' => 'star'],
-			2 => ['text' => ['coment&oacute; tu','@FLAG nuevos comentarios en tu'], 'ln_text' => 'post', 'css' => 'comment_post'],
-			3 => ['text' => 'dej&oacute; @FLAG puntos en tu', 'ln_text' => 'post', 'css' => 'points'],
-			4 => ['text' => 'te est&aacute; siguiendo', 'ln_text' => 'Seguir a este usuario', 'css' => 'follow'],
-			5 => ['text' => 'cre&oacute; un nuevo', 'ln_text' => 'post', 'css' => 'post'],
+			1 => ['text' => 'agregï¿½ a favoritos tu', 'ln_text' => 'post', 'css' => 'star'],
+			2 => ['text' => ['comentï¿½ tu','@FLAG nuevos comentarios en tu'], 'ln_text' => 'post', 'css' => 'comment_post'],
+			3 => ['text' => 'dejï¿½ @FLAG puntos en tu', 'ln_text' => 'post', 'css' => 'points'],
+			4 => ['text' => 'te estï¿½ siguiendo', 'ln_text' => 'Seguir a este usuario', 'css' => 'follow'],
+			5 => ['text' => 'creï¿½ un nuevo', 'ln_text' => 'post', 'css' => 'post'],
 			6 => ['text' => ['te recomienda un', '@FLAG usuarios te recomiendan un'], 'ln_text' => 'post', 'css' => 'share'],
-			7 => ['text' => ['coment&oacute; en un', '@FLAG nuevos comentarios en el'], 'ln_text' => 'post', 'extra' => 'que sigues', 'css' => 'blue_ball'],
-			8 => ['text' => ['vot&oacute; @FLAG tu', '@FLAG nuevos votos a tu'], 'ln_text' => 'comentario', 'css' => 'voto_'],
-			9 => ['text' => ['respondi&oacute; tu', '@FLAG nuevas respuestas a tu'], 'ln_text' => 'comentario', 'css' => 'comment_resp'],
-			10 => ['text' => 'subi&oacute; una nueva', 'ln_text' => 'foto', 'css' => 'photo'],
-			11 => ['text' => ['coment&oacute; tu','@FLAG nuevos comentarios en tu'], 'ln_text' => 'foto', 'css' => 'photo'],
-			12 => ['text' => 'public&oacute; en tu', 'ln_text' => 'muro', 'css' => 'wall_post'],
-			13 => ['text' => ['coment&oacute; ', '@FLAG nuevos comentarios en'], 'ln_text' => 'publicaci&oacute;n', 'extra' => 'coment&oacute;', 'css' => 'w_comment'],
-			14 => ['text' => ['le gusta tu', 'A @FLAG personas les gusta tu'], 'ln_text' => ['publicaci&oacute;n','comentario'], 'css' => 'w_like'],
+			7 => ['text' => ['comentï¿½ en un', '@FLAG nuevos comentarios en el'], 'ln_text' => 'post', 'extra' => 'que sigues', 'css' => 'blue_ball'],
+			8 => ['text' => ['votï¿½ @FLAG tu', '@FLAG nuevos votos a tu'], 'ln_text' => 'comentario', 'css' => 'voto_'],
+			9 => ['text' => ['respondiï¿½ tu', '@FLAG nuevas respuestas a tu'], 'ln_text' => 'comentario', 'css' => 'comment_resp'],
+			10 => ['text' => 'subiï¿½ una nueva', 'ln_text' => 'foto', 'css' => 'photo'],
+			11 => ['text' => ['comentï¿½ tu','@FLAG nuevos comentarios en tu'], 'ln_text' => 'foto', 'css' => 'photo'],
+			12 => ['text' => 'publicï¿½ en tu', 'ln_text' => 'muro', 'css' => 'wall_post'],
+			13 => ['text' => ['comentï¿½ ', '@FLAG nuevos comentarios en'], 'ln_text' => 'publicaciï¿½n', 'extra' => 'comentï¿½', 'css' => 'w_comment'],
+			14 => ['text' => ['le gusta tu', 'A @FLAG personas les gusta tu'], 'ln_text' => ['publicaciï¿½n','comentario'], 'css' => 'w_like'],
 			15 => ['text' => 'Recibiste una medalla', 'css' => 'medal'],
-			16 => ['text' => 'Tu post recibi&oacute; una medalla', 'css' => 'medal'],
-			17 => ['text' => 'Tu foto recibi&oacute; una medalla', 'css' => 'medal'],
+			16 => ['text' => 'Tu post recibiï¿½ una medalla', 'css' => 'medal'],
+			17 => ['text' => 'Tu foto recibiï¿½ una medalla', 'css' => 'medal'],
 		];
 	}
 
@@ -105,13 +98,10 @@ class tsMonitor {
 	 * @info ENVIA UN AVISO/ALERTA
 	*/
 	public function setAviso(int $userId = 0, string $subject = '(sin asunto)', string $body = '', int $type = 0): bool {
-		# VERIFICAMOS QUE SE PUEDA ENVIAR EL AVISO
-		$data = DB::fetch("SELECT user_baneado FROM u_miembros WHERE user_id = :uid LIMIT 1", ['uid' => $userId]);
-		# NO PODEMOS ENVIAR A UN USUARIO BANEADO
-		if((int)$data['user_baneado'] === 1) return true;
+		$this->User->userIsBan($userId);
 		# INSERTAMOS EL AVISO
-		$subject = $this->Core->setSecure($subject);
-		$body = $this->Core->setSecure($body);
+		$subject = Html::escape($subject);
+		$body = Html::escape($body);
 		return (DB::insert('u_avisos', [
 			'user_id' => $userId,
 			'av_subject' => $subject,
@@ -157,7 +147,7 @@ class tsMonitor {
 	/**
 	 * @name setNotificacion
 	 * @access public
-	 * @param int $type       Tipo de notificación
+	 * @param int $type       Tipo de notificaciï¿½n
 	 * @param int $userId     Usuario que recibe
 	 * @param int $objUser    Usuario origen
 	 * @param int $objUno     ID del objeto principal (post, comment, etc.)
@@ -241,9 +231,9 @@ class tsMonitor {
 				$enviados[] = $val['c_user'];
 			}
 		}
-		// ENVIAMOS AL DUEÑO DEL MURO
+		// ENVIAMOS AL DUEï¿½O DEL MURO
 		$this->setNotificacion(13, (int)$pUser, $this->User->uid, $pubId, 1);
-		// ENVIAMOS AL QUE PUBLICO SI NO FUE EL DUEÑO DEL MURO
+		// ENVIAMOS AL QUE PUBLICO SI NO FUE EL DUEï¿½O DEL MURO
 		if(($pUser !== $pUserPub) && !in_array($pUserPub, $enviados)){
 			$this->setNotificacion(13, (int)$pUserPub, $this->User->uid, $pubId, 2);    
 		}
@@ -328,7 +318,7 @@ class tsMonitor {
 	      16 => "SELECT p.post_id, p.post_title, c.c_seo, m.medal_id, m.m_title, m.m_image FROM w_medallas_assign AS a LEFT JOIN p_posts AS p ON p.post_id = a.medal_for LEFT JOIN p_categorias AS c ON c.cid = p.post_category LEFT JOIN w_medallas AS m ON m.medal_id = a.medal_id WHERE m.medal_id = :obj AND p.post_id = {$objDos} LIMIT 1",
 	      17 => "SELECT f.foto_id, f.f_title, f.f_user, m.medal_id, m.m_title, m.m_image, u.user_id, u.user_name FROM w_medallas_assign AS a LEFT JOIN f_fotos AS f ON f.foto_id = a.medal_for LEFT JOIN u_miembros AS u ON u.user_id = f.f_user LEFT JOIN w_medallas AS m ON m.medal_id = a.medal_id WHERE m.medal_id = :obj AND f.foto_id = {$objDos} LIMIT 1",
 	      18 => "SELECT r_name FROM u_rangos WHERE rango_id = :obj LIMIT 1",
-	      default => throw new RuntimeException("Tipo de notificación inválido: {$data['not_type']}")
+	      default => throw new RuntimeException("Tipo de notificaciï¿½n invï¿½lido: {$data['not_type']}")
 	   };
 	}
 
@@ -341,12 +331,13 @@ class tsMonitor {
 }
 
 	private function baseOracion(array $data, int $noType): array {
+		$avatar = Container::get(Avatar::class)->get((int)$data['obj_user']);
 		return [
 			'unread' => $data[$this->show_type === 1 ? 'not_menubar' : 'not_monitor'],
 			'style'  => $this->monitor[$noType]['css'],
 			'date'   => $data['not_date'],
 			'user'   => $data['usuario'],
-			'avatar' => $this->Avatar->get((int)$data['obj_user']),
+			'avatar' => $avatar,
 			'total'  => (int)$data['not_total'],
 		];
 	}
@@ -378,7 +369,7 @@ class tsMonitor {
 		$showType  = ($this->show_type === 1);
 		$noType    = (int)$data['not_type'];
 		if (!isset($this->monitor[$noType])) {
-			throw new RuntimeException("Tipo de monitor inválido: {$noType}");
+			throw new RuntimeException("Tipo de monitor invï¿½lido: {$noType}");
 		}
 		$monitor = $this->monitor[$noType] ?? [];
 		$lnText = $monitor['ln_text'] ?? null;
@@ -388,8 +379,8 @@ class tsMonitor {
 		$txt_extra = ($showType || !$lnText) ? '' : " {$lnText}";
 		$message   = $lnText;
 		# LOCALES
-		$url 		  = $this->Core->settings['url'];
-		$urlImages = $this->Core->route('assets:images');
+		$url 	   = $this->Core->settings['url'];
+		$urlImages = Container::get(Routes::class)->route('assets:images');
 		//
 		$oracion = $this->baseOracion($data, $noType);
 		# CON UN SWITCH ESCOGEMOS QUE ORACION CONSTRUIR
@@ -430,7 +421,7 @@ class tsMonitor {
 					$text = $this->monitor[$noType]['text'][1].$txt_extra;
 					$oracion['text'] = $this->highlight($no_total, $text);
 				} else $oracion['text'] = $this->monitor[$noType]['text'][0].$txt_extra;
-				// ¿ES MI POST?
+				// ï¿½ES MI POST?
 				if((int)$data['post_user'] === $this->User->uid) {
 					$find = 'te recomienda un';
 					$oracion['text'] = $this->highlight('ha recomendado tu', $oracion['text'], $find);
@@ -463,7 +454,7 @@ class tsMonitor {
 				$de = match(true) {
 					($this->User->uid === (int)$data['p_user']) => ' tu',
 					((int)$data['p_user'] === (int)$data['p_user_resp']) => ' su',
-					default => ' la publicaci&oacute;n de'
+					default => ' la publicaciï¿½n de'
 				};
 				// CUANTOS
 				$no_total = (int)$data['not_total'];
@@ -510,7 +501,7 @@ class tsMonitor {
 
 	private function resolveFollowContext(): array {
 		$typeString = trim($_POST['type'] ?? '');
-		$objectId   = (int) $this->Core->setSecure($_POST['obj']);
+		$objectId   = (int) Html::escape($_POST['obj']);
 		$typeData = match ($typeString) {
 			'user' => ['type' => 1, 'notifyUser' => $objectId],
 			'post' => ['type' => 2, 'notifyUser' => 0],
@@ -526,7 +517,7 @@ class tsMonitor {
 	}
 
 	private function checkFollowFlood(int $objectId): ?string {
-		$flood = $this->Core->antiFlood(false, 'follow');
+		$flood = $this->User->antiFlood(false, 'follow');
 		if (strlen((string)$flood) <= 1) {
 			return null;
 		}
@@ -535,7 +526,7 @@ class tsMonitor {
 	}
 
 	private function followExists(array $ctx): bool {
-	   $row = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', "SELECT follow_id FROM u_follows WHERE f_user = {$this->User->uid} AND f_id = {$ctx['objectId']} AND f_type = {$ctx['type']} LIMIT 1"));
+	   $row = DB::fetch("SELECT follow_id FROM u_follows WHERE f_user = :uid AND f_id = :obj AND f_type = :type LIMIT 1", ['uid' => $this->User->uid, 'obj' => $ctx['objectId'], 'type' => $ctx['type']]);
 	   return !empty($row['follow_id']);
 	}
 
@@ -560,7 +551,7 @@ class tsMonitor {
 	 * @return string
 	 * @info MANEJA EL SEGUIR USUARIO/POST
 	*/
-	public function setFollow() {
+	public function setFollow(): string {
 		global $tsActividad;
 		// objectId = user_id, post_id, etc
 		$ctx = $this->resolveFollowContext();
@@ -571,10 +562,10 @@ class tsMonitor {
 			return "0-{$ctx['objectId']}-0-No puedes seguirte a ti mismo.";
 		}
 		if ($this->followExists($ctx)) {
-			return "2-{$ctx['objectId']}-0-Ya lo est&aacute;s siguiendo.";
+			return "2-{$ctx['objectId']}-0-Ya lo estï¿½s siguiendo.";
 		}
 		if (!$this->insertFollow($ctx)) {
-			return "0-{$ctx['objectId']}-0-No se pudo completar la acci&oacute;n.";
+			return "0-{$ctx['objectId']}-0-No se pudo completar la acciï¿½n.";
 		}
 		if ($ctx['notifyUser'] > 0) {
 			$this->setNotificacion((int)$ctx['notType'], (int)$ctx['notifyUser'], $this->User->uid);
@@ -594,8 +585,8 @@ class tsMonitor {
 	*/
 	public function setUnFollow(): string {
 		$ctx = $this->resolveFollowContext();
-		if (!db_exec([__FILE__, __LINE__], 'query', "DELETE FROM u_follows WHERE f_user = {$this->User->uid} AND f_id = {$ctx['objectId']} AND f_type = {$ctx['type']}")) {
-			return "1-{$ctx['objectId']}-0-No se pudo completar la acci&oacute;n.";
+		if (!DB::delete('u_follows', 'f_user = :uid AND f_id = :obj AND f_type = :type', ['uid' => $this->User->uid, 'obj' => $ctx['objectId'], 'type' => $ctx['type']])) {
+			return "1-{$ctx['objectId']}-0-No se pudo completar la acciï¿½n.";
 		}
 		$total = $this->countFollows($ctx);
 		return "0-{$ctx['objectId']}-{$total}";
@@ -610,7 +601,7 @@ class tsMonitor {
 	*/
 	private function getFollowVars(): array {
 		$return['sType'] = trim($_POST['type'] ?? '');
-		$return['obj'] = $this->Core->setSecure($_POST['obj']);
+		$return['obj'] = Html::escape($_POST['obj']);
 		// TIPO EN NUMERO
 		return match($return['sType']) {
 			'user' 	=> ['type' => 1, 'notUser' => $return['obj']],
@@ -633,7 +624,7 @@ class tsMonitor {
 	      'seguidores' => "SELECT u.user_id, u.user_name, p.user_pais, p.p_mensaje, f.follow_id FROM u_miembros AS u LEFT JOIN u_perfil AS p ON u.user_id = p.user_id LEFT JOIN u_follows AS f ON p.user_id = f.f_user WHERE f.f_id = :uid AND f.f_type = 1 ORDER BY f.f_date DESC",
 	      'siguiendo' => "SELECT u.user_id, u.user_name, p.user_pais, p.p_mensaje, f.follow_id FROM u_miembros AS u LEFT JOIN u_perfil AS p ON u.user_id = p.user_id LEFT JOIN u_follows AS f ON p.user_id = f.f_id WHERE f.f_user = :uid AND f.f_type = 1 ORDER BY f.f_date DESC",
 	      'posts' => "SELECT f.f_id, p.post_user, p.post_title, u.user_name, c.c_seo, c.c_nombre, c.c_img FROM u_follows AS f LEFT JOIN p_posts AS p ON f.f_id = p.post_id LEFT JOIN u_miembros AS u ON u.user_id = p.post_user LEFT JOIN p_categorias AS c ON c.cid = p.post_category WHERE f.f_user = :uid AND f.f_type = 2 ORDER BY f.f_date DESC",
-	      default => throw new InvalidArgumentException("Tipo de follow inválido: {$type}")
+	      default => throw new InvalidArgumentException("Tipo de follow invï¿½lido: {$type}")
 	   };
 	   $total = DB::numRows($query, ['uid' => $userId]);
 	   $pages = $this->Paginator->getPagination($total, 12);
@@ -667,7 +658,7 @@ class tsMonitor {
 	   $recomendado = DB::numRows("SELECT follow_id FROM u_follows WHERE f_id = :pid AND f_user = :uid AND f_type = 3 LIMIT 1", ['pid' => $postId, 'uid' => $this->User->uid]);
 
 	   if ($seguidores < 1)  return '0-Debes tener al menos un seguidor';
-	   if ($recomendado > 0) return '0-No puedes recomendar el mismo post m&aacute;s de una vez.';
+	   if ($recomendado > 0) return '0-No puedes recomendar el mismo post mï¿½s de una vez.';
 
 	   $data = DB::fetch("SELECT post_user FROM p_posts WHERE post_id = :pid LIMIT 1", ['pid' => $postId]);
 	   if ((int)$data['post_user'] === $this->User->uid) return '0-No puedes recomendar tus posts.';
@@ -675,7 +666,7 @@ class tsMonitor {
 	   DB::insert('u_follows', ['f_id' => $postId, 'f_user' => $this->User->uid, 'f_type' => 3, 'f_date' => time()]);
 	   $this->setFollowNotificacion(6, 1, $this->User->uid, $postId);
 	   $tsActividad->setActividad(4, $postId);
-	   return '1-La recomendaci&oacute;n fue enviada.';
+	   return '1-La recomendaciï¿½n fue enviada.';
 	}
 	
 	/**
@@ -685,7 +676,7 @@ class tsMonitor {
 	 * @return bool
 	 * @info GUARDA LOS FILTROS DE LA ACTIVIDAD
 	 */
-	public function setFiltro() {
+	public function setFiltro(): bool {
 		$fid = array_map(fn($v) => 'f' . (int)$v, $_POST['fid'] ?? []);
    	DB::update('u_portal', ['c_monitor' => implode(',', $fid)], 'user_id = :uid', ['uid' => $this->User->uid]);
    	return true;
@@ -698,7 +689,7 @@ class tsMonitor {
 	 * @return bool
 	 * @info REVISA EN LA CONFIGURACION SI DESEA RESIBIR LA NOTIFICACION
 	 */
-	private function allowNotifi(int $type, int $userId) {
+	private function allowNotifi(int $type, int $userId): bool {
 		$config  = DB::value("SELECT c_monitor FROM u_portal WHERE user_id = :uid LIMIT 1", ['uid' => $userId]);
     	$filtros = explode(',', $config ?? '');
     	return in_array("f{$type}", $filtros);

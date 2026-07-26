@@ -3,23 +3,201 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Error 501 - No implementado</title>
-<link rel="stylesheet" href="./assets/css/base.css">
-<link rel="stylesheet" href="./assets/css/error.css">
+<meta name="description" content="Error 501 - Funcionalidad no implementada - El servidor no puede cumplir con esta solicitud">
+<title>Error 501 - Funcionalidad No Disponible</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+<style>
+	.unavailable-error {
+		background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+	}
+	.unavailable-card {
+		background: white;
+		border-radius: 16px;
+		box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+		padding: 40px;
+		max-width: 500px;
+		width: 90%;
+		text-align: center;
+	}
+	.unavailable-icon {
+		width: 80px;
+		height: 80px;
+		background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+		border-radius: 50%;
+		margin: 0 auto 20px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 32px;
+		color: white;
+	}
+	.unavailable-code {
+		font-size: 60px;
+		font-weight: 700;
+		color: #6366f1;
+		margin: 0 0 10px;
+	}
+	.unavailable-title {
+		font-size: 28px;
+		font-weight: 600;
+		color: #1e293b;
+		margin: 0 0 15px;
+	}
+	.unavailable-message {
+		font-size: 16px;
+		color: #64748b;
+		margin: 0 0 25px;
+		line-height: 1.6;
+	}
+	.unavailable-info {
+		background: #f5f3ff;
+		border-radius: 8px;
+		padding: 20px;
+		margin: 20px 0;
+		text-align: left;
+	}
+	.unavailable-info h4 {
+		margin: 0 0 10px;
+		color: #6366f1;
+		font-size: 14px;
+	}
+	.unavailable-note {
+		display: flex;
+		align-items: flex-start;
+		gap: 10px;
+		margin: 8px 0;
+		font-size: 14px;
+		color: #4338ca;
+	}
+	.unavailable-note span {
+		flex-shrink: 0;
+		width: 20px;
+		height: 20px;
+		background: #e0e7ff;
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 12px;
+	}
+	.unavailable-actions {
+		display: flex;
+		gap: 12px;
+		justify-content: center;
+		flex-wrap: wrap;
+		margin-top: 30px;
+	}
+	.btn {
+		padding: 12px 24px;
+		border: none;
+		border-radius: 8px;
+		font-size: 14px;
+		font-weight: 600;
+		cursor: pointer;
+		transition: all 0.3s ease;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		text-decoration: none;
+	}
+	.btn-primary {
+		background: #6366f1;
+		color: white;
+	}
+	.btn-primary:hover {
+		background: #4f46e5;
+		transform: translateY(-2px);
+		box-shadow: 0 5px 15px rgba(99, 102, 241, 0.4);
+	}
+	.btn-secondary {
+		background: #64748b;
+		color: white;
+	}
+	.btn-secondary:hover {
+		background: #475569;
+		transform: translateY(-2px);
+		box-shadow: 0 5px 15px rgba(100, 116, 139, 0.4);
+	}
+	.unavailable-footer {
+		margin-top: 25px;
+		padding-top: 20px;
+		border-top: 1px solid #e0e7ff;
+		font-size: 13px;
+		color: #a5b4fc;
+	}
+	.unavailable-footer a {
+		color: #6366f1;
+		text-decoration: none;
+	}
+	.unavailable-footer a:hover {
+		text-decoration: underline;
+	}
+	@media (max-width: 480px) {
+		.unavailable-card {
+			padding: 25px;
+		}
+		.unavailable-code {
+			font-size: 48px;
+		}
+		.unavailable-title {
+			font-size: 22px;
+		}
+		.unavailable-actions {
+			flex-direction: column;
+		}
+		.btn {
+			width: 100%;
+		}
+	}
+	@keyframes fadeInUp {
+		from {
+			opacity: 0;
+			transform: translateY(20px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+	.unavailable-card {
+		animation: fadeInUp 0.6s ease-out;
+	}
+</style>
 </head>
-<body class="d-flex justify-content-center align-items-center w-100 vh-100" data-font-family="{$tsThemeFont.family}" data-font-size="{$tsThemeFont.size}">
-	
-	<section class="error_image_show body-bg rounded shadow position-relative">
-	
-		<h1 class="text-center position-relative py-4 w-100">ERROR <strong>501</strong></h1>
-
-		<div class="contant_box d-flex justify-content-center align-items-center flex-column py-4">
-			<h3 class="h3">No implementado</h3>
-			<p>El servidor no puede cumplir con la solicitud debido a que no tiene la funcionalidad necesaria.</p>
-			<a href="./" class="btn">Volver a la página principal</a>
+<body class="d-flex justify-content-center align-items-center w-100 vh-100 unavailable-error">
+	<div class="unavailable-card">
+		<div class="unavailable-icon">
+			🔧
 		</div>
-	
-	</section>
+		<div class="unavailable-code">501</div>
+		<h1 class="unavailable-title">Funcionalidad No Disponible</h1>
+		<p class="unavailable-message">Lo sentimos, el servidor no puede cumplir con esta solicitud debido a que la funcionalidad necesaria no está implementada en nuestro sistema.</p>
 
+		<div class="unavailable-info">
+			<h4>📋 Información técnica</h4>
+			<div class="unavailable-note">
+				<span>1</span>
+				El servidor recibió una solicitud que el servidor actual no puede satisfacer
+			</div>
+			<div class="unavailable-note">
+				<span>2</span>
+				Esta puede ser una función temporalmente no disponible
+			</div>
+			<div class="unavailable-note">
+				<span>3</span>
+				Por favor, contacte con el administrador del sitio para más información
+			</div>
+		</div>
+
+		<div class="unavailable-actions">
+			<a href="javascript:history.back()" class="btn btn-primary">Volver atrás</a>
+			<a href="./" class="btn btn-secondary">Ir al inicio</a>
+		</div>
+
+		<div class="unavailable-footer">
+			¿Funcionalidad no disponible? Contacta con nuestro equipo<br>
+			ID de error: unav-<?= strtoupper(substr(md5(microtime()), 0, 8)) ?>-<?= date('YmdHis') ?>
+		</div>
+	</div>
 </body>
 </html>

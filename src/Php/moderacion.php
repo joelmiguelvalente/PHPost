@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * @package    PHPost/Php
+ * @package    Php
  * @author     PHPost Team & Miguel92
  * @copyright  2026
  */
@@ -15,18 +15,7 @@ $tsTitle = "Moderacion de {$tsCore->settings['titulo']}";
  * Inicializamos variable
  */
 
-$ctx = Controller::page('moderacion')->moderator();
-// sincronizamos
-$ctx->exportLegacy();
-
-$tsLevelMsg = $tsCore->setLevel($ctx->getLevel(), true);
-if (is_array($tsLevelMsg)) {
-   $ctx->changePage('aviso');
-   $ctx->stop();
-   $smarty->assign("tsAviso", $tsLevelMsg);
-   // sincroniza nuevamente
-   $ctx->exportLegacy();
-}
+$ctx = Controller::init('moderacion', 'moderator');
 
 if($ctx->continue()) {
 
@@ -35,56 +24,49 @@ if($ctx->continue()) {
 	// ACTION 2
 	$act = trim($_GET['act'] ?? '');
 	// CLASE POSTS
-	require_once TS_CLASS . "/c.moderacion.php";
-	$tsMod = new tsMod($tsCore, $tsUser);
+	$tsModeracion = Container::get(tsModeracion::class);
 
 	if($action === '') {
 		$smarty->assign("tsPlantilla", "");
-		$smarty->assign("tsMods", $tsMod->getMods());
+		$smarty->assign("tsMods", $tsModeracion->getMods());
 
-   # DENUNCIAS
+   	# DENUNCIAS
 	} elseif(in_array($action, ['posts', 'users', 'mps', 'fotos'], true)) {
 		$smarty->assign("tsPlantilla", "report_$action");
-      // DATOS EXTRA
-      require_once TS_EXTRAS . '/datos.php';
-      // SEGUNDA ACCION
+      	// DATOS EXTRA
+      	require_once TS_EXTRAS . '/datos.php';
+      	// SEGUNDA ACCION
 		if(empty($act)){
-		 	$smarty->assign("tsReports", $tsMod->getDenuncias($action));
+		 	$smarty->assign("tsReports", $tsModeracion->getDenuncias($action));
 		} elseif($act === 'info') {
-         $smarty->assign("tsDenuncia", $tsMod->getDenuncia($action));
+         	$smarty->assign("tsDenuncia", $tsModeracion->getDenuncia($action));
 		}
-      $smarty->assign("tsDenuncias", $Denuncias[$action]);
-	}
-   // SUSPENSIONES
-   elseif($action === 'banusers'){
+      	$smarty->assign("tsDenuncias", $Denuncias[$action]);
+   	// SUSPENSIONES
+	} elseif($action === 'banusers') {
 		$smarty->assign("tsPlantilla", "ban_users");
-      $smarty->assign("tsSuspendidos",$tsMod->getSuspendidos());
-   }
+      	$smarty->assign("tsSuspendidos",$tsModeracion->getSuspendidos());
 	//PAPELERAS
-	elseif($action === 'pospelera'){
+   	} elseif($action === 'pospelera'){
 		$smarty->assign("tsPlantilla", "papelera_posts");
-      $smarty->assign("tsPospelera",$tsMod->getPospelera());
-   }
-	elseif($action === 'fopelera'){
+      $smarty->assign("tsPospelera",$tsModeracion->getPospelera());
+   	} elseif($action === 'fopelera'){
 		$smarty->assign("tsPlantilla", "papelera_fotos");
-       $smarty->assign("tsFopelera",$tsMod->getFopelera());
-   }
-	// CONTENIDO DESAPROBADO
-	elseif($action === 'comentarios'){
+       $smarty->assign("tsFopelera",$tsModeracion->getFopelera());
+    // CONTENIDO DESAPROBADO
+   	} elseif($action === 'comentarios'){
 		$smarty->assign("tsPlantilla", "revision_comentarios");
-      $smarty->assign("tsComentarios",$tsMod->getComentariosD());
-   }
-	elseif($action === 'revposts'){
+      	$smarty->assign("tsComentarios",$tsModeracion->getComentariosD());
+   	} elseif($action === 'revposts'){
 		$smarty->assign("tsPlantilla", "revision_posts");
-      $smarty->assign("tsPosts",$tsMod->getPostsD());
-   }
+		$smarty->assign("tsPosts",$tsModeracion->getPostsD());
 	// BUSCADOR DE IP Y CONTENIDO
-   elseif($action === 'buscador') {
+   	} elseif($action === 'buscador') {
 		$smarty->assign("tsPlantilla", "buscador");
 		if(isset($_POST['buscar'])) {
 			$tsCore->redirectTo($tsCore->settings['url'].'/moderacion/buscador/'.$_POST['m'].'/'.$_POST['t'].'/'.$_POST['texto']);
 		}	
-		if($act === 'search') $smarty->assign("tsContenido", $tsMod->getContenido()); 
+		if($act === 'search') $smarty->assign("tsContenido", $tsModeracion->getContenido());
 	}
 
 	// ACCION?
@@ -93,8 +75,4 @@ if($ctx->continue()) {
 
 }
 
-if($tsAjax) {
-	$smarty->assign("tsTitle", $tsTitle);
-	if(isset($_GET['save'])) $smarty->assign("tsSave", $_GET['save']);
-   require_once TS_ROOT . "/footer.php";
-}
+Controller::render($tsAjax, $tsTitle, $tsPage);

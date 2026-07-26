@@ -111,26 +111,21 @@ const fotos = {
         const auser = $('input[name=auser_post]').val() ?? '';
         $('#loading').fadeIn(250);
 
-        $.ajax({
-            type: 'POST',
-            url:  `${route.url}/comentario-agregar?ts=true&do=fotos`,
-            data: `comentario=${encodeURIComponent(text)}&fotoid=${queryParam('fotoid')}&auser=${auser}`,
-            success(h) {
-                const code = h.charAt(0);
-                const body = h.substring(3);
-                if (code === '0') {
-                    $('.form .error').html(body).show('slow');
-                    $btn.prop('disabled', false);
-                } else if (code === '1') {
-                    $('#no-comments').hide();
-                    $('#mensajes').append(body);
-                    $('.form').html('<div class="alert-empty">Tu comentario fue agregado correctamente :)</div>');
-                    $('#ncomments').text(parseInt($('#ncomments').text(), 10) + 1);
-                    $('.noComments').remove();
-                    $btn.prop('disabled', false);
-                }
-                $('#loading').fadeOut(250);
+        api('comentario-agregar?ts=true&do=fotos', { comentario: text, fotoid: queryParam('fotoid'), auser }, h => {
+            const code = h.charAt(0);
+            const body = h.substring(3);
+            if (code === '0') {
+                $('.form .error').html(body).show('slow');
+                $btn.prop('disabled', false);
+            } else if (code === '1') {
+                $('#no-comments').hide();
+                $('#mensajes').append(body);
+                $('.form').html('<div class="alert-empty">Tu comentario fue agregado correctamente :)</div>');
+                $('#ncomments').text(parseInt($('#ncomments').text(), 10) + 1);
+                $('.noComments').remove();
+                $btn.prop('disabled', false);
             }
+            $('#loading').fadeOut(250);
         });
     },
 
@@ -142,19 +137,14 @@ const fotos = {
 
         $('#loading').fadeIn(250);
 
-        $.ajax({
-            type: 'POST',
-            url:  `${route.url}/comentario-votar?do=fotos`,
-            data: `voto=${voto}&fotoid=${queryParam('fotoid')}`,
-            success(h) {
-                if (h.charAt(0) === '0') {
-                    mydialog.alert('Votar Foto', h.substring(3));
-                } else if (h.charAt(0) === '1') {
-                    $('#actions').html(h.substring(3)).fadeIn('fast');
-                    $el.text(total + 1);
-                }
-                $('#loading').fadeOut(250);
+        api('comentario-votar?do=fotos', { voto, fotoid: queryParam('fotoid') }, h => {
+            if (h.charAt(0) === '0') {
+                mydialog.alert('Votar Foto', h.substring(3));
+            } else if (h.charAt(0) === '1') {
+                $('#actions').html(h.substring(3)).fadeIn('fast');
+                $el.text(total + 1);
             }
+            $('#loading').fadeOut(250);
         });
     },
 
@@ -174,40 +164,30 @@ const fotos = {
 
     del_comentario(cid) {
         $('#loading').fadeIn(250);
-        $.ajax({
-            type: 'POST',
-            url:  `${route.url}/comentario-borrar?do=fotos`,
-            data: `cid=${cid}`,
-            success(h) {
-                if (h.charAt(0) === '0') {
-                    mydialog.alert('Error:', h.substring(3));
-                } else if (h.charAt(0) === '1') {
-                    $('#ncomments').text(parseInt($('#ncomments').text(), 10) - 1);
-                    $(`#div_cmnt_${cid}`).slideUp(1500, 'easeInOutElastic', function () {
-                        $(this).remove();
-                    });
-                    mydialog.close();
-                }
-                $('#loading').fadeOut(250);
+        api('comentario-borrar?do=fotos', { cid }, h => {
+            if (h.charAt(0) === '0') {
+                mydialog.alert('Error:', h.substring(3));
+            } else if (h.charAt(0) === '1') {
+                $('#ncomments').text(parseInt($('#ncomments').text(), 10) - 1);
+                $(`#div_cmnt_${cid}`).slideUp(1500, 'easeInOutElastic', function () {
+                    $(this).remove();
+                });
+                mydialog.close();
             }
+            $('#loading').fadeOut(250);
         });
     },
 
     del_foto(fid) {
         $('#loading').fadeIn(250);
-        $.ajax({
-            type: 'POST',
-            url:  `${route.url}/fotos/borrar`,
-            data: `fid=${fid}`,
-            success(h) {
-                if (h.charAt(0) === '0') {
-                    mydialog.alert('Error:', h.substring(3));
-                } else if (h.charAt(0) === '1') {
-                    mydialog.close();
-                    location.href = `${route.url}/fotos/`;
-                }
-                $('#loading').fadeOut(250);
+        api('fotos/borrar', { fid }, h => {
+            if (h.charAt(0) === '0') {
+                mydialog.alert('Error:', h.substring(3));
+            } else if (h.charAt(0) === '1') {
+                mydialog.close();
+                location.href = `${route.url}/fotos/`;
             }
+            $('#loading').fadeOut(250);
         });
     }
 };

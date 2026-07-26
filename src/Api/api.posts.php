@@ -3,14 +3,12 @@
 declare(strict_types=1);
 
 /**
- * @package    src\Api
- * @author     PHPost Team & Miguel92
+ * @package    Api
+ * @author     Miguel92
  * @copyright  2026
  */
 
-if (!defined('TS_HEADER')) {
-	exit('No se permite el acceso directo al script');
-}
+defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
 const ACTIONS = [
    'posts-genbus'				 => ['nivel' => 2, 'template' => 'genbus', 'ajax' => true],
@@ -33,24 +31,22 @@ $tsAjax  = (int) $config['ajax'];
 $tsPage  = sprintf('p.posts.%s', $config['template']);
 
 // DEPENDE EL NIVEL
-$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
+$tsLevelMsg = $tsUser->setLevel($tsLevel, true);
 if(!$tsLevelMsg) { 
 	echo '0: '.$tsLevelMsg; 
 	die();
 }
 
 if(in_array($action, ['posts-genbus', 'posts-preview'])) {
-	require_once TS_CLASS . "/c.agregar.php";
-	$tsAgregar = new tsAgregar($tsCore, $tsUser);
+	$tsAgregar = Container::get(tsAgregar::class);
 }
 
-require_once TS_CLASS . "/c.posts.php";
-$tsPosts = new tsPosts($tsCore, $tsUser);
+$tsPosts = Container::get(tsPosts::class);
 
 // CODIGO
 switch($action){
 	case 'posts-genbus':
-		$query = $tsCore->setSecure(trim($_GET['query'] ?? $_POST['query'] ?? ''));
+		$query = Html::escape(trim($_GET['query'] ?? $_POST['query'] ?? ''));
 		$do = trim($_GET['do'] ?? '');
 		if($do === 'search') $smarty->assign("tsPosts", $tsAgregar->simiPosts($query));
 		else $smarty->assign("tsTags", $tsAgregar->genTags($query));

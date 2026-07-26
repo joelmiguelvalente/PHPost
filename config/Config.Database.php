@@ -15,7 +15,7 @@ declare(strict_types=1);
  * el bootstrap principal de la aplicación.
  *
  * @package    Config
- * @author     PHPost Team & Miguel92
+ * @author     Miguel92
  * @copyright  2026
  */
 
@@ -43,7 +43,11 @@ final class ConfigDatabase extends AbstractConfig
          *   database: string,
          *   charset: string,
          *   collation: string,
-         *   port: int
+         *   port: int,
+         *   socket: ?string,
+         *   timeout: int,
+         *   options: array{int_and_float_native: bool, local_infile: bool},
+         *   ssl: array{ca: ?string, cert: ?string, key: ?string, verify: bool}
          * }
          */
       $this->items = [
@@ -90,6 +94,22 @@ final class ConfigDatabase extends AbstractConfig
              * Puerto del servidor de base de datos
              */
             'port' => 3306,
+
+            'socket' => null,
+
+            'timeout' => 5,
+
+            'options' => [
+                'int_and_float_native' => true,
+                'local_infile' => false
+            ],
+
+            'ssl' => [
+                'ca' => null,
+                'cert' => null,
+                'key' => null,
+                'verify' => true
+            ]
         ];
         parent::__construct();
     }

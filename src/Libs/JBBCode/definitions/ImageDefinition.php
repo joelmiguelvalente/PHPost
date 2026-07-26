@@ -11,8 +11,6 @@
  * 5. Con otros atributos: [image alt="Texto alternativo" title="Título"]url[/image]
 */
 
-require_once TS_UTILS . '/ImageProcessor.php';
-
 class ImageDefinition extends JBBCode\CodeDefinition {
 
     private $Processor;
@@ -29,7 +27,7 @@ class ImageDefinition extends JBBCode\CodeDefinition {
         $this->nestLimit = -1;
         $this->postId = $postId;
         $this->route = $route;
-        $this->Processor = new ImageProcessor([
+        $this->Processor = Container::get(ImageProcessor::class, [
             'storage_path' => TS_STORAGE . '/media/',
             'type' => 'posts',
             'id' => (int)$postId,

@@ -3,14 +3,12 @@
 declare(strict_types=1);
 
 /**
- * @package    src\Api
- * @author     PHPost Team & Miguel92
+ * @package    Api
+ * @author     Miguel92
  * @copyright  2026
  */
 
-if (!defined('TS_HEADER')) {
-	exit('No se permite el acceso directo al script');
-}
+defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
 const ACTIONS = [
 	'upload-avatar' => ['nivel' => 2, 'template' => '', 'ajax' => false],
@@ -20,7 +18,7 @@ const ACTIONS = [
 
 if (!array_key_exists($action, ACTIONS)) {
 	http_response_code(403);
-	exit('Acción inválida');
+	exit('Acciï¿½n invï¿½lida');
 }
 
 $config = ACTIONS[$action];
@@ -30,15 +28,14 @@ $tsAjax  = (int) $config['ajax'];
 $tsPage  = sprintf('p.upload.%s', $config['template']);
 
 // DEPENDE EL NIVEL
-$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
+$tsLevelMsg = $tsUser->setLevel($tsLevel, true);
 if(!$tsLevelMsg) { 
 	echo '0: '.$tsLevelMsg; 
 	die();
 }
 
 // CLASE
-require_once TS_CLASS . '/c.upload.php';
-$tsUpload = new tsUpload();
+$tsUpload = Container::get(tsUpload::class);
 
 // CODIGO
 switch($action){
@@ -50,7 +47,7 @@ switch($action){
 	break;
 	case 'upload-crop':
 		echo json_encode($tsUpload->cropAvatarWebp((int)$tsUser->uid));
-		db_exec([__FILE__, __LINE__], 'query', 'UPDATE u_perfil SET p_avatar = 1 WHERE user_id = ' . (int)$tsUser->uid);
+		DB::update('u_perfil', ['p_avatar' => 1], 'user_id = :uid', ['uid' => $tsUser->uid]);
 	break;
 	case 'upload-images':
 		echo json_encode(['error' => 'No implementado']);

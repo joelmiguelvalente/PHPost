@@ -27,12 +27,12 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 {/if}
-<h1 class="text-xl font-semibold mb-4">Administrar Categor&iacute;as</h1>
+<h1 class="text-xl font-semibold mb-4">Administrar Categorías</h1>
 <div class="rounded border bg-white dark:bg-surface p-4 shadow-sm">
    {include "dashboard/Alert.tpl" text="Tus cambios han sido guardados" color="green" show=$tsSave}
    {if $tsAct == ''}
       {if !$tsSave}
-         {include "dashboard/Alert.tpl" text="Puedes cambiar el orden de las categor&iacute;as tan s&oacute;lo con arrastrarlas con el puntero." color="orange" show=true}
+         {include "dashboard/Alert.tpl" text="Puedes cambiar el orden de las categorías tan sólo con arrastrarlas con el puntero." color="orange" show=true}
       {/if}
       <div class="overflow-x-auto rounded-md border bg-white dark:bg-surface shadow-sm">
          <table class="min-w-full border-collapse text-sm">
@@ -54,8 +54,8 @@ document.addEventListener('DOMContentLoaded', function () {
                      <td class="px-3 py-2"><span class="material-symbols-outlined text-sm">lock{if $c.c_privada == 0}_open_right{/if}</span></td>
                      <td class="px-3 py-2">
                         <div class="flex justify-center gap-2">
-                           {include "dashboard/table/Action.tpl" action="cats?act=editar&cid={$c.cid}" title="Editar Categor&iacute;a" icon="edit"}
-                           {include "dashboard/table/Action.tpl" action="cats?act=borrar&cid={$c.cid}" title="Borrar Categor&iacute;a" icon="delete"}
+                           {include "dashboard/table/Action.tpl" action="cats?act=editar&cid={$c.cid}" title="Editar Categoría" icon="edit"}
+                           {include "dashboard/table/Action.tpl" action="cats?act=borrar&cid={$c.cid}" title="Borrar Categoría" icon="delete"}
                         </div>
                      </td>
                   </tr>
@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', function () {
       </div>
 
       <div class="flex space-x-4 py-4">
-         <a href="{$tsConfig.url}/admin/cats?act=nueva" class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90"><span class="material-symbols-outlined text-sm">add</span> Agregar Nueva Categor&iacute;a</a>
+         <a href="{$tsConfig.url}/admin/cats?act=nueva" class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90"><span class="material-symbols-outlined text-sm">add</span> Agregar Nueva Categoría</a>
 
          <a href="{$tsConfig.url}/admin/cats?act=change" class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90"><span class="material-symbols-outlined text-sm">sync_alt</span> Mover Posts</a>
       </div>							
@@ -75,12 +75,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
             {include file="dashboard/Legend.tpl" text="{if $tsAct == 'nueva'}Agregar nueva{else}Editar{/if} categoria"}
 
-            {include "dashboard/Alert.tpl" text="Si deseas m&aacute;s iconos para las categor&iacute;as debes subirlos al directorio: {$tsRoutes.assets.images}/cat/" color="orange" show=true}
+            {include "dashboard/Alert.tpl" text="Si deseas más iconos para las categorías debes subirlos al directorio: {$tsRoutes.assets.images}/cat/" color="orange" show=true}
 
-            {include "dashboard/FormGroup.tpl" id="c_nombre" label="Nombre de la categor&iacute;a" required=true name="c_nombre" value=$tsCat.c_nombre}
+            {include "dashboard/FormGroup.tpl" id="c_nombre" label="Nombre de la categoría" required=true name="c_nombre" value=$tsCat.c_nombre}
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-start py-2 mb-3">
-               <label for="c_img" class="font-medium text-gray-700 dark:text-gray-300">Icono de la categor&iacute;a</label>
+               <label for="c_img" class="font-medium text-gray-700 dark:text-gray-300">Icono de la categoría</label>
                <div class="md:col-span-2 flex items-center">
                   <div style="background:url({$tsRoutes.assets.images}/icons/cat/{if $tsCat.c_img == ''}book.png{else}{$tsCat.c_img}{/if}) no-repeat center center;background-size:16px;display:block;width:16px;height:16px;margin-right:10px;" id="c_icon"></div>
                   <select name="c_img" id="c_img" class="rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-surface px-3 py-2 text-sm focus:ring-2 focus:ring-primary" style="width: 160px;">
@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', function () {
                </div>
             </div>
 
-            {include "dashboard/FormGroup.tpl" type="radio" id="c_privada" label="La categor&iacute;a es..." name="c_privada" checked=$tsCat.c_privada labels=["P&uacute;blica", "Privada"] values=[0,1]}
+            {include "dashboard/FormGroup.tpl" type="radio" id="c_privada" label="La categoría es..." name="c_privada" checked=$tsCat.c_privada labels=["Pública", "Privada"] values=[0,1]}
 
             {include "dashboard/Button.tpl" submit_text="{if $tsAct == 'nueva'}Crear categoria{else}Guardar cambios{/if}"}
          </fieldset>
@@ -98,9 +98,9 @@ document.addEventListener('DOMContentLoaded', function () {
       {if $tsError}<div class="mensajes error">{$tsError}</div>{/if}
       {if $tsType == 'cat'}
          <form action="" method="post" id="admin_form">
-            <label for="h_mov" style="width:500px;">Borrar categor&iacute;a y mover las subcategor&iacute;as y demas datos a otra categor&iacute;a diferente. Mover datos a:</label>
+            <label for="h_mov" style="width:500px;">Borrar categoría y mover las subcategorías y demas datos a otra categoría diferente. Mover datos a:</label>
             <select name="ncid">
-             	<option value="-1">Categor&iacute;as</option>
+             	<option value="-1">Categorías</option>
              	{foreach from=$tsConfig.categorias item=c}
                   {if $c.cid != $tsCID}
                  	   <option value="{$c.cid}">{$c.c_nombre}</option>
@@ -114,9 +114,9 @@ document.addEventListener('DOMContentLoaded', function () {
 	{elseif $tsAct == 'change'}
       {if $tsError}<div class="mensajes error">{$tsError}</div>{/if}
       <form action="" method="post" id="admin_form">
-         <label style="width:500px;">Mover todos los posts de la categor&iacute;a </label>
+         <label style="width:500px;">Mover todos los posts de la categoría </label>
          <select name="oldcid">
-            <option value="-1">Categor&iacute;as</option>
+            <option value="-1">Categorías</option>
             {foreach from=$tsConfig.categorias item=c}
                {if $c.cid != $tsCID}
                   <option value="{$c.cid}">{$c.c_nombre}</option>
@@ -125,7 +125,7 @@ document.addEventListener('DOMContentLoaded', function () {
          </select>
 			<label style="width:500px;"> a </label>
 			<select name="newcid">
-            <option value="-1">Categor&iacute;as</option>
+            <option value="-1">Categorías</option>
             {foreach from=$tsConfig.categorias item=c}
                {if $c.cid != $tsCID}
                   <option value="{$c.cid}">{$c.c_nombre}</option>

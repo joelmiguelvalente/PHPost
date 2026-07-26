@@ -3,31 +3,30 @@
 declare(strict_types=1);
 
 /**
- * @package    PHPost/Class
- * @author     PHPost Team & Miguel92
+ * @package    Class
+ * @author     Miguel92
  * @copyright  2026
  */
 
-if (!defined('TS_HEADER')) {
-	exit('No se permite el acceso directo al script');
-}
+defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
 class tsMensajes {
 	
 	public $mensajes; // SIN LEER
-	private string $MyIP;
-	protected Paginator $Paginator;
+
+	private string $myIP;
 
 	// INSTANCIA DE LA CLASE
 	public function __construct(
 		protected tsCore $Core, 
-		protected tsUser $User
+		protected tsUser $User,
+		protected Paginator $Paginator,
+		protected IP $IP
 	) {
 		// VISITANTE?
 		if(empty($this->User->is_member)) return false;
 		$this->mensajes = $this->countMessages();
-		$this->MyIP = (new IP)->getIP();
-		$this->Paginator = new Paginator;
+		$this->myIP = $this->IP->getIPBinary();
 	}
 
 	private function countMessages(): int {
@@ -39,7 +38,7 @@ class tsMensajes {
 	}
 
 	private function mensajePara(bool $lower = true): string {
-		$para = $this->Core->setSecure(trim($_POST['para'] ?? ''));
+		$para = Html::escape(trim($_POST['para'] ?? ''));
 		if($lower) {
 			$para = strtolower($para);
 		}
@@ -47,7 +46,7 @@ class tsMensajes {
 	}
 
 	private function mensajeContenido(int $limit = 0, string $type = 'mensaje'): string {
-		$mensaje = $this->Core->setSecure($_POST[$type] ?? '', true);
+		$mensaje = Html::escape($_POST[$type] ?? '', true);
 		if($limit > 0) {
 			$mensaje = substr($mensaje, 0, $limit);
 		}
@@ -55,7 +54,7 @@ class tsMensajes {
 	}
 
 	private function mensajeAsunto(): string {
-		return $this->Core->setSecure(trim($_POST['asunto'] ?? 'Sin asunto expresado!'));
+		return Html::escape(trim($_POST['asunto'] ?? 'Sin asunto expresado!'));
 	}
 
 	/*
@@ -69,7 +68,7 @@ class tsMensajes {
 		return !$exists ? '2' : '0';
 	}
 
-	private function newMensajeAntiflood(string $asunto = '') {
+	private function newMensajeAntiflood(string $asunto = ''): void {
 		$antiflood = $this->User->permiso('limites.antiflood') * 5;
 		$mensaje = $this->mensajeContenido(75);
 		//
@@ -83,7 +82,7 @@ class tsMensajes {
 			'nexttime' => $nexttime
 		]);
 		if($exists) die('Espere '.$antiflood.' segundos para continuar'); 
-		$this->Core->antiFlood(true, 'mps');
+		$this->User->antiFlood(true, 'mps');
 	}
 
 	private function mensajeComprobar(int $user_id, string $para): string {
@@ -105,7 +104,7 @@ class tsMensajes {
 					if($data['p_mensajes_privados'] === 'nobody' && !$this->User->is_admod) {
 						return '0: Lo sentimos, pero '.$para.' no permite recibir mensajes';
 					} elseif($data['p_mensajes_privados'] === 'off' && !$this->User->is_admod) {
-						return '0: Lo sentimos, pero '.$para.' no puede utilizar la mensajer&iacute;a privada en estos momentos ';
+						return '0: Lo sentimos, pero '.$para.' no puede utilizar la mensajería privada en estos momentos ';
 					}
 				break;
 				case 'friends_mutual':
@@ -115,9 +114,9 @@ class tsMensajes {
 					$lesigoomesigue = ((int)$comp['mesigue'] === 0 && (int)$comp['lesigo'] === 0) ? false : true;
 					$lesigoymesigue = ((int)$comp['mesigue'] === 1 && (int)$comp['lesigo'] === 1) ? true : false;
 					if($data['p_mensajes_privados'] === 'friends_mutual' && !$lesigoymesigue && !$this->User->is_admod) {
-						return '0: Debes seguir a '.$para.' y &eacute;ste debe seguirte para poder enviarle un mensaje.';
+						return '0: Debes seguir a '.$para.' y éste debe seguirte para poder enviarle un mensaje.';
 					} elseif($data['p_mensajes_privados'] === 'friends_any' && !$lesigoomesigue && !$this->User->is_admod) {
-						return '0: Debes seguir a '.$para.' o &eacute;ste debe seguirte para poder enviarle un mensaje.';
+						return '0: Debes seguir a '.$para.' o éste debe seguirte para poder enviarle un mensaje.';
 					} elseif($data['p_mensajes_privados'] === 'followers' && !$comp['lesigo'] && !$this->User->is_admod) {
 						return '0: Debes seguir a '.$para.' para poder enviarle un mensaje.';
 					} elseif($data['p_mensajes_privados'] === 'following' && !$comp['mesigue'] && !$this->User->is_admod) {
@@ -138,7 +137,7 @@ class tsMensajes {
 	*/
 	public function newMensaje(): string {
 		if(!$this->User->is_member && (int)$this->User->info['user_baneado'] === 1 || (int)$this->User->info['user_activo'] === 0) {
-			return 'Debe tener una cuenta activa para realizar esta operaci&oacute;n';
+			return 'Debe tener una cuenta activa para realizar esta operación';
 		}
 		$asunto = $this->mensajeAsunto();
 		//ANTI FLOOD 
@@ -152,7 +151,7 @@ class tsMensajes {
 		//
 		$user_id = $this->User->getUserID($para);
 		if (empty($user_id)) {
-			return 'El usuario no existe. Int&eacute;ntalo nuevamente.';
+			return 'El usuario no existe. Inténtalo nuevamente.';
 		}
 		//BLOQUEADO
 		if (!$this->User->is_admod) {
@@ -180,16 +179,16 @@ class tsMensajes {
 			'mp_date' => time()
 		]);
 		if(!$mp_id) {
-			return 'Ocurri&oacute; un error. Int&eacute;ntalo nuevamente.';
+			return 'Ocurrió un error. Inténtalo nuevamente.';
 		}
 		if(!DB::insert('u_respuestas', [
 			'mp_id' => $mp_id,
 			'mr_from' => $this->User->uid,
 			'mr_body' => $mensaje,
-			'mr_ip' => $this->MyIP,
+			'mr_ip' => $this->myIP,
 			'mr_date' => time()
 		])) {
-			return show_error('Error al ejecutar la consulta de la l&iacute;nea '.__LINE__.' de '.__FILE__.'.', 'db');
+			return show_error('Error al ejecutar la consulta de la línea '.__LINE__.' de '.__FILE__.'.', 'db');
 		}
 		return "El mensaje ha sido enviado a <a href=\"{$this->Core->settings['url']}/@{$para}\">{$para}</a>. <br /><br /> <center><a class=\"btn btn-success resp\" href=\"{$this->Core->settings['url']}/mensajes/leer/$mp_id\">Ver el mensaje enviado</a></center>";
 	}
@@ -212,7 +211,7 @@ class tsMensajes {
 		if(empty($msg)) {
 			return '0: El mensaje no existe.';
 		}
-		$this->Core->antiFlood(true, 'mps');
+		$this->User->antiFlood(true, 'mps');
 		// BLOQUEADO
 		if(!$this->User->is_admod) {
 			$exists = DB::exists("SELECT 1 FROM u_bloqueos WHERE (b_user = :to AND b_auser = :from) OR (b_user = :from AND b_auser = :to) LIMIT 1", [
@@ -227,11 +226,11 @@ class tsMensajes {
 			'mp_id' => $mp_id,
 			'mr_from' => $this->User->uid,
 			'mr_body' => $mensaje,
-			'mr_ip' => $this->MyIP,
+			'mr_ip' => $this->myIP,
 			'mr_date' => time()
 		]);
 		if(!$mr_id) {
-			return 'Ocurri&oacute; un error. Int&eacute;ntalo nuevamente.';
+			return 'Ocurrió un error. Inténtalo nuevamente.';
 		}
 		// CUANDO RESPONDA EL DESTINATARIO...
 		$update = [];
@@ -261,7 +260,7 @@ class tsMensajes {
 		], 'mp_id = :mpid', ['mpid' => $mp_id]);
 		//
 		$return['mp_date'] = time();
-		$return['mp_ip'] = $this->MyIP;
+		$return['mp_ip'] = $this->myIP;
 		$return['mp_body'] = $this->Core->parseBadWords($this->Core->parseBBCode($mensaje), true);
 		//
 		return $return;
@@ -336,7 +335,7 @@ class tsMensajes {
 	         $data['data'][$row['mp_date']] = $row;
 	      }
 	   } elseif ($type === 5) {
-	      $qm = $this->Core->setSecure($_GET['qm'] ?? '');
+	      $qm = Html::escape($_GET['qm'] ?? '');
 	      $sql = "SELECT mp_id, mp_to, mp_from, mp_read_to, mp_subject, mp_preview, mp_date, user_id, user_name FROM u_mensajes AS m LEFT JOIN u_miembros AS u ON mp_from = user_id WHERE mp_to = :uid AND mp_del_to = 0 AND mp_subject LIKE :qm ORDER BY mp_id DESC";
 	      $params = ['uid' => $uid, 'qm' => '%' . $qm . '%'];
 	      $total = count(DB::fetchAll($sql, $params));
@@ -406,7 +405,7 @@ class tsMensajes {
 	}
 
 	public function editMensajes(): bool {
-	   $ids = explode(',', $this->Core->setSecure($_POST['ids'] ?? ''));
+	   $ids = explode(',', Html::escape($_POST['ids'] ?? ''));
 	   $nids = [];
 	   foreach ($ids as $nid) {
 	      $id = explode(':', $nid);

@@ -24,7 +24,7 @@
 		<h6 style="text-align:center;">Visitas recientes</h6>
 		<ul id="v_album" style="margin-left:11px;">
 			{foreach from=$tsFVisitas item=v}
-			  <a href="{$tsConfig.url}/@{$v.user_name}" class="hovercard" uid="{$v.user_id}" style="display:inline-block;"><img src="{$tsRoutes.storage.avatar}/avatar_{$v.user_id}.webp" class="vctip" title="{$v.date|hace:true}" width="32" height="32"/></a>
+			  <a href="{$tsConfig.url}/@{$v.user_name}" class="hovercard" uid="{$v.user_id}" style="display:inline-block;"><img src="{$tsRoutes['storage:avatar']}/avatar_{$v.user_id}.webp" class="vctip" title="{$v.date|hace:true}" width="32" height="32"/></a>
 			{/foreach}
 		</ul>
 	</div>
@@ -34,7 +34,7 @@
 		<ul id="v_album" style="margin-left:11px;"> 
 			{if $tsFMedallas}
 				{foreach from=$tsFMedallas item=m}
-					<img src="{$tsRoutes.tema.images}/icons/medals/{$m.m_image}_16.png"  style="margin-left:1px;margin-bottom:2px;" class="qtip" title="{$m.m_title} - {$m.m_description}"/>
+					<img src="{$tsRoutes['tema:images']}/icons/medals/{$m.m_image}_16.png"  style="margin-left:1px;margin-bottom:2px;" class="qtip" title="{$m.m_title} - {$m.m_description}"/>
 				{/foreach}
 			{else}
 				<li class="alert-empty">Esta foto no tiene medallas</li>

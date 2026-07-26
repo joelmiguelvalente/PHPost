@@ -19,6 +19,7 @@
 
 	<div class="form-group" data-field="opciones">
 		<h4>Opciones</h4>
+
 		<label class="option">
 			<input type="checkbox" id="privado" name="private"{if $tsDraft.post_private} checked{/if}>
 			<span>Sólo usuarios registrados</span>

@@ -3,26 +3,21 @@
 declare(strict_types=1);
 
 /**
- * @package    PHPost/Class
- * @author     PHPost Team & Miguel92
+ * @package    Class
+ * @author     Miguel92
  * @copyright  2026
  */
 
-if (!defined('TS_HEADER')) {
-	exit('No se permite el acceso directo al script');
-}
+defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
 class tsHome {
-	
-	protected Paginator $Paginator;
-	protected Extras $Extras;
 
 	public function __construct(
 		protected tsCore $Core, 
-		protected tsUser $User
+		protected tsUser $User,
+		protected Paginator $Paginator,
+		protected Extras $Extras
 	) {
-		$this->Paginator = new Paginator;
-		$this->Extras = new Extras;
 	}
 	
 	/**
@@ -30,7 +25,7 @@ class tsHome {
 	 * @return array
 	 */
 	public function getDataCategorie(): array {
-		$seo = $this->Core->setSecure($_GET['cat']);
+		$seo = Html::escape($_GET['cat']);
 		return DB::fetch("SELECT c_nombre, c_seo FROM p_categorias WHERE c_seo = :seo LIMIT 1", ['seo' => $seo]);
 	}
 
@@ -38,7 +33,7 @@ class tsHome {
 		if ($category === '') {
 			return null;
 		}
-		$categorySeo = $this->Core->setSecure($category);
+		$categorySeo = Html::escape($category);
 		$row = DB::fetch("SELECT cid FROM p_categorias WHERE c_seo = :seo LIMIT 1", ['seo' => $categorySeo]);
 		return !empty($row['cid']) ? (int) $row['cid'] : null;
 	}
@@ -60,7 +55,7 @@ class tsHome {
 		// Post Fijado si/no
 		$stickyWhere = $sticky ? 'p.post_sticky = 1' : 'p.post_sticky = 0';
 		// Tipo de usuario admin/comun
-		$visibilityWhere = $this->canSeeHiddenPosts() ? '' : 'AND u.user_activo = 1 AND u.user_baneado = 0 AND p.post_status = 1';
+		$visibilityWhere = $this->canSeeHiddenPosts() ? '' : "AND u.user_activo = 1 AND u.user_baneado = 0 AND p.post_status = 'publicado'";
 
 		$orderBy = $sticky ? 'p.post_sponsored' : 'p.post_id';
 		// Paginacion
@@ -71,7 +66,7 @@ class tsHome {
 
 		$query = DB::fetchAll($sql);
 		foreach($query as $pid => $post) {
-			$query[$pid]['c_img'] = $this->Core->route('assets:images') . '/icons/categories/' . $post['c_img'];
+			$query[$pid]['c_img'] = Container::get(Routes::class)->absoluteUrl('assets:images', '/icons/categories/' . $post['c_img']);
 		}
 		$pages = $sticky ? null : $this->Paginator->getPages((int)$total, (int)$this->Core->settings['c_max_posts']);
 		return [

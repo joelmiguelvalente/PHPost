@@ -1,16 +1,3 @@
-                <style>
-                /*{literal}*/
-                .fotos-detail li{
-                    width:303px;
-                }
-                .fotos-detail .notification-info {
-                    width:188px;
-                }
-                .paginadorCom{
-                    width:100%!important;
-                }
-                /*{/literal}*/
-                </style>
                 <div id="album" style="width: 100%;">
                 	<div class="title-w clearfix">
                         <h2>{if $tsFUser.0 == $tsUser->uid}Mis fotos{else}Fotos de {$tsFUser.1}{/if}</h2>

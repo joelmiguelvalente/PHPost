@@ -3,18 +3,14 @@
 declare(strict_types=1);
 
 /**
- * @package    PHPost/Class
- * @author     PHPost Team & Miguel92
+ * @package    Class
+ * @author     Miguel92
  * @copyright  2026
  */
 
-if (!defined('TS_HEADER')) {
-	exit('No se permite el acceso directo al script');
-}
+defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
 class tsFavoritos {
-
-	protected Extras $Extras;
 
 	private int $postId;
 
@@ -40,7 +36,7 @@ class tsFavoritos {
 	}
 
 	private function createLinkPost(array $post): string {
-		$title = $this->Extras->slugify($post['post_title']);
+		$title = Extras::slugify($post['post_title']);
 		$url = sprintf('%s/posts/%s/%d/%s.html', $this->Core->settings['url'], $post['c_seo'], $post['post_id'], $title);
 		return $url;
 	}
@@ -48,7 +44,7 @@ class tsFavoritos {
 	/*
 		saveFavorito()
 	*/
-	public function saveFavorito() {
+	public function saveFavorito(): string {
 		global $tsMonitor, $tsActividad;
 		# ANTIFLOOD
 		$fecha = (int)($_POST['reactivar'] ?? time());
@@ -81,7 +77,7 @@ class tsFavoritos {
 	*/
 	public function getFavoritos(): array {
 		//
-		$query = db_exec([__FILE__, __LINE__], 'query', 'SELECT f.fav_id, f.fav_date, p.post_id, p.post_title, p.post_date, p.post_puntos, COUNT(p_c.c_post_id) as post_comments, c.c_nombre, c.c_seo, c.c_img FROM p_favoritos AS f LEFT JOIN p_posts AS p ON p.post_id = f.fav_post_id LEFT JOIN p_categorias AS c ON c.cid = p.post_category LEFT JOIN p_comentarios AS p_c ON p.post_id = p_c.c_post_id && p_c.c_status = 0 WHERE f.fav_user = :user AND p.post_status = 0 GROUP BY c_post_id');
+		$query = 'SELECT f.fav_id, f.fav_date, p.post_id, p.post_title, p.post_date, p.post_puntos, COUNT(p_c.c_post_id) as post_comments, c.c_nombre, c.c_seo, c.c_img FROM p_favoritos AS f LEFT JOIN p_posts AS p ON p.post_id = f.fav_post_id LEFT JOIN p_categorias AS c ON c.cid = p.post_category LEFT JOIN p_comentarios AS p_c ON p.post_id = p_c.c_post_id AND p_c.c_status = 0 WHERE f.fav_user = :user AND p.post_status = 'publicado' GROUP BY c_post_id';
 		$data = DB::fetchAll($query, ['user' => $this->User->uid]);
 		foreach($data as $pid => $post) {
 			$data[$pid]['url'] = $this->createLinkPost($post);
@@ -93,7 +89,7 @@ class tsFavoritos {
 	/*
 		delFavorito()
 	*/
-	public function delFavorito() {
+	public function delFavorito(): string {
 		$favId = (int)($_POST['fav_id'] ?? 0);
 		$params = ['fid' => $favId, 'user' => $this->User->uid];
 		$data = DB::fetch("SELECT fav_post_id FROM p_favoritos WHERE fav_id = :fid AND fav_user = :user LIMIT 1", $params);

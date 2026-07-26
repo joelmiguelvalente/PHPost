@@ -3,18 +3,14 @@
 declare(strict_types=1);
 
 /**
- * @package    PHPost/Helpers
- * @author     PHPost Team & Miguel92
+ * @package    Helpers
+ * @author     Miguel92
  * @copyright  2026
  */
 
-if (!defined('TS_HEADER')) {
-	exit('No se permite el acceso directo al script');
-}
+defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
 final class UserHelper {
-
-	protected tsCore $Core;
 
 	/**
 	 * TTL reutilizado desde c_stats_cache.
@@ -23,15 +19,13 @@ final class UserHelper {
 	 */
 	private int $cacheTTL;
 
-	public function __construct(tsCore $Core) {
-		$this->Core = $Core;
+	public function __construct(protected tsCore $Core) {
 		$this->cacheTTL = (int)$this->Core->settings['c_stats_cache'] * 60;
 	}
 
 	public function isBlocked(int $bUser, int $bAuser): bool {
-		$sql = "SELECT 1 FROM `u_bloqueos` WHERE b_user = $bUser AND b_auser = $bAuser LIMIT 1";
-		$query = db_exec([__FILE__, __LINE__], 'query', $sql);
-		return db_exec('num_rows', $query) > 0;
+		$sentancia = "SELECT 1 FROM `u_bloqueos` WHERE b_user = :bUser AND b_auser = :bAuser LIMIT 1";
+		return DB::exists($sentancia, ['bUser' => $bUser, 'bAuser' => $bAuser]);
 	}
 
 	/**

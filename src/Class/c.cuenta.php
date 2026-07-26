@@ -3,22 +3,14 @@
 declare(strict_types=1);
 
 /**
- * @package    PHPost/Class
- * @author     PHPost Team & Miguel92
+ * @package    Class
+ * @author     Miguel92
  * @copyright  2026
  */
 
-if (!defined('TS_HEADER')) {
-	exit('No se permite el acceso directo al script');
-}
-
-require_once TS_UTILS . '/PasswordHandler.php';
-require_once TS_HELPERS . '/UserHelper.php';
+defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
 class tsCuenta {
-
-	protected PasswordHandler $PasswordHandler;
-	protected UserHelper $UserHelper;
 
 	# Redes sociales disponibles
 	public array $redes = [
@@ -29,13 +21,16 @@ class tsCuenta {
 		'twitch' 	=> 'Twitch'
 	];
 
+	private string $myIP;
+
 	public function __construct(
 		protected tsCore $Core,
-		protected tsUser $User
+		protected tsUser $User,
+		protected Password $Password,
+		protected UserHelper $UserHelper,
+		protected IP $IP
 	) {
-	   $PasswordHandler = new PasswordHandler;
-		$this->PasswordHandler = $PasswordHandler;
-		$this->UserHelper = new UserHelper($this->Core);
+		$this->myIP = $this->IP->getIPBinary();
 	}
 
 	/**
@@ -45,7 +40,7 @@ class tsCuenta {
 	 * @param int
 	 * @return array
 	 */
-	public function loadPerfil(int $userId = 0) {
+	public function loadPerfil(int $userId = 0): array {
 		if(empty($userId)) $userId = (int)$this->User->uid;
 		//
 		$perfilInfo = DB::fetch("SELECT p.*, u.user_registro, u.user_lastactive FROM u_perfil AS p LEFT JOIN u_miembros AS u ON p.user_id = u.user_id WHERE p.user_id = :uid LIMIT 1", ['uid' => $userId]);
@@ -59,7 +54,7 @@ class tsCuenta {
 		return $perfilInfo;
 	}
 
-	private function decodeJson($value): array {
+	private function decodeJson(mixed $value): array {
 		if (empty($value) || !is_string($value)) {
 			return [];
 		}
@@ -73,14 +68,15 @@ class tsCuenta {
 	 * @param array
 	 * @return array
 	*/
-	private function unData($data): array {
-		// Redes disponibles
-		$data['redes'] = $this->redes;
+	private function unData(array $data): array {
 		// Social links
-		$data['p_socials'] = $this->decodeJson($data['p_socials'] ?? []);
-		// Normalizar sociales según redes definidas
-		$data['p_socials'] = array_intersect_key($data['p_socials'], $this->redes);
-		return $data;
+		$socials = $this->decodeJson($data['p_socials'] ?? []);
+		return [
+			// Redes disponibles
+			'redes' => $this->redes,
+			// Normalizar sociales según redes definidas
+			'p_socials' => array_intersect_key($socials, $this->redes)
+		];
 	}
 
 	/**
@@ -91,11 +87,9 @@ class tsCuenta {
 	*/
 	private function sanitizeProfileData(array $data): array {
 	   foreach (['p_nombre', 'p_mensaje'] as $field) {
-		  $data[$field] = $this->Core->setSecure(
-			 $this->Core->parseBadWords($data[$field] ?? ''), true
-		  );
+		  	$data[$field] = Html::escape($data[$field] ?? '');
 	   }
-	   $data['user_pais'] = empty($data['user_pais']) ? 'XX' : $data['user_pais'];
+	   $data['user_pais'] = Html::escape($data['user_pais'] ?? 'XX');
 	   return $data;
 	}
 
@@ -106,7 +100,10 @@ class tsCuenta {
 	 * @return bool
 	 */
 	public function isFollowed(int $userId, bool $user = true): bool {
-		$params = $user ? ['fid' => $userId, 'fuser' => $this->User->uid] : ['fid' => $this->User->uid, 'fuser' => $userId];
+		$params = ['fid' => $userId, 'fuser' => $this->User->uid];
+		if(!$user) {
+			$params = ['fid' => $this->User->uid, 'fuser' => $userId];
+		}
 		return DB::exists("SELECT 1 FROM u_follows WHERE f_id = :fid AND f_user = :fuser AND f_type = 1 LIMIT 1", $params);
 	}
 
@@ -120,7 +117,7 @@ class tsCuenta {
 	private function canViewHits(string $hits, int $userId): bool {
 		return match ($hits) {
 			'nobody' => false,
-			'following' => $this->isFollowed($userId, true) || $this->User->is_admod,
+			'following' => $this->isFollowed($userId) || $this->User->is_admod,
 			'followers' => $this->isFollowed($userId, false) || $this->User->is_admod,
 			'registered' => $this->User->is_member,
 			'everyone' => true,
@@ -136,10 +133,10 @@ class tsCuenta {
 	*/
 	private function loadVisits(int $userId): array {
 		$param = ['uid' => $userId];
-		$visitas = DB::fetchAll("SELECT v.*, u.user_id, u.user_name FROM w_visitas AS v LEFT JOIN u_miembros AS u ON v.user = u.user_id WHERE v.for = :uid AND v.type = 1 AND user > 0 ORDER BY v.date DESC LIMIT 8", $param);
+		$visitas = DB::fetchAll("SELECT v.*, u.user_id, u.user_name FROM w_visitas AS v LEFT JOIN u_miembros AS u ON v.user = u.user_id WHERE v.target_id = :uid AND v.type = 1 AND user > 0 ORDER BY v.date DESC LIMIT 8", $param);
 		//
 		$data['visitas'] = $visitas;
-		$data['visitas_total'] = DB::value("SELECT COUNT(u.user_id) FROM w_visitas AS v LEFT JOIN u_miembros AS u ON v.user = u.user_id WHERE v.for = :uid AND v.type = 1", $param);
+		$data['visitas_total'] = DB::value("SELECT COUNT(u.user_id) FROM w_visitas AS v LEFT JOIN u_miembros AS u ON v.user = u.user_id WHERE v.target_id = :uid AND v.type = 1", $param);
 		return $data;
 	}
 
@@ -163,19 +160,18 @@ class tsCuenta {
 		}
 		
 		$data['can_hits'] = $this->canViewHits($data['p_muro_visitas'], $userId);
-	   if ($data['can_hits']) {
-		  $data += $this->loadVisits($userId);
-	   }
-		
-		require_once __DIR__ . '/c.visitas.php';
-		$Visitas = new tsVisitas($this->Core, $this->User);
+	   	if ($data['can_hits']) {
+		  	$data += $this->loadVisits($userId);
+	   	}
+
+		$Visitas = Container::get(tsVisitas::class);
 		$visitado = $Visitas->updateViews((int)$userId);
 		
 		// REAL STATS
 		$data['stats'] = DB::fetch("SELECT u.user_id, u.user_rango, u.user_puntos, u.user_posts, u.user_comentarios, u.user_seguidores, u.user_cache, r.r_name, r.r_color FROM u_miembros AS u LEFT JOIN u_rangos AS r ON  u.user_rango = r.rango_id WHERE u.user_id = :uid", $param);
 		
 		if((int)$data['stats']['user_cache'] < time() - ((int)$this->Core->settings['c_stats_cache'] * 60)) {
-			$query1 = DB::value("SELECT COUNT(post_id) FROM p_posts WHERE post_user = :uid AND post_status = 0", $param);
+			$query1 = DB::value("SELECT COUNT(post_id) FROM p_posts WHERE post_user = :uid AND post_status = 'publicado'", $param);
 			$query2 = DB::value("SELECT COUNT(follow_id) FROM u_follows WHERE f_id = :uid AND f_type = 1", $param);
 			$query3 = DB::value("SELECT COUNT(cid) FROM p_comentarios WHERE c_user = :uid AND c_status = 0", $param);
 		
@@ -198,23 +194,23 @@ class tsCuenta {
 		return $data;
 	}
 
-	private function loadGeneralFollow(array &$data, int $userId, bool $follow = true) {
+	private function loadGeneralFollow(array &$data, int $userId, bool $follow = true): void {
 		$max = 21;
 		$sql = $follow ? 'f.f_user = u.user_id WHERE f.f_id' : 'f.f_id = u.user_id WHERE f.f_user';
 		$key = $follow ? 'segs' : 'sigd';
 		// SEGUIDORES
 		$data[$key]['data'] = DB::fetchAll("SELECT f.follow_id, u.user_id, u.user_name FROM u_follows AS f LEFT JOIN u_miembros AS u ON $sql = :uid AND f.f_type = 1 AND u.user_activo = 1 AND u.user_baneado = 0 ORDER BY f.f_date DESC LIMIT $max", ['uid' => $userId]);
-		$data[$key]['total'] = count($data[$key]['data'] ?? 0);
+		$data[$key]['total'] = count($data[$key]['data']);
 	}
 
 	/*
 		loadGeneral($userId)
 	*/
-	public function loadGeneral(int $userId = 0) {
+	public function loadGeneral(int $userId = 0): array {
 		$max = 21;
 		// MEDALLAS
 		$data['medallas'] = DB::fetchAll("SELECT m.*, a.* FROM w_medallas AS m LEFT JOIN w_medallas_assign AS a ON a.medal_id = m.medal_id WHERE a.medal_for = :uid AND m.m_type = 1 ORDER BY a.medal_date DESC LIMIT $max", ['uid' => $userId]);
-		$data['m_total'] = count($data['medallas'] ?? 0);
+		$data['m_total'] = count($data['medallas']);
 		
 		// SEGUIDORES
 		$this->loadGeneralFollow($data, $userId, true);
@@ -222,7 +218,7 @@ class tsCuenta {
 		
 		// ULTIMAS FOTOS
 		$data['fotos'] = DB::fetchAll("SELECT foto_id, f_title, f_url FROM f_fotos WHERE f_user = :uid ORDER BY RAND() DESC LIMIT 6", ['uid' => $userId]);
-		$data['fotos_total'] = count($data['fotos']) ?: 0;			
+		$data['fotos_total'] = count($data['fotos']);
 		
 		//
 		return $data;
@@ -234,7 +230,7 @@ class tsCuenta {
 	 * @return array
 	 */
 	public function loadPosts(int $userId): array {
-		$data['posts'] = DB::fetchAll("SELECT p.post_id, p.post_title, p.post_puntos, c.c_seo, c.c_img FROM p_posts AS p LEFT JOIN p_categorias AS c ON c.cid = p.post_category WHERE p.post_status = 0 AND p.post_user = :uid ORDER BY p.post_date DESC LIMIT 18", ['uid' => $userId]);
+		$data['posts'] = DB::fetchAll("SELECT p.post_id, p.post_title, p.post_puntos, c.c_seo, c.c_img FROM p_posts AS p LEFT JOIN p_categorias AS c ON c.cid = p.post_category WHERE p.post_status = :status AND p.post_user = :uid ORDER BY p.post_date DESC LIMIT 18", ['uid' => $userId, 'status' => 'publicado']);
 		$data['total'] = count($data['posts'] ?? 0);
 		// USUARIO
 		$data['username'] = $this->User->getUserName($userId);
@@ -248,23 +244,24 @@ class tsCuenta {
 	 */
 	public function loadMedallas(int $userId): array {
 		$data['medallas'] = DB::fetchAll("SELECT m.*, a.* FROM w_medallas AS m LEFT JOIN w_medallas_assign AS a ON a.medal_id = m.medal_id WHERE a.medal_for = :uid AND m.m_type = 1 ORDER BY a.medal_date DESC", ['uid' => $userId]);
-		$data['total'] = count($data['medallas'] ?? 0);
+		$data['total'] = count($data['medallas']);
 		return $data;
 	}
 
 	private function guardarCuenta(): string {
 		$year = (int)date('Y');
-		$nac = explode('-', $_POST['nacimiento']);
-	   // Normalizar entrada
-	   $input = [
-		  'user_email'  => $this->Core->setSecure($_POST['email'] ?? '', true),
-		  'user_pais'   => $this->Core->setSecure($_POST['pais'] ?? ''),
-		  'user_estado' => $this->Core->setSecure($_POST['estado'] ?? ''),
-		  'user_sexo'   => trim($_POST['sexo'] ?? 'none'),
-		  'user_dia'    => (int)($nac[2] ?? 0),
-		  'user_mes'    => (int)($nac[1] ?? 0),
-		  'user_ano'    => (int)($nac[0] ?? 0),
-		  'user_firma'  => $this->Core->setSecure($this->Core->parseBadWords($_POST['firma'] ?? ''), true),
+		$nac = explode('-', Request::post('nacimiento'));
+		$firma = $this->Core->parseBadWords(Request::post('firma'));
+	   	// Normalizar entrada
+	   	$input = [
+			'user_email'  => Html::escape(Request::post('email')),
+			'user_pais'   => Html::escape(Request::post('pais')),
+			'user_estado' => Html::escape(Request::post('estado')),
+			'user_sexo'   => trim(Request::post('sexo', 'none')),
+			'user_dia'    => (int)($nac[2] ?? 0),
+			'user_mes'    => (int)($nac[1] ?? 0),
+			'user_ano'    => (int)($nac[0] ?? 0),
+			'user_firma'  => Html::escape($firma),
 	   ];
 	   // Datos actuales
 		$current = DB::fetch("SELECT user_dia, user_mes, user_ano, user_pais, user_estado, user_sexo, user_firma FROM u_perfil WHERE user_id = :uid LIMIT 1", ['uid' => $this->User->uid]);
@@ -312,72 +309,70 @@ class tsCuenta {
 	}
 
 	private function guardarPerfil(): string {
-	   // Normalizar sitio
-	   $sitio = trim($_POST['sitio'] ?? '');
-	   if ($sitio !== '' && !str_starts_with($sitio, 'http')) {
-		  $sitio = 'http://' . $sitio;
-	   }
-	   if ($sitio !== '' && !filter_var($sitio, FILTER_VALIDATE_URL)) {
-		  return '0: El sitio web introducido no es correcto.';
-	   }
-	   // Redes sociales
-	   $socials = [];
-	   if (!empty($_POST['red']) && is_array($_POST['red'])) {
-		  foreach ($_POST['red'] as $key => $value) {
-			 $socials[$key] = $this->Core->setSecure($this->Core->parseBadWords((string)$value), true);
-		  }
-	   }
-	   // Datos a persistir
-	   $perfilData = [
-		  'p_nombre' => $this->Core->setSecure($this->Core->parseBadWords($_POST['nombre'] ?? ''), true),
-		  'p_mensaje' => $this->Core->setSecure($this->Core->parseBadWords($_POST['mensaje'] ?? ''), true),
-		  'p_sitio' => $this->Core->setSecure($this->Core->parseBadWords($sitio), true),
-		  'p_socials' => json_encode($socials, JSON_UNESCAPED_UNICODE),
-	   ];
-	   // Update
+	   	// Normalizar sitio
+	   	$sitio = trim(Request::post('sitio'));
+	   	if ($sitio !== '' && !str_starts_with($sitio, 'http')) {
+			$sitio = 'http://' . $sitio;
+	   	}
+	   	if ($sitio !== '' && !filter_var($sitio, FILTER_VALIDATE_URL)) {
+		  	return '0: El sitio web introducido no es correcto.';
+	   	}
+	   	// Redes sociales
+	   	$socials = [];
+	   	if (!empty(Request::post('red')) && is_array(Request::post('red'))) {
+		  	foreach (Request::post('red') as $key => $value) {
+			 	$socials[$key] = Html::escape((string)$value);
+		  	}
+	   	}
+	   	// Datos a persistir
+	   	foreach(['nombre', 'mensaje', 'sitio'] as $name) {
+	   		$key = ($name === 'sitio') ? $sitio : Request::post($name);
+	   		$perfilData["p_{$name}"] = Html::escape($key);
+	   	}
+	   	$perfilData['p_socials'] = json_encode($socials, JSON_UNESCAPED_UNICODE);
+	   	// Update
 		if (DB::update('u_perfil', $perfilData, 'user_id = :id', ['id' => $this->User->uid])) {
-		  return '1: Los cambios fueron aplicados.';
-	   }
-	   show_error('Error al ejecutar la consulta.', 'Base de datos');
+		  	return '1: Los cambios fueron aplicados.';
+	   	}
+	   	show_error('Error al ejecutar la consulta.', 'Base de datos');
 	}
 
 	private function guardarContasena(): string {
-	   $currentPassword  = trim($_POST['password'] ?? '');
-	   $newPassword      = trim($_POST['newPassword'] ?? '');
-	   $confirmPassword  = trim($_POST['confirmPassword'] ?? '');
-
-	   // Validaciones básicas
-	   if (in_array('', [$currentPassword, $newPassword, $confirmPassword], true)) {
-	      return '0: Debes completar todos los campos.';
-	   }
-	   if (strlen($newPassword) < 6) {
-	      return '0: La nueva contraseña no es válida.';
-	   }
-	   if ($newPassword !== $confirmPassword) {
-	      return '0: La nueva contraseña y su confirmación no coinciden.';
-	   }
-	   // Verificar contraseña actual
-	   if (!$this->PasswordHandler->verify($currentPassword, $this->User->info['user_password'])) {
-	      return '0: Tu contraseña actual no es correcta.';
-	   }
-	   // Evitar reutilizar la misma contraseña
-	   if ($this->PasswordHandler->verify($newPassword, $this->User->info['user_password'])) {
-	      return '0: No puedes usar la misma contraseña que la actual.';
-	   }
-	   if (!$this->PasswordHandler->isStrong($newPassword)) {
+		$currentPassword  = trim(Request::post('password'));
+		$newPassword      = trim(Request::post('newPassword'));
+		$confirmPassword  = trim(Request::post('confirmPassword'));
+		// Validaciones básicas
+		if (in_array('', [$currentPassword, $newPassword, $confirmPassword], true)) {
+			return '0: Debes completar todos los campos.';
+		}
+		if (strlen($newPassword) < 6) {
+			return '0: La nueva contraseña no es válida.';
+		}
+		if ($newPassword !== $confirmPassword) {
+			return '0: La nueva contraseña y su confirmación no coinciden.';
+		}
+		// Verificar contraseña actual
+		if (!$this->Password->verify($currentPassword, $this->User->info['user_password'])) {
+			return '0: Tu contraseña actual no es correcta.';
+		}
+		// Evitar reutilizar la misma contraseña
+		if ($this->Password->verify($newPassword, $this->User->info['user_password'])) {
+			return '0: No puedes usar la misma contraseña que la actual.';
+		}
+		if (!$this->Password->isStrong($newPassword)) {
     		return '0: La contraseña debe contener mayúsculas, números y caracteres especiales.';
 		}
-	   $newHash = $this->PasswordHandler->create($newPassword);
+		$newHash = $this->Password->create($newPassword, $this->User->info['user_name']);
 		if (DB::update('u_miembros', ['user_password' => $newHash], 'user_id = :id', ['id' => $this->User->uid])) {
-	      return '0: Lo sentimos, ocurrió un error al actualizar la contraseña.';
-	   }
-	   return '1: Contraseña actualizada correctamente.';
+			return '1: Contraseña actualizada correctamente.';
+		}
+		return '0: Lo sentimos, ocurrió un error al actualizar la contraseña.';
 	}
 
 	private function guardarNick(): string {
-	   $nuevoNick = $this->Core->setSecure(trim($_POST['new_nick'] ?? ''));
-	   $password  = trim($_POST['password'] ?? '');
-	   $email     = trim($_POST['email'] ?? $this->User->info['user_email']);
+	   $nuevoNick = Html::escape(trim(Request::post('new_nick')));
+	   $password  = trim(Request::post('password'));
+	   $email     = trim(Request::post('email', $this->User->info['user_email']));
 	   $time      = time();
 	   if ($nuevoNick === '') {
 	      return '0: El nick no puede estar vacío.';
@@ -405,34 +400,37 @@ class tsCuenta {
 	      return '0: Ya tienes una petición de cambio de nick en curso.';
 	   }
 	   // Validar contraseña actual (modelo nuevo)
-	   if (!$this->PasswordHandler->verify($password, $this->User->info['user_password'])) {
+	   if (!$this->Password->verify($password, $this->User->info['user_password'])) {
 	      return '0: Tu contraseña actual no es correcta.';
 	   }
 	   // Cooldown (1 año)
 	   if (!empty($pending['time']) && (time() - (int)$pending['time']) < 31536000) {
 	      return '0: Aún no puedes solicitar otro cambio de nick.';
 	   }
-	   $myIP = (new IP)->getIP();
+
 	   if (DB::insert('u_nicks', [
 			'user_id' => $this->User->uid,
 			'user_email' => $email,
 			'name_1' => $this->User->nick,
 			'name_2' => $nuevoNick,
 			'time' => $time,
-			'ip' => $myIP
+			'ip' => $this->myIP
    	])) {
 	      return '1: Proceso iniciado. Recibirás una respuesta por correo cuando se evalúe el cambio.';
 	   }
 	   return '0: Ocurrió un error al iniciar el proceso.';
 	}
 
-	private function guardarConfiguracion() {
-		$perfilData['p_privacidad'] 		= trim($_POST['privacidad']);
-		$perfilData['p_publicar_muro'] 		= trim($_POST['publicar_muro'] ?? 'nobody');
-		$perfilData['p_mensajes_privados'] 	= trim($_POST['mensajes_privados'] ?? 'nobody');
-		$perfilData['p_muro_visitas'] 		= trim($_POST['muro_visitas'] ?? 'nobody');
+	private function guardarConfiguracion(): string {
+		foreach(['privacidad', 'publicar_muro', 'mensajes_privados', 'muro_visitas'] as $key) {
+			$content = ($key === 'privacidad') ? '' : 'nobody';
+			$perfilData['p_' . $key] = trim(Request::post($key, $content));
+		}
 		
-		return (DB::update('u_perfil', $perfilData, 'user_id = :id', ['id' => $this->User->uid])) ? '1: Los cambios fueron aceptados y ser&aacute;n aplicados.' : die(show_error('Error al ejecutar la consulta de la l&iacute;nea '.__LINE__.' de '.__FILE__.'.', 'Base de datos'));
+		if(DB::update('u_perfil', $perfilData, 'user_id = :id', ['id' => $this->User->uid])) {
+			return '1: Los cambios fueron aceptados y serán aplicados.';
+		}
+		show_error('Error al ejecutar la consulta.', 'Base de datos');
 	}
 
 	/**
@@ -464,33 +462,33 @@ class tsCuenta {
 	}
 
 	public function cambiarBloqueo(): string {
-	   $targetUserId = (int)($_POST['user'] ?? 0);
-	   $bloquear     = (string)$_POST['bloqueado'] === 'true';
-	   if ($targetUserId <= 0) {
-	      return '0: Usuario inválido.';
-	   }
-	   if ($targetUserId === (int)$this->User->uid) {
-	      return '0: No puedes bloquearte a ti mismo.';
-	   }
-	   // ¿Existe el usuario?
-	   if (!$this->User->getUserName($targetUserId)) {
-	      return '0: El usuario seleccionado no existe.';
-	   }
-	   $param = ['uid' => $this->User->uid, 'target' => $targetUserId];
-	   if ($bloquear) {
-	   	// ¿Ya está bloqueado?
-	      $exists = DB::exists("SELECT 1 FROM u_bloqueos WHERE b_user = :uid AND b_auser = :target LIMIT 1", $param);
-	      if ($exists) {
-	         return '0: Ya has bloqueado a este usuario.';
-	      }
-	      $insert = DB::raw("INSERT IGNORE INTO u_bloqueos (b_user, b_auser, b_date) VALUES (:uid, :target, :time)", [...$param, 'time' => time()]);
-	      return $insert ? '1: El usuario fue bloqueado satisfactoriamente.' : '0: No se pudo bloquear al usuario.';
-	   }
-	   // Desbloquear
-	   if (DB::delete('u_bloqueos', 'b_user = :uid AND b_auser = :target', $param)) {
-	      return '1: El usuario fue desbloqueado satisfactoriamente.';
-	   }
-	   return '0: No se pudo desbloquear al usuario.';
+		$targetUserId = (int)Request::post('user', 0);
+		$bloquear     = (string)Request::post('bloqueado') === 'true';
+		if ($targetUserId <= 0) {
+			return '0: Usuario inválido.';
+		}
+		if ($targetUserId === (int)$this->User->uid) {
+			return '0: No puedes bloquearte a ti mismo.';
+		}
+		// ¿Existe el usuario?
+		if (!$this->User->getUserName($targetUserId)) {
+			return '0: El usuario seleccionado no existe.';
+		}
+	   	$param = ['uid' => $this->User->uid, 'target' => $targetUserId];
+	   	if ($bloquear) {
+	   		// ¿Ya está bloqueado?
+	    	$exists = DB::exists("SELECT 1 FROM u_bloqueos WHERE b_user = :uid AND b_auser = :target LIMIT 1", $param);
+	    	if ($exists) {
+	    	   return '0: Ya has bloqueado a este usuario.';
+	    	}
+	    	$insert = DB::raw("INSERT IGNORE INTO u_bloqueos (b_user, b_auser, b_date) VALUES (:uid, :target, :time)", [...$param, 'time' => time()]);
+	    	return $insert ? '1: El usuario fue bloqueado satisfactoriamente.' : '0: No se pudo bloquear al usuario.';
+	   	}
+	   	// Desbloquear
+	   	if (DB::delete('u_bloqueos', 'b_user = :uid AND b_auser = :target', $param)) {
+	    	return '1: El usuario fue desbloqueado satisfactoriamente.';
+	   	}
+	   	return '0: No se pudo desbloquear al usuario.';
 	}
 	
 	/*
@@ -501,9 +499,9 @@ class tsCuenta {
 	}
 
 	public function cambiarTema(): string {
-		$path = trim($_POST['skin'] ?? 'default');
-		$themes = new Themes;
-		if($path === $themes->getUserThemeUse($this->User->uid)) {
+		$path = trim(Request::post('skin', 'default'));
+		$themes = Container::get(Themes::class)->getUserThemeUse($this->User->uid);
+		if($path === $themes) {
 			return '0: Ya lo tienes en uso';
 		}
 		if(!DB::update('u_miembros_sets', ['user_theme' => $path], 'user_id = :uid', ['uid' => $this->User->uid])) {

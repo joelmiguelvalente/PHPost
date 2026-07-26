@@ -9,7 +9,7 @@
 				<table class="min-w-full border-collapse text-sm">
 					{include "dashboard/table/Thead.tpl" fields=[
 						"ID",
-						"T&iacute;tulo",
+						"Título",
 						"Autor",
 						"Fecha",
 						"IP",
@@ -30,8 +30,8 @@
 								<td class="px-3 py-2 admin_actions">
 									<div class="flex justify-center gap-2">
 										{include "dashboard/table/Action.tpl" action="fotos/editar/{$f.foto_id}" title="Editar foto" icon="edit"}
-										<a {if $f.f_status != 2}onclick="admin.fotos.setOpenClosed({$f.foto_id}); return false;"{/if}><img src="{$tsRoutes.tema.images}/icons/comment.png" title="{if $f.f_status == 2}No disponible{else}Abrir/Cerrar Comentarios{/if}" /></a>
-										<a {if $f.f_status != 2}onclick="admin.fotos.setShowHide({$f.foto_id}); return false;"{/if}><img src="{$tsRoutes.tema.images}/reactivar.png" title="{if $f.f_status == 2}No disponible{else}Mostrar/Ocultar Foto{/if}" /></a>
+										<a {if $f.f_status != 2}onclick="admin.fotos.setOpenClosed({$f.foto_id}); return false;"{/if}><img src="{$tsRoutes['tema:images']}/icons/comment.png" title="{if $f.f_status == 2}No disponible{else}Abrir/Cerrar Comentarios{/if}" /></a>
+										<a {if $f.f_status != 2}onclick="admin.fotos.setShowHide({$f.foto_id}); return false;"{/if}><img src="{$tsRoutes['tema:images']}/reactivar.png" title="{if $f.f_status == 2}No disponible{else}Mostrar/Ocultar Foto{/if}" /></a>
 										{include "dashboard/table/Action.tpl" action="fotos.borrar({$f.foto_id})" type="button" title="Borrar Foto
 										" icon="delete"}
 									</div>

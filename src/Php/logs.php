@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * @package    PHPost/Php
+ * @package    Php
  * @author     PHPost Team & Miguel92
  * @copyright  2026
  */
@@ -11,26 +11,18 @@ declare(strict_types=1);
 require_once dirname(__DIR__, 2) . "/header.php";
 $tsTitle = "{$tsCore->settings['titulo']} - {$tsCore->settings['slogan']}";
 
-$ctx = Controller::page('logs')->admin();
-$ctx->exportLegacy();
-
-$tsLevelMsg = $tsCore->setLevel($ctx->getLevel(), true);
-if (is_array($tsLevelMsg)) {
-   $ctx->changePage('aviso');
-   $ctx->stop();
-   $smarty->assign("tsAviso", $tsLevelMsg);
-   $ctx->exportLegacy();
-}
+$ctx = Controller::init('logs', 'admin');
 
 if (!$tsUser->is_member) {
-   header("Location: {$tsCore->settings['url']}");
+   Container::get(Response::class)->redirect($Routes->route('url'));
+   die;
 }
 
 if ($ctx->continue()) {
 
    require_once TS_LOGGER . '/LogParser.php';
 
-   $logsDir  = Config::app('paths.logs');
+   $logsDir  = Config::app('paths.logs.full_path');
    $logFiles = LogParser::getAvailableFiles($logsDir);
    $filter   = strtoupper($_GET['level'] ?? 'ALL');
 
@@ -146,7 +138,4 @@ if ($ctx->continue()) {
    $smarty->assign("filterActive",$filterActive);
 }
 
-if ($tsAjax) {
-   $smarty->assign("tsTitle", $tsTitle);
-   require_once TS_ROOT . "/footer.php";
-}
+Controller::render($tsAjax, $tsTitle, $tsPage);

@@ -208,24 +208,19 @@ const comentario = {
             var cid = $('#edit-cid-' + id).val()
             var comment = $('#edit-comment-' + id).val();
             $('#loading').fadeIn(250); 
-            $.ajax({
-            	type: 'POST',
-            	url: route.url + '/comentario-editar',
-            	data: 'comentario=' + encodeURIComponent(comment) + '&cid=' + id,
-            	success: function(h){
-            		switch(h.charAt(0)){
-            			case '0': //Error
+            api('comentario-editar', { comentario: comment, cid: id }, h => {
+            	switch(h.charAt(0)){
+            		case '0': //Error
                         $('#edit-error-' + id).css('color','red').html(h.substring(3));
-            			break;
-            			case '1': //OK
+            		break;
+            		case '1': //OK
                         $('#comment-body-' + id).html($('#new-com-html').html());
                        	var bbcode = htmlspecialchars_decode($('#new-com-bbcode').html(), 'ENT_NOQUOTES');
                        	$('#citar_comm_'+id).html(bbcode) 
            				break;
-            		}
-                  $('#loading').fadeOut(350); 
-            		mydialog.close();
             	}
+              $('#loading').fadeOut(350); 
+            	mydialog.close();
             });
          break;
       }  

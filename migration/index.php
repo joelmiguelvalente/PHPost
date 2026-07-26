@@ -1,5 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
+/**
+ * @package    PHPost
+ * @subpackage Migration
+ * @author     Miguel92
+*/
+
 require_once __DIR__ . '/app.php';
 
 // Manejar la solicitud de migración si viene por POST

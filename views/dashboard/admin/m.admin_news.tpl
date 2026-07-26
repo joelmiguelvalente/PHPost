@@ -5,7 +5,7 @@
 
 	{if $tsAct == ''}
 		<section class="mb-6 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-surface p-5 shadow-sm">
-			<p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Si necesitas hacer un comunicado a todos los usuarios en general, desde aqu&iacute; podr&aacute;s administrar tus anuncios y los usuarios sin importar donde se encuentren navegando podr&aacute;n visualizarlos.</p>
+			<p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Si necesitas hacer un comunicado a todos los usuarios en general, desde aquí podrás administrar tus anuncios y los usuarios sin importar donde se encuentren navegando podrán visualizarlos.</p>
 		</section>
 
 		<hr class="my-3" />
@@ -55,7 +55,7 @@
 				<div class="grid grid-cols-1 md:grid-cols-3 gap-4 py-2 mb-3">
 			      <div>
 			        	<label for="not_body" class="font-medium text-gray-700 dark:text-gray-300">Noticia</label>
-			        	<p class="mt-1 text-xs text-gray-500">Puedes utilizar los siguentes BBCodes [url], [i] [b] y [u]. El m&aacute;ximo de caracteres permitidos es de <b>190</b>.</p>
+			        	<p class="mt-1 text-xs text-gray-500">Puedes utilizar los siguentes BBCodes [url], [i] [b] y [u]. El máximo de caracteres permitidos es de <b>190</b>.</p>
 			      </div>
 			      <div class="md:col-span-2 space-y-3">
 			      	<textarea name="not_body" id="not_body" rows="3" cols="50" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-surface px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">{$tsNew.not_body}</textarea>

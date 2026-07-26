@@ -3,14 +3,14 @@
 								</div>
 								<div id="res" class="boxy-content" style="position:relative">                          
 								{if !$tsPosts.datos}
-								<div class="phpostAlfa">No hay posts esperando aprobaci&oacute;n</div>
+								<div class="phpostAlfa">No hay posts esperando aprobación</div>
 								{else}
 								<table cellpadding="0" cellspacing="0" border="0" class="admin_table" width="100%" align="center">
 									<thead>
 										<th>ID</th>
 										<th>Post</th>
 										<th>Moderador</th>							
-                                        <th>Raz&oacute;n</th>										
+                                        <th>Razón</th>
 										<th>Fecha</th>                                                           
 										<th>IP</th>
 										<th>Acciones</th>
@@ -25,16 +25,16 @@
 											<td>{$p.date|hace:true}</td> 
 											<td>{$p.mod_ip}</td>                					
 											<td class="admin_actions">
-													<a href="#" onclick="moderacion.posts.view({$p.post_id}); return false;"><img src="{$tsRoutes.tema.images}/icons/find.png" title="Ver Post" /></a>
-													<a href="#" onclick="mod.reboot({$p.post_id}, 'posts', 'reboot', false); return false;"><img src="{$tsRoutes.tema.images}/icons/reboot.png" title="Reactivar Post" /></a>
-													<a href="{$tsConfig.url}/posts/editar/{$p.post_id}" target="_blank"><img src="{$tsRoutes.tema.images}/icons/edit.png" title="Editar Post" /></a>
-													<a href="#" onclick="moderacion.posts.borrar({$p.post_id}, false); return false"><img src="{$tsRoutes.tema.images}/icons/close.png" title="Borrar Post" /></a>
+													<a href="#" onclick="moderacion.posts.view({$p.post_id}); return false;"><img src="{$tsRoutes['tema:images']}/icons/find.png" title="Ver Post" /></a>
+													<a href="#" onclick="mod.reboot({$p.post_id}, 'posts', 'reboot', false); return false;"><img src="{$tsRoutes['tema:images']}/icons/reboot.png" title="Reactivar Post" /></a>
+													<a href="{$tsConfig.url}/posts/editar/{$p.post_id}" target="_blank"><img src="{$tsRoutes['tema:images']}/icons/edit.png" title="Editar Post" /></a>
+													<a href="#" onclick="moderacion.posts.borrar({$p.post_id}, false); return false"><img src="{$tsRoutes['tema:images']}/icons/close.png" title="Borrar Post" /></a>
 											</td>
 										</tr>
 										{/foreach}
 									</tbody>
 									<tfoot>
-										<td colspan="8">P&aacute;ginas: {$tsPosts.pages}</td>
+										<td colspan="8">Páginas: {$tsPosts.pages}</td>
 									</tfoot>
 								</table>
 								{/if}								

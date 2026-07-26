@@ -235,8 +235,7 @@ const notifica = {
 		inputs.map((pos, input) => {
 			if($(input).prop('checked')) fid.push($(input).data('type'))
 		})
-		$.post(`${route.url}/notificaciones-filtro`, { fid })
-		.fail(() => console.error('Error al filtrar notificaciones'));  
+		api('notificaciones-filtro', { fid }, () => {}, { error: () => console.error('Error al filtrar notificaciones') });
 	},
 	close() {
 		media.close('Monitor', 'mon');

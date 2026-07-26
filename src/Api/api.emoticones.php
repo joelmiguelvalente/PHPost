@@ -1,4 +1,7 @@
-<?php if ( ! defined('TS_HEADER')) exit('No se permite el acceso directo al script');
+<?php
+
+defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
+
 /**
  * Controlador AJAX
  *
@@ -34,7 +37,7 @@
 \*********************************/
 	
 	// DEPENDE EL NIVEL
-	$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
+	$tsLevelMsg = $tsUser->setLevel($tsLevel, true);
 	if($tsLevelMsg != 1) { echo '0: '.$tsLevelMsg['mensaje']; die();}
 	// HTML
     $emoticones = array(

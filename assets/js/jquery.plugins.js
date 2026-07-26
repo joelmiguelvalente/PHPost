@@ -92,52 +92,84 @@ const dialog = {
 			}
 		}
 	},
-	template: `<div class="dialog-mask"><div class="dialog"></div></div>`,
+	template: `<div class="dialog-mask" role="dialog" aria-modal="true"><div class="dialog" id="dialog-panel"><div class="dialog-header"><h3 id="dialog-title"></h3></div><div class="dialog-body" id="dialog-body"></div><div class="dialog-footer"></div></div></div>`,
 	config: {},
+	previousFocus: null,
+	_keydownHandler: null,
 	open() {
 		if ($('.dialog-mask').length) {
-			$('.dialog').empty();
+			$('#dialog-title').text('');
+			$('#dialog-body').empty();
+			$('.dialog-footer').empty();
 			return;
 		}
+		this.previousFocus = document.activeElement;
 		$('body').append(this.template);
+		const mask = $('.dialog-mask')[0];
+		const panel = $('#dialog-panel')[0];
+
+		this._keydownHandler = (e) => {
+			if (e.key === 'Escape') {
+				if (this.config.maskClose) { this.close(); }
+				return;
+			}
+			if (e.key !== 'Tab') return;
+			const focusable = panel.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])');
+			if (!focusable.length) return;
+			const first = focusable[0];
+			const last = focusable[focusable.length - 1];
+			if (e.shiftKey && document.activeElement === first) {
+				e.preventDefault(); last.focus();
+			} else if (!e.shiftKey && document.activeElement === last) {
+				e.preventDefault(); first.focus();
+			}
+		};
+		mask.addEventListener('keydown', this._keydownHandler);
 
 		if (this.config.maskClose) {
 			$('.dialog-mask').on('click', e => {
-				if ($(e.target).is('.dialog-mask')) this.close();
+				if (e.target === mask) this.close();
 			});
 		}
 	},
 	close() {
+		const mask = $('.dialog-mask')[0];
+		if (mask && this._keydownHandler) {
+			mask.removeEventListener('keydown', this._keydownHandler);
+			this._keydownHandler = null;
+		}
 		$('.dialog-mask').remove();
+		if (this.previousFocus && typeof this.previousFocus.focus === 'function') {
+			this.previousFocus.focus();
+			this.previousFocus = null;
+		}
 	},
 	header(title) {
-		const btnClose = this.config.buttonClose ? `<button class="dialog-close">&times;</button>` : '';
-		const html = `<div class="dialog-header"><h3>${title}</h3>${btnClose}</div>`;
-		$('.dialog').append(html);
-		$('.dialog-close').on('click', () => this.close());
+		const btnClose = this.config.buttonClose ? `<button class="dialog-close" aria-label="Cerrar">&times;</button>` : '';
+		$('#dialog-title').text(title);
+		if (btnClose) {
+			$('.dialog-header').append(btnClose);
+			$('.dialog-close').on('click', () => this.close());
+		}
 	},
 	body(content) {
-		const html = `<div class="dialog-body">${content}</div>`;
-		$('.dialog').append(html);
+		$('#dialog-body').html(content);
 	},
 	footer(buttons) {
-		let html = `<div class="dialog-footer">`;
+		let html = '';
 		Object.entries(buttons).forEach(([key, btn]) => {
 			html += `<button class="btn-${key}">${btn.text}</button>`;
 		});
-		html += `</div>`;
-		$('.dialog').append(html);
+		$('.dialog-footer').html(html);
 		Object.entries(buttons).forEach(([key, btn]) => {
 			$(`.btn-${key}`).on('click', () => {
 				if (btn.action === 'close') this.close();
 				else if (typeof btn.action === 'function') btn.action();
-				else if (typeof btn.action === 'string') eval(btn.action);
 			});
 		});
 	},
 	loadingView() {
-		const html = `<div class="dialog-loading"><span class="loading-spinner"></span><p>Cargando...</p></div>`;
-		$('.dialog').append(html);
+		$('#dialog-body').html(`<div class="dialog-loading" aria-live="polite" role="status"><span class="loading-spinner" aria-hidden="true"></span><p>Cargando...</p></div>`);
 	},
 	init(args = {}) {
 		this.config = {
@@ -151,13 +183,29 @@ const dialog = {
 		if (!this.config.show) return;
 		this.open();
 		$('.dialog').addClass(this.config.classAux);
-		if (this.config.title) this.header(this.config.title);
+		const mask = $('.dialog-mask')[0];
+		if (this.config.title) {
+			mask.setAttribute('aria-labelledby', 'dialog-title');
+			this.header(this.config.title);
+		} else {
+			mask.removeAttribute('aria-labelledby');
+		}
 		if (this.config.loading) {
+			mask.setAttribute('aria-describedby', 'dialog-body');
 			this.loadingView();
+			const firstBtn = document.querySelector('.dialog-footer button');
+			if (firstBtn) firstBtn.focus();
+			else $('#dialog-panel').focus();
 			return;
 		}
-		if (this.config.body) this.body(this.config.body);
+		if (this.config.body) {
+			this.body(this.config.body);
+			mask.setAttribute('aria-describedby', 'dialog-body');
+		}
 		if (this.config.buttons) this.footer(this.config.buttons);
+		const firstBtn = document.querySelector('.dialog-footer button');
+		if (firstBtn) firstBtn.focus();
+		else $('#dialog-panel').attr('tabindex', '-1').focus();
 	},
 	easy(title, body, text, action = 'close') {
 		this.init({
@@ -217,6 +265,7 @@ const dialog = {
 		}, 200);
 	}
 };
+
 // complemento de dialog
 dialog.toast = function(options = {}) {
 		dialog.close();
@@ -230,11 +279,12 @@ dialog.toast = function(options = {}) {
 		};
 		let $container = $(`.dialog-toast-container.toast-${config.position}`);
 		if (!$container.length) {
-			$container = $(`<div class="dialog-toast-container toast-${config.position}"></div>`);
+			$container = $(`<div class="dialog-toast-container toast-${config.position}" role="status" aria-live="polite"></div>`);
 			$('body').append($container);
 		}
 		const $toast = $(`<div class="dialog-toast ${config.type}">${config.title ? `<h4>${config.title}</h4>` : ''}<div>${config.message}</div></div>`);
 	$container.append($toast);
+	$toast[0].focus();
 	setTimeout(() => {
 		$toast.css('animation', 'toastOut 0.2s ease forwards');
 		setTimeout(() => $toast.remove(), 200);
@@ -243,69 +293,77 @@ dialog.toast = function(options = {}) {
 
 const api = (page, param, success, options = {}) => {
 	const settings = {
-	  url: `${route.url}/${page}`,
-	  type: (options.method || 'POST').toUpperCase(),
-	  data: param,
-	  dataType: options.type || 'text',
-	  timeout: options.timeout || 10000,
-	  headers: options.headers || {},
-	  success: response => {
-		 success(response);
-		 $('#loading').fadeOut(350);
-	  },
-	  error: (xhr, status, error) => {
-		 if (options.error) {
-			options.error({ xhr, status, error });
-			$('#loading').fadeOut(350);
-		 }
-	  },
-	  beforeSend: options.beforeSend || (() => $('#loading').fadeIn(350))
+		url: `${route.url}/${page}`,
+		type: (options.method || 'POST').toUpperCase(),
+		data: param,
+		dataType: options.type || 'text',
+		timeout: options.timeout || 10000,
+		headers: { 'X-CSRF-Token': global_data?.csrf_token ?? '', ...(options.headers || {}) },
+		success: response => {
+		 	success(response);
+		 	$('#loading').fadeOut(350);
+	  	},
+		error: (xhr, status, error) => {
+			if (status === 'error' && xhr?.status === 419) {
+				dialog.alert('Sesión expirada', 'Por seguridad, tu sesión ha expirado. Recarga la página e intenta de nuevo.');
+				$('#loading').fadeOut(350);
+				if (options.error) options.error({ xhr, status, error });
+				return;
+			}
+			if (options.error) {
+				options.error({ xhr, status, error });
+				$('#loading').fadeOut(350);
+			}
+		},
+		beforeSend: options.beforeSend || (() => $('#loading').fadeIn(350))
 	};
-
 	// Solo permitir GET o POST
 	if (!['GET', 'POST'].includes(settings.type)) {
-	  settings.type = 'POST';
+	 	settings.type = 'POST';
 	}
-
+	// Inyectar CSRF en el body para POST cuando data es un objeto plano
+	if (settings.type !== 'GET' && settings.data && typeof settings.data === 'object'
+		&& !(settings.data instanceof FormData) && global_data?.csrf_token) {
+		settings.data = { ...settings.data, csrf_token: global_data.csrf_token };
+	}
 	return $.ajax(settings);
 };
 
 function initLazyLoading() {
 	const observer = new IntersectionObserver((entries, self) => {
-	  entries.forEach((entry) => {
-		 if (!entry.isIntersecting) return;
-		 const img = entry.target;
-		 // Primero activar todos los <source> del <picture> padre
-		 const picture = img.closest('picture');
-		 if (picture) {
-			picture.querySelectorAll('source[data-srcset]').forEach(source => {
-				source.srcset = source.getAttribute('data-srcset');
-				source.removeAttribute('data-srcset');
-			});
-		 }
-		 // Luego activar el <img> (dispara la evaluación de <picture>)
-		 const dataSrc = img.getAttribute('data-src');
-		 if (dataSrc) {
-			img.src = dataSrc;
-			img.removeAttribute('data-src');
-		 }
-		 self.unobserve(img);
-	  });
+		entries.forEach((entry) => {
+			if (!entry.isIntersecting) return;
+			const img = entry.target;
+			// Primero activar todos los <source> del <picture> padre
+			const picture = img.closest('picture');
+			if (picture) {
+				picture.querySelectorAll('source[data-srcset]').forEach(source => {
+					source.srcset = source.getAttribute('data-srcset');
+					source.removeAttribute('data-srcset');
+				});
+			}
+			// Luego activar el <img> (dispara la evaluación de <picture>)
+			const dataSrc = img.getAttribute('data-src');
+			if (dataSrc) {
+				img.src = dataSrc;
+				img.removeAttribute('data-src');
+			}
+			self.unobserve(img);
+		});
 	}, { rootMargin: '200px' });
 	// Solo observar el <img>, él arrastra a sus <source>
 	document.querySelectorAll('picture img[data-src]').forEach(function(img) {
-	  img.onerror = function () {
-		 this.onerror = null;
-		 this.src = this.dataset.fallbackPng;
-
-		 const p = this.closest('picture');
-		 if (p) {
-			const sources = p.querySelectorAll('source');
-			if (sources[0]) sources[0].srcset = this.dataset.fallbackAvif;
-			if (sources[1]) sources[1].srcset = this.dataset.fallbackWebp;
-		 }
-	  };
-	  observer.observe(img);
+	  	img.onerror = function () {
+		 	this.onerror = null;
+		 	this.src = this.dataset.fallbackPng;
+		 	const p = this.closest('picture');
+		 	if (p) {
+				const sources = p.querySelectorAll('source');
+				if (sources[0]) sources[0].srcset = this.dataset.fallbackAvif;
+				if (sources[1]) sources[1].srcset = this.dataset.fallbackWebp;
+		 	}
+	  	};
+	  	observer.observe(img);
 	});
 }
 initLazyLoading();
@@ -328,15 +386,15 @@ function loadHighlightJS() {
 
 		const link = document.createElement('link');
 		link.rel = 'stylesheet';
-		link.href = 'https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/default.min.css';
+		link.href = 'https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/default.min.css';
 		document.head.appendChild(link);
 
 		const script = document.createElement('script');
-		script.src = 'https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js';
+		script.src = 'https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js';
 		script.onload = () => {
 			// Asegurar que hljs esté listo
 			if (typeof hljs !== 'undefined') {
-				hljs.configure({ ignoreUnescapedHTML: true }); // ⚠️ Clave: evita advertencias
+				hljs.configure({ ignoreUnescapedHTML: true });
 			}
 			resolve();
 		};

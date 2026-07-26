@@ -3,23 +3,22 @@
 declare(strict_types=1);
 
 /**
- * @package    src\Api
- * @author     PHPost Team & Miguel92
+ * @package    Api
+ * @author     Miguel92
  * @copyright  2026
  */
 
-if (!defined('TS_HEADER')) {
-	exit('No se permite el acceso directo al script');
-}
+defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
 const ACTIONS = [
    'feed-support'	=> ['nivel' => 0, 'template' => '', 'ajax' => false],
    'feed-version'	=> ['nivel' => 0, 'template' => '', 'ajax' => false]
 ];
 
+$Response = Container::get(Response::class);
+
 if (!array_key_exists($action, ACTIONS)) {
-   http_response_code(403);
-   exit('Acción inválida');
+   $Response->text('Acción inválida', 403);
 }
 
 $config = ACTIONS[$action];
@@ -29,31 +28,23 @@ $tsAjax  = (int) $config['ajax'];
 $tsPage  = sprintf('p.live.%s', $config['template']);
 
 // DEPENDE EL NIVEL
-$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
+$tsLevelMsg = $tsUser->setLevel($tsLevel, true);
 if(!$tsLevelMsg) { 
 	echo '0: '.$tsLevelMsg; 
 	die();
 }
 
-require_once TS_HELPERS . '/CoreHelper.php';
-require_once TS_UTILS . '/Extras.php';
-$CoreHelper = new CoreHelper;
-$Extras = new Extras;
-
 //
 $code = [
-	'w' => $tsCore->settings['titulo'], 
-	's' => $tsCore->settings['slogan'], 
-	'u' => str_replace(['http://','https://'], '', $tsCore->settings['url']), 
-	'v' => $tsCore->settings['version_code'], 
-	'a' => $tsUser->nick, 
-	'i' => $tsUser->uid
+	'title' => $tsCore->settings['titulo'],
+	'url' => $tsCore->settings['url'],
+	'version' => Config::app('app.version_code')
 ];
-$key = base64_encode(serialize($code));
+$key = json_encode($code, JSON_FORCE_OBJECT);
 
 $type = explode('-', $action)[1];
 $endpoint = file_get_contents("http://phpost-api.test/v1/scripts/phpost/{$type}");
-header('Content-Type: application/json; charset=UTF-8');
+$Response->contentType('application/json');
 // CODIGO
 
 switch($action) {
@@ -62,22 +53,27 @@ switch($action) {
 		// Al no existir el endpoint genera error 522!
 		//echo $endpoint;
 		if($action === 'feed-version') {
-			$version = 'PHPost ' . Config::app('app.version');
-			$version_code = $Extras->slugify($version, '_');
+			$version = Config::app('app.version');
+			$version_code = Config::app('app.version_code');
 			$time = time();
-			# ACTUALIZAR VERSIÓN
 			if($tsCore->settings['version'] !== $version) {
-				db_exec([__FILE__, __LINE__], 'query', "UPDATE w_configuracion SET version = '$version', version_code = '$version_code' WHERE phpost_id = 1 LIMIT 1");
-				db_exec([__FILE__, __LINE__], 'query', "UPDATE w_stats SET stats_time_upgrade = $time WHERE stats_no = 1 LIMIT 1");
+				// Actualizamos version
+				DB::update('w_configuracion', [
+					'version' => $version,
+					'version_code' => $version_code
+				], 'phpost_id = :id', ['id' => 1]);
+				// Actualizamos fecha
+				DB::update('w_stats', [
+					'stats_time_upgrade' => $time
+				], 'stats_no = :id', ['id' => 1]);
 			}
 		}
 		
 	break;
 	default:
-      http_response_code(404);
-      echo json_encode([
+		$Response->json([
          'error' => true,
          'message' => 'Endpoint inválido'
-      ], JSON_THROW_ON_ERROR);
+      ], 404);
    break;
 }

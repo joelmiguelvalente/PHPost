@@ -3,41 +3,33 @@
 declare(strict_types=1);
 
 /**
- * @package    PHPost/Class
- * @author     PHPost Team & Miguel92
+ * @package    Class
+ * @author     Miguel92
  * @copyright  2026
  */
 
-if (!defined('TS_HEADER')) {
-	exit('No se permite el acceso directo al script');
-}
-
-require_once __DIR__ . '/c.visitas.php';
-require_once TS_HELPERS . '/PostHelper.php';
-require_once TS_HELPERS . '/UserHelper.php';
-require_once TS_UTILS . '/ImageProcessor.php';
+defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
 class tsPosts {
-	
-	protected tsVisitas $Visitas;
-	protected UserHelper $UserHelper;
-	protected PostHelper $PostHelper;
-	protected Extras $Extras;
-	protected ImageProcessor $Processor;
 
 	public int $postId;
+
 	private int $cacheTTL;
+
+	private string $myIP;
 
 	public function __construct(
 		protected tsCore $Core, 
-		protected tsUser $User
+		protected tsUser $User,
+		protected tsVisitas $Visitas,
+		protected UserHelper $UserHelper,
+		protected PostHelper $PostHelper,
+		protected ImageProcessor $Processor,
+		protected IP $IP
 	) {
+		$this->myIP = $this->IP->getIPBinary();
 		$this->postId = $this->getPostId();
-		$this->Visitas = new tsVisitas($this->Core, $this->User);
-		$this->PostHelper = new PostHelper($this->Core, $this->User);;
-		$this->UserHelper = new UserHelper($this->Core);
-		$this->Extras = new Extras;
-      	$this->Processor = new ImageProcessor([
+      	$this->Processor = Container::get(ImageProcessor::class, [
       		'storage_path' => TS_STORAGE . '/media/',
 			'type' => 'posts',
 			'id' => (int)$this->postId
@@ -76,7 +68,7 @@ class tsPosts {
 	 * @return void|string
 	 */
 	private function redirectToPost(array $post, bool $onlyLink = false): mixed {
-		$title = $this->Extras->slugify($post['post_title']);
+		$title = Extras::slugify($post['post_title']);
 		$url = sprintf('%s/posts/%s/%d/%s.html', $this->Core->settings['url'], $post['c_seo'], $post['post_id'], $title);
 		if($onlyLink) {
 			return $url;
@@ -92,7 +84,7 @@ class tsPosts {
 	}
 
 	private function navigationQuery(): string {
-		$sql = "SELECT p.post_id, p.post_user, p.post_category, p.post_title, u.user_name, c.c_nombre, c.c_seo FROM p_posts AS p LEFT JOIN u_miembros AS u ON u.user_id = p.post_user LEFT JOIN p_categorias AS c ON c.cid = p.post_category WHERE p.post_status = 0 ";
+		$sql = "SELECT p.post_id, p.post_user, p.post_category, p.post_title, u.user_name, c.c_nombre, c.c_seo FROM p_posts AS p LEFT JOIN u_miembros AS u ON u.user_id = p.post_user LEFT JOIN p_categorias AS c ON c.cid = p.post_category WHERE p.post_status = 'publicado' ";
 		$sql .= $this->PostHelper->activeUserSqlCondition();
 		return $sql;
 	}
@@ -122,9 +114,9 @@ class tsPosts {
 	}
 
 	/**
-	 * Obtiene el título del post siguiente/anterior
+	 * Obtiene el tï¿½tulo del post siguiente/anterior
 	 *
-	 * @param string|null $direction Dirección: 'prev' o 'next'. Si no se especifica, busca aleatorio
+	 * @param string|null $direction Direcciï¿½n: 'prev' o 'next'. Si no se especifica, busca aleatorio
 	 * @return array|false Datos del post o false si no existe
 	 */
 	public function getNearbyPostTitle(?string $direction = null): array|false {
@@ -156,18 +148,19 @@ class tsPosts {
 	 */
 	private function postStatus(array $postData): array {
 		if((int)$postData['post_id'] === 0) {
-			$tsDraft = DB::fetch("SELECT post_draft FROM p_borradores WHERE post_id = :pid LIMIT 1", ['pid' => $postData['post_id']]);
-			$msg = !isset($tsDraft['post_draft']) ? 'fue eliminado!' : 'no existe o fue eliminado.';
-			return ['deleted', "Oops! Este post $msg"];
+			// Editar para borrador
+			/*$tsDraft = DB::fetch("SELECT post_status FROM p_posts WHERE post_id = :pid LIMIT 1", ['pid' => $postData['post_id']]);
+			$msg = ($tsDraft['post_status'] === 'borrador') ? 'fue eliminado!' : 'no existe o fue eliminado.';
+			return ['deleted', "Oops! Este post $msg"];*/
 		}
-		if((int)$postData['post_status'] === 1 && $this->PostHelper->canPermsUsers('moacp')) {
-			return ['denunciado','Oops! El Post se encuentra en revisi&oacute;n por acumulaci&oacute;n de denuncias.'];
+		if($postData['post_status'] === 'oculto' && $this->PostHelper->canPermsUsers('moacp')) {
+			return ['denunciado','Oops! El Post se encuentra en revisiï¿½n por acumulaciï¿½n de denuncias.'];
 		}
-		if((int)$postData['post_status'] === 2 && $this->PostHelper->canPermsUsers('morp')) {
+		if($postData['post_status'] === 'eliminado' && $this->PostHelper->canPermsUsers('morp')) {
 			return ['deleted','Oops! El post fue eliminado!'];
 		}
-		if((int)$postData['post_status'] === 3 && $this->PostHelper->canPermsUsers('mocp')) {
-			return ['denunciado','Oops! El Post se encuentra en revisi&oacute;n, a la espera de su publicaci&oacute;n.'];
+		if($postData['post_status'] === 'revision' && $this->PostHelper->canPermsUsers('mocp')) {
+			return ['denunciado','Oops! El Post se encuentra en revisiï¿½n, a la espera de su publicaciï¿½n.'];
 		}
 		if(!(int)$postData['post_private'] === 0 && !$this->User->is_member) {
 			return ['privado', (string)$postData['post_title']];
@@ -189,7 +182,7 @@ class tsPosts {
 	 * @param array
 	 * @return array
 	 */
-	private function refreshPostStats(array $postData) {
+	private function refreshPostStats(array $postData): array {
 		$pid = (int)$this->postId;
 		$data = [];
 		#if($this->checkedStatsPosts((int)$postData['post_cache'])) {
@@ -203,7 +196,7 @@ class tsPosts {
 	      	$data['post_' . $who] = DB::value($sql, ['pid' => $pid]);
 			}
 			$data['post_cache'] = time();
-			//ACTUALIZAMOS LAS ESTADÍSTICAS
+			//ACTUALIZAMOS LAS ESTADï¿½STICAS
 			DB::update('p_posts', $data, 'post_id = :pid', ['pid' => $pid]);
 			$postData += $data;
 			return $postData;
@@ -243,7 +236,7 @@ class tsPosts {
 		// OBTENER DATOS DEL POST
 		$postData = $this->getDataPost();
 		$this->postStatus($postData);
-		// ESTADÍSTICAS
+		// ESTADï¿½STICAS
 		$postData = $this->refreshPostStats($postData);
 		// USUARIO BLOQUEADO?
 		$postData['block'] = $this->UserHelper->isBlocked((int)$postData['post_user'], $this->User->uid);
@@ -291,7 +284,7 @@ class tsPosts {
 		// EXTRA DEL USUARIO
 		$data['user_seguidores'] = DB::value("SELECT COUNT(*) FROM u_follows WHERE f_id = :uid AND f_type = 1", $param);
 		$data['user_comentarios'] = DB::value("SELECT COUNT(*) FROM p_comentarios WHERE c_user = :uid AND c_status = 0", $param);
-		$data['user_comentarios'] = DB::value("SELECT COUNT(*) FROM p_posts WHERE post_user = :uid AND post_status = 0", $param);
+		$data['user_comentarios'] = DB::value("SELECT COUNT(*) FROM p_posts WHERE post_user = :uid AND post_status = 'publicado'", $param);
 		// RANGOS DE ESTE USUARIO
 		$data['rango'] = DB::fetch("SELECT r_name, r_color, r_image FROM u_rangos WHERE rango_id = :rango LIMIT 1", ['rango' => $data['user_rango']]);
 		// STATUS
@@ -330,31 +323,31 @@ class tsPosts {
 	public function deletePost(): string {
 		$userId = (int) $this->User->uid;
 		if ($this->postId <= 0) {
-			return '0: ID inválido.';
+			return '0: ID invï¿½lido.';
 		}
 		$param = ['pid' => $this->postId];
-		$post = DB::fetch("SELECT post_id, post_user, post_draft FROM p_posts WHERE post_id = :pid", $param);
+		$post = DB::fetch("SELECT post_id, post_user, post_status FROM p_posts WHERE post_id = :pid", $param);
 		if (!$post) {
 			return '0: El post no existe.';
 		}
-		if ((int)$post['post_draft'] === 2) {
-			return '0: El post ya está eliminado.';
+		if ($post['post_status'] === 'eliminado') {
+			return '0: El post ya estï¿½ eliminado.';
 		}
 		if ($post['post_user'] !== $userId && $this->User->is_admod !== 1) {
-			return '0: No tenés permisos para eliminar este post.';
+			return '0: No tenï¿½s permisos para eliminar este post.';
 		}
-		db_exec([__FILE__, __LINE__], 'query', 'START TRANSACTION');
-		$continue = DB::update('p_posts', ['post_draft' => 2], 'post_id = :pid', $param);
+		DB::begin();
+		$continue = DB::update('p_posts', ['post_status' => 'eliminado'], 'post_id = :pid', $param);
 		// Soft delete
 		if (!$continue) {
-			db_exec([__FILE__, __LINE__], 'query', 'ROLLBACK');
+			DB::rollback();
 			return '0: Error eliminando el post.';
 		}
 		// Soft delete de comentarios (recomendado)
 		DB::update('p_comentarios', ['c_status' => 2], 'c_post_id = :pid', $param);
-		db_exec([__FILE__, __LINE__], 'query', "UPDATE w_stats SET stats_posts = GREATEST(stats_posts - 1, 0) WHERE stats_no = 1");
-		db_exec([__FILE__, __LINE__], 'query', "UPDATE u_miembros SET user_posts = GREATEST(user_posts - 1, 0) WHERE user_id = {$post['post_user']}");
-		db_exec([__FILE__, __LINE__], 'query', 'COMMIT');
+		DB::decrement('w_stats', 'stats_posts', 'stats_no = :stats_no', ['stats_no' => 1]);
+		DB::decrement('u_miembros', 'user_posts', 'user_id = :uid', ['uid' => $post['post_user']]);
+		DB::commit();
 		return '1: El post fue eliminado correctamente.';
 	}
 	
@@ -364,7 +357,7 @@ class tsPosts {
 	*/
 	public function deleteAdminPost(): string {
 		if ($this->postId <= 0) {
-			return '0: ID de post inválido.';
+			return '0: ID de post invï¿½lido.';
 		}
 		// No es el administrador
 		if($this->User->is_admod !== 1) {
@@ -372,12 +365,13 @@ class tsPosts {
 		}
 		// Post Eliminado
 		$exists = DB::exists("SELECT post_id, post_user FROM p_posts WHERE post_id = :pid", ['pid' => $this->postId]);
-		if (!$post) {
+		if (!$exists) {
         	return '0: El post no existe.';
-   	}
-   	if ($post['post_status'] != 0) { // 0 = activo, 1 = pendiente, 2 = eliminado
-   	   return '0: El post no está en estado activo para eliminar.';
-   	}
+   		}
+   		$post = DB::fetch("SELECT post_status FROM p_posts WHERE post_id = :pid", ['pid' => $this->postId]);
+	   	if ($post['post_status'] != 'publicado') { // 0 = activo, 1 = pendiente, 2 = eliminado
+	   	   return '0: El post no estï¿½ en estado activo para eliminar.';
+	   	}
 		DB::begin();
 		try {
 			DB::delete('p_comentarios', 'c_post_id = :pid', ['pid' => $this->postId]);
@@ -389,7 +383,7 @@ class tsPosts {
 			return "1: El post se ha eliminado correctamente.";
 		} catch (Exception $e) {
         	DB::rollback();
-        	return '0: Error crítico: ' . $e->getMessage();
+        	return '0: Error crï¿½tico: ' . $e->getMessage();
     	}		
 	}
 
@@ -417,112 +411,118 @@ class tsPosts {
 		if ($searchTerms === '') {
 			return [];
 		}
-		$sql = "SELECT DISTINCT p.post_id, p.post_title, p.post_category, p.post_private, c.c_nombre, c.c_seo, c.c_img FROM p_posts AS p LEFT JOIN p_categorias AS c ON c.cid = p.post_category WHERE MATCH (p.post_tags) AGAINST ('$searchTerms' IN BOOLEAN MODE) AND p.post_status = 0 AND p.post_sticky = 0 ORDER BY RAND() LIMIT 10";
+		$addTags = [];
+		foreach($tags as $tag) {
+			$addTags[] = "p.post_tags LIKE '%{$tag}%'";
+
+		}
+		$where = implode(' OR ', $addTags);
+		$sql = "SELECT DISTINCT p.post_id, p.post_title, p.post_category, p.post_private, c.c_nombre, c.c_seo, c.c_img FROM p_posts AS p LEFT JOIN p_categorias AS c ON c.cid = p.post_category WHERE ($where) AND p.post_status = 'publicado' AND p.post_sticky = 0 ORDER BY RAND() LIMIT 10";
 		//
 		return DB::fetchAll($sql);
 	}
 
-	private function verifyNoDuplicateAccount() {
+	private function verifyNoDuplicateAccount(): ?string {
 		// Validar IP
-	   $IP = (new IP)->getIP();
+	   	$IP = $this->myIP;
 		if(!$this->User->is_admod) {
 			$param = ['ip' => $IP, 'uid' => $this->User->uid];
-			$existUser = DB::exists("SELECT user_id FROM u_miembros WHERE user_last_ip = :ip AND user_id != :user", $param);
-			$existSession = DB::exists("SELECT session_id FROM u_sessions WHERE session_ip = :ip AND session_user_id != :user", $param);
+			$existUser = DB::exists("SELECT 1 FROM u_miembros WHERE user_last_ip = :ip AND user_id != :user", $param);
+			$existSession = DB::exists("SELECT 1 FROM u_sessions WHERE session_ip = :ip AND session_user_id != :user", $param);
 			if($existUser || $existSession) {
-				return '0: Has usado otra cuenta anteriormente, deber&aacute;s contactar con la administraci&oacute;n.';
+				return '0: Has usado otra cuenta anteriormente, deberï¿½s contactar con la administraciï¿½n.';
 			}
 		}
 		return null;
 	}
 
-	private function getMaxAllowedPoints(int $puntos) {
-	   $configValue = (int)$this->Core->settings['c_allow_points'];
-	   $maxPoints = match($configValue) {
-	      0  => (int)$this->User->permiso('limites.puntos_por_post'),
-	      -1 => (int)$this->User->info['user_puntosxdar'],
-	      -2 => (int)$this->Core->settings['c_max_points_unlimited'] ?? 999999999,
-	      default => max(0, $configValue)
-	   };
-	   // Validar cantidad de puntos
-	   if ($puntos > $maxPoints) {
-	      return "0: Voto no v&aacute;lido. No puedes dar $puntos puntos, s&oacute;lo se permiten $maxPoints.";
-	   }
-	   if ($puntos > $this->User->info['user_puntosxdar']) {
-	      return "0: Voto no v&aacute;lido. No puedes dar $puntos puntos, s&oacute;lo te quedan {$this->User->info['user_puntosxdar']}.";
-	   }
+	private function getMaxAllowedPoints(int $puntos): string {
+		$configValue = (int)$this->Core->settings['c_allow_points'];
+		$maxPoints = match($configValue) {
+			0  => (int)$this->User->permiso('limites.puntos_por_post'),
+			-1 => (int)$this->User->info['user_puntosxdar'],
+			-2 => (int)$this->Core->settings['c_max_points_unlimited'] ?? 999999999,
+			default => max(0, $configValue)
+		};
+		// Validar cantidad de puntos
+		if ($puntos > $maxPoints) {
+			return "0: Voto no vï¿½lido. No puedes dar $puntos puntos, sï¿½lo se permiten $maxPoints.";
+		}
+		if ($puntos > $this->User->info['user_puntosxdar']) {
+			return "0: Voto no vï¿½lido. No puedes dar $puntos puntos, sï¿½lo te quedan {$this->User->info['user_puntosxdar']}.";
+		}
 	}
 
-	private function applyPostVote(int $puntos, int $postUser) {
-		// Transacción para asegurar integridad
-	   DB::begin();
-	   try {
-	   	$sentencias = [
-	      	// Actualizar puntos del post
-	   		"UPDATE p_posts SET post_puntos = post_puntos + :puntos WHERE post_id = :pid" => ['puntos' => $puntos,'pid' => $this->postId],
-	      	// Actualizar puntos del dueño del post
-	   		"UPDATE u_miembros SET user_puntos = user_puntos + :puntos WHERE user_id = :uid" => ['puntos' => $puntos,'uid' => $postUser],
-	      	// Restar puntos del votante
-	   		"UPDATE u_miembros SET user_puntosxdar = user_puntosxdar - :puntos WHERE user_id = :uid" => ['puntos' => $puntos,'uid' => $this->User->uid]
-	   	];
-	   	foreach($sentencias as $sql => $params) {
-	   		DB::raw($sql, $params);
+	private function applyPostVote(int $puntos, int $postUser): ?string {
+		// Transacciï¿½n para asegurar integridad
+	   	DB::begin();
+	   	try {
+	   		$sentencias = [
+	   		  	// Actualizar puntos del post
+	   			"UPDATE p_posts SET post_puntos = post_puntos + :puntos WHERE post_id = :pid" => ['puntos' => $puntos,'pid' => $this->postId],
+	   		  	// Actualizar puntos del dueï¿½o del post
+	   			"UPDATE u_miembros SET user_puntos = user_puntos + :puntos WHERE user_id = :uid" => ['puntos' => $puntos,'uid' => $postUser],
+	   		  	// Restar puntos del votante
+	   			"UPDATE u_miembros SET user_puntosxdar = user_puntosxdar - :puntos WHERE user_id = :uid" => ['puntos' => $puntos,'uid' => $this->User->uid]
+	   		];
+	   		foreach($sentencias as $sql => $params) {
+	   			DB::raw($sql, $params);
+	   		}
+	    	// Registrar voto
+	    	DB::insert('p_votos', ['tid' => $this->postId,'tuser' => $this->User->uid,'cant' => $puntos,'type' => 1,'date' => time()]);
+	    	DB::commit();
+	   	} catch (\Exception $e) {
+	      	DB::rollback();
+	      	return '0: Error interno al registrar el voto.';
 	   	}
-	      // Registrar voto
-	      DB::insert('p_votos', ['tid' => $this->postId,'tuser' => $this->User->uid,'cant' => $puntos,'type' => 1,'date' => time()]);
-	      DB::commit();
-	   } catch (\Exception $e) {
-	      DB::rollback();
-	      return '0: Error interno al registrar el voto.';
-	   }
 	}
 		
 	/*
 		votarPost()
 	*/
-	public function votarPost() {
-	   global $tsMonitor, $tsActividad;
-	   // Verificar permisos
-	   if (!($this->User->is_admod || $this->User->permiso('global.posts.puntuar'))) {
-	      return '0: No tienes permiso para votar.';
-	   }
-	   // Validar puntos
-	   $puntos = (int)($_POST['puntos'] ?? 0);
-	   if ($puntos <= 0) {
-	      return '0: Voto no v&aacute;lido. No puedes dar 0 puntos.';
-	   }
-	   $puntos = abs($puntos); // Asegurar positivo
-	   // Verificar si ha usado otra cuenta
-	   $otherAccountCheck = $this->verifyNoDuplicateAccount();
-	   if ($otherAccountCheck !== null) {
-	      return $otherAccountCheck;
-	   }
-	   // Obtener info del post
-	   $postData = DB::fetch("SELECT post_user FROM p_posts WHERE post_id = :pid LIMIT 1", ['pid' => $this->postId]);
-	   if (!$postData) {
-	      return '0: El post no existe.';
-	   }
-	   // No votar tu propio post
-	   if ((int)$postData['post_user'] === $this->User->uid) {
-	      return '0: No puedes votar tu propio post.';
-	   }
-	   // Verificar si ya votó
+	public function votarPost(): string {
+		global $tsMonitor, $tsActividad;
+		// Verificar permisos
+		if (!($this->User->is_admod || $this->User->permiso('global.posts.puntuar'))) {
+			return '0: No tienes permiso para votar.';
+		}
+		// Validar puntos
+		$puntos = (int)($_POST['puntos'] ?? 0);
+		if ($puntos <= 0) {
+			return '0: Voto no vï¿½lido. No puedes dar 0 puntos.';
+		}
+		$puntos = abs($puntos); // Asegurar positivo
+		// Verificar si ha usado otra cuenta
+		$otherAccountCheck = $this->verifyNoDuplicateAccount();
+		if ($otherAccountCheck !== null) {
+			return $otherAccountCheck;
+		}
+		// Obtener info del post
+		$postData = DB::fetch("SELECT post_user FROM p_posts WHERE post_id = :pid LIMIT 1", ['pid' => $this->postId]);
+		if (!$postData) {
+			return '0: El post no existe.';
+		}
+		// No votar tu propio post
+		if ((int)$postData['post_user'] === $this->User->uid) {
+			return '0: No puedes votar tu propio post.';
+		}
+	   // Verificar si ya votï¿½
 	   if (DB::exists("SELECT tid FROM p_votos WHERE tid = :pid AND tuser = :uid AND type = 1 LIMIT 1", [
 	      'pid' => $this->postId,
 	      'uid' => $this->User->uid
-	   ])) {
-	      return '0: No es posible votar a un mismo post m&aacute;s de una vez.';
-	   }
-	   // Obtener límite de puntos
-	   $this->getMaxAllowedPoints((int)$puntos);
-	   $this->applyPostVote((int)$puntos, (int)$postData['post_user']);
-	   // Notificación
-	   $tsMonitor->setNotificacion(3, (int)$postData['post_user'], $this->User->uid, $this->postId, $puntos);
-	   // Actividad
-	   $tsActividad->setActividad(3, (int)$this->postId, (int)$puntos);
-	   // Subir rango
-	   $this->subirRango((int)$postData['post_user'], $this->postId);
-	   return '1: Puntos agregados!';
+		])) {
+			return '0: No es posible votar a un mismo post mï¿½s de una vez.';
+		}
+		// Obtener lï¿½mite de puntos
+		$this->getMaxAllowedPoints((int)$puntos);
+		$this->applyPostVote((int)$puntos, (int)$postData['post_user']);
+		// Notificaciï¿½n
+		$tsMonitor->setNotificacion(3, (int)$postData['post_user'], $this->User->uid, $this->postId, $puntos);
+		// Actividad
+		$tsActividad->setActividad(3, (int)$this->postId, (int)$puntos);
+		// Subir rango
+		$this->subirRango((int)$postData['post_user'], $this->postId);
+		return '1: Puntos agregados!';
 	}
 
 	/**
@@ -538,7 +538,7 @@ class tsPosts {
 	   if ($userData['r_type'] == 0 || $userData['user_rango'] == 3) {
 	      return true;
 	   }
-	   // Si solo se sube por puntos de un post específico
+	   // Si solo se sube por puntos de un post especï¿½fico
 	   $puntosActual = $userData['user_puntos'];
 	   if ($postId && (int)$this->Core->settings['c_newr_type'] === 0) {
 	      $postPuntos = DB::value("SELECT post_puntos FROM p_posts WHERE post_id = :postId LIMIT 1", ['postId' => $postId]);
@@ -547,7 +547,7 @@ class tsPosts {
 	      }
 	   }
 	   // Contar posts, fotos y comentarios activos del usuario
-	   $posts = DB::value("SELECT COUNT(post_id) AS p FROM p_posts WHERE post_user = :userId AND post_status = 0", ['userId' => $userId]) ?: 0;
+	   $posts = DB::value("SELECT COUNT(post_id) AS p FROM p_posts WHERE post_user = :userId AND post_status = 'publicado'", ['userId' => $userId]) ?: 0;
 	   $fotos = DB::value("SELECT COUNT(foto_id) AS f FROM f_fotos WHERE f_user = :userId AND f_status = 0", ['userId' => $userId]) ?: 0;
 	   $comentarios = DB::value("SELECT COUNT(cid) AS c FROM p_comentarios WHERE c_user = :userId AND c_status = 0", ['userId' => $userId]) ?: 0;
 	   // Obtener rangos configurados
@@ -556,7 +556,7 @@ class tsPosts {
 	   foreach ($rangos as $rango) {
 		   $cantidad = (int)$rango['r_cant'];
 		   $tipo = (int)$rango['r_type'];
-		   // Usar match para determinar si cumple la condición
+		   // Usar match para determinar si cumple la condiciï¿½n
 		   $cumple = match ($tipo) {
 		      1 => $puntosActual >= $cantidad,
 		      2 => $posts >= $cantidad,
@@ -585,7 +585,7 @@ class tsPosts {
 	   if (!$data) {
 	      return;
 	   }
-	   // Obtener todas las métricas en una sola operación
+	   // Obtener todas las mï¿½tricas en una sola operaciï¿½n
 	   $metrics = [
 	      'followers' => DB::value("SELECT COUNT(follow_id) FROM u_follows WHERE f_id = :pid AND f_type = 2", $param) ?: 0,
 	      'comments' => DB::value("SELECT COUNT(cid) FROM p_comentarios WHERE c_post_id = :pid AND c_status = 0", $param) ?: 0,
@@ -597,42 +597,42 @@ class tsPosts {
 	   // Obtener medallas disponibles
 	   $medallas = DB::fetchAll("SELECT medal_id, m_cant, m_cond_post FROM w_medallas WHERE m_type = 2 ORDER BY m_cant DESC");
 	   foreach ($medallas as $medalla) {
-	      $newmedalla = match($medalla['m_cond_post']) {
-	         ($data['post_puntos'] >= $medalla['m_cant'])  => $medalla['medal_id'],
+	      	$newmedalla = match($medalla['m_cond_post']) {
+	      		($data['post_puntos'] >= $medalla['m_cant'])  => $medalla['medal_id'],
 	        	($metrics['followers'] >= $medalla['m_cant']) => $medalla['medal_id'],
-	         ($metrics['comments'] >= $medalla['m_cant'])  => $medalla['medal_id'],
-	         ($metrics['favorites'] >= $medalla['m_cant']) => $medalla['medal_id'],
-	         ($metrics['denuncias'] >= $medalla['m_cant']) => $medalla['medal_id'],
-	         ($data['post_hits'] >= $medalla['m_cant']) 	 => $medalla['medal_id'],
-	         ($metrics['medallas'] >= $medalla['m_cant'])  => $medalla['medal_id'],
-	         ($metrics['shares'] >= $medalla['m_cant']) 	 => $medalla['medal_id'],
-	         default => null
+	       		($metrics['comments'] >= $medalla['m_cant'])  => $medalla['medal_id'],
+	       		($metrics['favorites'] >= $medalla['m_cant']) => $medalla['medal_id'],
+	       		($metrics['denuncias'] >= $medalla['m_cant']) => $medalla['medal_id'],
+	       		($data['post_hits'] >= $medalla['m_cant']) 	 => $medalla['medal_id'],
+	       		($metrics['medallas'] >= $medalla['m_cant'])  => $medalla['medal_id'],
+	       		($metrics['shares'] >= $medalla['m_cant']) 	 => $medalla['medal_id'],
+	       		default => null
 	     	};
-	      if ($newmedalla) {
-	         $this->asignarMedalla($newmedalla, $postId, $data['post_user']);
-	      }
+	      	if ($newmedalla) {
+	         	$this->asignarMedalla($newmedalla, $postId, $data['post_user']);
+	      	}
 	   }
 	}
 
 	private function asignarMedalla(int $medalId, int $postId, int $postUser): void {
-	   $exists = DB::exists("SELECT 1 FROM w_medallas_assign WHERE medal_id = :mid AND medal_for = :mfor", ['mid' => $medalId, 'mfor' => $postId]);
-	   if ($exists) {
-	      return;
-	   }
-	   DB::insert('w_medallas_assign', [
-	      'medal_id' => $medalId,
-	      'medal_for' => $postId,
-	      'medal_date' => time(),
-	      'medal_ip' => (new IP)->getIP() ?? ''
-	   ]);
-	   DB::insert('u_monitor', [
-	      'user_id' => $postUser,
-	      'obj_uno' => $medalId,
-	      'obj_dos' => $postId,
-	      'not_type' => 16,
-	      'not_date' => time()
-	   ]);
-	   DB::query("UPDATE w_medallas SET m_total = m_total + 1 WHERE medal_id = ?", [$medalId]);
+		$exists = DB::exists("SELECT 1 FROM w_medallas_assign WHERE medal_id = :mid AND medal_for = :mfor", ['mid' => $medalId, 'mfor' => $postId]);
+		if ($exists) {
+		   return;
+		}
+		DB::insert('w_medallas_assign', [
+			'medal_id' => $medalId,
+			'medal_for' => $postId,
+			'medal_date' => time(),
+			'medal_ip' => $this->myIP
+		]);
+		DB::insert('u_monitor', [
+			'user_id' => $postUser,
+			'obj_uno' => $medalId,
+			'obj_dos' => $postId,
+			'not_type' => 16,
+			'not_date' => time()
+		]);
+		DB::query("UPDATE w_medallas SET m_total = m_total + 1 WHERE medal_id = ?", [$medalId]);
 	}
 
 	

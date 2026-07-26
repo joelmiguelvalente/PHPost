@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * @package    PHPost/Php
+ * @package    Php
  * @author     PHPost Team & Miguel92
  * @copyright  2026
  */
@@ -15,29 +15,13 @@ $tsTitle = "{$tsCore->settings['titulo']} - {$tsCore->settings['slogan']}";
  * Inicializamos variable
  */
 
-$ctx = Controller::page('posts')->everybody();
-// sincronizamos
-$ctx->exportLegacy();
-
-$tsLevelMsg = $tsCore->setLevel($ctx->getLevel(), true);
-if (is_array($tsLevelMsg)) {
-   $ctx->changePage('aviso');
-   $ctx->stop();
-   $smarty->assign("tsAviso", $tsLevelMsg);
-   // sincroniza nuevamente
-   $ctx->exportLegacy();
-}
+$ctx = Controller::init('posts', 'everybody');
 
 if($ctx->continue()) {
 
-	// Afiliados
-	require_once TS_CLASS . "/c.afiliado.php";
-	require_once TS_CLASS . "/c.posts.php";
-	require_once TS_CLASS . "/c.comentarios.php";
-
-	$tsAfiliado = new tsAfiliado($tsCore, $tsUser);
-	$tsPosts = new tsPosts($tsCore, $tsUser);
-	$tsComentarios = new tsComentarios($tsCore, $tsUser);
+	$tsAfiliado = Container::get(tsAfiliado::class);
+	$tsPosts = Container::get(tsPosts::class);
+	$tsComentarios = Container::get(tsComentarios::class);
 	
 	// Post anterior/siguiente
 	if(isset($_GET['action']) && in_array($_GET['action'], ['next', 'prev', 'random'], true)) {
@@ -91,7 +75,7 @@ if($ctx->continue()) {
 		$smarty->assign("tsComments", $tsComentarios->getLastComentarios());
 		// PAGINAS
 		$total = $tsPost['post_comments'];
-		$tsPages = (new Paginator)->getPages((int)$total, (int)$tsCore->settings['c_max_com']);
+		$tsPages = Container::get(Paginator::class)->getPages((int)$total, (int)$tsCore->settings['c_max_com']);
 		$tsPages['post_id'] = $tsPost['post_id'];
 		$tsPages['autor'] = $tsPost['post_user'];
 		//
@@ -100,7 +84,4 @@ if($ctx->continue()) {
 	}
 }
 
-if($tsAjax) {
-	$smarty->assign("tsTitle", $tsTitle);
-   require_once TS_ROOT . "/footer.php";
-}
+Controller::render($tsAjax, $tsTitle, $tsPage);

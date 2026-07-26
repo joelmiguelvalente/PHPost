@@ -3,14 +3,12 @@
 declare(strict_types=1);
 
 /**
- * @package    PHPost/Utils
- * @author     PHPost Team & Miguel92
+ * @package    Utils
+ * @author     Miguel92
  * @copyright  2026
  */
 
-if (!defined('TS_HEADER')) {
-   exit('No se permite el acceso directo al script');
-}
+defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
 class Paginator {
 
@@ -18,10 +16,10 @@ class Paginator {
 	protected int $start;
 	public string $route;
 
-	public function __construct(?string $route = null) {
+	public function __construct(string $route) {
 		$this->page  = isset($_GET['page']) ? max(1, (int) $_GET['page']) : 1;
 		$this->start = isset($_GET['s']) ? max(0, (int) $_GET['s']) : 0;
-		$this->route = $route ?? '';
+		$this->route = rtrim($route, '/');
 	}
 
 	/*
@@ -93,69 +91,69 @@ class Paginator {
 	 *
 	 * @return string
 	 */
-	public function pageIndex(string $base_url, int $start, int $max_value, int $num_per_page, bool $flexible_start = false) {
-	   // Limpieza de la URL base
-	   if(!empty($this->route)) {
-	   	$base_url = $this->route . $base_url;
-	   }
-	   $base_url = explode('&s=', $base_url, 2)[0];
-	   // Normalización del start
-	   $startInvalid = $start < 0;
-	   $start = max(0, $start);
-	   if ($start >= $max_value) {
-	      $start = max(0, $max_value - ($max_value % $num_per_page ?: $num_per_page));
-	   }
-	   // Asegurar múltiplo del límite
-	   $start -= $start % $num_per_page;
-	   // Configuración visual
-	   $range = 5;
-	   $halfRange = intdiv($range, 2);
-	   // Template de link
-	   $linkTpl = '<a class="navPages" href="%s">%s</a> ';
-	   $buildLink = function (int $offset, int $page) use ($base_url, $flexible_start, $linkTpl) {
-	      $url = $flexible_start ? $base_url : sprintf('%s&s=%d', $base_url, $offset);
-	      return sprintf($linkTpl, htmlspecialchars($url), $page);
-	   };
-	   $html = '';
-	   $currentPage = (int) ($start / $num_per_page) + 1;
-	   $lastOffset  = (int) (floor(($max_value - 1) / $num_per_page) * $num_per_page);
-	   // Primera página
-	   if ($start > $num_per_page * $halfRange) {
-	      $html .= $buildLink(0, 1);
-	   }
-	   // Ellipsis inicial
-	   if ($start > $num_per_page * ($halfRange + 1)) {
-	      $html .= '<b> ... </b>';
-	   }
-	   // Páginas anteriores
-	   for ($i = $halfRange; $i >= 1; $i--) {
-	      $offset = $start - $num_per_page * $i;
-	      if ($offset >= 0) {
-	         $html .= $buildLink($offset, ($offset / $num_per_page) + 1);
-	      }
-	   }
-	   // Página actual
-	   if (!$startInvalid) {
-	      $html .= '[<b>' . $currentPage . '</b>] ';
-	   } else {
-	      $html .= $buildLink($start, $currentPage);
-	   }
-	   // Páginas siguientes
-	   for ($i = 1; $i <= $halfRange; $i++) {
-	      $offset = $start + $num_per_page * $i;
-	      if ($offset <= $lastOffset) {
-	         $html .= $buildLink($offset, ($offset / $num_per_page) + 1);
-	      }
-	   }
-	   // Ellipsis final
-	   if ($start + $num_per_page * ($halfRange + 1) < $lastOffset) {
-	      $html .= '<b> ... </b>';
-	   }
-	   // Última página
-	   if ($start + $num_per_page * $halfRange < $lastOffset) {
-	      $html .= $buildLink($lastOffset, ($lastOffset / $num_per_page) + 1);
-	   }
-	   return $html;
+	public function pageIndex(string $base_url, int $start, int $max_value, int $num_per_page, bool $flexible_start = false): string {
+		// Limpieza de la URL base
+		if(!empty($this->route)) {
+			$base_url = $this->route . $base_url;
+		}
+		$base_url = explode('&s=', $base_url, 2)[0];
+		// Normalización del start
+		$startInvalid = $start < 0;
+		$start = max(0, $start);
+		if ($start >= $max_value) {
+			$start = max(0, $max_value - ($max_value % $num_per_page ?: $num_per_page));
+		}
+		// Asegurar múltiplo del límite
+		$start -= $start % $num_per_page;
+		// Configuración visual
+		$range = 5;
+		$halfRange = intdiv($range, 2);
+		// Template de link
+		$linkTpl = '<a class="navPages" href="%s">%s</a> ';
+		$buildLink = function (int $offset, int $page) use ($base_url, $flexible_start, $linkTpl) {
+			$url = $flexible_start ? $base_url : sprintf('%s&s=%d', $base_url, $offset);
+			return sprintf($linkTpl, htmlspecialchars($url), $page);
+		};
+		$html = '';
+		$currentPage = (int) ($start / $num_per_page) + 1;
+		$lastOffset  = (int) (floor(($max_value - 1) / $num_per_page) * $num_per_page);
+		// Primera página
+		if ($start > $num_per_page * $halfRange) {
+			$html .= $buildLink(0, 1);
+		}
+		// Ellipsis inicial
+		if ($start > $num_per_page * ($halfRange + 1)) {
+			$html .= '<b> ... </b>';
+		}
+		// Páginas anteriores
+		for ($i = $halfRange; $i >= 1; $i--) {
+			$offset = $start - $num_per_page * $i;
+			if ($offset >= 0) {
+				$html .= $buildLink($offset, ($offset / $num_per_page) + 1);
+			}
+		}
+		// Página actual
+		if (!$startInvalid) {
+			$html .= '[<b>' . $currentPage . '</b>] ';
+		} else {
+			$html .= $buildLink($start, $currentPage);
+		}
+		// Páginas siguientes
+		for ($i = 1; $i <= $halfRange; $i++) {
+			$offset = $start + $num_per_page * $i;
+			if ($offset <= $lastOffset) {
+				$html .= $buildLink($offset, ($offset / $num_per_page) + 1);
+			}
+		}
+		// Ellipsis final
+		if ($start + $num_per_page * ($halfRange + 1) < $lastOffset) {
+			$html .= '<b> ... </b>';
+		}
+		// Última página
+		if ($start + $num_per_page * $halfRange < $lastOffset) {
+			$html .= $buildLink($lastOffset, ($lastOffset / $num_per_page) + 1);
+		}
+		return $html;
 	}
 
 }

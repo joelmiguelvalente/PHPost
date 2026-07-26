@@ -3,13 +3,13 @@
 declare(strict_types=1);
 
 /**
- * @package    PHPost/Utils
- * @author     PHPost Team & Miguel92
+ * @package    PHPost
+ * @author     Miguel92
  * @copyright  2026
  */
 
 // Verificamos si el sitio fue instalado
-if(!file_exists(__DIR__ . DIRECTORY_SEPARATOR . '.lock')) {
+if(!file_exists(__DIR__  . '/installed.lock')) {
 	header("Location: ./install/index.php?step=bienvenida");
 	die;
 }

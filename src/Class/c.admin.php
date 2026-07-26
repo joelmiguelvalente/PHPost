@@ -3,399 +3,279 @@
 declare(strict_types=1);
 
 /**
- * @package    PHPost/Class
- * @author     PHPost Team & Miguel92
+ * @package    Class
+ * @author     Miguel92
  * @copyright  2026
  */
 
-if (!defined('TS_HEADER')) {
-   exit('No se permite el acceso directo al script');
-}
-
-require_once TS_HELPERS . '/AdminHelper.php';
-require_once TS_CLASS . '/c.emails.php';
+defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
 class tsAdmin {
 
-   protected Paginator $Paginator;
+	# Cantidad de objeto a mostrar
+	CONST MAX_SHOW = 20;
 
-   # Cantidad de objeto a mostrar
-   CONST MAX_SHOW = 20;
+	public function __construct(
+		protected tsCore $Core,
+		protected tsUser $User,
+		protected Email $Email,
+		protected Paginator $Paginator,
+		protected AdminHelper $AdminHelper
+	) {
+	}
 
-   protected AdminHelper $AdminHelper;
+	/**
+	 * Obtenemos a todos los administradores
+	*/
+	public function getAdmins(): array {
+		return DB::fetchAll("SELECT user_id, user_name FROM u_miembros WHERE user_rango = 1 ORDER BY user_id");
+	}
 
-   public function __construct(
-      protected tsCore $Core,
-      protected tsUser $User
-   ) {
-      $this->AdminHelper = new AdminHelper;
-      $this->Paginator = new Paginator($this->Core->settings['url']);
-   }
+	/**
+	 * Obtenemos fundación y acutalización
+	*/
+	public function getInst(): array {
+		$data = DB::fetch("SELECT stats_time_foundation as foundation, stats_time_upgrade as upgrade FROM w_stats WHERE stats_no = :stats", ['stats' => 1]);
+		return $data;
+	}
 
-   /**
-    * Obtenemos a todos los administradores
-   */
-   public function getAdmins(): array {
-      return DB::fetchAll("SELECT user_id, user_name FROM u_miembros WHERE user_rango = 1 ORDER BY user_id");
-   }
+	/**
+	 * Obtenemos las versiones
+	*/
+	public function getVersions(): array {
+		$data['script'] = Config::app('app.version');
+		// PHP
+		$data['php'] = [
+			'version' => PHP_VERSION,
+			'sapi' => PHP_SAPI,
+			'memory_limit' => ini_get('memory_limit'),
+			'upload_max_filesize' => ini_get('upload_max_filesize'),
+			'display_errors' => ini_get('display_errors'),
+			'timezone' => date_default_timezone_get(),
+		];
+		// Database
+		$row = DB::fetch('SELECT VERSION() AS v');
+		$data['database'] = [
+			'engine' => 'mysql',
+			'version' => $row['v'] ?? null,
+		];
+		// Server
+		$data['server'] = [
+			'software' => $_SERVER['SERVER_SOFTWARE'] ?? 'unknown',
+			'os' => PHP_OS_FAMILY,
+		];
+		// Extensions
+		$extensiones = [];
+		$all = [
+			...Config::app('php.extensions.required'),
+			...Config::app('php.extensions.optional')
+		];
+		foreach($all as $extension) {
+			if($extension === 'gd') continue;
+			$extensiones[$extension] = extension_loaded($extension);
+		}
+		$data['extensions'] = [
+			'gd' => extension_loaded('gd') ? [
+				'enabled' => true,
+				'version' => gd_info()['GD Version'] ?? null,
+			] : ['enabled' => false],
+			...$extensiones
+		];
+		return $data;
+	}
 
-   /**
-    * Obtenemos fundación y acutalización
-   */
-   public function getInst(): array {
-      $data = DB::fetch("SELECT stats_time_foundation as foundation, stats_time_upgrade as upgrade FROM w_stats WHERE stats_no = :stats", ['stats' => 1]);
-      return $data;
-   }
-   /**
-    * Obtenemos las versiones
-   */
-   public function getVersions(): array {
-      $data = [];
-      // PHP
-      $data['php'] = [
-         'version' => PHP_VERSION,
-         'sapi' => PHP_SAPI,
-         'memory_limit' => ini_get('memory_limit'),
-         'upload_max_filesize' => ini_get('upload_max_filesize'),
-         'display_errors' => ini_get('display_errors'),
-         'timezone' => date_default_timezone_get(),
-      ];
-      // Database
-      $row = DB::fetch('SELECT VERSION() AS v');
-      $data['database'] = [
-         'engine' => 'mysql',
-         'version' => $row['v'] ?? null,
-      ];
-      // Server
-      $data['server'] = [
-         'software' => $_SERVER['SERVER_SOFTWARE'] ?? 'unknown',
-         'os' => PHP_OS_FAMILY,
-      ];
-      // Extensions
-      $data['extensions'] = [
-         'gd' => extension_loaded('gd') ? [
-            'enabled' => true,
-            'version' => gd_info()['GD Version'] ?? null,
-         ] : ['enabled' => false],
-         'mbstring' => extension_loaded('mbstring'),
-         'intl'     => extension_loaded('intl'),
-         'curl'     => extension_loaded('curl'),
-         'openssl'  => extension_loaded('openssl'),
-         'zlib'     => extension_loaded('zlib'),
-         'json'     => extension_loaded('json'),
-      ];
-      return $data;
-   }
+	/**
+	 * @access public
+	 * @return bool
+	*/
+	public function saveConfig(string $table = 'w_configuracion', string $id = 'phpost_id'): bool {
+		return (DB::update($table, $_POST, "$id = :id", ['id' => 1]) === 0);
+	}
 
-   public function clearCache(): void {
-      if($this->User->uid !== 1) {
-         header("Location: " . $this->Core->settings['url'] . "/admin/creditos");
-         exit();
-      }
-      $cacheDir = TS_STORAGE . '/cache/';
-      $this->deleteCacheContents($cacheDir);
-      header("Location: " . $this->Core->settings['url'] . "/admin/creditos?save=true");
-      exit();
-   }
+	/**
+	 * ------------------------------
+	 * RANGOS
+	 * getAllRangos() :: Obtenemos todos los rangos
+	 * setUserRango() :: Cambiamos de rangos a usuarios
+	 * ------------------------------
+	*/
+	public function getAllRangos(): array {
+		# RANGOS DISPONIBLES
+		return DB::fetchAll('SELECT rango_id, r_name, r_color FROM u_rangos');
+	}
 
-   private function deleteCacheContents(string $dir): void {
-      $items = glob($dir . '*');
-      foreach($items as $item) {
-         if(is_dir($item)) {
-            $this->deleteCacheContents($item . '/'); // Recursivo para subcarpetas
-            rmdir($item); // Elimina la carpeta vacía
-         } elseif(is_file($item) && basename($item) !== 'index.html') {
-            unlink($item); // Elimina el archivo
-         }
-      }
-   }
+	public function setUserRango(int $userId = 0): bool|string {
+		# SOLO EL PRIMER ADMIN PUEDE PONER A OTROS ADMINS
+		$new_rango = (int)($_POST['new_rango'] ?? 0);
+		if ($userId === $this->User->uid) return 'No puedes cambiarte el rango a ti mismo';
+		elseif ($this->User->uid !== 1 && $new_rango === 1) return 'Solo el primer Administrador puede crear más administradores principales';
+		else {
+			return (!DB::update('u_miembros', ['user_rango' => $new_rango], "user_id = :uid", ['uid' => $userId]));
+		}
+	}
 
-   /**
-    * @access public
-    * @return bool
-   */   
-   public function saveConfig(string $table = 'w_configuracion', string $id = 'phpost_id'): bool {
-      return (DB::update($table, $_POST, "$id = :id", ['id' => 1]) === 0);
-   }
-   
-   /**
-    * ------------------------------
-    * PUBLICIDADES
-    * saveAds() :: Guardamos las publicidades
-    * ------------------------------ 
-   */
-   public function saveAds(): bool {
-      $publicidades = [];
-      $ads = ['300','468','160','728'];
-      foreach($ads as $ad) {
-         $key = "ads_$ad";
-         $publicidades[$key] = $this->Core->setSecure(html_entity_decode($_POST[$key]));
-      }
-      $publicidades['ads_search'] = $this->Core->setSecure($_POST['ads_search']);
-      # Guardamos los datos en la base
-      return (DB::update('w_configuracion', $publicidades, "phpost_id = :id", ['id' => 1]));
-   }
+	/**
+	 * ------------------------------
+	 * SESIONES
+	 * getSessions() :: Obtenemos todas las sesiones
+	 * delSession() :: Eliminamos la sesion por "session_id"
+	 * ------------------------------
+	*/
+	public function getSessions(): array {
+		$limit = $this->Paginator->setPageLimit(self::MAX_SHOW, true);
+		# Datos
+		$data['data'] = DB::fetchAll("SELECT u.user_id, u.user_name, s.* FROM u_sessions AS s LEFT JOIN u_miembros AS u ON s.session_user_id = u.user_id ORDER BY s.session_time DESC LIMIT {$limit}");
+		# Paginamos
+		$total = DB::numRows("SELECT COUNT(*) FROM u_sessions");
+		$data['pages'] = $this->Paginator->pageIndex("/admin/sesiones?", $_GET['s'] ?? 0, (int)$total, self::MAX_SHOW);
+		# Retornamos datos
+		return $data;
+	}
 
-   /**
-    * ------------------------------
-    * CATEGORIAS
-    * saveOrden() :: Guardamos nuevo orden de las categorías
-    * getCat() :: Obtenemos la categoría por ID
-    * saveCat() :: Guardamos los nuevos datos de la categoría
-    * MoveCat() :: Mover de categoría
-    * newCat() :: Creamos una nueva categoría
-    * delCat() :: Eliminamos la categoría 
-    * ------------------------------ 
-   */
-   public function saveOrden(): void {
-      $ordenado = [];
-      # Obtenemos lista con el nuevo orden
-      $nuevo_orden = 1;
-      foreach (explode(',', $_POST["cats"]) as $orden) {
-         DB::update('p_categorias', ['c_orden' => $nuevo_orden], "cid = :id", ['id' => $orden]);
-         array_push($ordenado, $nuevo_orden);
-         $nuevo_orden++;
-      }
-   }
+	public function delSession(): string {
+		# Obtenemos la session_id
+		$session = Html::escape($_POST['session_id']);
+		$param = ['session' => $session];
+		if (DB::exists("SELECT session_id FROM u_sessions WHERE session_id = :session LIMIT 1", $param)) {
+			if (DB::delete("u_sessions", "session_id = :session", $param)) {
+				return '1: Eliminado';
+			}
+		} else return '0: No existe esa sesión';
+	}
 
-   public function getCat(): array {
-      $cid = (int)($_GET['cid'] ?? 0);
-      $data = DB::fetch("SELECT * FROM p_categorias WHERE cid = :id LIMIT 1", ['id' => $cid]);
-      return $data;
-   }
+	/**
+	 * ------------------------------
+	 * NICKS
+	 * getChangeNicks() :: Obtenemos todos los nicks / Cambios realizados
+	 * ChangeNick_o_no() :: Aprobar/Desaprobar cambio
+	 * ------------------------------
+	*/
+	public function getChangeNicks(string $hecho = ''): array {
+		# Limite
+		$limit = $this->Paginator->setPageLimit(self::MAX_SHOW, true);
+		# Datos
+		$data['data'] = DB::fetchAll("SELECT u.user_id, u.user_name, n.* FROM u_nicks AS n LEFT JOIN u_miembros AS u ON n.user_id = u.user_id WHERE estado = :status ORDER BY n.time DESC LIMIT {$limit}", ['status' => $hecho]);
+		# Paginacion
+		$total = DB::numRows("SELECT COUNT(*) FROM u_nicks WHERE estado = :status", ['status' => $hecho]);
+		$data['pages'] = $this->Paginator->pageIndex("/admin/nicks?", $_GET['s'] ?? 0, (int)$total, self::MAX_SHOW);
+		# Retornamos datos
+		return $data;
+	}
 
-   public function saveCat(): bool {
-      $cid = (int)($_GET['cid'] ?? 0);
-      //
-      $nombre = $this->Core->setSecure($this->Core->parseBadWords($_POST['c_nombre']));
-      $categoria = [
-         "c_nombre" => $nombre,
-         "c_seo" => $this->Core->setSEO($nombre),
-         "c_img" => $this->Core->setSecure($this->Core->parseBadWords($_POST['c_img'])),
-      ];
-      # Guardamos en la tabla
-      return (DB::update('p_categorias', $categoria, "cid = :id", ['id' => $cid]));
-   }
+	public function ChangeNick_o_no(): string {
+		global $tsMonitor;
+		# ID del nick
+		$nid = (int)($_POST['nid'] ?? 0);
+		# Datos
+		$user = DB::fetch("SELECT user_id, user_email, name_1, name_2 FROM u_nicks WHERE id = $nid LIMIT 1") ?? [];
+		[
+			'user_id' => $uid,
+			'user_email' => $email,
+			'name_1' => $name1,
+			'name_2' => $name2
+		] = $user;
+		$title = $this->Core->settings['titulo'];
+		# Aprobamos
+		if (isset($_POST['accion']) && trim($_POST['accion']) === 'accepted') {
+			DB::update('u_miembros', ['user_name' => $name2], 'user_id = :uid', ['uid' => $uid]);
+			DB::decrement('u_miembros', 'user_name_changes', 'user_id = :uid', ['uid' => $uid]);
+			//
+			DB::update('u_nicks', ['estado' => 'accepted'], 'id = :id', ['id' => $nid]);
+			# Enviamos un aviso
+			$aviso = "Hola <strong>$name1</strong>,\n\n Le informo que desde este momento su nombre de acceso será <strong>$name2</strong> . Hasta pronto.";
+			$tsMonitor->setAviso($uid, 'Cambio realizado', $aviso, 4);
+			//ENVIAMOS CORREO
+			$subject = "$name1, su petición de cambio ha sido aceptada";
+			$body = "Hola $name1:\nLe enviamos este email para informarle que su petición de cambio de nick ha sido aceptada.<br>Desde este momento, podrá acceder en $title con el nombre de usuario $name2. <br /><hr>El staff de <strong>$title</strong>";
+		# Denegamos
+		} elseif (isset($_POST['accion']) && trim($_POST['accion']) === 'rejected') {
+			DB::decrement('u_miembros', 'user_name_changes', 'user_id = :uid', ['uid' => $uid]);
+			//
+			DB::update('u_nicks', ['estado' => 'rejected'], 'id = :id', ['id' => $nid]);
+			# Enviamos un aviso
+			$aviso = "Hola <strong>$name1</strong>,\n\n Lamento informarle que su petición de cambio de nick a <strong>$name2</strong> , ha sido denegada.";
+			$tsMonitor->setAviso($uid, 'Cambio realizado', $aviso, 3);
+			//ENVIAMOS CORREO
+			$subject = "$name1, su petición de cambio ha sido denegada";
+			$body = "Hola $name1:\nLe enviamos este email para informarle que su petición de cambio de nick ha sido denegada.\n<hr>El staff de <strong>$title</strong>'";
+		} else return '0: Mijo, ve de paseo';
 
-   public function MoveCat(): bool {
-      $new = (int)($_POST['newcid'] ?? 0);
-      $old = (int)($_POST['oldcid'] ?? 0);
-      return (DB::update('p_categorias', ['post_category' => $new], "post_category = :old", ['old' => $old]));
-   }
+		$this->Email->send($email, 'confirmar', $body) OR die('0: Hubo un error al intentar procesar lo solicitado');
 
-   public function newCat(): bool {
-      # Valores
-      $nombre = $this->Core->setSecure($this->Core->parseBadWords($_POST['c_nombre']));
-      # Orden
-      $orden = DB::fetch('SELECT COUNT(cid) AS total FROM p_categorias');
-      $orden = (int)$orden['total'] + 1;
-      # Insertamos los datos
-      $insert = DB::insert('p_categorias', [
-         'c_orden' => $orden, 
-         'c_nombre' => $nombre,
-         'c_seo' => $this->Core->setSEO($nombre),
-         'c_img' => $this->Core->setSecure($this->Core->parseBadWords($_POST['c_img']))
-      ]);
-      return ($insert);
-   }
+		return "1: Hemos enviado un correo a <strong>$email</strong> con la decisión tomada. También le hemos enviado un aviso al usuario.";
+	}
 
-   public function delCat(): string|bool {
-      $cid = (int)($_GET['cid'] ?? 0);
-      $ncid = (int)($_POST['ncid'] ?? 0);
-      // MOVER
-      if (empty($ncid) && $ncid === 0) {
-         return 'Antes de eliminar una categor&iacute;a debes elegir a donde mover sus categor&iacute;as.';
-      }
-      if(!DB::update('p_categorias', ['post_category' => $ncid], "post_category = :cid", ['cid' => $cid])) {
-         return 'Lo sentimos ocurri&oacute; un error.';
-      }
-      return (DB::delete('p_categorias', 'cid = :cid', ['cid' => $cid]));
-   }
-   
-   /**
-    * ------------------------------
-    * RANGOS
-    * getAllRangos() :: Obtenemos todos los rangos
-    * setUserRango() :: Cambiamos de rangos a usuarios
-    * ------------------------------ 
-   */
-   public function getAllRangos(): array {
-      # RANGOS DISPONIBLES
-      return DB::fetchAll('SELECT rango_id, r_name, r_color FROM u_rangos');
-   }
+	public function getAdmin(string $type = 'posts'): ?array {
+		return match($type) {
+			'posts' => $this->getAdminPosts(),
+			'fotos' => $this->getAdminFotos(),
+			default => null
+		};
+	}
 
-   public function setUserRango(int $userId = 0): bool|string {
-      # SOLO EL PRIMER ADMIN PUEDE PONER A OTROS ADMINS
-      $new_rango = (int)($_POST['new_rango'] ?? 0);
-      if ($userId === $this->User->uid) return 'No puedes cambiarte el rango a ti mismo';
-      elseif ($this->User->uid !== 1 && $new_rango === 1) return 'Solo el primer Administrador puede crear más administradores principales';
-      else {
-         return (!DB::update('u_miembros', ['user_rango' => $new_rango], "user_id = :uid", ['uid' => $userId]));
-      }
-   }
+	private function getAdminPosts(): array {
+		$max = 20; // MAXIMO A MOSTRAR
+		$limit = $this->Paginator->setPageLimit($max, true);
+		$order = trim($_GET['order'] ?? '');
+		$asc = trim($_GET['modo'] ?? '');
+		$orden = match($order) {
+			'estado' => 'p.post_status',
+			'ip' => 'p.post_ip',
+			default => 'p.post_id'
+		};
+		$upper = strtoupper($asc);
+		$data['data'] = DB::fetchAll("SELECT u.user_id, u.user_name, c.c_nombre, c.c_seo, c.c_img, p.* FROM p_posts AS p LEFT JOIN u_miembros AS u ON p.post_user = u.user_id LEFT JOIN p_categorias AS c ON c.cid = p.post_category WHERE p.post_id > 0 ORDER BY $orden $upper LIMIT $limit");
 
-   /**
-    * ------------------------------
-    * SESIONES
-    * getSessions() :: Obtenemos todas las sesiones
-    * delSession() :: Eliminamos la sesion por "session_id"
-    * ------------------------------ 
-   */
-   public function getSessions() {
-      # Limite
-      $limit = $this->Paginator->setPageLimit(self::MAX_SHOW, true);
-      # Datos
-      $data['data'] = result_array(db_exec([__FILE__, __LINE__], 'query', 'SELECT u.user_id, u.user_name, s.* FROM u_sessions AS s LEFT JOIN u_miembros AS u ON s.session_user_id = u.user_id ORDER BY s.session_time DESC LIMIT ' . $limit));
-      # Paginamos
-      list($total) = db_exec('fetch_row', db_exec([__FILE__, __LINE__], 'query', 'SELECT COUNT(*) FROM u_sessions'));
-      $data['pages'] = $this->Paginator->pageIndex($this->Core->settings['url'] . "/admin/sesiones?", $_GET['s'] ?? 0, (int)$total, self::MAX_SHOW);
-      # Retornamos datos
-      return $data;
-   }
+		// PAGINAS
+		$total = DB::numRows('SELECT COUNT(*) FROM p_posts WHERE post_id > 0');
+		$data['pages'] = $this->Paginator->pageIndex("/admin/posts?order=$order&modo=$asc", (int)($_GET['s'] ?? 0), (int)$total, (int)$max);
+		//
+		return $data;
+	}
 
-   public function delSession() {
-      # Obtenemos la session_id
-      $session_id = $_POST['session_id'];
-      if (db_exec('num_rows', db_exec([__FILE__, __LINE__], 'query', 'SELECT session_id FROM u_sessions WHERE session_id = \'' . $this->Core->setSecure($session_id) . '\' LIMIT 1'))) {
-         if (db_exec([__FILE__, __LINE__], 'query', 'DELETE FROM u_sessions WHERE session_id = \'' . $this->Core->setSecure($session_id) . '\'')) return '1: Eliminado';
-      } else return '0: No existe esa sesi&oacute;n';
-   }
+	public function getAdminFotos(): array {
+		$max = 15; // MAXIMO A MOSTRAR
+		$limit = $this->Paginator->setPageLimit($max, true);
+		//
+		$data['data'] = DB::fetchAll("SELECT u.user_id, u.user_name, f.* FROM f_fotos AS f LEFT JOIN u_miembros AS u ON f.f_user = u.user_id WHERE f.foto_id > 0 ORDER BY f.foto_id DESC LIMIT $limit");
+		// PAGINAS
+		$total = DB::numRows("SELECT COUNT(*) FROM f_fotos WHERE foto_id > 0");
+		$data['pages'] = $this->Paginator->pageIndex("/admin/fotos?", (int)($_GET['s'] ?? 0), (int)$total, (int)$max);
+		//
+		return $data;
+	}
 
-   /**
-    * ------------------------------
-    * NICKS
-    * getChangeNicks() :: Obtenemos todos los nicks / Cambios realizados
-    * ChangeNick_o_no() :: Aprobar/Desaprobar cambio
-    * ------------------------------ 
-   */
-   public function getChangeNicks(string $hecho = '') {
-      # Cambio realizado
-      $hecho = ($hecho === 'realizados') ? ">" : "=";
-      # Limite
-      $limit = $this->Paginator->setPageLimit(self::MAX_SHOW, true);
-      # Datos
-      $data['data'] = result_array(db_exec([__FILE__, __LINE__], 'query', 'SELECT u.user_id, u.user_name, n.* FROM u_nicks AS n LEFT JOIN u_miembros AS u ON n.user_id = u.user_id WHERE estado '.$hecho.' 0 ORDER BY n.time DESC LIMIT ' . $limit));
-      # Paginacion
-      list($total) = db_exec('fetch_row', db_exec([__FILE__, __LINE__], 'query', 'SELECT COUNT(*) FROM u_nicks WHERE estado '.$hecho.' 0'));
-      $data['pages'] = $this->Paginator->pageIndex($this->Core->settings['url'] . "/admin/nicks?", $_GET['s'] ?? 0, (int)$total, self::MAX_SHOW);
-      # Retornamos datos
-      return $data;
-   }
-   public function ChangeNick_o_no() {
-      global $tsMonitor;
-      # ID del nick
-      $nid = (int)($_POST['nid'] ?? 0);
-      # Datos
-      $result = db_exec([__FILE__, __LINE__], 'query', "SELECT user_id, user_email, name_1, name_2 FROM u_nicks WHERE id = $nid LIMIT 1");
-      $user = db_exec('fetch_assoc', $result) ?? [];
-      [ 'user_id' => $uid, 'user_email' => $email, 'name_1' => $name1, 'name_2' => $name2] = $user;
-      $title = $this->Core->settings['titulo'];
-      # Aprobamos
-      if (isset($_POST['accion']) && trim($_POST['accion']) === 'aprobar') {
-         db_exec([__FILE__, __LINE__], 'query', "UPDATE u_miembros SET user_name = '$name2', user_name_changes = user_name_changes - 1 WHERE user_id = $uid");
-         db_exec([__FILE__, __LINE__], 'query', "UPDATE u_nicks SET estado = 1 WHERE id = $nid");
-         # Enviamos un aviso
-         $aviso = "Hola <strong>$name1</strong>,\n\n Le informo que desde este momento su nombre de acceso ser&aacute; <strong>$name2</strong> . Hasta pronto.";
-         $tsMonitor->setAviso($uid, 'Cambio realizado', $aviso, 4);
-         //ENVIAMOS CORREO
-         $subject = "$name1, su petici&oacute;n de cambio ha sido aceptada";
-         $body = "Hola $name1:\nLe enviamos este email para informarle que su petici&oacute;n de cambio de nick ha sido aceptada.<br>Desde este momento, podr&aacute; acceder en $title con el nombre de usuario $name2. <br /><hr>El staff de <strong>$title</strong>";
-      # Denegamos
-      } elseif (isset($_POST['accion']) && trim($_POST['accion']) === 'denegar') {
-         db_exec([__FILE__, __LINE__], 'query', "UPDATE u_miembros SET user_name_changes = user_name_changes - 1 WHERE user_id = $uid");
-         db_exec([__FILE__, __LINE__], 'query', "UPDATE u_nicks SET estado = 2 WHERE id = $nid");
-         # Enviamos un aviso
-         $aviso = "Hola <strong>$name1</strong>,\n\n Lamento informarle que su petici&oacute;n de cambio de nick a <strong>$name2</strong> , ha sido denegada.";
-         $tsMonitor->setAviso($uid, 'Cambio realizado', $aviso, 3);
-         //ENVIAMOS CORREO
-         $subject = "$name1, su petici&oacute;n de cambio ha sido denegada";
-         $body = "Hola $name1:\nLe enviamos este email para informarle que su petici&oacute;n de cambio de nick ha sido denegada.\n<hr>El staff de <strong>$title</strong>'";
-      } else return '0: Mijo, ve de paseo';
+	public function DelFoto(): string {
+		$foto = (int)($_POST['foto_id'] ?? 0);
+		if (!DB::exists("SELECT 1 FROM f_fotos WHERE foto_id = $foto")) {
+			return '0: La foto no existe';
+		}
+		if (!DB::delete('f_fotos', 'foto_id = :id', ['id' => $foto])) {
+			return '0: La foto no se pudo eliminar';
+		}
+		return '1: Foto eliminada';
+	}
 
-      $email = new tsEmail($this->Core);
-      $email->sendSignup($email, 'confirmar', $body) OR die('0: Hubo un error al intentar procesar lo solicitado');
+	public function setOpenClosedFoto(): string {
+		$fid = (int)($_POST['fid'] ?? 0);
+		$data = DB::fetch("SELECT f_closed FROM f_fotos WHERE foto_id = :id", ['id' => $fid]);
+		// COMPROBAMOS
+		$active = ((int)$data['f_closed'] === 1) ? 0 : 1;
+		if(!DB::update('f_fotos', ['f_closed' => $active], 'foto_id = :id', ['id' => $fid])) {
+			return '0: Ocurri&oacute, un error';
+		}
+		return ($active === 1) ? '2: Comentarios abiertos' : '1: Comentarios cerrados.';
+	}
 
-      return "1: Hemos enviado un correo a <strong>$email</strong> con la decisi&oacute;n tomada. Tambi&eacute;n le hemos enviado un aviso al usuario.";
-   }
-
-
-    /****************** ADMINISTRACIÓN DE POSTS ******************/
-   public function getAdmin(string $type = 'posts') {
-      return match($type) {
-         'posts' => $this->getAdminPosts(),
-         'fotos' => $this->getAdminFotos(),
-         default => null
-      };
-   }
-   
-   private function getAdminPosts() {
-      $max = 20; // MAXIMO A MOSTRAR
-      $limit = $this->Paginator->setPageLimit($max, true);
-      $order = trim($_GET['order'] ?? '');
-      $asc = trim($_GET['modo'] ?? '');
-      $orden = match($order) {
-         'estado' => 'p.post_status',
-         'ip' => 'p.post_ip',
-         default => 'p.post_id'
-      };
-      $upper = strtoupper($asc);
-      $data['data'] = result_array(db_exec([__FILE__, __LINE__], 'query', "SELECT u.user_id, u.user_name, c.c_nombre, c.c_seo, c.c_img, p.* FROM p_posts AS p LEFT JOIN u_miembros AS u ON p.post_user = u.user_id LEFT JOIN p_categorias AS c ON c.cid = p.post_category WHERE p.post_id > 0 ORDER BY $orden $upper LIMIT $limit"));
-
-      // PAGINAS
-      list($total) = db_exec('fetch_row', db_exec([__FILE__, __LINE__], 'query', 'SELECT COUNT(*) FROM p_posts WHERE post_id > 0'));
-
-      $this->Paginator->route = $this->Core->settings['url'];
-      $data['pages'] = $this->Paginator->pageIndex("/admin/posts?order=$order&modo=$asc", (int)($_GET['s'] ?? 0 ?? 0), (int)$total, (int)$max);
-      //
-      return $data;
-   }
-
-
-   /****************** ADMINISTRACIÓN DE FOTOS ******************/
-   public function getAdminFotos(): array {
-      $max = 15; // MAXIMO A MOSTRAR
-      $limit = $this->Paginator->setPageLimit($max, true);
-      //
-      $data['data'] = result_array(db_exec([__FILE__, __LINE__], 'query', "SELECT u.user_id, u.user_name, f.* FROM f_fotos AS f LEFT JOIN u_miembros AS u ON f.f_user = u.user_id WHERE f.foto_id > 0 ORDER BY f.foto_id DESC LIMIT $limit"));
-      // PAGINAS
-      list($total) = db_exec('fetch_row', db_exec([__FILE__, __LINE__], 'query', "SELECT COUNT(*) FROM f_fotos WHERE foto_id > 0"));
-      $this->Paginator->route = $this->Core->settings['url'];
-      $data['pages'] = $this->Paginator->pageIndex("/admin/fotos?", (int)($_GET['s'] ?? 0??0), (int)$total, (int)$max);
-      //
-      return $data;
-   }
-
-   public function DelFoto(): string {
-      $foto = (int)($_POST['foto_id'] ?? 0);
-      if (!db_exec('num_rows', db_exec([__FILE__, __LINE__], 'query', "SELECT foto_id FROM f_fotos WHERE foto_id = $foto"))) {
-         return '0: La foto no existe';
-      }
-      if (!db_exec([__FILE__, __LINE__], 'query', "DELETE FROM f_fotos WHERE foto_id = $foto")) {
-         return '0: La foto no se pudo eliminar';
-      }
-      return '1: Foto eliminada';
-   }
-
-   public function setOpenClosedFoto(): string {
-      $fid = (int)($_POST['fid'] ?? 0);
-      $data = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', "SELECT f_closed FROM f_fotos WHERE foto_id = $fid"));
-      // COMPROBAMOS
-      $active = ((int)$data['f_closed'] === 1) ? 0 : 1;
-      if(!db_exec([__FILE__, __LINE__], 'query', "UPDATE f_fotos SET f_closed = $active WHERE foto_id = $fid")) {
-         return '0: Ocurri&oacute, un error';
-      }
-      return ($active === 1) ? '2: Comentarios abiertos' : '1: Comentarios cerrados.';
-   }
-
-   public function setShowHideFoto(): string {
-      $fid = (int)($_POST['fid'] ?? 0);
-      $data = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', "SELECT f_status FROM f_fotos WHERE foto_id = $fid"));
-      // COMPROBAMOS
-      $active = ((int)$data['f_status'] === 1) ? 0 : 1;
-      if(!db_exec([__FILE__, __LINE__], 'query', "UPDATE f_fotos SET f_status = $active WHERE foto_id = $fid")) {
-         return '0: Ocurri&oacute, un error';
-      }
-      return ($active === 1) ? '2: Foto rehabilitada' : '1: Foto deshabilitada.';
-   }
+	public function setShowHideFoto(): string {
+		$fid = (int)($_POST['fid'] ?? 0);
+		$data = DB::fetch("SELECT f_status FROM f_fotos WHERE foto_id = :id", ['id' => $fid]);
+		// COMPROBAMOS
+		$active = ((int)$data['f_status'] === 1) ? 0 : 1;
+		if(!DB::update('f_fotos', ['f_status' => $active], 'foto_id = :id', ['id' => $fid])) {
+			return '0: Ocurri&oacute, un error';
+		}
+		return ($active === 1) ? '2: Foto rehabilitada' : '1: Foto deshabilitada.';
+	}
 
 }

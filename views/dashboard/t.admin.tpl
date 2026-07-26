@@ -4,7 +4,7 @@
 		<div class="left" style="float:left;width:200px">
 			<div class="boxy">
 				<div class="boxy-title">
-					<h3>Men&uacute;</h3>
+					<h3>Menú</h3>
 					<span></span>
 				</div><!-- boxy-title -->
 				<div class="boxy-content" id="admin_menu">

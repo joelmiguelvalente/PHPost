@@ -5,11 +5,11 @@
 				<li class="clearfix">
 					<div class="listado-content clearfix">
 						<div class="listado-avatar">
-							<a href="{$tsConfig.url}/@{$u.user_name}"><img src="{$tsRoutes.storage.avatar}/avatar_{$u.user_id}.webp"/></a>
+							<a href="{$tsConfig.url}/@{$u.user_name}"><img src="{$tsRoutes['storage:avatar']}/avatar_{$u.user_id}.webp"/></a>
 						</div>
 						<div class="txt">
 							<a href="{$tsConfig.url}/@{$u.user_name}">{$u.user_name}</a><br />
-							<img src="{$tsRoutes.tema.images}/flags/{$u.user_pais|lower}.png"/> <span class="grey">{$u.p_mensaje}</span>
+							<img src="{$tsRoutes['tema:images']}/flags/{$u.user_pais|lower}.png"/> <span class="grey">{$u.p_mensaje}</span>
 						</div>
 					</div>
 					<div class="action">
@@ -27,11 +27,11 @@
 				<li class="clearfix">
 					<div class="listado-content clearfix">
 						<div class="listado-avatar">
-							<a href="{$tsConfig.url}/@{$p.user_name}"><img src="{$tsRoutes.storage.avatar}/avatar_{$p.user_id}.webp"/></a>
+							<a href="{$tsConfig.url}/@{$p.user_name}"><img src="{$tsRoutes['storage:avatar']}/avatar_{$p.user_id}.webp"/></a>
 						</div>
 						<div class="txt">
 							<a href="{$tsConfig.url}/posts/{$p.c_seo}/{$p.f_id}/{$p.post_title|seo}.html">{$p.post_title}</a><br />
-							<img src="{$tsRoutes.tema.images}/icons/categories/{$p.c_img}"/> <span class="grey">{$p.c_nombre}</span>
+							<img src="{$tsRoutes['tema:images']}/icons/categories/{$p.c_img}"/> <span class="grey">{$p.c_nombre}</span>
 						</div>
 					</div>
 					<div class="action">

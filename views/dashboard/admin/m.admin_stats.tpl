@@ -1,4 +1,4 @@
-<h1 class="text-xl font-semibold mb-4">Estad&iacute;sticas</h1>
+<h1 class="text-xl font-semibold mb-4">Estadísticas</h1>
 <div class="rounded border bg-white dark:bg-surface p-4 shadow-sm">
 	{include "dashboard/Alert.tpl" text="Tus cambios han sido guardados." color="green" show=$tsSave}
 

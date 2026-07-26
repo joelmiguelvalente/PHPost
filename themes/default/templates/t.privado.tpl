@@ -22,7 +22,7 @@
 			</form>
 		</div>
 		<div class="privado-atencion flex justify-center items-center flex-col">
-			<img src="{$tsRoutes.tema.images}/private-post.gif" alt="Post privado">
+			<img src="{$tsRoutes['tema:images']}/private-post.gif" alt="Post privado">
 			<div class="privado-atencion-card">
 				<h4 class="block">&iexcl;Atenci&oacute;n!</h4>
 				<p>Antes de ingresar tus datos asegurate que la URL de esta p&aacute;gina pertenece a <strong>{$tsConfig.titulo}</strong></p>

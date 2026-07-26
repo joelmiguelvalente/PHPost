@@ -3,14 +3,12 @@
 declare(strict_types=1);
 
 /**
- * @package    PHPost/Class
- * @author     PHPost Team & Miguel92
+ * @package    Class
+ * @author     Miguel92
  * @copyright  2026
  */
 
-if (!defined('TS_HEADER')) {
-	exit('No se permite el acceso directo al script');
-}
+defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
 require_once TS_UTILS . '/AvatarConfig.php';
 
@@ -27,9 +25,7 @@ final class tsUpload {
 	];
 	private const MAX_DIMENSION = 3000;
 
-	/* ==========================================================
-	 *  PUBLIC API
-	 * ======================================================== */
+	/* PUBLIC API */
 
 	public function uploadTempImage(?array $file, ?string $url = null): array
 	{
@@ -79,9 +75,7 @@ final class tsUpload {
 		return ['error' => 'success'];
 	}
 
-	/* ==========================================================
-	 *  UPLOADS
-	 * ======================================================== */
+	/* UPLOADS */
 
 	private function handleFileUpload(array $file): array
 	{
@@ -106,10 +100,10 @@ final class tsUpload {
 			return ['error' => 'Formato de imagen no permitido'];
 		}
 
-   	[$w, $h] = getimagesize($file['tmp_name']);
-   	if ($w < 120 || $h < 120) {
-   	   return ['error' => 'La imagen es demasiado pequeña (mínimo 120x120)'];
-   	}
+   		[$w, $h] = getimagesize($file['tmp_name']);
+   		if ($w < 120 || $h < 120) {
+   			return ['error' => 'La imagen es demasiado pequeña (mínimo 120x120)'];
+   		}
 
 		return $this->storeTempImage(
 			$this->createImageResource($file['tmp_name']),
@@ -132,9 +126,7 @@ final class tsUpload {
 		return $this->storeTempImage($img, $info[2]);
 	}
 
-	/* ==========================================================
-	 *  IMAGE HELPERS
-	 * ======================================================== */
+	/* IMAGE HELPERS */
 
 	private function storeTempImage($img, int $type): array
 	{
@@ -197,9 +189,7 @@ final class tsUpload {
 		return $img;
 	}
 
-	/* ==========================================================
-	 *  AVATAR STORAGE (compatible con Avatar.php)
-	 * ======================================================== */
+	/* AVATAR STORAGE (compatible con Avatar.php) */
 
 	private function storeAvatarVariants($base, int $userId): void
 	{
@@ -210,28 +200,19 @@ final class tsUpload {
 		}
 
 		foreach (AvatarConfig::SIZES as $size) {
-
-			$img = ($size === 200)
-				? $base
-				: $this->resizeImage($base, $size);
-
+			$img = ($size === 200) ? $base : $this->resizeImage($base, $size);
 			$prefix = ($size === 200) ? 'avatar' : 'thumb_avatar';
-
 			foreach (AvatarConfig::FORMATS as $format) {
-
 				if (!AvatarConfig::supportsFormat($format)) {
 					continue;
 				}
-
 				$path = "{$dir}{$prefix}.{$format}";
-
 				match ($format) {
 					'webp' => imagewebp($img, $path, AvatarConfig::QUALITY['webp']),
 					'avif' => imageavif($img, $path, AvatarConfig::QUALITY['avif']),
 					'png'  => imagepng($img, $path, AvatarConfig::QUALITY['png']),
 				};
 			}
-
 			if ($img !== $base) {
 				if(PHP_VERSION_ID < 80400) imagedestroy($img);
 			}

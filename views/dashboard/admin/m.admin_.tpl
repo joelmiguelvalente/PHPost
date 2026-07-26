@@ -1,6 +1,6 @@
 {load file='github.widget' type="css"}
 {load file=['timeago.min', 'github.widget'] type="js"}
-<h1 class="text-xl font-semibold mb-4">Centro de Administraci&oacute;n</h1>
+<h1 class="text-xl font-semibold mb-4">Centro de Administración</h1>
 <div class="rounded border bg-white dark:bg-surface p-4 shadow-sm">
 	<section class="mb-6 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-surface p-5 shadow-sm">
 	  	<h1 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Bienvenido(a), {$tsUser->nick} 👋</h1>
@@ -52,13 +52,17 @@
 		         <span>Límite de Memoria</span>
 		         <span class="font-medium text-gray-800 dark:text-gray-200">{$tsVersion.php.memory_limit}</span>
 		      </div>
+		      <div class="py-2 flex justify-between">
+		         <span>Límite de Subida</span>
+		         <span class="font-medium text-gray-800 dark:text-gray-200">{$tsVersion.php.upload_max_filesize}</span>
+		      </div>
 		   </div>
 
 			<div class="bg-neutral-primary-soft block border border-default rounded-base shadow-xs p-3 mb-4">
 				<h5 class="text-sm font-semibold uppercase tracking-wide mb-4 flex items-center">PHPost Risus</h5>
 				<ul id="version_pp" class="pp_list">
 					<li>
-	            	<span class="text-lg font-medium text-heading">Versi&oacute;n instalada</span>
+	            	<span class="text-lg font-medium text-heading">Versión instalada</span>
 	            	<small class="text-body block">{$tsConfig.version}</small>
 					</li>
 				</ul>
@@ -77,7 +81,7 @@
 				<h5 class="text-sm font-semibold uppercase tracking-wide mb-4 flex items-center">Instalaciones</h5>
 				<ul>
 					<li class="py-2 flex justify-between">
-						<span>Fundaci&oacute;n</span>
+						<span>Fundación</span>
 						<strong title="{$tsInstalled.foundation|fecha:'full_datetime'}">{$tsInstalled.foundation|hace:true}</strong>
 					</li>
 					<li class="py-2 flex justify-between">
@@ -89,7 +93,7 @@
 		</div>
 	</div>
 </div>
-<script>
+<script nonce="{CSP_NONCE}">
 document.addEventListener('DOMContentLoaded', function () {
    if (typeof jQuery === 'undefined') {
       console.error('jQuery no cargó');

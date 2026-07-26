@@ -1,4 +1,17 @@
 'use strict';
+
+const storage = {
+   get(key) {
+      return localStorage.getItem(key);
+   },
+   set(key, value) {
+      localStorage.setItem(key, value);
+   },
+   remove(key) {
+      localStorage.removeItem(key);
+   }
+};
+
 let audioUnlocked = false;
 
 function unlockAudio() {
@@ -30,16 +43,17 @@ const live = {
 	_updateTimer: null,
 	_askingAudio: false,
 	_shown: new Set(),
+	_mouseBound: false,
 
 	askAudioPermission() {
 		if (this._askingAudio || $('#audio-permission-toast').length) return;
 		this._askingAudio = true;
 
 		const toast = $(`
-			<div id="audio-permission-toast">
-				<span>🔔 ¿Activar sonido para notificaciones?</span>
-				<button id="audio-yes" class="audio-button">Sí</button>
-				<button id="audio-no"  class="audio-button">No</button>
+			<div id="audio-permission-toast" role="alertdialog" aria-labelledby="audio-msg" aria-describedby="audio-msg">
+				<span id="audio-msg">🔔 ¿Activar sonido para notificaciones?</span>
+				<button id="audio-yes" class="audio-button" aria-label="Activar sonido">Sí</button>
+				<button id="audio-no"  class="audio-button" aria-label="No activar sonido">No</button>
 			</div>
 		`).appendTo('body');
 
@@ -79,7 +93,8 @@ const live = {
 	},
 
 	print(ld) {
-      $('#js').html(ld);
+      const container = document.getElementById('js');
+      container.innerHTML = ld;
 
       const n_total = parseInt($('#live-stream').attr('ntotal')) || 0;
       const m_total = parseInt($('#live-stream').attr('mtotal')) || 0;
@@ -91,19 +106,35 @@ const live = {
     	}
     	configs._noActivityCount = 0;
 
-      // Solo agregamos las que NO se mostraron antes
       let nuevas = 0;
+      const beeperBox = document.getElementById('BeeperBox');
+      const fragment = document.createDocumentFragment();
+
       $('#live-stream .UIBeeper_Full').each((_, el) => {
          const id = $(el).attr('id');
-         if (this._shown.has(id)) return; // ya se mostró, skip
+         if (this._shown.has(id)) return;
          this._shown.add(id);
          nuevas++;
-         $(el).hide().appendTo('#BeeperBox').fadeIn(600);
+         el.style.display = 'none';
+         fragment.appendChild(el);
       });
 
-      if (nuevas === 0) return; // nada nuevo, no hacemos nada más
+      if (nuevas === 0) return;
 
-      this.mouse_events();
+      beeperBox.appendChild(fragment);
+      $(fragment.children).each((_, el) => {
+         $(el).fadeIn(600);
+      });
+
+      if (this._shown.size > 100) {
+         const arr = [...this._shown];
+         this._shown = new Set(arr.slice(-50));
+      }
+
+      if (!this._mouseBound) {
+         this.mouse_events();
+         this._mouseBound = true;
+      }
 
       if (configs.focus) {
           this.scheduleHide();
@@ -123,9 +154,7 @@ const live = {
 	},
 
 	mouse_events() {
-		// Usamos delegación para elementos dinámicos
 		$('#BeeperBox')
-			.off('mouseover mouseout', '.UIBeep')
 			.on('mouseover', '.UIBeep', function () {
 				$(this).closest('.UIBeeper_Full').addClass('UIBeep_Paused');
 				clearTimeout(live._hideTimer);
@@ -145,7 +174,6 @@ const live = {
 		const $items = $('#BeeperBox .UIBeeper_Full').not('.UIBeep_Paused');
 		if (!$items.length) return;
 
-		// Ocultamos uno por uno con delay escalonado
 		$items.each((i, el) => {
 			setTimeout(() => {
 				$(el).fadeOut(400, function () { $(this).remove(); });
@@ -155,12 +183,12 @@ const live = {
 
 	update() {
 		$('#loading').fadeIn(250);
-		$.post(`${route.url}/live-stream`, {
+		api('live-stream', {
 			nots: configs.status.notifications,
 			mps:  configs.status.messages
 		}, response => {
 			this.print(response);
-		}).always(() => {
+		}, { error: () => {} }).always(() => {
 			$('#loading').fadeOut(350);
 			this._scheduleUpdate();
 		});
@@ -175,20 +203,7 @@ const live = {
 	}
 };
 
-const storage = {
-   get(key) {
-      return localStorage.getItem(key);
-   },
-   set(key, value) {
-      localStorage.setItem(key, value);
-   },
-   remove(key) {
-      localStorage.removeItem(key);
-   }
-};
-
 $(document).ready(function () {
-	// Delegación para el botón cerrar (funciona con elementos dinámicos)
 	$(document).on('click', '.beeper_x', function () {
 		const bid = $(this).attr('bid');
 		$('#beep_' + bid).fadeOut(300, function () { $(this).remove(); });

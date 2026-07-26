@@ -3,24 +3,22 @@
 declare(strict_types=1);
 
 /**
- * @package    src\Api
- * @author     PHPost Team & Miguel92
+ * @package    Api
+ * @author     Miguel92
  * @copyright  2026
  */
 
-if (!defined('TS_HEADER')) {
-	exit('No se permite el acceso directo al script');
-}
+defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
 const ACTIONS = [
-   'login-user'	 => ['nivel' => 1, 'template' => '', 'ajax' => false],
-   'login-activar' => ['nivel' => 1, 'template' => '', 'ajax' => false],
-   'login-salir' 	 => ['nivel' => 1, 'template' => '', 'ajax' => false]
+	'login-user'	 => ['nivel' => 1, 'template' => '', 'ajax' => false],
+	'login-activar' => ['nivel' => 1, 'template' => '', 'ajax' => false],
+	'login-salir' 	 => ['nivel' => 1, 'template' => '', 'ajax' => false]
 ];
 
 if (!array_key_exists($action, ACTIONS)) {
-   http_response_code(403);
-   exit('Acción inválida');
+	http_response_code(403);
+	exit('Acción inválida');
 }
 
 $config = ACTIONS[$action];
@@ -30,17 +28,18 @@ $tsAjax  = (int) $config['ajax'];
 $tsPage  = sprintf('p.login.%s', $config['template']);
 
 // DEPENDE EL NIVEL
-$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
-if(!$tsLevelMsg) { 
-	echo '0: '.$tsLevelMsg; 
+$tsLevelMsg = $tsUser->setLevel($tsLevel, true);
+if(!$tsLevelMsg) {
+	echo '0: '.$tsLevelMsg;
 	die();
 }
 
 // CODIGO
 switch($action){
 	case 'login-user':
-		$username = $tsCore->setSecure($_POST['username']);
-		$password = $tsCore->setSecure($_POST['password']);
+		$username = Html::escape($_POST['username']);
+		// La contraseña no se sanitiza! aprendido :D
+		$password = (string) ($_POST['password'] ?? '');
 		$remember = ((string)$_POST['remember'] === 'true');
 		//
 		if(empty($username) || empty($password)) echo '0: Faltan datos';
@@ -55,8 +54,8 @@ switch($action){
 				$tsPage = "aviso";
 				$tsAjax = 0;
 				$tsAviso = [
-					'titulo' => 'Error al activar tu cuenta', 
-					'mensaje' => 'El c&oacute;digo de validaci&oacute;n es incorrecto.'
+					'titulo' => 'Error al activar tu cuenta',
+					'mensaje' => 'El código de validación es incorrecto.'
 				];
 				//
 				$smarty->assign("tsAviso",$tsAviso);

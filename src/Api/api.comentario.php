@@ -3,14 +3,12 @@
 declare(strict_types=1);
 
 /**
- * @package    src\Api
- * @author     PHPost Team & Miguel92
+ * @package    Api
+ * @author     Miguel92
  * @copyright  2026
  */
 
-if (!defined('TS_HEADER')) {
-	exit('No se permite el acceso directo al script');
-}
+defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
 const ACTIONS = [
    'comentario-preview' => ['nivel' => 2, 'template' => 'preview', 'ajax' => true],
@@ -35,7 +33,7 @@ $tsAjax  = (int) $config['ajax'];
 $tsPage  = sprintf('p.comentario.%s', $config['template']);
 
 // DEPENDE EL NIVEL
-$tsLevelMsg = $tsCore->setLevel($tsLevel, true);
+$tsLevelMsg = $tsUser->setLevel($tsLevel, true);
 if(!$tsLevelMsg) { 
 	echo '0: '.$tsLevelMsg; 
 	die();
@@ -52,11 +50,11 @@ if($do === 'fotos') {
 // CODIGO
 switch($action){
 	case 'comentario-preview':
-		$comentario = $tsCore->setSecure($_POST['comentario']);
+		$comentario = Html::escape($_POST['comentario']);
 		$comentario = substr($comentario,0,1500);
 		// COMENTARIO VACIO?
 		$tsText = preg_replace('# +#',"",$comentario);
-		if(empty($tsText)) die('0: El campo <b>Comentario</b> es requerido para esta operaci&oacute;n');
+		if(empty($tsText)) die('0: El campo <b>Comentario</b> es requerido para esta operación');
 		//
 		$auser = $_POST['auser'];
 		$preview = array(0,$tsCore->parseBBCode($comentario),'',time(),$auser, $comentario, $_SERVER['REMOTE_ADDR']);
@@ -115,7 +113,7 @@ switch($action){
 		//<--
 		// COMENTARIOS
 		$tsPost = (int)($_POST['postid'] ?? 0);
-		$tsAutor = $tsCore->setSecure($_POST['autor']);
+		$tsAutor = Html::escape($_POST['autor']);
 		$tsComments = $tsComentarios->getComentarios($tsPost);
 		
 		$tsComments = [
@@ -133,10 +131,12 @@ switch($action){
 	break;
 	case 'comentario-pages':
 		//
-		$total = (int)($_POST['total'] ?? 0);
-		$tsPages = (new Paginator)->getPages((int)$total, (int)$tsCore->settings['c_max_com']);
-		$tsPages['post_id'] = $tsCore->setSecure($_POST['postid']);
-		$tsPages['autor'] = $tsCore->setSecure($_POST['autor']);
+		$tsPages = Container::get(Paginator::class)->getPages(
+			(int)($_POST['total'] ?? 0),
+			(int)$tsCore->settings['c_max_com']
+		);
+		$tsPages['post_id'] = (int)($_POST['postid'] ?? 0);
+		$tsPages['autor'] = (int)($_POST['autor'] ?? 0);
 		//
 		$smarty->assign("tsPages",$tsPages);
 		//-->

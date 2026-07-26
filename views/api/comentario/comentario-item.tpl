@@ -9,7 +9,7 @@
 				<a href="{$tsConfig.url}/perfil/{$c.user_name}" class="comment-author">{$c.user_name}</a>
 				<span class="comment-time">{$c.c_date|hace}</span>
 			</div>
-			<p class="comment-text" data-bbcode="{$c.c_html}">{$c.c_body}</p>
+			<p class="comment-text" data-bbcode="{$c.c_html}">{$c.c_body|raw}</p>
 		</div>
 		{include "comentario/comentario-acciones.tpl"}
 		{include "comentario/comentario-respuesta.tpl"}

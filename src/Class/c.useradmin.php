@@ -3,30 +3,23 @@
 declare(strict_types=1);
 
 /**
- * @package    PHPost/Class
- * @author     PHPost Team & Miguel92
+ * @package    Class
+ * @author     Miguel92
  * @copyright  2026
  */
 
-if (!defined('TS_HEADER')) {
-	exit('No se permite el acceso directo al script');
-}
-
-require_once TS_CLASS . '/c.emails.php';
-require_once TS_UTILS . '/PasswordHandler.php';
+defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
 class tsUserAdmin {
-
-	protected Paginator $Paginator;
-	protected PasswordHandler $PasswordHandler;
 
 	public function __construct(
 		protected tsCore $Core,
 		protected tsUser $User,
-		protected tsAdmin $Admin
+		protected tsAdmin $Admin,
+		protected Email $Email,
+		protected Password $Password,
+		protected Paginator $Paginator
 	) {
-		$this->Paginator = new Paginator($this->Core->settings['url']);
-		$this->PasswordHandler = new PasswordHandler;
 	}
 
 	public function getUserID(bool $isArray = false): int|array {
@@ -51,7 +44,7 @@ class tsUserAdmin {
 	* setUserInActivo() :: Activar/Desactivar usuario (AJAX)
 	* ------------------------------
 	*/
-	public function getUsuarios() {
+	public function getUsuarios(): array {
 		$max = 20; // MAXIMO A MOSTRAR
 		$limit = $this->Paginator->setPageLimit($max, true);
 
@@ -76,7 +69,7 @@ class tsUserAdmin {
 		return $data;
 	}
 
-	public function getUserPrivacidad() {
+	public function getUserPrivacidad(): mixed {
 		$data = DB::fetch("SELECT p.p_privacidad, p.p_mensajes_privados, p.p_publicar_muro, p.p_muro_visitas FROM u_perfil WHERE user_id = :uid LIMIT 1", $this->getUserID(true));
 		//
 		return $data;
@@ -91,7 +84,7 @@ class tsUserAdmin {
 		return (DB::update('u_perfil', $perfilData, 'user_id = :id', $this->getUserID(true)));
 	}
 
-	public function getUserData() {
+	public function getUserData(): mixed {
 		$data = DB::fetch('SELECT u.*, r.*, p.* FROM u_perfil AS p LEFT JOIN u_miembros AS u ON u.user_id = p.user_id LEFT JOIN u_rangos AS r ON r.rango_id = u.user_rango WHERE u.user_id = :uid LIMIT 1', $this->getUserID(true));
 		# Retornamos
 		return $data;
@@ -102,7 +95,7 @@ class tsUserAdmin {
 	 */
 	private function checkedEmail(string $email): string
 	{
-	    $email = $this->Core->setSecure(trim($email));
+	    $email = Html::escape(trim($email));
 	    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 	        return 'Correo electrónico incorrecto.';
 	    }
@@ -127,13 +120,13 @@ class tsUserAdmin {
 	    if (strlen($password) < 6) {
 	        return 'La contraseña es demasiado corta (mínimo 6 caracteres).';
 	    }
-	    if (!$this->PasswordHandler->isStrong($password)) {
+	    if (!$this->Password->isStrong($password)) {
 	        return 'La contraseña no cumple los requisitos: debe contener al menos un símbolo, un número y una mayúscula.';
 	    }
 	    if ($password !== $password_confirm) {
 	        return 'Las contraseñas no coinciden.';
 	    }
-	    return $this->PasswordHandler->create($password);
+	    return $this->Password->create($password);
 	}
 
 	/**
@@ -153,7 +146,7 @@ class tsUserAdmin {
 	}
 
 
-	public function setUserData() {
+	public function setUserData(): mixed {
 		# DATA
 		$param = $this->getUserID(true);
 		$current = DB::fetch('SELECT user_name, user_email, user_password, user_puntos, user_puntosxdar, user_name_changes FROM u_miembros WHERE user_id = :uid', $param);
@@ -188,75 +181,97 @@ class tsUserAdmin {
         }
         // --- Notificar al usuario (opcional) ---
         if (isset($_POST['sendata']) && $_POST['sendata'] === 'on') {
-			$Email = new tsEmail($this->Core);
-			$Email->asunto = 'new_access';
-		    $Email->sendFast($email, ['USERNAME' => $username]);
+			$this->Email->asunto = 'new_access';
+		    $this->Email->sendFast($email, ['USERNAME' => $username]);
         }
 	}
 
-	public function deleteContent(int $user_id = 0){
-		#
-		$pass = md5(md5($_POST['password']) . strtolower($this->User->nick));
-		if(db_exec('num_rows', db_exec([__FILE__, __LINE__], 'query', 'SELECT user_id FROM u_miembros WHERE user_id = \''.$this->User->uid.'\' && user_password = \''.$pass.'\''))) {
-			# Nuevo formato mejorado (entendible)
-			$todo = isset($_POST['bocuenta']);
-			# Creamos un arreglo que tenga las tablas y columnas con datos
-			$arreglo = [
-				'boposts' => ['tabla' => 'p_posts', 'columna' => 'post_user'],
-				'bofotos' => ['tabla' => 'f_fotos', 'columna' => 'f_user'],
-				'boestados' => ['tabla' => 'u_muro', 'columna' => 'p_user_pub'],
-				'bocomposts' => ['tabla' => 'p_comentarios', 'columna' => 'c_user'],
-				'bocomfotos' => ['tabla' => 'f_comentarios', 'columna' => 'c_user'],
-				'bocomestados' => ['tabla' => 'u_muro_comentarios', 'columna' => 'c_user'],
-				'bolikes' => ['tabla' => 'u_muro_likes', 'columna' => 'user_id'],
-				'boseguidores' => ['tabla' => 'u_follows', 'columna' => 'f_type = 1 && f_id'],
-				'bosiguiendo' => ['tabla' => 'u_follows', 'columna' => 'f_type = 1 && f_user'],
-				'bofavoritos' => ['tabla' => 'p_favoritos', 'columna' => 'fav_user'],
-				'bovotosposts' => ['tabla' => 'p_votos', 'columna' => 'tuser'],
-				'bovotosfotos' => ['tabla' => 'f_votos', 'columna' => 'v_user'],
-				'boactividad' => ['tabla' => 'u_actividad', 'columna' => 'user_id'],
-				'boavisos' => ['tabla' => 'u_avisos', 'columna' => 'user_id'],
-				'bobloqueos' => ['tabla' => 'u_bloqueos', 'columna' => 'b_user'],
-				'bomensajes' => ['tabla' => ['u_mensajes', 'u_respuestas'], 'columna' => ['mp_from', 'mr_from']],
-				'bosesiones' => ['tabla' => 'u_sessions', 'columna' => 'session_user_id'],
-				'bovisitas' => ['tabla' => 'w_visitas', 'columna' => 'user']
-			];
-			foreach($arreglo as $accion => $tipo) {
-				if(isset($_POST[$accion]) && $_POST[$accion] === 'on') {
-					if(is_array($tipo["tabla"]) OR is_array($tipo["columna"])) {
-						foreach ($tipo["tabla"] as $t => $tabla) {
-							db_exec([__FILE__, __LINE__], 'query', "DELETE FROM {$tipo["tabla"][$t]} WHERE {$tipo["columna"][$t]} = {$user_id}");
-						}
-					} else {
-						db_exec([__FILE__, __LINE__], 'query', "DELETE FROM {$tipo["tabla"]} WHERE {$tipo["columna"]} = {$user_id}");
+	public function deleteContent(int $user_id = 0): string {
+		$user = DB::fetch("SELECT user_id, user_name, user_password FROM u_miembros WHERE user_id = :uid LIMIT 1", [
+			'uid' => $this->User->uid
+		]);
+		$pass = Container::get(Password::class)->verify($_POST['password'], $user['user_password']);
+		if((empty($user['user_id']) && $user['user_id'] < 0) || !$pass) {
+			return 'Credenciales incorrectas';
+		}
+		# Nuevo formato mejorado (entendible)
+		$todo = isset($_POST['bocuenta']);
+		# Creamos un arreglo que tenga las tablas y columnas con datos
+		$arreglo = [
+			'boposts' => ['tabla' => 'p_posts', 'columna' => 'post_user'],
+			'bofotos' => ['tabla' => 'f_fotos', 'columna' => 'f_user'],
+			'boestados' => ['tabla' => 'u_muro', 'columna' => 'p_user_pub'],
+			'bocomposts' => ['tabla' => 'p_comentarios', 'columna' => 'c_user'],
+			'bocomfotos' => ['tabla' => 'f_comentarios', 'columna' => 'c_user'],
+			'bocomestados' => ['tabla' => 'u_muro_comentarios', 'columna' => 'c_user'],
+			'bolikes' => ['tabla' => 'u_muro_likes', 'columna' => 'user_id'],
+			'boseguidores' => ['tabla' => 'u_follows', 'columna' => 'f_type = 1 && f_id'],
+			'bosiguiendo' => ['tabla' => 'u_follows', 'columna' => 'f_type = 1 && f_user'],
+			'bofavoritos' => ['tabla' => 'p_favoritos', 'columna' => 'fav_user'],
+			'bovotosposts' => ['tabla' => 'p_votos', 'columna' => 'tuser'],
+			'bovotosfotos' => ['tabla' => 'f_votos', 'columna' => 'v_user'],
+			'boactividad' => ['tabla' => 'u_actividad', 'columna' => 'user_id'],
+			'boavisos' => ['tabla' => 'u_avisos', 'columna' => 'user_id'],
+			'bobloqueos' => ['tabla' => 'u_bloqueos', 'columna' => 'b_user'],
+			'bomensajes' => ['tabla' => ['u_mensajes', 'u_respuestas'], 'columna' => ['mp_from', 'mr_from']],
+			'bosesiones' => ['tabla' => 'u_sessions', 'columna' => 'session_user_id'],
+			'bovisitas' => ['tabla' => 'w_visitas', 'columna' => 'user']
+		];
+		foreach($arreglo as $accion => $tipo) {
+			if(isset($_POST[$accion]) && $_POST[$accion] === 'on') {
+				if(is_array($tipo["tabla"]) OR is_array($tipo["columna"])) {
+					foreach ($tipo["tabla"] as $t => $tabla) {
+						DB::delete($tipo["tabla"][$t], $tipo["columna"][$t] . ' = :col', [
+							'col' => $user_id
+						]);
 					}
+				} else {
+					DB::delete($tipo["tabla"], $tipo["columna"] . ' = :col', [
+						'col' => $user_id
+					]);
 				}
 			}
-			//
-			if($todo && $this->User->uid != $user_id){
-				$array = [
-					['tabla' => 'u_miembros', 'columna' => 'user_id'],
-					['tabla' => 'u_perfil', 'columna' => 'user_id'],
-					['tabla' => 'u_portal', 'columna' => 'user_id'],
-					['tabla' => 'w_denuncias', 'columna' => 'd_user'],
-					['tabla' => 'u_bloqueos', 'columna' => 'b_auser'],
-					['tabla' => 'u_mensajes', 'columna' => 'b_auser'],
-					['tabla' => 'w_visitas', 'columna' => 'type = 1 && for']
-				];
-				foreach($array as $item) {
-					db_exec([__FILE__, __LINE__], 'query', "DELETE FROM {$item["tabla"]} WHERE {$item["columna"]} = {$user_id}");
-				}
+		}
+		//
+		if($todo && $this->User->uid != $user_id){
+			$array = [
+				['tabla' => 'u_miembros', 'columna' => 'user_id'],
+				['tabla' => 'u_perfil', 'columna' => 'user_id'],
+				['tabla' => 'u_portal', 'columna' => 'user_id'],
+				['tabla' => 'w_denuncias', 'columna' => 'd_user'],
+				['tabla' => 'u_bloqueos', 'columna' => 'b_auser'],
+				['tabla' => 'u_mensajes', 'columna' => 'b_auser'],
+				['tabla' => 'w_visitas', 'columna' => 'type = 1 && for']
+			];
+			foreach($array as $item) {
+				DB::delete($item["tabla"], $item["columna"] . ' = :col', [
+					'col' => $user_id
+				]);
 			}
-			#
-			$data = db_exec('fetch_row', db_exec([__FILE__, __LINE__], 'query', 'SELECT user_name FROM u_miembros WHERE user_id = '.$user_id));
-			$admin = db_exec('fetch_row', db_exec([__FILE__, __LINE__], 'query', 'SELECT user_email FROM u_miembros WHERE user_id = 1'));
-			# Insertamos el aviso
-			db_exec([__FILE__, __LINE__], 'query', 'INSERT INTO `u_avisos` (`user_id`, `av_subject`, `av_body`, `av_date`, `av_read`, `av_type`) VALUES (\'1\', \'Contenido eliminado\', \'Hola, le informamos que el administrador '.$this->User->nick.' ('.$this->User->uid.') ha eliminado '.($todo ? 'la cuenta' : 'varios contenidos').' de '.$data[0].'.\', \''.time().'\', \'0\', \'1\')');
-			# Enviamos el email
-			mail($admin[0], 'Contenido eliminado', '<html><head><title>Contenido de cierta cuenta han sido eliminados.</title></head><body><p>Hola, le informamos que el administrador '.$this->User->nick.' ('.$this->User->uid.') ha eliminado '.($todo ? 'la cuenta' : 'varios contenidos').' de '.$data[0].'</p></body></html>', 'Content-type: text/html; charset=iso-8859-15');
-			# Retornamos OK
-			return 'OK';
-		} else return 'Credenciales incorrectas';
+		}
+		#
+		$admin = DB::fetch("SELECT user_email FROM u_miembros WHERE user_id = :admin LIMIT 1", [
+			'admin' => 1
+		]);
+		# Insertamos el aviso
+		$accion = $todo ? 'la cuenta' : 'varios contenidos';
+		$mensaje = "Hola, le informamos que el administrador {$this->User->nick} ha eliminado {$accion} de {$user['user_name']}";
+		DB::insert('u_avisos', [
+			'user_id' => 1,
+			'av_subject' => 'Contenido eliminado',
+			'av_body' => $mensaje,
+			'av_date' => time(),
+			'av_read' => 0,
+			'av_type' => 1
+		]);
+		# Enviamos el email
+		$this->Email->asunto = 'content_deleted';
+		$this->Email->sendFast($admin['user_email'], [
+			'ADMINISTRADOR' => $this->User->nick,
+			'ACCION' => $accion,
+			'NICKNAME' => $user['user_name']
+		]) OR die('0: Hubo un error al intentar procesar lo solicitado');
+		return "Okay!";
 	}
 
 	public function getUserRango(int $uid = 0): array {
@@ -270,20 +285,20 @@ class tsUserAdmin {
 	}
 
 	public function setUserFirma(int $uid = 0): bool {
-		$firma = $this->Core->setSecure(trim($_POST['firma'] ?? ''));
+		$firma = Html::escape($_POST['firma']);
 		if(empty($firma)) return false;
 		return (DB::update('u_perfil', ['user_firma' => $firma], 'user_id = :uid', ['uid' => $uid]));
 	}
 
-	public function setUserInActivo() {
+	public function setUserInActivo(): string {
 		# Obtenemos la ID del usuair
-		$usuario = intval($_POST['uid']);
-		$data = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', 'SELECT user_activo FROM u_miembros WHERE user_id = ' . $usuario));
+		$usuario = (int)($_POST['uid'] ?? 0);
+		$data = DB::fetch("SELECT user_activo FROM u_miembros WHERE user_id = :uid", ['uid' => $usuario]);
 		# Hacemos comprobaciones
-		$act = (intval($data['user_activo']) === 1) ? 0 : 1;
-		$txt = (intval($data['user_activo']) === 1) ? '2: Cuenta desactivada' : '1: Cuenta activada.';
+		$act = ((int)$data['user_activo'] === 1) ? 0 : 1;
+		$txt = ((int)$data['user_activo'] === 1) ? '2: Cuenta desactivada' : '1: Cuenta activada.';
 		//
-		return (db_exec([__FILE__, __LINE__], 'query', 'UPDATE u_miembros SET user_activo = '.$act.' WHERE user_id = ' . $usuario)) ? $txt : '0: Ocurri&oacute, un error';
+		return DB::update('u_miembros', ['user_activo' => $act], 'user_id = :id', ['id' => $usuario]) ? $txt : '0: Ocurri&oacute, un error';
 	}
 
 }

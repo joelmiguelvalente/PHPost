@@ -3,7 +3,7 @@
 		{foreach from=$tsMensajes item=av}
 			<div id="mp_{$av.av_id}" class="mpList-item mb-3 flex justify-start items-center gap-3{if $av.av_read == 0} unread{/if}">
 				<a href="{$tsConfig.url}/mensajes/avisos/?aid={$av.av_id}" title="{$av.av_subject}" rel="internal" class="grid items-center gap-3 flex-grow-1">
-					<img src="{$tsRoutes.assets.images}/mensajes/aviso_{$av.av_type}.svg" style="width:70px;height:70px;" />
+					<img src="{$tsRoutes['assets:images']}/mensajes/aviso_{$av.av_type}.svg" style="width:70px;height:70px;" />
 					<div class="mpList-item_content">
 						<div class="autor"><strong>{$tsConfig.titulo}</strong></div>
 						<div class="subject">{$av.av_subject}</div>
@@ -11,7 +11,7 @@
 					</div>
 				</a>
 				<div class="actions flex justify-center items-center flex-col gap-3">
-					<a href="{$tsConfig.url}/mensajes/avisos/?did={$av.av_id}"><img src="{$tsRoutes.assets.images}/mensajes/delete.svg" width="16" height="16" alt="Eliminar" /></a>
+					<a href="{$tsConfig.url}/mensajes/avisos/?did={$av.av_id}"><img src="{$tsRoutes['assets:images']}/mensajes/delete.svg" width="16" height="16" alt="Eliminar" /></a>
 				</div>
 			</div>
 		{/foreach}
@@ -31,7 +31,7 @@
 			<div class="mpHistory" id="historial">
 				<div class="bubble-container px-3 py-2 flex justify-start items-start gap-3">
 					<div class="autor-image block overflow-hidden">
-						<img src="{$tsRoutes.assets.images}/mensajes/aviso_{$tsMensaje.av_type}.svg" style="width:50px;height:50px;" />
+						<img src="{$tsRoutes['assets:images']}/mensajes/aviso_{$tsMensaje.av_type}.svg" style="width:50px;height:50px;" />
 					</div>
 					<div class="mensaje py-2 px-3 rounded-lg">
 						<div class="mensaje-autor">

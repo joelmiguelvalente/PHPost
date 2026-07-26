@@ -75,8 +75,10 @@ class CodeDefinition
         $this->useOption = false;
         $this->nestLimit = -1;
         $this->elCounter = 0;
-        $this->optionValidator = array();
+        $this->optionValidator = [];
         $this->bodyValidator = null;
+        $this->tagName = '';
+        $this->replacementText = '';
     }
 
     /**
@@ -88,7 +90,8 @@ class CodeDefinition
      */
     public function hasValidInputs(ElementNode $el): bool
     {
-        if ($this->usesOption() && $this->optionValidator) {
+        // Validar opciones si existen
+        if ($this->usesOption() && !empty($this->optionValidator)) {
             $att = $el->getAttribute();
 
             foreach ($att as $name => $value) {
@@ -98,7 +101,7 @@ class CodeDefinition
             }
         }
 
-        if (!$this->parseContent() && $this->bodyValidator) {
+        if (!$this->parseContent() && isset($this->bodyValidator) && $this->bodyValidator !== null) {
             /* We only evaluate the content if we're not parsing the content. */
             $content = "";
             foreach ($el->getChildren() as $child) {

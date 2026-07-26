@@ -3,14 +3,12 @@
 declare(strict_types=1);
 
 /**
- * @package    PHPost/Class
- * @author     PHPost Team & Miguel92
+ * @package    Class
+ * @author     Miguel92
  * @copyright  2026
  */
 
-if (!defined('TS_HEADER')) {
-	exit('No se permite el acceso directo al script');
-}
+defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
 class tsAfiliado {
 
@@ -25,12 +23,12 @@ class tsAfiliado {
 	 * @param string
 	 * @return array
 	*/
-	public function getAfiliados(string $type = 'home'): array {
+	public function getAfiliados(string $type = 'home'): ?array {
 		$query = "SELECT aid, a_titulo, a_url, a_banner, a_descripcion";
 		if($type === 'admin') $query .= ", a_sid, a_hits_in, a_hits_out, a_date, a_active";
 		$query .= " FROM w_afiliados";
 		if($type === 'home') $query .= " WHERE a_active = 1 ORDER BY RAND() LIMIT 5";
-		return result_array(db_exec([__FILE__, __LINE__], 'query', $query));
+		return DB::fetch($query);
 	}
 
 	/**
@@ -40,15 +38,15 @@ class tsAfiliado {
 	*/
 	public function getAfiliado(string $type = ''): array {
 		$id = ($type === 'admin') ? (int)($_GET['aid'] ?? 0) : (int)($_POST['ref'] ?? 0);
-		$query = "SELECT aid, a_titulo, a_url, a_banner, a_descripcion FROM w_afiliados WHERE aid = {$id}";
-		return db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', $query));
+		$query = "SELECT aid, a_titulo, a_url, a_banner, a_descripcion FROM w_afiliados WHERE aid = :aid";
+		return DB::fetch($query, ['aid' => $id]);
 	}
 
 	private function getData(): array {
 		$data = [];
 		foreach($_POST as $key => $value) {
 			$value = htmlspecialchars(trim($value ?? ''));
-			$data[$key] = $this->Core->setSecure($this->Core->parseBadWords($value));
+			$data[$key] = Html::escape($this->Core->parseBadWords($value));
 		}
 		return $data;
 	}
@@ -65,14 +63,20 @@ class tsAfiliado {
 		$checked = $dataIn; // Evitamos modificar el array principal
 		unset($checked['a_sid']); // Solo borramos el item de la copia del array
 		if(in_array('', $checked, true)) {
-		  return '2: Faltan datos';
+			return '2: Faltan datos';
 		}
 		if(!filter_var($dataIn['a_url'], FILTER_VALIDATE_URL)) { 
 			return '0: Url incorrecta'; 
 		}
 		//
-		if(db_exec([__FILE__, __LINE__], 'query', "INSERT INTO w_afiliados (a_titulo, a_url, a_banner, a_descripcion, a_sid, a_date) VALUES ('{$dataIn['a_titulo']}', '{$dataIn['a_url']}', '{$dataIn['a_banner']}', '{$dataIn['a_descripcion']}', '{$dataIn['a_sid']}', {$time})")) {
-			$afid = (int)db_exec('insert_id');
+		if($afid = DB::insert('w_afiliados', [
+			'a_titulo' => $dataIn['a_titulo'],
+			'a_url' => $dataIn['a_url'],
+			'a_banner' => $dataIn['a_banner'],
+			'a_descripcion' => $dataIn['a_descripcion'],
+			'a_sid' => $dataIn['a_sid'],
+			'a_date' => $time
+		])) {
 		  	// AVISO
 			$aviso = "<center>
 				<a href=\"{$dataIn['a_url']}\">
@@ -80,21 +84,22 @@ class tsAfiliado {
 				</a>
 			</center>
 			<br />
-			<span>{$dataIn['a_titulo']} quiere ser su afiliado, dir&iacute;jase a la administraci&oacute;n para aceptar o cancelarla.</span>";
-			$tsMonitor->setAviso(1,'Nueva afiliaci&oacute;n', (string)$aviso, 0);
+			<span>{$dataIn['a_titulo']} quiere ser su afiliado, diríjase a la administración para aceptar o cancelarla.</span>";
+			$tsMonitor->setAviso(1,'Nueva afiliación', (string)$aviso, 0);
 			//
 			$titleSite  = $this->Core->settings['titulo'];
 			$urlSiteRef = $this->Core->settings['url'].'/?ref='.$afid;
 			$bannerSite = $this->Core->settings['banner'];
 			//
-			return "1: <div class=\"emptyData\">Tu afiliaci&oacute;n ha sido agregada!</div><br>
-			<div>Se le ha notificado al administrador tu afiliaci&oacute;n para que la apruebe, mientras tanto copia el siguiente c&oacute;digo, ser&aacute; con el cual nos debes enlazar.<br><br>
+			return "1: <div class=\"emptyData\">Tu afiliación ha sido agregada!</div><br>
+			<div>Se le ha notificado al administrador tu afiliación para que la apruebe, mientras tanto copia el siguiente código, será con el cual nos debes enlazar.<br><br>
 				<div class=\"form-line\">
-					<label for=\"atitle\">C&oacute;digo HTML</label>
+					<label for=\"atitle\">Código HTML</label>
 					<textarea tabindex=\"4\" style=\"border:1px solid #CCC;border-radius:.325rem;height:100px;width:100%\" onclick=\"select(this)\"><a href=\"$urlSiteRef\" target=\"_blank\" title=\"$titleSite\"><img src=\"$bannerSite\" alt=\"banner del sitio $titleSite\"></a></textarea>
 				</div>
 			</div>";
 		}
+		return "0: Ups, que paso?";
 	}
 	
 	/**
@@ -111,9 +116,8 @@ class tsAfiliado {
 			return '0: Url incorrecta'; 
 		}
 		//
-		$afs = $this->Core->buildSqlSet($newData);
-		if(!db_exec([__FILE__, __LINE__], 'query', "UPDATE w_afiliados SET $afs WHERE aid= '$afiliado'")) {
-			return '0: Ocurri&oacute; un error';
+		if(!DB::update('w_afiliados', $newData, 'aid = :aid', ['aid' => $afiliado])) {
+			return '0: Ocurrió un error';
 		}
 		return '1: Guardado';
 	}
@@ -127,7 +131,7 @@ class tsAfiliado {
 		if($this->User->is_admod !== 1) {
 			return '0: Tu, no puedes hacer eso';
 		} 
-		if(!db_exec([__FILE__, __LINE__], 'query', "DELETE FROM w_afiliados WHERE aid = $aid")) {
+		if(!DB::delete('w_afiliados', 'aid = :aid', ['aid' => $aid])) {
 			return '0: No se pudo eliminar el afiliado.';
 		}
 		return '1: Afiliado eliminado.';
@@ -139,10 +143,10 @@ class tsAfiliado {
 	*/
 	public function activeAfiliado(): string {
 		$afiliado = (int)($_POST['aid'] ?? 0);
-		$data = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', "SELECT a_active FROM w_afiliados WHERE aid = $afiliado"));
+		$data = DB::fetch("SELECT a_active FROM w_afiliados WHERE aid = :aid", ['aid' => $afiliado]);
 		//
 		$active = ((int)$data['a_active'] === 1) ? 0 : 1;
-		if(!db_exec([__FILE__, __LINE__], 'query', "UPDATE w_afiliados SET a_active = $active WHERE aid = $afiliado")) {
+		if(!DB::update('w_afiliados', ['a_active' => $active], 'aid = :aid', ['aid' => $afiliado])) {
 			return '0: Ocurri&oacute, un error';
 		}
 		return ($active === 1) ? '2: Afiliado deshabilitado' : '1: Afiliado habilitado.';
@@ -154,12 +158,12 @@ class tsAfiliado {
 	*/
 	public function urlOut(): void {
 		$afiliado = (int)($_GET['ref'] ?? 0);
-		$data = db_exec('fetch_assoc', db_exec([__FILE__, __LINE__], 'query', "SELECT a_url, a_sid FROM w_afiliados WHERE aid = $afiliado LIMIT 1"));
+		$data = DB::fetch("SELECT a_url, a_sid FROM w_afiliados WHERE aid = :aid LIMIT 1", ['aid' => $afiliado]);
 		if(!isset($data['a_url']) || $data['a_url'] === '') {
 			$this->Core->redirectTo($this->Core->settings['url']);
 			exit();
 		}
-		db_exec([__FILE__, __LINE__], 'query', "UPDATE w_afiliados SET a_hits_out = a_hits_out + 1 WHERE aid = $afiliado");
+		DB::increment('w_afiliados', 'a_hits_out', 'aid = :aid', ['aid' => $afiliado]);
 		// Y REDIRECCIONAMOS
 		$this->Core->redirectTo(
 			"{$data['a_url']}/" . ($data['a_sid'] === '' ? '' : "?ref={$data['a_sid']}")
@@ -173,7 +177,9 @@ class tsAfiliado {
 	*/
 	public function urlInRef(): void {
 		$afiliado = (int)($_GET['ref'] ?? 0);
-		if($ref > 0) db_exec([__FILE__, __LINE__], 'query', "UPDATE `w_afiliados` SET a_hits_in = a_hits_in + 1 WHERE aid = $afiliado");
+		if($afiliado > 0) {
+			DB::increment('w_afiliados', 'a_hits_in', 'aid = :aid', ['aid' => $afiliado]);
+		}
 		$this->Core->redirectTo($this->Core->settings['url']);
 		exit();
 	}

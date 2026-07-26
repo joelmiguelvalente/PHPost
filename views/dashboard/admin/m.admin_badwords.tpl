@@ -12,11 +12,11 @@
 				<table class="min-w-full border-collapse text-sm">
 					{include "dashboard/table/Thead.tpl" fields=[
 						"ID",
-						"M&eacute;todo",
+						"Método",
 						"Tipo",
 						"Antes",
-						"Despu&eacute;s",
-						"Raz&oacute;n",
+						"Después",
+						"Razón",
 						"Autor",
 						"Fecha",
 						"Acciones"
@@ -50,20 +50,20 @@
 			<fieldset class="rounded-lg border border-gray-200 dark:border-gray-700 p-6 bg-white dark:bg-surface shadow-sm">
 				{include "dashboard/Legend.tpl" text="{if $tsAct == 'editar'}Editar{else}Agregar{/if} filtro de palabra"}
 
-				{include "dashboard/Alert.tpl" text="El m&eacute;todo exacto filtra s&oacute;lo palabras completas, mientras que el parcial filtra todas las coincidencias, aunque forme parte de una palabra. Si opta por usar un smiley, introduzca el enlace directo hacia la imagen." color="orange" show=true}
+				{include "dashboard/Alert.tpl" text="El método exacto filtra sólo palabras completas, mientras que el parcial filtra todas las coincidencias, aunque forme parte de una palabra. Si opta por usar un smiley, introduzca el enlace directo hacia la imagen." color="orange" show=true}
 
 				<!-- before -->
 				{include "dashboard/FormGroup.tpl" id="word" label="Antes" name="word" value=$tsBadWord.word}
 								
 				<!-- after -->
-				{include "dashboard/FormGroup.tpl" id="swop" label="Despu&eacute;s" name="swop" value=$tsBadWord.swop}
+				{include "dashboard/FormGroup.tpl" id="swop" label="Después" name="swop" value=$tsBadWord.swop}
 				
-				{include "dashboard/FormGroup.tpl" type="radio" id="method" label="M&eacute;todo" name="method" checked=$tsBadWord.method labels=["Parcial", "Exacto"] values=[0,1]}
+				{include "dashboard/FormGroup.tpl" type="radio" id="method" label="Método" name="method" checked=$tsBadWord.method labels=["Parcial", "Exacto"] values=[0,1]}
 
 				{include "dashboard/FormGroup.tpl" type="radio" id="type" label="Tipo" name="type" checked=$tsBadWord.type labels=["Texto", "Smiley"] values=[0,1]}
 
 				{if $tsAct == 'nuevo'}
-					{include "dashboard/FormGroupTextarea.tpl" id="reason" label="Raz&oacute;n" helper="Indica el motivo por el cual quiere agregar este filtro." name="reason" value=$tsBadWord.reason}
+					{include "dashboard/FormGroupTextarea.tpl" id="reason" label="Razón" helper="Indica el motivo por el cual quiere agregar este filtro." name="reason" value=$tsBadWord.reason}
 				{/if}
 				
 				{include "dashboard/Button.tpl" submit_text="{if $tsAct == 'editar'}Guardar{else}Agregar{/if}"}

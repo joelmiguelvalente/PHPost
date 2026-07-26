@@ -3,14 +3,12 @@
 declare(strict_types=1);
 
 /**
- * @package    PHPost/Class
- * @author     PHPost Team & Miguel92
+ * @package    Class
+ * @author     Miguel92
  * @copyright  2026
  */
 
-if (!defined('TS_HEADER')) {
-	exit('No se permite el acceso directo al script');
-}
+defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
 class tsTops {
 
@@ -66,11 +64,11 @@ class tsTops {
 	}
 
 	public function getHomeTopPostsQuery(array $between): array {
-		return DB::fetchAll("SELECT p.post_id, p.post_category, p.post_title, p.post_puntos, c.c_seo FROM p_posts AS p LEFT JOIN p_categorias AS c ON c.cid = p.post_category WHERE p.post_status = 0 AND p.post_date {$between['sql']} ORDER BY p.post_puntos DESC LIMIT 15", $between['params']);
+		return DB::fetchAll("SELECT p.post_id, p.post_category, p.post_title, p.post_puntos, c.c_seo FROM p_posts AS p LEFT JOIN p_categorias AS c ON c.cid = p.post_category WHERE p.post_status = 'publicado' AND p.post_date {$between['sql']} ORDER BY p.post_puntos DESC LIMIT 15", $between['params']);
 	}
 
 	public function getHomeTopUsersQuery(array $between): array {
-		return DB::fetchAll("SELECT SUM(p.post_puntos) AS total, u.user_id, u.user_name FROM p_posts AS p LEFT JOIN u_miembros AS u ON p.post_user = u.user_id WHERE p.post_status = 0 AND p.post_date {$between['sql']} GROUP BY p.post_user ORDER BY total DESC LIMIT 10", $between['params']);
+		return DB::fetchAll("SELECT SUM(p.post_puntos) AS total, u.user_id, u.user_name FROM p_posts AS p LEFT JOIN u_miembros AS u ON p.post_user = u.user_id WHERE p.post_status = 'publicado' AND p.post_date {$between['sql']} GROUP BY p.post_user ORDER BY total DESC LIMIT 10", $between['params']);
 	}
 
 	/**
@@ -86,7 +84,7 @@ class tsTops {
 		$data = [];
 		foreach (['puntos', 'seguidores', 'comments', 'favoritos'] as $type) {
 			$col = "p.post_{$type}";
-			$data[$type] = DB::fetchAll("SELECT p.post_id, p.post_category, {$col}, p.post_puntos, p.post_title, c.c_seo, c.c_img FROM p_posts AS p LEFT JOIN p_categorias AS c ON c.cid = p.post_category WHERE p.post_status = 0 AND p.post_date {$between['sql']}{$category['sql']} ORDER BY {$col} DESC LIMIT 10", $params);
+			$data[$type] = DB::fetchAll("SELECT p.post_id, p.post_category, {$col}, p.post_puntos, p.post_title, c.c_seo, c.c_img FROM p_posts AS p LEFT JOIN p_categorias AS c ON c.cid = p.post_category WHERE p.post_status = 'publicado' AND p.post_date {$between['sql']}{$category['sql']} ORDER BY {$col} DESC LIMIT 10", $params);
 		}
 		return $data;
 	}
@@ -97,7 +95,7 @@ class tsTops {
 		$params = array_merge($between['params'], $category['params']);
 		$data = [];
 		// PUNTOS
-		$data['puntos'] = DB::fetchAll("SELECT SUM(p.post_puntos) AS total, u.user_id, u.user_name FROM p_posts AS p LEFT JOIN u_miembros AS u ON p.post_user = u.user_id WHERE p.post_status = 0 AND p.post_date {$between['sql']}{$category['sql']} GROUP BY p.post_user ORDER BY total DESC LIMIT 10", $params);
+		$data['puntos'] = DB::fetchAll("SELECT SUM(p.post_puntos) AS total, u.user_id, u.user_name FROM p_posts AS p LEFT JOIN u_miembros AS u ON p.post_user = u.user_id WHERE p.post_status = 'publicado' AND p.post_date {$between['sql']}{$category['sql']} GROUP BY p.post_user ORDER BY total DESC LIMIT 10", $params);
 		// SEGUIDORES — no filtra por categoría
 		$data['seguidores'] = DB::fetchAll("SELECT COUNT(f.follow_id) AS total, u.user_id, u.user_name FROM u_follows AS f LEFT JOIN u_miembros AS u ON f.f_id = u.user_id WHERE f.f_type = 1 AND f.f_date {$between['sql']} GROUP BY f.f_id ORDER BY total DESC LIMIT 10", $between['params']);
 		// MEDALLAS — no filtra por categoría ni fecha de post
@@ -159,7 +157,7 @@ class tsTops {
 	private function refreshStatsCounts(array &$return): void {
 		$queries = [
 			'stats_miembros'      => "SELECT COUNT(user_id) FROM u_miembros WHERE user_activo = 1 AND user_baneado = 0",
-			'stats_posts'         => "SELECT COUNT(post_id) FROM p_posts WHERE post_status = 0",
+			'stats_posts'         => "SELECT COUNT(post_id) FROM p_posts WHERE post_status = 'publicado'",
 			'stats_fotos'         => "SELECT COUNT(foto_id) FROM f_fotos WHERE f_status = 0",
 			'stats_comments'      => "SELECT COUNT(cid) FROM p_comentarios WHERE c_status = 0",
 			'stats_foto_comments' => "SELECT COUNT(cid) FROM f_comentarios",

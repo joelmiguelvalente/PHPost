@@ -3,7 +3,7 @@
 	{include "dashboard/Alert.tpl" text="Configuraciones guardadas" color="green" show=$tsSave}
 	<form method="post" autocomplete="off" class="space-y-6">
 		<fieldset class="rounded-lg border border-gray-200 dark:border-gray-700 p-6 bg-white dark:bg-surface shadow-sm">
-			{include "dashboard/Legend.tpl" text="Configuraci&oacute;n del Registro"}
+			{include "dashboard/Legend.tpl" text="Configuración del Registro"}
 
 			{include "dashboard/FormGroup.tpl" type="number" id="c_allow_edad" label="Edad requerida" helper="A partir de que edad los usuarios pueden registrarse." name="c_allow_edad" value=$tsRegistro.c_allow_edad group=true suffix="a&ntilde;os" maxlength=3}
 
@@ -28,7 +28,7 @@
 
 		   {include "dashboard/FormGroup.tpl" type="radio" id="c_reg_active" label="Registro abierto" helper="Permitir el registro de nuevos usuarios" name="c_reg_active" checked=$tsRegistro.c_reg_active labels=["Sí", "No"] values=[1,0]}
 
-		   {include "dashboard/FormGroup.tpl" type="radio" id="c_reg_activate" label="Activar usuarios" helper="Activar autom&aacute;ticamente la cuenta de usuario." name="c_reg_activate" checked=$tsRegistro.c_reg_activate labels=["Sí", "No"] values=[1,0]}
+		   {include "dashboard/FormGroup.tpl" type="radio" id="c_reg_activate" label="Activar usuarios" helper="Activar automáticamente la cuenta de usuario." name="c_reg_activate" checked=$tsRegistro.c_reg_activate labels=["Sí", "No"] values=[1,0]}
 
 		   <hr>
 
@@ -41,16 +41,11 @@
 		        	<div class="flex gap-6">
 						{include "dashboard/Select.tpl" id="captcha_provider" name="captcha_provider" options=[
 						   ['value'=>'recaptcha', 'label'=>'reCaptcha v3'],
-						   ['value'=>'hcaptcha', 'label'=>'hCaptcha'],
-						   ['value'=>'recaptcha_enterprise', 'label'=>'reCaptcha Enterprise']
+						   ['value'=>'hcaptcha', 'label'=>'hCaptcha']
 						] selected=$tsRegistro.captcha_provider}
 		        	</div>
 		      </div>
 		   </div>
-
-			{include "dashboard/FormGroup.tpl" id="g_project_id" label="ID del proyecto (console cloud)" name="g_project_id" value=$tsRegistro.g_project_id}
-
-			{*include "dashboard/FormGroup.tpl" id="g_credentials_json" label="Credencial JSON" name="g_credentials_json" value=$tsRegistro.g_credentials_json*}
 
 			<h3 class="my-3">Para reCaptcha accede a <a href="https://console.cloud.google.com/security/recaptcha" target="_blank"><strong>console.cloud.google.com/security/recaptcha</strong></a></h3>
 

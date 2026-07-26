@@ -16,7 +16,16 @@ themes/*
 *.txt
 *.py
 *.zip
+*.sh
 *.lock
+*.html
+!views/error/*.html
+
+# Archivos locales: configuración local, desarrollo, debug
+# NO se suben al repo — son para desarrollo en cada máquina
 *.local*
 .local*
+dev.local
 sitemap.xml
+TODO.md
+phpost.md

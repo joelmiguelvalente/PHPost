@@ -642,17 +642,31 @@ class Parser
             return $parent;
         }
         $curr = $tokenizer->next();
-        while ('[' != $prevPrev || '/'.$parent->getTagName() != strtolower($prev) ||
-            ']' != $curr) {
+
+        $maxIterations = 10000; // Prevenir bucles infinitos
+        $iteration = 0;
+
+        while ('[' != $prevPrev || '/'.$parent->getTagName() != strtolower($prev) || ']' != $curr) {
+
             $this->createTextNode($parent, $prevPrev);
             $prevPrev = $prev;
             $prev = $curr;
+
             if (!$tokenizer->hasNext()) {
                 $this->createTextNode($parent, $prevPrev);
                 $this->createTextNode($parent, $prev);
                 return $parent;
             }
             $curr = $tokenizer->next();
+
+            $iteration++;
+            if ($iteration > $maxIterations) {
+                // Prevenir bucle infinito
+                return $parent;
+            }
         }
+
+        // Retornar el parent cuando se encuentra el cierre de etiqueta
+        return $parent;
     }
 }

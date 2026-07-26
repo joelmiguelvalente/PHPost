@@ -2,7 +2,7 @@
    <h3>Mi Avatar</h3>
    <div class="avatar-big-cont">
       <div style="display:none;" class="avatar-loading">
-         <img src="{$tsRoutes.tema.images}/large-loading.gif" alt="Cargando avatar">
+         <img src="{$tsRoutes['tema:images']}/large-loading.gif" alt="Cargando avatar">
       </div>
       <img alt="Avatar usuario" src="{$tsUser->avatar}?t={$smarty.now}" class="avatar-big" id="avatar-img"/>
    </div>

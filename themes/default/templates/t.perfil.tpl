@@ -18,7 +18,7 @@
 				{/if}
 			</div>
 			<div style="width:100%;text-align:center;display:none" id="perfil_load">
-				<img src="{$tsRoutes.assets.images}/loader.gif" />
+				<img src="{$tsRoutes['assets:images']}/loader.gif" />
 			</div>
 		</div>
 		<div class="perfil-sidebar p-3">

@@ -16,8 +16,8 @@
 						"ID",
 						"Imagen",
 						"Tipo",
-						"T&iacute;tulo",
-						"Descripci&oacute;n",
+						"Título",
+						"Descripción",
 						"Creada por",
 						"Fecha",
 						"Total",
@@ -47,7 +47,7 @@
 					<tfoot class="bg-gray-50 dark:bg-surface-alt">
 						<tr>
 							<td colspan="3" class="px-3 py-3 text-left">
-								P&aacute;ginas: {$tsAsignaciones.pages}
+								Páginas: {$tsAsignaciones.pages}
 							</td>
 							<td colspan="6" class="px-3 py-3 text-right">
 								<a href="{$tsConfig.url}/admin/medals?act=nueva" class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90"><span class="material-symbols-outlined text-sm">add</span> Agregar nueva medalla</a>
@@ -81,7 +81,7 @@
 							<td class="px-3 py-2">{$m.medal_ip}</td>
 							<td class="px-3 py-2">
 								<div class="flex justify-center gap-2">
-									{include "dashboard/table/Action.tpl" action="medallas.borrar_asignacion({$m.id}, {$m.medal_id})" type="button" title="Borrar Asignaci&oacute;n" icon="delete"}
+									{include "dashboard/table/Action.tpl" action="medallas.borrar_asignacion({$m.id}, {$m.medal_id})" type="button" title="Borrar Asignación" icon="delete"}
 								</div>
 							</td>
 						</tr>
@@ -90,7 +90,7 @@
 				<tfoot class="bg-gray-50 dark:bg-surface-alt">
 					<tr>
 						<td colspan="7" class="px-3 py-3 text-right">
-							P&aacute;ginas: {$tsAsignaciones.pages}
+							Páginas: {$tsAsignaciones.pages}
 						</td>
 					</tr>
 				</tfoot>
@@ -126,12 +126,12 @@
 			<fieldset class="rounded-lg border border-gray-200 dark:border-gray-700 p-6 bg-white dark:bg-surface shadow-sm">
 				{include "dashboard/Legend.tpl" text="{if $tsAct == 'nueva'}Nueva{else}Editar{/if} medalla"}
 
-				{include "dashboard/FormGroup.tpl" id="m_title" label="T&iacute;tulo de la medalla" required=true name="m_title" value=$tsMed.m_title placeholder="Staff"}
+				{include "dashboard/FormGroup.tpl" id="m_title" label="Título de la medalla" required=true name="m_title" value=$tsMed.m_title placeholder="Staff"}
 
-				{include "dashboard/FormGroupTextarea.tpl" id="m_description" label="Descripci&oacute;n" name="m_description" value=$tsMed.m_description helper="Describe el motivo por el cual el contenido gana esta medalla."}
+				{include "dashboard/FormGroupTextarea.tpl" id="m_description" label="Descripción" name="m_description" value=$tsMed.m_description helper="Describe el motivo por el cual el contenido gana esta medalla."}
 
 				<div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-start py-2 mb-3">
-				  	<label for="m_image" class="font-medium text-gray-700 dark:text-gray-300">Icono de la categor&iacute;a</label>
+				  	<label for="m_image" class="font-medium text-gray-700 dark:text-gray-300">Icono de la categoría</label>
 				  	<div class="md:col-span-2 flex items-center">
 				    	<div style="background:url({$tsRoutes.assets.images}/icons/medals/{if $tsMed.m_image}{$tsMed.m_image}{else}{$tsIcons.0}{/if}_32.png) no-repeat center center;background-size:32px;display:block;width:32px;height:32px;margin-right:10px;" id="c_icon"></div>
 				  		<select name="m_image" id="m_image" class="rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-surface px-3 py-2 text-sm focus:ring-2 focus:ring-primary" style="width: 160px;">
@@ -141,7 +141,7 @@
 				</div>
 
 				<div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-start py-2 mb-3">
-				  	<label for="rSpecial" class="font-medium text-gray-700 dark:text-gray-300">Condici&oacute;n especial
+				  	<label for="rSpecial" class="font-medium text-gray-700 dark:text-gray-300">Condición especial
 					   <div class="md:col-span-2 flex items-center space-x-6 radio-types">
 						 	{include "dashboard/Check.tpl" type="radio" name="m_type" value=1 checked=$tsMed.m_type label="Usuario" id="ai_cond_user"}
 						 	{include "dashboard/Check.tpl" type="radio" name="m_type" value=2 checked=$tsMed.m_type label="Post" id="ai_cond_post"}

@@ -1,8 +1,8 @@
 <?php
 
 /**
- * @package    PHPost/Extras
- * @author     PHPost Team & Miguel92
+ * @package    Extras
+ * @author     Miguel92
  * @copyright  2026
  */
 

@@ -1,16 +1,16 @@
                                 <div class="boxy-title">
-                                    <h3>Moderaci&oacute;n de usuarios</h3>
+                                    <h3>Moderación de usuarios</h3>
                                 </div>
                                 <div id="res" class="boxy-content">
                                 	{if $tsAct == ''}
-                                     No suspendas a un usuario sin una causa razonable, si no tu podr&iacute;as hacerle compa&ntilde;ia.
+                                     No suspendas a un usuario sin una causa razonable, si no tu podrías hacerle compa&ntilde;ia.
                                     <hr class="separator" />
                                     <table cellpadding="0" cellspacing="0" border="0" class="admin_table" width="100%" align="center">
                                     	<thead>
                                         	<th>Denuncias</th>
                                             <th>Usuario</th>
                                             <th>Fecha</th>
-                                            <th>Raz&oacute;n</th>
+                                            <th>Razón</th>
                                             <th>Acciones</th>
                                         </thead>
                                         <tbody>
@@ -21,11 +21,11 @@
                                                 <td>{$r.d_date|hace:true}</td>
                                                 <td>{$tsDenuncias[$r.d_razon]}</td>
                                                 <td class="admin_actions">
-                                                    <a href="{$tsConfig.url}/moderacion/users?act=info&obj={$r.obj_id}"><img src="{$tsRoutes.tema.images}/icons/details.png" title="Ver Detalles" /></a>
-                                                    <a href="{$tsConfig.url}/@{$r.user_name}" target="_blank"><img src="{$tsRoutes.tema.images}/icons/user.png" title="Ver Perfil" /></a>
-                                                    <a href="#" onclick="moderacion.users.action({$r.obj_id}, 'aviso', false); return false;"><img src="{$tsRoutes.tema.images}/icons/warning.png" title="Enviar Alerta" /></a>
-                                                    {if $tsUser->is_admod || $tsUser->permiso('moderacion.usuarios.suspender')}<a href="#" onclick="moderacion.users.action({$r.obj_id}, 'ban', false); return false;"><img src="{$tsRoutes.tema.images}/icons/power_off.png" title="Suspender Usuario" /></a>{/if}
-                                                    {if $tsUser->is_admod || $tsUser->permiso('moderacion.usuarios.desbanear')}<a href="#" onclick="mod.reboot({$r.obj_id}, 'users', 'reboot', false); return false"><img src="{$tsRoutes.tema.images}/icons/close.png" title="Cancelar denuncias" /></a>{/if}
+                                                    <a href="{$tsConfig.url}/moderacion/users?act=info&obj={$r.obj_id}"><img src="{$tsRoutes['tema:images']}/icons/details.png" title="Ver Detalles" /></a>
+                                                    <a href="{$tsConfig.url}/@{$r.user_name}" target="_blank"><img src="{$tsRoutes['tema:images']}/icons/user.png" title="Ver Perfil" /></a>
+                                                    <a href="#" onclick="moderacion.users.action({$r.obj_id}, 'aviso', false); return false;"><img src="{$tsRoutes['tema:images']}/icons/warning.png" title="Enviar Alerta" /></a>
+                                                    {if $tsUser->is_admod || $tsUser->permiso('moderacion.usuarios.suspender')}<a href="#" onclick="moderacion.users.action({$r.obj_id}, 'ban', false); return false;"><img src="{$tsRoutes['tema:images']}/icons/power_off.png" title="Suspender Usuario" /></a>{/if}
+                                                    {if $tsUser->is_admod || $tsUser->permiso('moderacion.usuarios.desbanear')}<a href="#" onclick="mod.reboot({$r.obj_id}, 'users', 'reboot', false); return false"><img src="{$tsRoutes['tema:images']}/icons/close.png" title="Cancelar denuncias" /></a>{/if}
                                                 </td>
                                             </tr>
                                             {/foreach}{else}
@@ -42,16 +42,16 @@
                                     <h2 style="border-bottom:1px dashed #CCC; padding-bottom:5px;">
                                         <a href="{$tsConfig.url}/@{$tsDenuncia.data.user_name}">{$tsDenuncia.data.user_name}</a> 
                                         <span class="floatR admin_actions">
-                                            <a href="#" onclick="moderacion.users.action({$tsDenuncia.data.user_id}, 'aviso', true); return false;"><img src="{$tsRoutes.tema.images}/icons/warning.png" title="Enviar Advertencia" /></a>
-                                            <a href="#" onclick="moderacion.users.action({$tsDenuncia.data.user_id}, 'ban', true); return false;"><img src="{$tsRoutes.tema.images}/icons/power_off.png" title="Suspender Usuario" /></a>
-                                            <a href="#" onclick="mod.reboot({$tsDenuncia.data.user_id}, 'users', 'reboot', true); return false"><img src="{$tsRoutes.tema.images}/icons/close.png" title="Cancelar denuncias" /></a>
+                                            <a href="#" onclick="moderacion.users.action({$tsDenuncia.data.user_id}, 'aviso', true); return false;"><img src="{$tsRoutes['tema:images']}/icons/warning.png" title="Enviar Advertencia" /></a>
+                                            <a href="#" onclick="moderacion.users.action({$tsDenuncia.data.user_id}, 'ban', true); return false;"><img src="{$tsRoutes['tema:images']}/icons/power_off.png" title="Suspender Usuario" /></a>
+                                            <a href="#" onclick="mod.reboot({$tsDenuncia.data.user_id}, 'users', 'reboot', true); return false"><img src="{$tsRoutes['tema:images']}/icons/close.png" title="Cancelar denuncias" /></a>
                                         </span>
                                     </h2>
                                     <table cellpadding="0" cellspacing="0" border="0" class="admin_table" width="100%" align="center">
                                     	<thead>
                                         	<th>Denunciante</th>
-                                            <th>Raz&oacute;n</th>
-                                            <th>Informaci&oacute;n extra</th>
+                                            <th>Razón</th>
+                                            <th>Información extra</th>
                                             <th>Fecha</th>
                                         </thead>
                                         <tbody>
