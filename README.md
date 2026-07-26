@@ -207,9 +207,30 @@ Este es el repositorio de trabajo para el fork de PHPost (v3.9.9) realizado en *
 - **Pendientes**: 12 hallazgos (3 críticos, 1 medio, 8 bajos)
 - **Total**: 23 hallazgos
 
+## Contribuir
+
+Ver [CONTRIBUTING.md](CONTRIBUTING.md) para la guía completa de contribución y convención de commits.
+
+### Resumen rápido de commits
+
+```
+<tipo>(<alcance>): <asunto corto>
+
+- Detalle 1
+- Detalle 2
+
+Fixes: #12
+```
+
+**Tipos**: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`, `ci`, `build`
+
+**Alcances**: `src`, `views`, `assets`, `config`, `themes`, `install`, `migration`, `storage`, `api`
+
 ## Documentación
 
 - **SECURITY.md**: Política de seguridad
+- **TODO.md**: Lista de tareas y roadmap
+- **CONTRIBUTING.md**: Guía de contribución y commits
 
 ## Licencia
 
@@ -217,4 +238,4 @@ MIT
 
 ---
 
-**Fecha de actualización**: 15.07.26 15:47:44
+**Fecha de actualización**: 26.07.26
