@@ -75,11 +75,6 @@ SECURITY
     [HEADERS]     X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy
     [PASSWORDS]   Argon2id (128MB memoria, 4 iteraciones, 2 threads)
 
-DEPLOY
-    [HOSTING]     InfinityFree (Apache)
-    [SSL]         HTTPS
-    [SERVER]      PHP 8.3+ / MySQL
-
 DOCUMENTATION
     [FORMAT]      Markdown
     [SPEC]        Funcional, Técnica, Seguridad, Branding, UX, API
