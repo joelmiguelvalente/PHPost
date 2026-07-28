@@ -34,15 +34,10 @@ if(!$tsLevelMsg) {
 }
 
 // CLASES
-require_once TS_CLASS . "/c.themes.php";
-$tsThemes = new tsThemes($tsCore, $tsUser);
+$tsThemes = Container::get(tsThemes::class);
 
 // CODIGO
-switch($action) {
-	case 'tema-usar':
-      echo $tsThemes->changeTema();
-	break;
-	case 'tema-nuevo':
-      echo $tsThemes->newTema();
-	break;
-}
+match($action) {
+	'tema-usar' => print $tsThemes->changeTema(),
+	'tema-nuevo' => print $tsThemes->newTema(),
+};

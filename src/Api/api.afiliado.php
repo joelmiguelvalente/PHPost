@@ -23,7 +23,7 @@ const ACTIONS = [
 
 if (!array_key_exists($action, ACTIONS)) {
    http_response_code(403);
-   exit('Acción inválida');
+   exit('AcciÃ³n invÃ¡lida');
 }
 
 $config = ACTIONS[$action];
@@ -40,29 +40,14 @@ if(!$tsLevelMsg) {
 }
 
 // CLASE
-require_once TS_CLASS . "/c.afiliado.php";
-$tsAfiliado = new tsAfiliado($tsCore, $tsUser);
+$tsAfiliado = Container::get(tsAfiliado::class);
 
-switch($action) {
-	case 'afiliado-form':
-		// Para que no corte la ejecución
-	break;
-	case 'afiliado-nuevo':
-		echo $tsAfiliado->newAfiliado();
-	break;
-	case 'afiliado-borrar':
-		echo $tsAfiliado->DeleteAfiliado();
-	break;
-	case 'afiliado-setactive':
-		echo $tsAfiliado->activeAfiliado();
-	break;
-	case 'afiliado-url':
-		$tsAfiliado->urlOut();
-	break;
-	case 'afiliado-detalles':
-		$smarty->assign("tsAfiliado", $tsAfiliado->getAfiliado());
-	break;
-	default:
-		die('0: Este archivo no existe.');
-	break;
-}
+match($action) {
+	'afiliado-form' => null,
+	'afiliado-nuevo' => print $tsAfiliado->newAfiliado(),
+	'afiliado-borrar' => print $tsAfiliado->DeleteAfiliado(),
+	'afiliado-setactive' => print $tsAfiliado->activeAfiliado(),
+	'afiliado-url' => $tsAfiliado->urlOut(),
+	'afiliado-detalles' => $smarty->assign("tsAfiliado", $tsAfiliado->getAfiliado()),
+	default => die('0: Este archivo no existe.'),
+};

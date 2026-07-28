@@ -22,7 +22,7 @@ const ACTIONS = [
 
 if (!array_key_exists($action, ACTIONS)) {
    http_response_code(403);
-   exit('Acción inválida');
+   exit('AcciÃ³n invÃ¡lida');
 }
 
 $config = ACTIONS[$action];
@@ -39,8 +39,7 @@ if(!$tsLevelMsg) {
 }
 
 // CLASS
-require_once TS_CLASS . "/c.cuenta.php";
-$tsCuenta = new tsCuenta($tsCore, $tsUser);
+$tsCuenta = Container::get(tsCuenta::class);
 
 // USER ID
 $user_id = (int)$_POST['pid'];
@@ -51,76 +50,51 @@ if(empty($user_id))  {
 $username = $tsUser->getUserName($user_id);
 $smarty->assign("tsUsername", $username);
 // CODIGO
-switch($action){
-	case 'perfil-wall':
-		require_once TS_CLASS . "/c.muro.php";
-		$tsMuro = new tsMuro($tsCore, $tsUser);
-		// GENERAL
+match($action) {
+	'perfil-wall' => (static function() use ($tsCore, $tsUser, $tsCuenta, $user_id, $username, $smarty) {
+		$tsMuro = Container::get(tsMuro::class);
 		$tsGeneral = $tsCuenta->loadGeneral($user_id);
-		$smarty->assign("tsGeneral",$tsGeneral);
-		//
+		$smarty->assign("tsGeneral", $tsGeneral);
 		$privacidad = $tsMuro->getPrivacity(
-			$user_id, 
-			$username, 
-			(int)$tsCuenta->isFollowed($user_id, true), 
+			$user_id,
+			$username,
+			(int)$tsCuenta->isFollowed($user_id, true),
 			(int)$tsCuenta->isFollowed($user_id, false)
 		);
-		if($privacidad['muro']['status']) {
+		if ($privacidad['muro']['status']) {
 			$smarty->assign("tsMuro", $tsMuro->getWall($user_id));
-			// INFO
-			$smarty->assign("tsInfo", ['uid' => $user_id, 'nick' => $username]);   
+			$smarty->assign("tsInfo", ['uid' => $user_id, 'nick' => $username]);
 		}
 		$smarty->assign("tsPrivacidad", $privacidad);
-	break;
-	case 'perfil-actividad':
-		//<---
+	})(),
+	'perfil-actividad' => (static function() use ($tsActividad, $user_id, $smarty) {
 		$ac_do = trim($_POST['do'] ?? '');
 		$ac_type = (int)($_POST['ac_type'] ?? 0);
 		$start = (int)($_POST['start'] ?? 0);
-		//
-		if($ac_do !== 'borrar') {
+		if ($ac_do !== 'borrar') {
 			$actividad = $tsActividad->getActividad($user_id, $ac_type, $start);
-			$smarty->assign("tsActividad",$actividad);
-			$smarty->assign("tsDo",$ac_do);
-			$smarty->assign("tsUserID",$user_id);
+			$smarty->assign("tsActividad", $actividad);
+			$smarty->assign("tsDo", $ac_do);
+			$smarty->assign("tsUserID", $user_id);
 		} else {
 			echo $tsActividad->delActividad();
 			die;
 		}
-		//--->
-	break;
-	case 'perfil-info':
-		//<---
+	})(),
+	'perfil-info' => (static function() use ($tsCuenta, $user_id, $smarty) {
 		require_once TS_EXTRAS . '/datos.php';
 		$tsPaises = require_once TS_EXTRAS . "/Paises.php";
-		// PERFIL INFO
 		$tsPerfil = $tsCuenta->loadPerfil((int)$user_id);
 		$smarty->assign("tsPerfil", $tsPerfil);
-		// PAIS
 		$smarty->assign("tsPais", $tsPaises[$tsPerfil['user_pais']]);
-		//--->
-	break;
-	case 'perfil-posts':
-		//<---
-		$smarty->assign("tsGeneral",$tsCuenta->loadPosts($user_id));
-		//--->
-	break;
-	case 'perfil-seguidores':
-	case 'perfil-siguiendo':
-		//<---
+	})(),
+	'perfil-posts' => $smarty->assign("tsGeneral", $tsCuenta->loadPosts($user_id)),
+	'perfil-seguidores', 'perfil-siguiendo' => (static function() use ($action, $tsMonitor, $user_id, $smarty) {
 		$type = ($action === 'perfil-seguidores') ? 'seguidores' : 'siguiendo';
-
 		$smarty->assign("tsType", $type);
-		$smarty->assign("tsHide", $_GET['hide']); // MOSTRAR DIVS
+		$smarty->assign("tsHide", $_GET['hide']);
 		$smarty->assign("tsData", $tsMonitor->getFollows($type, (int)$user_id));
-		//--->
-	break;
-	case 'perfil-medallas':
-		//<---
-		$smarty->assign("tsMedallas",$tsCuenta->loadMedallas($user_id));
-		//--->
-	break;
-	default:
-		die('0: Este archivo no existe.');
-	break;
-}
+	})(),
+	'perfil-medallas' => $smarty->assign("tsMedallas", $tsCuenta->loadMedallas($user_id)),
+	default => die('0: Este archivo no existe.'),
+};

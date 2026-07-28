@@ -18,7 +18,7 @@ const ACTIONS = [
 
 if (!array_key_exists($action, ACTIONS)) {
    http_response_code(403);
-   exit('Acción inválida');
+   exit('AcciÃ³n invÃ¡lida');
 }
 
 $config = ACTIONS[$action];
@@ -35,18 +35,11 @@ if(!$tsLevelMsg) {
 }
 
 // CLASE
-require_once TS_CLASS . "/c.favoritos.php";
-$tsFavoritos = new tsFavoritos($tsCore, $tsUser);
+$tsFavoritos = Container::get(tsFavoritos::class);
 
 // CODIGO
-switch($action){
-	case 'favoritos':
-		$smarty->assign("tsFavoritos",$tsFavoritos->getFavoritos());
-	break;
-	case 'favoritos-agregar':
-		echo $tsFavoritos->saveFavorito();
-	break;
-	case 'favoritos-borrar':
-		echo $tsFavoritos->delFavorito();
-	break;
-}
+match($action) {
+	'favoritos' => $smarty->assign("tsFavoritos", $tsFavoritos->getFavoritos()),
+	'favoritos-agregar' => print $tsFavoritos->saveFavorito(),
+	'favoritos-borrar' => print $tsFavoritos->delFavorito(),
+};

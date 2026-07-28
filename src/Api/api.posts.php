@@ -21,7 +21,7 @@ const ACTIONS = [
 
 if (!array_key_exists($action, ACTIONS)) {
    http_response_code(403);
-   exit('Acción inválida');
+   exit('AcciÃ³n invÃ¡lida');
 }
 
 $config = ACTIONS[$action];
@@ -44,29 +44,20 @@ if(in_array($action, ['posts-genbus', 'posts-preview'])) {
 $tsPosts = Container::get(tsPosts::class);
 
 // CODIGO
-switch($action){
-	case 'posts-genbus':
+match($action) {
+	'posts-genbus' => (static function() use ($tsAgregar, $smarty) {
 		$query = Html::escape(trim($_GET['query'] ?? $_POST['query'] ?? ''));
 		$do = trim($_GET['do'] ?? '');
-		if($do === 'search') $smarty->assign("tsPosts", $tsAgregar->simiPosts($query));
+		if ($do === 'search') $smarty->assign("tsPosts", $tsAgregar->simiPosts($query));
 		else $smarty->assign("tsTags", $tsAgregar->genTags($query));
 		$smarty->assign("tsDo", $do);
-	break;
-	case 'posts-preview':
-		$smarty->assign("tsPreview", $tsAgregar->getPreview());
-	break;
-	case 'posts-borrar':
-		echo $tsPosts->deletePost();
-	break;
-	case 'posts-admin-borrar':
-		echo $tsPosts->deleteAdminPost();
-	break;
-	case 'posts-votar':
-		echo $tsPosts->votarPost();
-	break;
-	case 'posts-last-comentarios':
-		require_once TS_CLASS . "/c.comentarios.php";
-		$tsComentarios = new tsComentarios($tsCore, $tsUser);
+	})(),
+	'posts-preview' => $smarty->assign("tsPreview", $tsAgregar->getPreview()),
+	'posts-borrar' => print $tsPosts->deletePost(),
+	'posts-admin-borrar' => print $tsPosts->deleteAdminPost(),
+	'posts-votar' => print $tsPosts->votarPost(),
+	'posts-last-comentarios' => (static function() use ($tsCore, $tsUser, $smarty) {
+		$tsComentarios = Container::get(tsComentarios::class);
 		$smarty->assign("tsComments", $tsComentarios->getLastComentarios());
-	break;
-}
+	})(),
+};

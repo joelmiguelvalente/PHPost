@@ -17,7 +17,7 @@ const ACTIONS = [
 
 if (!array_key_exists($action, ACTIONS)) {
    http_response_code(403);
-   exit('Acción inválida');
+   exit('AcciÃ³n invÃ¡lida');
 }
 
 $config = ACTIONS[$action];
@@ -34,27 +34,22 @@ if(!$tsLevelMsg) {
 }
 $how = trim($_POST['action'] ?? '');
 
-switch($action) {
-	case 'notificaciones-ajax':
-		switch($how){
-			case 'last':
-				$notificaciones = $tsMonitor->getNotificaciones();
-				$smarty->assign("tsData", $notificaciones['data']);
-			break;
-			case 'follow':
-				echo $tsMonitor->setFollow();
-				$tsAjax = false;
-			break;
-			case 'unfollow':
-				echo $tsMonitor->setUnFollow();
-				$tsAjax = false;
-			break;
-			case 'spam':
-				echo $tsMonitor->setSpam();
-			break;
-		}
-	break;
-	case 'notificaciones-filtro':
-		echo $tsMonitor->setFiltro();
-	break;
-}
+match($action) {
+	'notificaciones-ajax' => match($how) {
+		'last' => (static function() use ($tsMonitor, $smarty) {
+			$notificaciones = $tsMonitor->getNotificaciones();
+			$smarty->assign("tsData", $notificaciones['data']);
+		})(),
+		'follow' => (static function() use ($tsMonitor, &$tsAjax) {
+			echo $tsMonitor->setFollow();
+			$tsAjax = false;
+		})(),
+		'unfollow' => (static function() use ($tsMonitor, &$tsAjax) {
+			echo $tsMonitor->setUnFollow();
+			$tsAjax = false;
+		})(),
+		'spam' => print $tsMonitor->setSpam(),
+		default => null,
+	},
+	'notificaciones-filtro' => print $tsMonitor->setFiltro(),
+};

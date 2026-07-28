@@ -19,7 +19,7 @@ const ACTIONS = [
 
 if (!array_key_exists($action, ACTIONS)) {
    http_response_code(403);
-   exit('Acción inválida');
+   exit('AcciÃ³n invÃ¡lida');
 }
 
 $config = ACTIONS[$action];
@@ -36,8 +36,7 @@ if(!$tsLevelMsg) {
 }
 
 // CLASE
-require_once TS_CLASS . "/c.denuncias.php";
-$tsDenuncias = new tsDenuncias($tsCore, $tsUser);
+$tsDenuncias = Container::get(tsDenuncias::class);
 
 // VARS
 $obj_id = (int)($_POST['obj_id'] ?? 0);
@@ -55,20 +54,10 @@ if($razon) {
 	$tsAjax = false;
 }
 // CODIGO
-switch($action){
-	case 'denuncia-post':  
-	case 'denuncia-foto':   
-		if(!$razon) {
-			$smarty->assign("tsData", $tsData);
-		}
-	break; 
-	case 'denuncia-mensaje':
-	case 'denuncia-usuario':
-		if($action === 'denuncia-usuario') {
-			$smarty->assign("tsData", ['nick' => $user]);
-		}
-	break;
-}
+match($action) {
+	'denuncia-post', 'denuncia-foto' => !$razon ? $smarty->assign("tsData", $tsData) : null,
+	'denuncia-mensaje', 'denuncia-usuario' => $action === 'denuncia-usuario' ? $smarty->assign("tsData", ['nick' => $user]) : null,
+};
 if(in_array($action, ['denuncia-post', 'denuncia-foto', 'denuncia-usuario'])) {
 	require_once TS_EXTRAS . "/datos.php";
 	$data = [

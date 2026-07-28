@@ -35,18 +35,11 @@ if(!$tsLevelMsg) {
 }
 
 // CLASE
-require_once TS_CLASS . "/c.cuenta.php";
-$tsCuenta = new tsCuenta($tsCore, $tsUser);
+$tsCuenta = Container::get(tsCuenta::class);
 
 // CODIGO
-switch($action) {
-	case 'cuenta-desactivar':
-		echo $tsCuenta->desactivarCuenta();
-	break;
-	case 'cuenta-guardar':
-		echo $tsCuenta->savePerfil();
-	break;
-	case 'cuenta-cambiar-tema':
-		echo $tsCuenta->cambiarTema();
-	break;
-}
+match($action) {
+	'cuenta-desactivar' => print $tsCuenta->desactivarCuenta(),
+	'cuenta-guardar' => print $tsCuenta->savePerfil(),
+	'cuenta-cambiar-tema' => print $tsCuenta->cambiarTema(),
+};

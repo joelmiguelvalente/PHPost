@@ -1,83 +1,65 @@
 <?php
 
-defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
+declare(strict_types=1);
 
 /**
- * Controlador AJAX
- *
- * @name    ajax.portal.php
- * @author  PHPost Team
-*/
-/**********************************\
+ * @package    Api
+ * @author     PHPost Team
+ * @copyright  2026
+ */
 
-*	(VARIABLES POR DEFAULT)		*
+defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
-\*********************************/
+const ACTIONS = [
+	'portal-posts_config'     => ['nivel' => 2, 'template' => '', 'ajax' => true],
+	'portal-posts_pages'      => ['nivel' => 2, 'template' => 'posts', 'ajax' => false],
+	'portal-favs_pages'       => ['nivel' => 2, 'template' => 'posts', 'ajax' => false],
+	'portal-activity_pages'   => ['nivel' => 2, 'template' => 'actividad', 'ajax' => false],
+];
 
-	// NIVELES DE ACCESO Y PLANTILLAS DE CADA ACCI�N
-	$files = array(
-		'portal-posts_config' => array('n' => 2, 'p' => ''),
-        'portal-posts_pages' => array('n' => 2, 'p' => 'posts'),
-        'portal-favs_pages' => array('n' => 2, 'p' => 'posts'),
-        'portal-activity_pages' => array('n' => 2, 'p' => 'actividad'),
-	);
+if (!array_key_exists($action, ACTIONS)) {
+	http_response_code(403);
+	exit('Acción inválida');
+}
 
-/**********************************\
+$config = ACTIONS[$action];
 
-* (VARIABLES LOCALES ESTE ARCHIVO)	*
+$tsLevel = $config['nivel'];
+$tsAjax  = (int) $config['ajax'];
+$tsPage  = sprintf('p.portal.%s', $config['template']);
 
-\*********************************/
+// DEPENDE EL NIVEL
+$tsLevelMsg = $tsUser->setLevel($tsLevel, true);
 
-	// REDEFINIR VARIABLES
-	$tsPage = 'p.portal.'.$files[$action]['p'];
-	$tsLevel = $files[$action]['n'];
-	$tsAjax = empty($files[$action]['p']) ? 1 : 0;
+if ($tsLevelMsg != 1) {
+	echo '0: ' . $tsLevelMsg['mensaje'];
+	die();
+}
 
-/**********************************\
+$tsPortal = Container::get(tsPortal::class);
 
-*	(INSTRUCCIONES DE CODIGO)		*
-
-\*********************************/
-	
-	// DEPENDE EL NIVEL
-	$tsLevelMsg = $tsUser->setLevel($tsLevel, true);
-	if($tsLevelMsg != 1) { echo '0: '.$tsLevelMsg['mensaje']; die();}
-    // CLASS
-    $tsPortal = Containter::get(tsPortal::class);
-    //
-	// CODIGO
-	switch($action){
-		case 'portal-posts_config':
-			//<---
-                echo $tsPortal->savePostsConfig();
-			//--->
-		break;
-		case 'portal-posts_pages':
-			//<---
-            $tsPosts = $tsPortal->getMyPosts();
-            $smarty->assign("tsPosts",$tsPosts['data']);
-            $smarty->assign("tsPages",$tsPosts['pages']);
-            $smarty->assign("tsType",'posts');
-			//--->
-		break;
-		case 'portal-favs_pages':
-			//<---
-            $tsPosts = $tsPortal->getFavorites();
-            $smarty->assign("tsPosts",$tsPosts['data']);
-            $smarty->assign("tsPages",$tsPosts['pages']);
-            $smarty->assign("tsType",'favs');
-			//--->
-		break;
-		case 'portal-activity_pages':
-			//<---
-            $actividad = $tsActividad->getActividadFollows();
-            if(!is_array($actividad)) die('<div class="emptyData">'.$actividad.'</div>');
-            $smarty->assign("tsActividad",$actividad);
-            $smarty->assign("tsUserID",$user_id);
-			//--->
-		break;
-        default:
-            die('0: Este archivo no existe.');
-        break;
-	}
-?>
+// CODIGO
+match ($action) {
+	'portal-posts_config' => print $tsPortal->savePostsConfig(),
+	'portal-posts_pages' => (static function() use ($tsPortal, $smarty) {
+		$tsPosts = $tsPortal->getMyPosts();
+		$smarty->assign("tsPosts", $tsPosts['data']);
+		$smarty->assign("tsPages", $tsPosts['pages']);
+		$smarty->assign("tsType", 'posts');
+	})(),
+	'portal-favs_pages' => (static function() use ($tsPortal, $smarty) {
+		$tsPosts = $tsPortal->getFavorites();
+		$smarty->assign("tsPosts", $tsPosts['data']);
+		$smarty->assign("tsPages", $tsPosts['pages']);
+		$smarty->assign("tsType", 'favs');
+	})(),
+	'portal-activity_pages' => (static function() use ($tsActividad, $user_id, $smarty) {
+		$actividad = $tsActividad->getActividadFollows();
+		if (!is_array($actividad)) {
+			die('<div class="emptyData">' . $actividad . '</div>');
+		}
+		$smarty->assign("tsActividad", $actividad);
+		$smarty->assign("tsUserID", $user_id);
+	})(),
+	default => die('0: Este archivo no existe.'),
+};

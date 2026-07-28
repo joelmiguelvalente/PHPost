@@ -20,7 +20,7 @@ const ACTIONS = [
 
 if (!array_key_exists($action, ACTIONS)) {
    http_response_code(403);
-   exit('Acción inválida');
+   exit('AcciÃ³n invÃ¡lida');
 }
 
 $config = ACTIONS[$action];
@@ -37,20 +37,10 @@ if(!$tsLevelMsg) {
 }
 
 // CODIGO
-switch($action){
-	case 'mensajes-validar':
-		echo $tsMensajes->getValid();
-	break;
-	case 'mensajes-enviar':
-		echo $tsMensajes->newMensaje();
-	break;
-	case 'mensajes-respuesta':
-		$smarty->assign("mp",$tsMensajes->newRespuesta());
-	break;
-	case 'mensajes-lista':
-		$smarty->assign("tsMensajes", $tsMensajes->getMensajes(1, false, 'monitor'));
-	break;
-	case 'mensajes-editar':
-		echo $tsMensajes->editMensajes();
-	break;
-}
+match($action) {
+	'mensajes-validar' => print $tsMensajes->getValid(),
+	'mensajes-enviar' => print $tsMensajes->newMensaje(),
+	'mensajes-respuesta' => $smarty->assign("mp", $tsMensajes->newRespuesta()),
+	'mensajes-lista' => $smarty->assign("tsMensajes", $tsMensajes->getMensajes(1, false, 'monitor')),
+	'mensajes-editar' => print $tsMensajes->editMensajes(),
+};

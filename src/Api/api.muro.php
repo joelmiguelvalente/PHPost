@@ -17,7 +17,7 @@ const ACTIONS = [
 
 if (!array_key_exists($action, ACTIONS)) {
    http_response_code(403);
-   exit('Acción inválida');
+   exit('AcciÃ³n invÃ¡lida');
 }
 
 $config = ACTIONS[$action];
@@ -34,85 +34,67 @@ if(!$tsLevelMsg) {
 }
 
 // CLASS
-require_once TS_CLASS . '/c.muro.php';
-$tsMuro = new tsMuro($tsCore, $tsUser);
+$tsMuro = Container::get(tsMuro::class);
 
 // CODIGO
-switch($action){
-	case 'muro-stream':
+match($action) {
+	'muro-stream' => (static function() use ($tsMuro, $smarty, &$tsAjax, &$tsPage) {
 		$do = trim($_GET['do'] ?? '');
-		if($do === 'check'){
+		if ($do === 'check') {
 			echo $tsMuro->ajaxCheck();
 			$tsAjax = false;
-		} elseif($do === 'post') {
+		} elseif ($do === 'post') {
 			$tsStream = $tsMuro->streamPost();
-			if(!is_array($tsStream) && substr($tsStream,0,1) === '0') {
+			if (!is_array($tsStream) && substr($tsStream, 0, 1) === '0') {
 				echo $tsStream;
 			} else {
-				// ASIGNAMOS
 				$tsWall['data'][1] = $tsStream;
-				$smarty->assign("tsMuro",$tsWall);
+				$smarty->assign("tsMuro", $tsWall);
 				$tsPrivacidad['muro_firma']['status'] = true;
-				$smarty->assign("tsPrivacidad", $tsPrivacidad);  
-			} 
-		} elseif($do === 'more'){
-			// CLASS
-			require_once TS_CLASS . '/c.cuenta.php';
-			$tsCuenta = new tsCuenta($tsCore, $tsUser);
-			// VARIABLES
+				$smarty->assign("tsPrivacidad", $tsPrivacidad);
+			}
+		} elseif ($do === 'more') {
+			$tsCuenta = Container::get(tsCuenta::class);
 			$user_id = (int)($_POST['pid'] ?? 0);
 			$start = (int)($_POST['start'] ?? 0);
-			//
 			$follow = $tsCuenta->isFollowed((int)$user_id, true) ? 1 : 0;
 			$priv = $tsMuro->getPrivacity($user_id, 'null', $follow, 0);
 			$smarty->assign("tsPrivacidad", $priv);
-			//
-			if($_GET['type'] === 'wall') $tsStream = $tsMuro->getWall($user_id, (int)$start);
-			else if($_GET['type'] === 'news') $tsStream = $tsMuro->getNews($start);
-			// ASIGNAMOS
-			if(!is_array($tsStream)) {
+			if ($_GET['type'] === 'wall') $tsStream = $tsMuro->getWall($user_id, (int)$start);
+			else if ($_GET['type'] === 'news') $tsStream = $tsMuro->getNews($start);
+			if (!is_array($tsStream)) {
 				echo $tsStream;
-				$tsAjax = true;   
-			} else { 
-				$smarty->assign("tsMuro",$tsStream);            
-			}  
-		} elseif($do === 'repost'){
-			$tsPage = 'p.muro.stream.comments'; // TEMPLATE
-			// VARIABLES
-			$tsRepost = $tsMuro->streamRepost();
-			// ASIGNAMOS
-			if(!is_array($tsRepost)) {
-				echo $tsRepost;
-				$tsAjax = true;   
+				$tsAjax = true;
+			} else {
+				$smarty->assign("tsMuro", $tsStream);
 			}
-			else {
+		} elseif ($do === 'repost') {
+			$tsPage = 'p.muro.stream.comments';
+			$tsRepost = $tsMuro->streamRepost();
+			if (!is_array($tsRepost)) {
+				echo $tsRepost;
+				$tsAjax = true;
+			} else {
 				$tsComments['data'][1] = $tsRepost;
-				$smarty->assign("tsComments",$tsComments);  
-			} 
-		} elseif($do === 'more_comments'){
-			$tsPage = 'p.muro.stream.comments'; // TEMPLATE
-			// VARIABLES
+				$smarty->assign("tsComments", $tsComments);
+			}
+		} elseif ($do === 'more_comments') {
+			$tsPage = 'p.muro.stream.comments';
 			$tsComments = $tsMuro->getComments();
-			// ASIGNAMOS
-			if(!is_array($tsComments)) {
+			if (!is_array($tsComments)) {
 				echo $tsComments;
 				$tsAjax = true;
 			} else {
-				$smarty->assign("tsComments",$tsComments);
+				$smarty->assign("tsComments", $tsComments);
 			}
-		} elseif($do === 'delete'){
+		} elseif ($do === 'delete') {
 			echo $tsMuro->deletePost();
 			$tsAjax = true;
 		}
-		//--->
-	break;
-	case 'muro-likes':
-		//<---
+	})(),
+	'muro-likes' => (static function() use ($tsMuro) {
 		$action = (trim($_GET['do'] ?? '') === '') ? $tsMuro->likePost() : $tsMuro->showLikes();
 		echo json_encode($action);
-		//--->
-	break;
-	default:
-		die('0: Este archivo no existe.');
-	break;
-}
+	})(),
+	default => die('0: Este archivo no existe.'),
+};

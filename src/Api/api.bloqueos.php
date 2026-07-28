@@ -16,7 +16,7 @@ const ACTIONS = [
 
 if (!array_key_exists($action, ACTIONS)) {
    http_response_code(403);
-   exit('Acción inválida');
+   exit('AcciÃ³n invÃ¡lida');
 }
 
 $config = ACTIONS[$action];
@@ -33,12 +33,9 @@ if(!$tsLevelMsg) {
 }
 
 // CLASE
-require_once TS_CLASS . "/c.cuenta.php";
-$tsCuenta = new tsCuenta($tsCore, $tsUser);
+$tsCuenta = Container::get(tsCuenta::class);
 
 // CODIGO
-switch($action) {
-	case 'bloqueos-cambiar':
-		echo $tsCuenta->cambiarBloqueo();
-	break;
-}
+match($action) {
+	'bloqueos-cambiar' => print $tsCuenta->cambiarBloqueo(),
+};

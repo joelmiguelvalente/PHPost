@@ -30,7 +30,7 @@ const ACTIONS = [
 
 if (!array_key_exists($action, ACTIONS)) {
    http_response_code(403);
-   exit('Acción inválida');
+   exit('AcciÃ³n invÃ¡lida');
 }
 
 $config = ACTIONS[$action];
@@ -47,66 +47,25 @@ if(!$tsLevelMsg) {
 	die();
 }
 
-// CLASES
-require_once TS_CLASS . "/c.admin.php";
-require_once TS_CLASS . "/c.medals.php";
+$tsAdmin = Container::get(tsAdmin::class);
+$tsMedal = Container::get(tsMedal::class);
 
-$tsAdmin = new tsAdmin($tsCore, $tsUser);
-$tsMedal = new tsMedal($tsCore, $tsUser);
 // CODIGO
-switch($action) {
-	case 'admin-medalla-asignar-form':
-		# Simulando data
-	break;
-	case 'admin-medalla-borrar':
-      echo $tsMedal->DelMedalla();
-	break;
-	case 'admin-medalla-asignar':
-      echo $tsMedal->AsignarMedalla();
-	break;
-	case 'admin-medallas-borrar-asignacion':
-      echo $tsMedal->delAssign();
-	break;
-	case 'admin-foto-borrar':
-      echo $tsAdmin->DelFoto();
-	break;
-	case 'admin-foto-setOpenClosed':
-      echo $tsAdmin->setOpenClosedFoto();
-	break;
-	case 'admin-foto-setShowHide':
-      echo $tsAdmin->setShowHideFoto();
-	break;
-	case 'admin-users-InActivo':
-      echo $tsAdmin->setUserInActivo();
-	break;
-	case 'admin-users-sessions':
-      echo $tsAdmin->delSession();
-	break;
-	case 'admin-noticias-setInActive':
-   	require_once TS_CLASS . "/c.noticias.php";
-		$tsNoticias = new tsNoticias($tsCore, $tsUser);
-      echo $tsNoticias->setNoticiaInActive();
-	break;
-	case 'admin-sesiones-borrar':
-      echo $tsAdmin->delSession();
-	break;
-	case 'admin-nicks-change':
-      echo $tsAdmin->ChangeNick_o_no();
-	break;
-   case 'admin-blacklist-delete':
-   	require_once TS_CLASS . "/c.bloqueos.php";
-   	$tsBloqueos = new tsBloqueos($tsCore, $tsUser);
-      echo $tsBloqueos->deleteBlock();
-	break;
-   case 'admin-badwords-delete':
-   	require_once TS_CLASS . "/c.censura.php";
-   	$tsCensura = new tsCensura($tsCore, $tsUser);
-      echo $tsCensura->deleteBadWord();
-	break;
-	case 'admin-ordenar-categorias':
-	   echo $tsAdmin->saveOrden();
-	break;
-   default:
-      echo '0: Este archivo no existe.';
-   break;
-}
+match($action) {
+	'admin-medalla-asignar-form' => null,
+	'admin-medalla-borrar' => print $tsMedal->DelMedalla(),
+	'admin-medalla-asignar' => print $tsMedal->AsignarMedalla(),
+	'admin-medallas-borrar-asignacion' => print $tsMedal->delAssign(),
+	'admin-foto-borrar' => print $tsAdmin->DelFoto(),
+	'admin-foto-setOpenClosed' => print $tsAdmin->setOpenClosedFoto(),
+	'admin-foto-setShowHide' => print $tsAdmin->setShowHideFoto(),
+	'admin-users-setInActivo' => print $tsAdmin->setUserInActivo(),
+	'admin-users-sessions' => print $tsAdmin->delSession(),
+	'admin-noticias-setInActive' => print Container::get(tsNoticias::class)->setNoticiaInActive(),
+	'admin-sesiones-borrar' => print $tsAdmin->delSession(),
+	'admin-nicks-change' => print $tsAdmin->ChangeNick_o_no(),
+	'admin-blacklist-delete' => print Container::get(tsBloqueos::class)->deleteBlock(),
+	'admin-badwords-delete' => print Container::get(tsCensura::class)->deleteBadWord(),
+	'admin-ordenar-categorias' => print $tsAdmin->saveOrden(),
+	default => print '0: Este archivo no existe.',
+};

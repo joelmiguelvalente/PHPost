@@ -23,7 +23,7 @@ const ACTIONS = [
 
 if (!array_key_exists($action, ACTIONS)) {
    http_response_code(403);
-   exit('Acción inválida');
+   exit('AcciÃ³n invÃ¡lida');
 }
 
 $config = ACTIONS[$action];
@@ -41,104 +41,74 @@ if(!$tsLevelMsg) {
 
 $do = trim($_GET['do'] ?? '');
 // CLASE
-require_once TS_CLASS . "/c.comentarios.php";
-$tsComentarios = new tsComentarios($tsCore, $tsUser);
+$tsComentarios = Container::get(tsComentarios::class);
 if($do === 'fotos') {
-	require_once TS_CLASS . "/c.fotos.php";
-	$tsFotos = new tsFotos($tsCore, $tsUser);
+	$tsFotos = Container::get(tsFotos::class);
 }
 // CODIGO
-switch($action){
-	case 'comentario-preview':
+match($action) {
+	'comentario-preview' => (static function() use ($tsCore, $smarty) {
 		$comentario = Html::escape($_POST['comentario']);
-		$comentario = substr($comentario,0,1500);
-		// COMENTARIO VACIO?
-		$tsText = preg_replace('# +#',"",$comentario);
-		if(empty($tsText)) die('0: El campo <b>Comentario</b> es requerido para esta operación');
-		//
+		$comentario = substr($comentario, 0, 1500);
+		$tsText = preg_replace('# +#', "", $comentario);
+		if (empty($tsText)) die('0: El campo <b>Comentario</b> es requerido para esta operaciÃ³n');
 		$auser = $_POST['auser'];
-		$preview = array(0,$tsCore->parseBBCode($comentario),'',time(),$auser, $comentario, $_SERVER['REMOTE_ADDR']);
-		$smarty->assign("tsComment",$preview);
-		$smarty->assign("tsType",$_GET['type']);
-	break;
-	case 'comentario-agregar':
-		//<--
-		if(empty($do)){
+		$preview = [0, $tsCore->parseBBCode($comentario), '', time(), $auser, $comentario, $_SERVER['REMOTE_ADDR']];
+		$smarty->assign("tsComment", $preview);
+		$smarty->assign("tsType", $_GET['type']);
+	})(),
+	'comentario-agregar' => (static function() use ($do, $tsComentarios, $tsFotos, $smarty) {
+		if (empty($do)) {
 			$tsComment = $tsComentarios->newComentario();
-			$smarty->assign("tsType",'new');
-			//
-			if(is_array($tsComment)) $smarty->assign("tsComment", $tsComment);
+			$smarty->assign("tsType", 'new');
+			if (is_array($tsComment)) $smarty->assign("tsComment", $tsComment);
 			else die($tsComment);
-		} elseif($do === 'fotos'){
-		   //
-		   $tsComment = $tsFotos->newComentario();
-			if(is_array($tsComment)) $smarty->assign("tsComment",$tsComment);
+		} elseif ($do === 'fotos') {
+			$tsComment = $tsFotos->newComentario();
+			if (is_array($tsComment)) $smarty->assign("tsComment", $tsComment);
 			else die($tsComment);
-			// NUEVA PLANTILLA
 			$tsPage = 'p.comentario.fotos';
 		}
-		//-->
-	break;
-	case 'comentario-editar':
-		//<--
-			echo $tsComentarios->editComentario();
-		//-->
-	break;
-	case 'comentario-borrar':
-		//<--
-		if(empty($do)){
+	})(),
+	'comentario-editar' => print $tsComentarios->editComentario(),
+	'comentario-borrar' => (static function() use ($do, $tsComentarios, $tsFotos) {
+		if (empty($do)) {
 			echo $tsComentarios->delComentario();
-		} elseif($do == 'fotos'){
-			//
+		} elseif ($do == 'fotos') {
 			echo $tsFotos->delComentario();
 		}
-		//-->
-	break;
-	case 'comentario-ocultar':
-		//<--
-			echo $tsComentarios->OcultarComentario();
-		//-->
-	break;
-	case 'comentario-votar':
-		//<--
-		if(empty($do)) {
+	})(),
+	'comentario-ocultar' => print $tsComentarios->OcultarComentario(),
+	'comentario-votar' => (static function() use ($do, $tsComentarios, $tsFotos) {
+		if (empty($do)) {
 			echo $tsComentarios->votarComentario();
-		} elseif($do === 'fotos'){
-			//
+		} elseif ($do === 'fotos') {
 			echo $tsFotos->votarFoto();
 		}
-		//-->
-	break;
-	case 'comentario-ajax':
-		//<--
-		// COMENTARIOS
+	})(),
+	'comentario-ajax' => (static function() use ($tsComentarios, $smarty) {
 		$tsPost = (int)($_POST['postid'] ?? 0);
 		$tsAutor = Html::escape($_POST['autor']);
 		$tsComments = $tsComentarios->getComentarios($tsPost);
-		
 		$tsComments = [
-			'num' => $tsComments['num'], 
-			'data' => $tsComments['data'], 
-			'block' => $tsComments['block'], 
-			'autor' => $tsAutor
+			'num' => $tsComments['num'],
+			'data' => $tsComments['data'],
+			'block' => $tsComments['block'],
+			'autor' => $tsAutor,
 		];
-		$smarty->assign("tsComments",$tsComments);	
+		$smarty->assign("tsComments", $tsComments);
 		$smarty->assign("tsPost", [
-			'postid' => $tsPost, 
-			'autor' => $tsAutor
+			'postid' => $tsPost,
+			'autor' => $tsAutor,
 		]);
-		//-->
-	break;
-	case 'comentario-pages':
-		//
+	})(),
+	'comentario-pages' => (static function() use ($tsCore, $smarty) {
 		$tsPages = Container::get(Paginator::class)->getPages(
 			(int)($_POST['total'] ?? 0),
 			(int)$tsCore->settings['c_max_com']
 		);
 		$tsPages['post_id'] = (int)($_POST['postid'] ?? 0);
 		$tsPages['autor'] = (int)($_POST['autor'] ?? 0);
-		//
-		$smarty->assign("tsPages",$tsPages);
-		//-->
-	break;
-}
+		$smarty->assign("tsPages", $tsPages);
+	})(),
+};
