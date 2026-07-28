@@ -11,7 +11,7 @@ declare(strict_types=1);
 defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
 // Mailer
-class EmailConfig {
+final class EmailConfig {
 
     public function mailerConfig(): array {
         return [

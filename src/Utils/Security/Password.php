@@ -16,7 +16,7 @@ declare(strict_types=1);
  * de contraseñas utilizando las configuraciones de seguridad
  * definidas en Config.Application.php
  */
-class Password
+final class Password
 {
     /** @var string Algoritmo de hash actual */
     private string $algorithm;

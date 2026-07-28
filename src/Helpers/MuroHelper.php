@@ -46,39 +46,35 @@ final class MuroHelper {
 	}
 
 	public function evaluatePrivacyRule(string $type, array $context, callable $deny, array $messages): void {
-	   switch ($type) {
-	   	case 'nobody':
-	         $deny($messages['nobody']);
-	      break;
-	      case 'friends_mutual':
-	         if (!$context['lesigoymesigue']) {
-	            $deny($messages['friends_mutual']);
-	         }
-	      break;
-	      case 'friends_any':
-	         if (!$context['lesigoomesigue']) {
-	           	$deny($messages['friends_any']);
-	         }
-	      break;
-	      case 'following':
-	        	if ($context['follow'] !== 1) {
-	            $deny($messages['following']);
-	         }
-	      break;
-	      case 'followers':
-	         if ($context['yfollow'] !== 1) {
-	            $deny($messages['followers']);
-	         }
-	      break;
-	      case 'registered':
-	         if (!$this->User->uid) {
-	            $deny($messages['registered']);
-	         }
-	     	break;
-	     	default:
-	         $deny($messages['default']);
-	      break;
-	   }
+	match ($type) {
+	   	'nobody' => $deny($messages['nobody']),
+	   	'friends_mutual' => (function() use ($context, $deny, $messages) {
+	   		if (!$context['lesigoymesigue']) {
+	   			$deny($messages['friends_mutual']);
+	   		}
+	   	})(),
+	   	'friends_any' => (function() use ($context, $deny, $messages) {
+	   		if (!$context['lesigoomesigue']) {
+	   			$deny($messages['friends_any']);
+	   		}
+	   	})(),
+	   	'following' => (function() use ($context, $deny, $messages) {
+	   		if ($context['follow'] !== 1) {
+	   			$deny($messages['following']);
+	   		}
+	   	})(),
+	   	'followers' => (function() use ($context, $deny, $messages) {
+	   		if ($context['yfollow'] !== 1) {
+	   			$deny($messages['followers']);
+	   		}
+	   	})(),
+	   	'registered' => (function() use ($deny, $messages) {
+	   		if (!$this->User->uid) {
+	   			$deny($messages['registered']);
+	   		}
+	   	})(),
+	   	default => $deny($messages['default']),
+	}
 	}
 
 	public function getMuroConfig(array &$privacidad, array $context, string $type = ''): void {

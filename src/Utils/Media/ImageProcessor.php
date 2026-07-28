@@ -49,7 +49,7 @@ declare(strict_types=1);
  */
 declare(strict_types=1);
 
-class ImageProcessor
+final class ImageProcessor
 {
 	/**
 	 * Configuración predeterminada del procesador
@@ -458,24 +458,22 @@ class ImageProcessor
 			$destination = $this->targetDir . $fileName . '.' . $format;
 			
 			try {
-				switch ($format) {
-					case 'webp':
+				match ($format) {
+					'webp' => (function() use ($source, $destination, &$outputFiles) {
 						$this->convertToWebp($source, $destination);
 						$outputFiles[] = $destination;
-						break;
-						
-					case 'avif':
+					})(),
+					'avif' => (function() use ($source, $destination, &$outputFiles) {
 						if ($this->isAvifSupported()) {
 							$this->convertToAvif($source, $destination);
 							$outputFiles[] = $destination;
 						}
-						break;
-						
-					case 'png':
+					})(),
+					'png' => (function() use ($source, $destination, &$outputFiles) {
 						$this->convertToPng($source, $destination);
 						$outputFiles[] = $destination;
-						break;
-				}
+					})(),
+				};
 			} catch (\Exception $e) {
 				$this->logError("Error convirtiendo a {$format}: {$e->getMessage()}");
 			}

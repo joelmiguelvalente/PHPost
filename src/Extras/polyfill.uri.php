@@ -16,7 +16,7 @@ namespace Uri\Rfc3986;
 if (!extension_loaded('uri')) {
     if (!class_exists('Uri\Rfc3986\Uri')) {
 
-        class Uri
+        final class Uri
         {
             private array $components;
 

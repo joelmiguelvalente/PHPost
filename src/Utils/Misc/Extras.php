@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
-class Extras {
+final class Extras {
 
 	static public function slugify(string $text, string $separator = '-'): string {
 		if ($text === '') {

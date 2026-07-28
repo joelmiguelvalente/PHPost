@@ -31,7 +31,7 @@ foreach($folders as $folder) {
  * además de su excelente seguridad para el script.
  */
 
-class BBCode {
+final class BBCode {
 
 	public $id;
 
@@ -140,7 +140,7 @@ class BBCode {
 	 * espacios vacíos
 	 */
 	private function delExtraTags(): void {
-		$this->text = str_replace(array('[divider]', '\n', '\r'), ' ', $this->text);
+		$this->text = str_replace(['[divider]', '\n', '\r'], ' ', $this->text);
 		$this->text = preg_replace('!\s+!', ' ', $this->text);
 		$this->text = preg_replace('/((http|https|www)[^\s]+)/', '', $this->text);
 	}

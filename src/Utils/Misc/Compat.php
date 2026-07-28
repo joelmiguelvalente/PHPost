@@ -9,7 +9,7 @@ declare(strict_types=1);
  * @copyright  2026
  */
 
-class Compat
+final class Compat
 {
 	/**
 	 * curl_close() no hace nada desde PHP 8.0 y fue eliminada en 8.5

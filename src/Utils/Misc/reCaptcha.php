@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
-class ReCaptcha {
+final class ReCaptcha {
 
 	public $RECAPTCHA_TOKEN;
 
@@ -32,12 +32,9 @@ class ReCaptcha {
 
 	private function getProvider(): void {
 		$this->SERVICE_TYPE = $this->Core->reCaptchaConfig('captcha_provider');
-		switch ($this->SERVICE_TYPE) {
-			case 'recaptcha':
-			case 'hcaptcha':
-				$this->API_SECRET_KEY = $this->Core->reCaptchaConfig('secret_key');
-			break;
-		}
+		match ($this->SERVICE_TYPE) {
+			'recaptcha', 'hcaptcha' => $this->API_SECRET_KEY = $this->Core->reCaptchaConfig('secret_key'),
+		};
 	}
 
 	/*

@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 (defined('TS_HEADER') && PHP_SAPI !== 'cli') || exit('No se permite el acceso directo al script.');
 
-final class Generator
+final class PHPostGenerator
 {
 	private string $name;
 	private string $nameUpper;

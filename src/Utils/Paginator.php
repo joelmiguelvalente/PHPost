@@ -10,7 +10,7 @@ declare(strict_types=1);
 
 defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
-class Paginator {
+final class Paginator {
 
 	protected int $page;
 	protected int $start;
