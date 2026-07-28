@@ -10,7 +10,7 @@ declare(strict_types=1);
 
 defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
-class tsBorradores {
+final class tsBorradores {
 
 	/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*\
 								BORRADORES
@@ -21,7 +21,7 @@ class tsBorradores {
 	function newDraft(bool $save = false): string{
 		global $tsCore, $tsUser;
 		//
-		$draftData = array(
+		$draftData = [
 			'date' => time(),
 			'title' => Html::escape($tsCore->parseBadWords($_POST['titulo'])),
 			'body' => Html::escape($_POST['cuerpo'],),
@@ -33,7 +33,7 @@ class tsBorradores {
             'sticky' => empty($_POST['sticky']) ? 0 : 1,
 			'smileys' => empty($_POST['smileys']) ? 0 : 1,
 			'visitantes' => empty($_POST['visitantes']) ? 0 : 1,
-		);
+		];
 		//
 		if(!empty($draftData['title'])) {
 			if(!empty($draftData['category']) && $draftData['category'] > 0) {
@@ -86,7 +86,7 @@ class tsBorradores {
 		//
 		$drafts = $query;
 		// SET
-		$tipos = array('eliminados','borradores');
+		$tipos = ['eliminados','borradores'];
 		foreach($drafts as $draft){
             $causa = empty($draft['b_causa']) ? 'Eliminado por el autor' : htmlspecialchars($draft['b_causa']);
 			$dft .= '{"id":'.$draft['bid'].',"titulo":"'.$draft['b_title'].'","categoria":"'.$draft['c_seo'].'","imagen":"'.$draft['c_img'].'","fecha_guardado":'.$draft['b_date'].',"status":'.$draft['b_status'].',"causa":"'.$causa.'","categoria_name":"'.$draft['c_nombre'].'","tipo":"'.$tipos[$draft['b_status']].'","url":"'.$tsCore->settings['url'].'/agregar/'.$draft['bid'].'","fecha_print":"'.strftime("%d\/%m\/%Y a las %H:%M:%S hs",$draft['b_date']).'"},';

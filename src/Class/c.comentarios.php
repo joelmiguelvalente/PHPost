@@ -10,7 +10,7 @@ declare(strict_types=1);
 
 defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
-class tsComentarios {
+final class tsComentarios {
 
 	public function __construct(
 		protected tsCore $Core,

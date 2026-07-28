@@ -12,7 +12,7 @@ if ( ! defined('TS_HEADER')) {
 	exit('No se permite el acceso directo al script');
 }
 
-class tsPortal {
+final class tsPortal {
 
 	public function __construct(
 		protected tsCore $Core,

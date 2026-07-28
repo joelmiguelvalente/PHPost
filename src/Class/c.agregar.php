@@ -12,7 +12,7 @@ defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
 require_once __DIR__ . '/c.moderacion.php';
 
-class tsAgregar {
+final class tsAgregar {
 	
 	public int $postId;
 

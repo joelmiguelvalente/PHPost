@@ -10,7 +10,7 @@ declare(strict_types=1);
 
 defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
-class tsUser {
+final class tsUser {
 
 	private $session;
 
@@ -356,7 +356,7 @@ class tsUser {
 	 */
 	public function logoutUser(int $userID = 0, string $redirectTo = ''): mixed {
 		/* BORRAR SESSION */
-		$this->session = new tsSession($this->Core);
+		$this->session = Container::get(tsSession::class);
 		$this->session->read();
 		$this->session->destroy();
 		$this->session = null;

@@ -12,7 +12,7 @@ if ( ! defined('TS_HEADER')) {
 	exit('No se permite el acceso directo al script');
 }
 
-class tsModeracion {
+final class tsModeracion {
 
 	private string $myIP;
 
@@ -33,24 +33,24 @@ class tsModeracion {
 	# Obtenemos las denuncias posts|fotos|mps|users
 	public function getDenuncias(string $type = 'posts'): array {
 		# Tipo de denuncia
-		switch ($type) {
-			case 'posts':
-				$sentencia = 'SUM(r.d_total) AS total, p.post_id, p.post_title, p.post_status, c.c_nombre, c.c_seo, c.c_img FROM w_denuncias AS r LEFT JOIN p_posts AS p ON r.obj_id = p.post_id LEFT JOIN p_categorias AS c ON p.post_category = c.cid WHERE r.d_type = :param AND p.post_status != :status';
-				$param = ['param' => 'post', 'status' => 'eliminado'];
-			break;
-			case 'fotos':
-				$sentencia = 'SUM(r.d_total) AS total,  f.foto_id, f.f_title, f.f_status, u.user_id, u.user_name FROM w_denuncias AS r LEFT JOIN f_fotos AS f ON r.obj_id = f.foto_id LEFT JOIN u_miembros AS u ON f.f_user = u.user_id  WHERE d_type = :param AND f.f_status < 2 GROUP BY r.obj_id';
-				$param = ['param' => 'foto'];
-			break;
-			case 'users':
-				$sentencia = 'SUM(d_total) AS total, u.user_name FROM w_denuncias AS r LEFT JOIN u_miembros AS u ON r.obj_id = u.user_id WHERE d_type = :param AND u.user_baneado = 0';
-				$param = ['param' => 'usuario'];
-			break;
-			case 'mps':
-				$sentencia = 'm.mp_id, m.mp_to, m.mp_from, m.mp_subject, m.mp_preview, m.mp_date FROM w_denuncias AS r LEFT JOIN u_mensajes AS m ON r.obj_id = m.mp_id WHERE d_type = :param';
-				$param = ['param' => 'mensaje'];
-			break;
-		}
+		[$sentencia, $param] = match ($type) {
+			'posts' => [
+				'SUM(r.d_total) AS total, p.post_id, p.post_title, p.post_status, c.c_nombre, c.c_seo, c.c_img FROM w_denuncias AS r LEFT JOIN p_posts AS p ON r.obj_id = p.post_id LEFT JOIN p_categorias AS c ON p.post_category = c.cid WHERE r.d_type = :param AND p.post_status != :status',
+				['param' => 'post', 'status' => 'eliminado'],
+			],
+			'fotos' => [
+				'SUM(r.d_total) AS total,  f.foto_id, f.f_title, f.f_status, u.user_id, u.user_name FROM w_denuncias AS r LEFT JOIN f_fotos AS f ON r.obj_id = f.foto_id LEFT JOIN u_miembros AS u ON f.f_user = u.user_id  WHERE d_type = :param AND f.f_status < 2 GROUP BY r.obj_id',
+				['param' => 'foto'],
+			],
+			'users' => [
+				'SUM(d_total) AS total, u.user_name FROM w_denuncias AS r LEFT JOIN u_miembros AS u ON r.obj_id = u.user_id WHERE d_type = :param AND u.user_baneado = 0',
+				['param' => 'usuario'],
+			],
+			'mps' => [
+				'm.mp_id, m.mp_to, m.mp_from, m.mp_subject, m.mp_preview, m.mp_date FROM w_denuncias AS r LEFT JOIN u_mensajes AS m ON r.obj_id = m.mp_id WHERE d_type = :param',
+				['param' => 'mensaje'],
+			],
+		};
 		$data = DB::fetchAll("SELECT r.obj_id, $sentencia GROUP BY r.obj_id ORDER BY total DESC, MAX(r.d_date) DESC", $param);
 		return $data;
 	}

@@ -10,7 +10,7 @@ declare(strict_types=1);
 
 defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
-class tsMensajes {
+final class tsMensajes {
 	
 	public $mensajes; // SIN LEER
 
@@ -98,32 +98,32 @@ class tsMensajes {
 			// COMPROBACIONES DE LA PRIVACIDAD
 			$data = DB::fetch("SELECT p_mensajes_privados FROM u_perfil WHERE user_id = :userid LIMIT 1", ['userid' => $user_id]);
 
-			switch($data['p_mensajes_privados']) {
-				case 'nobody':
-				case 'off':
+			match($data['p_mensajes_privados']) {
+				'nobody', 'off' => (function() use ($data, $para) {
 					if($data['p_mensajes_privados'] === 'nobody' && !$this->User->is_admod) {
 						return '0: Lo sentimos, pero '.$para.' no permite recibir mensajes';
-					} elseif($data['p_mensajes_privados'] === 'off' && !$this->User->is_admod) {
+					}
+					if($data['p_mensajes_privados'] === 'off' && !$this->User->is_admod) {
 						return '0: Lo sentimos, pero '.$para.' no puede utilizar la mensajería privada en estos momentos ';
 					}
-				break;
-				case 'friends_mutual':
-				case 'friends_any':
-				case 'followers':
-				case 'following':
+				})(),
+				'friends_mutual', 'friends_any', 'followers', 'following' => (function() use ($data, $para, $comp) {
 					$lesigoomesigue = ((int)$comp['mesigue'] === 0 && (int)$comp['lesigo'] === 0) ? false : true;
 					$lesigoymesigue = ((int)$comp['mesigue'] === 1 && (int)$comp['lesigo'] === 1) ? true : false;
 					if($data['p_mensajes_privados'] === 'friends_mutual' && !$lesigoymesigue && !$this->User->is_admod) {
 						return '0: Debes seguir a '.$para.' y éste debe seguirte para poder enviarle un mensaje.';
-					} elseif($data['p_mensajes_privados'] === 'friends_any' && !$lesigoomesigue && !$this->User->is_admod) {
+					}
+					if($data['p_mensajes_privados'] === 'friends_any' && !$lesigoomesigue && !$this->User->is_admod) {
 						return '0: Debes seguir a '.$para.' o éste debe seguirte para poder enviarle un mensaje.';
-					} elseif($data['p_mensajes_privados'] === 'followers' && !$comp['lesigo'] && !$this->User->is_admod) {
+					}
+					if($data['p_mensajes_privados'] === 'followers' && !$comp['lesigo'] && !$this->User->is_admod) {
 						return '0: Debes seguir a '.$para.' para poder enviarle un mensaje.';
-					} elseif($data['p_mensajes_privados'] === 'following' && !$comp['mesigue'] && !$this->User->is_admod) {
+					}
+					if($data['p_mensajes_privados'] === 'following' && !$comp['mesigue'] && !$this->User->is_admod) {
 						return '0: '.$para.' debe seguirte para que puedas enviarle un mensaje';
 					}
-				break;
-			}
+				})(),
+			};
 		}
 		return '';
 	}
@@ -145,7 +145,7 @@ class tsMensajes {
 		//
 		$para = $this->mensajePara();
 		$mensaje = $this->mensajeContenido();
-		if(str_replace(array("\n","\t",' '),'',$mensaje) === '') {
+		if(str_replace(["\n","\t",' '],'',$mensaje) === '') {
 			return 'Debes ingresar el contenido de tu mensaje.';
 		}
 		//
@@ -200,7 +200,7 @@ class tsMensajes {
 		$mp_id = (int)($_POST['id'] ?? 0);
 
 		$mensaje = $this->mensajeContenido(0, 'body');
-		if(str_replace(array("\n","\t",' '),'',$mensaje) === '') {
+		if(str_replace(["\n","\t",' '],'',$mensaje) === '') {
 			return '0: Debes ingresar tu respuesta.';
 		}
 	
@@ -274,9 +274,9 @@ class tsMensajes {
 	   $data = [];
 	   $uid = $this->User->uid;
 
-	   $sqlRecibidos = fn(string $extra = '') => "SELECT mp_id, mp_to, mp_from, mp_read_to, mp_read_mon_to, mp_subject, mp_preview, mp_date, user_id, user_name FROM u_mensajes AS m LEFT JOIN u_miembros AS u ON mp_from = user_id WHERE mp_to = :uid AND mp_del_to = 0 {$extra}";
+	   $sqlRecibidos = fn(string $extra = '') => "SELECT mp_id, mp_to, mp_from, mp_read_to, mp_read_mon_to, mp_subject, mp_preview, mp_date, user_id, user_name FROM u_mensajes AS m LEFT JOIN u_miembros AS u ON mp_from = user_id WHERE mp_to = :uid_recibido AND mp_del_to = 0 {$extra}";
 	   //
-	   $sqlEnviados = fn(string $extra = '') => "SELECT mp_id, mp_to, mp_from, mp_read_from, mp_read_mon_from, mp_subject, mp_preview, mp_date, user_id, user_name FROM u_mensajes AS m LEFT JOIN u_miembros AS u ON mp_to = user_id WHERE mp_from = :uid AND mp_del_from = 0 AND mp_answer = 1 {$extra}";
+	   $sqlEnviados = fn(string $extra = '') => "SELECT mp_id, mp_to, mp_from, mp_read_from, mp_read_mon_from, mp_subject, mp_preview, mp_date, user_id, user_name FROM u_mensajes AS m LEFT JOIN u_miembros AS u ON mp_to = user_id WHERE mp_from = :uid_enviado AND mp_del_from = 0 AND mp_answer = 1 {$extra}";
 
 	   if ($type === 1) {
 	      $limit = '';
@@ -288,7 +288,7 @@ class tsMensajes {
 	         $limit = 'LIMIT 5';
 	      }
 	      $sql = $sqlRecibidos($funread) . " UNION (" . $sqlEnviados($sunread) . ") ORDER BY mp_id DESC {$limit}";
-	      $rows = DB::fetchAll($sql, ['uid' => $uid]);
+	      $rows = DB::fetchAll($sql, ['uid_recibido' => $uid, 'uid_enviado' => $uid]);
 	      $data['total'] = 0;
 	      foreach ($rows as $row) {
 	         $row['mp_from'] = ($row['mp_from'] == $uid) ? $row['mp_to'] : $row['mp_from'];
@@ -302,10 +302,10 @@ class tsMensajes {
 	      $funread = $unread ? 'AND mp_read_to = 0' : '';
 	      $sunread = $unread ? 'AND mp_read_from = 0' : '';
 	      $sql = $sqlRecibidos($funread) . " UNION (" . $sqlEnviados($sunread) . ") ORDER BY mp_id DESC";
-	      $total = count(DB::fetchAll($sql, ['uid' => $uid]));
+	      $total = count(DB::fetchAll($sql, ['uid_recibido' => $uid, 'uid_enviado' => $uid]));
 	      $pages = $this->Paginator->getPagination($total, 12);
 	      $data['pages'] = $pages;
-	      $rows = DB::fetchAll($sql . ' LIMIT ' . $pages['limit'], ['uid' => $uid]);
+	      $rows = DB::fetchAll($sql . ' LIMIT ' . $pages['limit'], ['uid_recibido' => $uid, 'uid_enviado' => $uid]);
 	      foreach ($rows as $row) {
 	         $row['mp_type'] = ($row['mp_from'] != $uid) ? 1 : 2;
 	         $row['mp_from'] = ($row['mp_from'] == $uid) ? $row['mp_to'] : $row['mp_from'];
@@ -313,10 +313,10 @@ class tsMensajes {
 	      }
 	   } elseif ($type === 3) {
 	      $sql = "SELECT m.mp_id, m.mp_to, m.mp_read_to, m.mp_subject, m.mp_preview, m.mp_date, u.user_id, u.user_name FROM u_mensajes AS m LEFT JOIN u_miembros AS u ON m.mp_to = u.user_id WHERE m.mp_from = :uid ORDER BY m.mp_id DESC";
-	      $total = count(DB::fetchAll($sql, ['uid' => $uid]));
+	      $total = count(DB::fetchAll($sql, ['uid_recibido' => $uid, 'uid_enviado' => $uid]));
 	      $pages = $this->Paginator->getPagination($total, 12);
 	      $data['pages'] = $pages;
-	      $rows = DB::fetchAll($sql . ' LIMIT ' . $pages['limit'], ['uid' => $uid]);
+	      $rows = DB::fetchAll($sql . ' LIMIT ' . $pages['limit'], ['uid_recibido' => $uid, 'uid_enviado' => $uid]);
 	      foreach ($rows as $row) {
 	         $row['mp_type'] = 2;
 	         $row['mp_from'] = $row['mp_to'];
@@ -325,10 +325,10 @@ class tsMensajes {
 	      }
 	   } elseif ($type === 4) {
 	      $sql = "SELECT m.mp_id, m.mp_from, m.mp_read_from, m.mp_subject, m.mp_preview, m.mp_date, u.user_id, u.user_name FROM u_mensajes AS m LEFT JOIN u_miembros AS u ON m.mp_from = u.user_id WHERE m.mp_to = :uid AND m.mp_answer = 1 ORDER BY m.mp_id DESC";
-	      $total = count(DB::fetchAll($sql, ['uid' => $uid]));
+	      $total = count(DB::fetchAll($sql, ['uid_recibido' => $uid, 'uid_enviado' => $uid]));
 	      $pages = $this->Paginator->getPagination($total, 12);
 	      $data['pages'] = $pages;
-	      $rows = DB::fetchAll($sql . ' LIMIT ' . $pages['limit'], ['uid' => $uid]);
+	      $rows = DB::fetchAll($sql . ' LIMIT ' . $pages['limit'], ['uid_recibido' => $uid, 'uid_enviado' => $uid]);
 	      foreach ($rows as $row) {
 	         $row['mp_type'] = 1;
 	         $row['mp_read_to'] = 1;

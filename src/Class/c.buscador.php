@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
-class tsBuscador {
+final class tsBuscador {
 
 	private const POSTS_PER_PAGE  = 12;
 

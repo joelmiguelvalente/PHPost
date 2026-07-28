@@ -13,7 +13,7 @@ defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 /**
  * Clase de manejo de sesiones
  */
-class tsSession {
+final class tsSession {
 
 	/** @var string ID de la sesión */
 	public string $ID = '';

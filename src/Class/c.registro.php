@@ -10,7 +10,7 @@ declare(strict_types=1);
 
 defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
-class tsRegistro {
+final class tsRegistro {
 
 	private string $myIP;
 
@@ -76,7 +76,7 @@ class tsRegistro {
 		// Variables
 		$vars = $this->getPostData();
       	$which = empty($vars['user_nick']) ? 'email' : 'nick';
-		// No puede ser solo n�meros
+		// No puede ser solo números
 		if (!empty($vars['user_nick']) AND ctype_digit($vars['user_nick'])) {
 			return "3: Tú nick no pueder solo números.";
 		}
@@ -110,7 +110,7 @@ class tsRegistro {
 	}
 
 	private function verifyEmailUser(string $username, string $email): ?string {
-		// Validaci�n
+		// Validación
     	if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
       		return '0: El formato del email es inválido.';
     	}
@@ -189,11 +189,11 @@ class tsRegistro {
         	//
         	$time = time();
         	$title = "$heading a {$this->Core->settings['titulo']}";
-	    	switch($welcome) {
-	         	case 1: $this->insertMuroMessage($uid, $message); break;
-	         	case 2: $this->insertMessagePrivate($uid, $message, $title); break;
-		 		case 3: $this->insertAvise($uid, $message, $title); break;
-			}
+	    	match($welcome) {
+	         	1 => $this->insertMuroMessage($uid, $message),
+	         	2 => $this->insertMessagePrivate($uid, $message, $title),
+		 		3 => $this->insertAvise($uid, $message, $title),
+			};
 		}
 	}
 

@@ -13,7 +13,7 @@ declare(strict_types=1);
  * como Imgur, ImgBB o Cloudinary desde el panel de administración.
  */
 
-class ImageProvider
+final class ImageProvider
 {
     private const TABLE = 'w_image_providers';
 

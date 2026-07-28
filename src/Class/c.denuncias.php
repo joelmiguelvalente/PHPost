@@ -10,7 +10,7 @@ declare(strict_types=1);
 
 defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
-class tsDenuncias {
+final class tsDenuncias {
 
 	private string|int $razon;
 
@@ -41,18 +41,17 @@ class tsDenuncias {
 			'd_type' => $type,
 			'd_date' => time()
 		])) return '0: Error, inténtalo más tarde.';
-		switch($type) {
-			case 'mensaje':
+		return match($type) {
+			'mensaje' => (function() use ($objId, $delTable) {
 				DB::update('u_mensajes', [$delTable => 1], 'mp_id = :id', ['id' => $objId]);
 				return '1: Has denunciado un mensaje como correo no deseado.';
-			break;
-			case 'usuario':
+			})(),
+			'usuario' => (function() use ($objId) {
 				DB::raw("UPDATE u_miembros SET user_bad_hits = user_bad_hits + 1 WHERE user_id = :uid", ['uid' => $objId]);
 				return '1: Este usuario ha sido denunciado.';
-			break;
-			default:
-				return '1: La denuncia fue enviada.';
-		}
+			})(),
+			default => '1: La denuncia fue enviada.',
+		};
 	}
 
 	private function hasAlreadyReported(int $objId, string $type, string $message): ?string {

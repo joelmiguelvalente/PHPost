@@ -10,7 +10,7 @@ declare(strict_types=1);
 
 defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
-class tsPosts {
+final class tsPosts {
 
 	public int $postId;
 
@@ -98,25 +98,23 @@ class tsPosts {
 	   $sql = $this->navigationQuery();
 	    if ($action === 'random') {
 	      $sql .= " ORDER BY RAND() DESC LIMIT 1";
-	      $query = DB::query($sql, []);
+	      $data = DB::fetch($sql);
 	    } else {
 	    	$navigation = $this->OperatorAndOrder($action);
 	      $sql .= " AND p.post_id {$navigation['operator']} :postId ORDER BY p.post_id {$navigation['order']} LIMIT 1";
-	      $query = DB::query($sql, ['postId' => $this->postId]);
+	      $data = DB::fetch($sql, ['postId' => $this->postId]);
 	   }
-	   $results = $query->get_result();
-	   if ($results->num_rows === 0) {
+	   if (!$data) {
 	      $this->redirectToPosts();
 	      return;
 	   }
-	   $data = $results->fetch_assoc();
 	   $this->redirectToPost($data);
 	}
 
 	/**
-	 * Obtiene el t�tulo del post siguiente/anterior
+	 * Obtiene el título del post siguiente/anterior
 	 *
-	 * @param string|null $direction Direcci�n: 'prev' o 'next'. Si no se especifica, busca aleatorio
+	 * @param string|null $direction Dirección: 'prev' o 'next'. Si no se especifica, busca aleatorio
 	 * @return array|false Datos del post o false si no existe
 	 */
 	public function getNearbyPostTitle(?string $direction = null): array|false {
@@ -154,13 +152,13 @@ class tsPosts {
 			return ['deleted', "Oops! Este post $msg"];*/
 		}
 		if($postData['post_status'] === 'oculto' && $this->PostHelper->canPermsUsers('moacp')) {
-			return ['denunciado','Oops! El Post se encuentra en revisi�n por acumulaci�n de denuncias.'];
+			return ['denunciado','Oops! El Post se encuentra en revisión por acumulación de denuncias.'];
 		}
 		if($postData['post_status'] === 'eliminado' && $this->PostHelper->canPermsUsers('morp')) {
 			return ['deleted','Oops! El post fue eliminado!'];
 		}
 		if($postData['post_status'] === 'revision' && $this->PostHelper->canPermsUsers('mocp')) {
-			return ['denunciado','Oops! El Post se encuentra en revisi�n, a la espera de su publicaci�n.'];
+			return ['denunciado','Oops! El Post se encuentra en revisión, a la espera de su publicación.'];
 		}
 		if(!(int)$postData['post_private'] === 0 && !$this->User->is_member) {
 			return ['privado', (string)$postData['post_title']];
@@ -196,7 +194,7 @@ class tsPosts {
 	      	$data['post_' . $who] = DB::value($sql, ['pid' => $pid]);
 			}
 			$data['post_cache'] = time();
-			//ACTUALIZAMOS LAS ESTAD�STICAS
+			//ACTUALIZAMOS LAS ESTADÍSTICAS
 			DB::update('p_posts', $data, 'post_id = :pid', ['pid' => $pid]);
 			$postData += $data;
 			return $postData;
@@ -236,7 +234,7 @@ class tsPosts {
 		// OBTENER DATOS DEL POST
 		$postData = $this->getDataPost();
 		$this->postStatus($postData);
-		// ESTAD�STICAS
+		// ESTADÍSTICAS
 		$postData = $this->refreshPostStats($postData);
 		// USUARIO BLOQUEADO?
 		$postData['block'] = $this->UserHelper->isBlocked((int)$postData['post_user'], $this->User->uid);
@@ -323,7 +321,7 @@ class tsPosts {
 	public function deletePost(): string {
 		$userId = (int) $this->User->uid;
 		if ($this->postId <= 0) {
-			return '0: ID inv�lido.';
+			return '0: ID inválido.';
 		}
 		$param = ['pid' => $this->postId];
 		$post = DB::fetch("SELECT post_id, post_user, post_status FROM p_posts WHERE post_id = :pid", $param);
@@ -331,10 +329,10 @@ class tsPosts {
 			return '0: El post no existe.';
 		}
 		if ($post['post_status'] === 'eliminado') {
-			return '0: El post ya est� eliminado.';
+			return '0: El post ya está eliminado.';
 		}
 		if ($post['post_user'] !== $userId && $this->User->is_admod !== 1) {
-			return '0: No ten�s permisos para eliminar este post.';
+			return '0: No tenés permisos para eliminar este post.';
 		}
 		DB::begin();
 		$continue = DB::update('p_posts', ['post_status' => 'eliminado'], 'post_id = :pid', $param);
@@ -357,7 +355,7 @@ class tsPosts {
 	*/
 	public function deleteAdminPost(): string {
 		if ($this->postId <= 0) {
-			return '0: ID de post inv�lido.';
+			return '0: ID de post inválido.';
 		}
 		// No es el administrador
 		if($this->User->is_admod !== 1) {
@@ -370,7 +368,7 @@ class tsPosts {
    		}
    		$post = DB::fetch("SELECT post_status FROM p_posts WHERE post_id = :pid", ['pid' => $this->postId]);
 	   	if ($post['post_status'] != 'publicado') { // 0 = activo, 1 = pendiente, 2 = eliminado
-	   	   return '0: El post no est� en estado activo para eliminar.';
+	   	   return '0: El post no está en estado activo para eliminar.';
 	   	}
 		DB::begin();
 		try {
@@ -383,7 +381,7 @@ class tsPosts {
 			return "1: El post se ha eliminado correctamente.";
 		} catch (Exception $e) {
         	DB::rollback();
-        	return '0: Error cr�tico: ' . $e->getMessage();
+        	return '0: Error crítico: ' . $e->getMessage();
     	}		
 	}
 
@@ -430,7 +428,7 @@ class tsPosts {
 			$existUser = DB::exists("SELECT 1 FROM u_miembros WHERE user_last_ip = :ip AND user_id != :user", $param);
 			$existSession = DB::exists("SELECT 1 FROM u_sessions WHERE session_ip = :ip AND session_user_id != :user", $param);
 			if($existUser || $existSession) {
-				return '0: Has usado otra cuenta anteriormente, deber�s contactar con la administraci�n.';
+				return '0: Has usado otra cuenta anteriormente, deberás contactar con la administración.';
 			}
 		}
 		return null;
@@ -446,21 +444,21 @@ class tsPosts {
 		};
 		// Validar cantidad de puntos
 		if ($puntos > $maxPoints) {
-			return "0: Voto no v�lido. No puedes dar $puntos puntos, s�lo se permiten $maxPoints.";
+			return "0: Voto no válido. No puedes dar $puntos puntos, sólo se permiten $maxPoints.";
 		}
 		if ($puntos > $this->User->info['user_puntosxdar']) {
-			return "0: Voto no v�lido. No puedes dar $puntos puntos, s�lo te quedan {$this->User->info['user_puntosxdar']}.";
+			return "0: Voto no válido. No puedes dar $puntos puntos, sólo te quedan {$this->User->info['user_puntosxdar']}.";
 		}
 	}
 
 	private function applyPostVote(int $puntos, int $postUser): ?string {
-		// Transacci�n para asegurar integridad
+		// Transacción para asegurar integridad
 	   	DB::begin();
 	   	try {
 	   		$sentencias = [
 	   		  	// Actualizar puntos del post
 	   			"UPDATE p_posts SET post_puntos = post_puntos + :puntos WHERE post_id = :pid" => ['puntos' => $puntos,'pid' => $this->postId],
-	   		  	// Actualizar puntos del due�o del post
+	   		  	// Actualizar puntos del dueño del post
 	   			"UPDATE u_miembros SET user_puntos = user_puntos + :puntos WHERE user_id = :uid" => ['puntos' => $puntos,'uid' => $postUser],
 	   		  	// Restar puntos del votante
 	   			"UPDATE u_miembros SET user_puntosxdar = user_puntosxdar - :puntos WHERE user_id = :uid" => ['puntos' => $puntos,'uid' => $this->User->uid]
@@ -489,7 +487,7 @@ class tsPosts {
 		// Validar puntos
 		$puntos = (int)($_POST['puntos'] ?? 0);
 		if ($puntos <= 0) {
-			return '0: Voto no v�lido. No puedes dar 0 puntos.';
+			return '0: Voto no válido. No puedes dar 0 puntos.';
 		}
 		$puntos = abs($puntos); // Asegurar positivo
 		// Verificar si ha usado otra cuenta
@@ -506,17 +504,17 @@ class tsPosts {
 		if ((int)$postData['post_user'] === $this->User->uid) {
 			return '0: No puedes votar tu propio post.';
 		}
-	   // Verificar si ya vot�
+	   // Verificar si ya votó
 	   if (DB::exists("SELECT tid FROM p_votos WHERE tid = :pid AND tuser = :uid AND type = 1 LIMIT 1", [
 	      'pid' => $this->postId,
 	      'uid' => $this->User->uid
 		])) {
-			return '0: No es posible votar a un mismo post m�s de una vez.';
+			return '0: No es posible votar a un mismo post más de una vez.';
 		}
-		// Obtener l�mite de puntos
+		// Obtener límite de puntos
 		$this->getMaxAllowedPoints((int)$puntos);
 		$this->applyPostVote((int)$puntos, (int)$postData['post_user']);
-		// Notificaci�n
+		// Notificación
 		$tsMonitor->setNotificacion(3, (int)$postData['post_user'], $this->User->uid, $this->postId, $puntos);
 		// Actividad
 		$tsActividad->setActividad(3, (int)$this->postId, (int)$puntos);
@@ -538,7 +536,7 @@ class tsPosts {
 	   if ($userData['r_type'] == 0 || $userData['user_rango'] == 3) {
 	      return true;
 	   }
-	   // Si solo se sube por puntos de un post espec�fico
+	   // Si solo se sube por puntos de un post específico
 	   $puntosActual = $userData['user_puntos'];
 	   if ($postId && (int)$this->Core->settings['c_newr_type'] === 0) {
 	      $postPuntos = DB::value("SELECT post_puntos FROM p_posts WHERE post_id = :postId LIMIT 1", ['postId' => $postId]);
@@ -556,7 +554,7 @@ class tsPosts {
 	   foreach ($rangos as $rango) {
 		   $cantidad = (int)$rango['r_cant'];
 		   $tipo = (int)$rango['r_type'];
-		   // Usar match para determinar si cumple la condici�n
+		   // Usar match para determinar si cumple la condición
 		   $cumple = match ($tipo) {
 		      1 => $puntosActual >= $cantidad,
 		      2 => $posts >= $cantidad,
@@ -585,7 +583,7 @@ class tsPosts {
 	   if (!$data) {
 	      return;
 	   }
-	   // Obtener todas las m�tricas en una sola operaci�n
+	   // Obtener todas las métricas en una sola operación
 	   $metrics = [
 	      'followers' => DB::value("SELECT COUNT(follow_id) FROM u_follows WHERE f_id = :pid AND f_type = 2", $param) ?: 0,
 	      'comments' => DB::value("SELECT COUNT(cid) FROM p_comentarios WHERE c_post_id = :pid AND c_status = 0", $param) ?: 0,
@@ -632,7 +630,7 @@ class tsPosts {
 			'not_type' => 16,
 			'not_date' => time()
 		]);
-		DB::query("UPDATE w_medallas SET m_total = m_total + 1 WHERE medal_id = ?", [$medalId]);
+		DB::query("UPDATE w_medallas SET m_total = m_total + 1 WHERE medal_id = :medalId", ['medalId' => $medalId]);
 	}
 
 	

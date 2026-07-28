@@ -10,7 +10,7 @@ declare(strict_types=1);
 
 defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
-class tsDBManager
+final class tsDBManager
 {
 	// Tablas que NO se deben truncar ni eliminar nunca
 	private const PROTECTED_TABLES = [
@@ -36,7 +36,7 @@ class tsDBManager
 	];
 
 	// Acceso a la conexión cruda solo para DDL y comandos especiales
-	private function conn(): mysqli
+	private function conn(): PDO
 	{
 		return Database::instance()->connection();
 	}
@@ -111,20 +111,21 @@ class tsDBManager
 			$table = $this->sanitizeTableName($table, $realTables);
 			// Estructura (SHOW CREATE no soporta prepared statements)
 			$createResult = $conn->query("SHOW CREATE TABLE `{$table}`");
-			$createRow    = $createResult->fetch_row();
+			$createRow    = $createResult->fetch(PDO::FETCH_NUM);
 			fwrite($handle, "-- Tabla: {$table}\n");
 			fwrite($handle, "DROP TABLE IF EXISTS `{$table}`;\n");
 			fwrite($handle, $createRow[1] . ";\n\n");
 
 			// Datos (SELECT * sin WHERE no necesita params)
 			$rows = $conn->query("SELECT * FROM `{$table}`");
-			if ($rows && $rows->num_rows > 0) {
+			$data = $rows ? $rows->fetchAll(PDO::FETCH_NUM) : [];
+			if ($data) {
 				fwrite($handle, "INSERT INTO `{$table}` VALUES\n");
 				$lines = [];
-				while ($row = $rows->fetch_row()) {
-					$values = array_map(function ($val) use ($conn) {
+				foreach ($data as $row) {
+					$values = array_map(function ($val) {
 						if ($val === null) return 'NULL';
-						return "'" . $conn->real_escape_string($val) . "'";
+						return Database::escape((string) $val);
 					}, $row);
 					$lines[] = '(' . implode(', ', $values) . ')';
 				}
@@ -190,7 +191,7 @@ class tsDBManager
 		foreach ($tables as $table) {
 			$table = $this->sanitizeTableName($table, $realTables);
 			$result = $this->conn()->query("OPTIMIZE TABLE `{$table}`");
-			$row    = $result ? $result->fetch_assoc() : null;
+			$row    = $result ? $result->fetch(PDO::FETCH_ASSOC) : null;
 			$results[$table] = $row['Msg_type'] ?? 'error';
 		}
 		return $results;
@@ -202,7 +203,7 @@ class tsDBManager
 		foreach ($tables as $table) {
 			$table = $this->sanitizeTableName($table, $realTables);
 			$result = $this->conn()->query("REPAIR TABLE `{$table}`");
-			$row    = $result ? $result->fetch_assoc() : null;
+			$row    = $result ? $result->fetch(PDO::FETCH_ASSOC) : null;
 			$results[$table] = $row['Msg_type'] ?? 'error';
 		}
 		return $results;
@@ -214,7 +215,7 @@ class tsDBManager
 		foreach ($tables as $table) {
 			$table = $this->sanitizeTableName($table, $realTables);
 			$result = $this->conn()->query("CHECK TABLE `{$table}`");
-			$row    = $result ? $result->fetch_assoc() : null;
+			$row    = $result ? $result->fetch(PDO::FETCH_ASSOC) : null;
 			$results[$table] = [
 				'status'  => $row['Msg_type'] ?? 'error',
 				'message' => $row['Msg_text'] ?? '',
@@ -230,12 +231,12 @@ class tsDBManager
 		}
 		$table = $this->sanitizeTableName($table, $realTables);
 		$conn  = $this->conn();
-		$conn->query("SET FOREIGN_KEY_CHECKS=0");
-		$conn->query("TRUNCATE TABLE `{$table}`");
-		$conn->query("SET FOREIGN_KEY_CHECKS=1");
-
-		if ($conn->error) {
-			return ['ok' => false, 'message' => $conn->error];
+		try {
+			$conn->exec("SET FOREIGN_KEY_CHECKS=0");
+			$conn->exec("TRUNCATE TABLE `{$table}`");
+			$conn->exec("SET FOREIGN_KEY_CHECKS=1");
+		} catch (PDOException $e) {
+			return ['ok' => false, 'message' => $e->getMessage()];
 		}
 		return ['ok' => true, 'message' => "Tabla '{$table}' vaciada correctamente."];
 	}

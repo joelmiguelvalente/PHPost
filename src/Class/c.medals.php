@@ -10,7 +10,7 @@ declare(strict_types=1);
 
 defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
-class tsMedal {
+final class tsMedal {
 
 	private int $max = 15;
 
@@ -68,7 +68,7 @@ class tsMedal {
 	/**
 	  * @name adGetMedal()
 	  * @access public
-	  * @uses Cargamos una medalla para su edici�n
+	  * @uses Cargamos una medalla para su edición
 	  * @param
 	  * @return array
 	  */
@@ -91,7 +91,7 @@ class tsMedal {
 			'm_cond_foto' => (int)($_POST['m_cond_foto'] ?? 0),
 		];
 		if(empty($medalla['m_title']) || empty($medalla['m_description'])) {
-			return 'Debe introducir t�tulo y descripci�n';
+			return 'Debe introducir título y descripción';
 		}
 
 		if(!is_numeric($medalla['m_type']) &&
@@ -100,7 +100,7 @@ class tsMedal {
 			!is_numeric($medalla['m_cond_post']) &&
 			!is_numeric($medalla['m_cond_foto'])
 		) {
-			return 'Introduzca valores num�ricos';
+			return 'Introduzca valores numéricos';
 		}
 		return $medalla;
 	}
@@ -166,7 +166,7 @@ class tsMedal {
 		$continue = $this->checkMedalExists($medalla);
 		// INSERTAR
 		if(!$continue) {
-			return '0: Ya existe una medalla con esas caracter�sticas';
+			return '0: Ya existe una medalla con esas características';
 		}
 		$time = time();
 		if(!DB::insert('w_medallas', [
@@ -203,7 +203,7 @@ class tsMedal {
 			if (DB::lastError()['errno'] === 1062) {
 				return '0: El usuario ya tiene esa medalla';
 			}
-			return '0: Ocurri� un error al asignar la medalla';
+			return '0: Ocurrió un error al asignar la medalla';
 		}
 		if(!DB::insert('u_monitor', [
 			'user_id' => $uid,
@@ -211,7 +211,7 @@ class tsMedal {
 			'not_type' => 15,
 			'not_date' => $time,
 		])) {
-			return '0: Ocurri� un error al notificar al usuario';
+			return '0: Ocurrió un error al notificar al usuario';
 		}
 		return true;
 	}
@@ -232,7 +232,7 @@ class tsMedal {
 			if (DB::lastError()['errno'] === 1062) {
 				return '0: El post ya tiene esa medalla';
 			}
-			return '0: Ocurri� un error al asignar la medalla';
+			return '0: Ocurrió un error al asignar la medalla';
 		}
 		if(!DB::insert('u_monitor', [
 			'user_id' => $data['post_user'],
@@ -241,7 +241,7 @@ class tsMedal {
 			'not_type' => 16,
 			'not_date' => $time,
 		])){
-			return '0: Ocurri� un error al notificar al usuario';
+			return '0: Ocurrió un error al notificar al usuario';
 		}
 		return true;
 	}
@@ -262,7 +262,7 @@ class tsMedal {
 			if (DB::lastError()['errno'] === 1062) {
 				return '0: La foto ya tiene esa medalla';
 			}
-			return '0: Ocurri� un error al asignar la medalla';
+			return '0: Ocurrió un error al asignar la medalla';
 		}
 		if(!DB::insert('u_monitor', [
 			'user_id' => $data['f_user'],
@@ -271,7 +271,7 @@ class tsMedal {
 			'not_type' => 17,
 			'not_date' => $time,
 		])) {
-			return '0: Ocurri� un error al notificar al usuario';
+			return '0: Ocurrió un error al notificar al usuario';
 		}
 		return true;
 	}
@@ -292,7 +292,7 @@ class tsMedal {
 		$user_id = $this->User->getUserID($usuario);
 
 		if($medalla <= 0 && !($post === 0 || $foto === 0 || empty($usuario))) {
-			return '0: Debe especificar un �nico destino';
+			return '0: Debe especificar un único destino';
 		}
 		$m_type = match(true) {
 			!empty($usuario) => 1,
@@ -301,7 +301,7 @@ class tsMedal {
 			default => 1
 		};
 		if(!DB::exists("SELECT medal_id FROM w_medallas WHERE medal_id = :medalla AND m_type = :m_type LIMIT 1", ['medalla' => $medalla, 'm_type' => $m_type])) {
-			return '0: La medalla no puede ser asignada porque no existe o no corresponde a este tipo de asignaci�n.';
+			return '0: La medalla no puede ser asignada porque no existe o no corresponde a este tipo de asignación.';
 		}
 		if(!filter_var($this->myIP, FILTER_VALIDATE_IP)) {
 			return '0: Su IP no se pudo validar';
@@ -319,7 +319,7 @@ class tsMedal {
 			return '0: Hubo problemas, chacho';
 		}
 		if(!DB::query("UPDATE w_medallas SET m_total = m_total + 1 WHERE medal_id = :medalla", ['medalla' => $medalla])) {
-			return '0: La medalla se asign�, pero hubo un problema y el contador no se alter�';
+			return '0: La medalla se asignó, pero hubo un problema y el contador no se alteró';
 		}
 		return '1: Medalla asignada';
 	}
@@ -336,7 +336,7 @@ class tsMedal {
 			return '0: Hubo un problema al eliminar la medalla';
 		}
 		if(!DB::delete('w_medallas_assign', 'medal_id = :medalla', ['medalla' => $medalla])) {
-			return '0: Hubo un problema al eliminar la asginaci�n de la medalla';
+			return '0: Hubo un problema al eliminar la asignación de la medalla';
 		}
 		return '1: La medalla se ha eliminado, usuario/post/foto ha dejado de tenerla.';
 	}
@@ -352,14 +352,14 @@ class tsMedal {
 		$asignacion = (int)($_POST['aid'] ?? 0);
 		$medalla = (int)($_POST['mid'] ?? 0);
 		if(!DB::exists("SELECT id FROM w_medallas_assign WHERE id = :asignacion AND medal_id = :medalla LIMIT 1", ['asignacion' => $asignacion, 'medalla' => $medalla])) {
-			return '0: No se ha encontrado esa asignaci�n';
+			return '0: No se ha encontrado esa asignación';
 		}
 		if(!DB::delete('w_medallas_assign', 'id = :asignacion', ['asignacion' => $asignacion])) {
-			return '0: No se elimin� la asignaci�n, pero ahora sabemos que existe.';
+			return '0: No se eliminó la asignación, pero ahora sabemos que existe.';
 		}
 		if(DB::query("UPDATE w_medallas SET m_total = m_total - 1 WHERE medal_id = :medalla", ['medalla' => $medalla])) {
-			return '0: Se elimin� la asignaci�n, pero no se descont� de las estad&iiacute;sticas.';
+			return '0: Se eliminó la asignación, pero no se descontó de las estadísticas.';
 		}
-		return '1: Asignaci�n eliminada';
+		return '1: Asignación eliminada';
 	}
 }

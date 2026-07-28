@@ -10,7 +10,7 @@ declare(strict_types=1);
 
 defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
-class tsRangos {
+final class tsRangos {
 
 	private const COLUMNS = "rango_id, r_allows, r_cant, r_color, r_image, r_name, r_type";
 

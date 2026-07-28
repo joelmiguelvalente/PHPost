@@ -12,7 +12,7 @@ defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
 use Uri\Rfc3986\Uri;
 
-class tsCore {
+final class tsCore {
 
 	public array $settings;
 

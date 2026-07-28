@@ -10,7 +10,7 @@ declare(strict_types=1);
 
 defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
-class tsMonitor {
+final class tsMonitor {
 
 	/**
 	 * @name notificaciones 
@@ -70,23 +70,23 @@ class tsMonitor {
 	 */
 	private function makeMonitor(): void {
 		$this->monitor = [
-			1 => ['text' => 'agreg� a favoritos tu', 'ln_text' => 'post', 'css' => 'star'],
-			2 => ['text' => ['coment� tu','@FLAG nuevos comentarios en tu'], 'ln_text' => 'post', 'css' => 'comment_post'],
-			3 => ['text' => 'dej� @FLAG puntos en tu', 'ln_text' => 'post', 'css' => 'points'],
-			4 => ['text' => 'te est� siguiendo', 'ln_text' => 'Seguir a este usuario', 'css' => 'follow'],
-			5 => ['text' => 'cre� un nuevo', 'ln_text' => 'post', 'css' => 'post'],
+			1 => ['text' => 'agregó a favoritos tu', 'ln_text' => 'post', 'css' => 'star'],
+			2 => ['text' => ['comentó tu','@FLAG nuevos comentarios en tu'], 'ln_text' => 'post', 'css' => 'comment_post'],
+			3 => ['text' => 'dejó @FLAG puntos en tu', 'ln_text' => 'post', 'css' => 'points'],
+			4 => ['text' => 'te está siguiendo', 'ln_text' => 'Seguir a este usuario', 'css' => 'follow'],
+			5 => ['text' => 'creó un nuevo', 'ln_text' => 'post', 'css' => 'post'],
 			6 => ['text' => ['te recomienda un', '@FLAG usuarios te recomiendan un'], 'ln_text' => 'post', 'css' => 'share'],
-			7 => ['text' => ['coment� en un', '@FLAG nuevos comentarios en el'], 'ln_text' => 'post', 'extra' => 'que sigues', 'css' => 'blue_ball'],
-			8 => ['text' => ['vot� @FLAG tu', '@FLAG nuevos votos a tu'], 'ln_text' => 'comentario', 'css' => 'voto_'],
-			9 => ['text' => ['respondi� tu', '@FLAG nuevas respuestas a tu'], 'ln_text' => 'comentario', 'css' => 'comment_resp'],
-			10 => ['text' => 'subi� una nueva', 'ln_text' => 'foto', 'css' => 'photo'],
-			11 => ['text' => ['coment� tu','@FLAG nuevos comentarios en tu'], 'ln_text' => 'foto', 'css' => 'photo'],
-			12 => ['text' => 'public� en tu', 'ln_text' => 'muro', 'css' => 'wall_post'],
-			13 => ['text' => ['coment� ', '@FLAG nuevos comentarios en'], 'ln_text' => 'publicaci�n', 'extra' => 'coment�', 'css' => 'w_comment'],
-			14 => ['text' => ['le gusta tu', 'A @FLAG personas les gusta tu'], 'ln_text' => ['publicaci�n','comentario'], 'css' => 'w_like'],
+			7 => ['text' => ['comentó en un', '@FLAG nuevos comentarios en el'], 'ln_text' => 'post', 'extra' => 'que sigues', 'css' => 'blue_ball'],
+			8 => ['text' => ['votó @FLAG tu', '@FLAG nuevos votos a tu'], 'ln_text' => 'comentario', 'css' => 'voto_'],
+			9 => ['text' => ['respondió tu', '@FLAG nuevas respuestas a tu'], 'ln_text' => 'comentario', 'css' => 'comment_resp'],
+			10 => ['text' => 'subió una nueva', 'ln_text' => 'foto', 'css' => 'photo'],
+			11 => ['text' => ['comentó tu','@FLAG nuevos comentarios en tu'], 'ln_text' => 'foto', 'css' => 'photo'],
+			12 => ['text' => 'publicó en tu', 'ln_text' => 'muro', 'css' => 'wall_post'],
+			13 => ['text' => ['comentó ', '@FLAG nuevos comentarios en'], 'ln_text' => 'publicación', 'extra' => 'comentó', 'css' => 'w_comment'],
+			14 => ['text' => ['le gusta tu', 'A @FLAG personas les gusta tu'], 'ln_text' => ['publicación','comentario'], 'css' => 'w_like'],
 			15 => ['text' => 'Recibiste una medalla', 'css' => 'medal'],
-			16 => ['text' => 'Tu post recibi� una medalla', 'css' => 'medal'],
-			17 => ['text' => 'Tu foto recibi� una medalla', 'css' => 'medal'],
+			16 => ['text' => 'Tu post recibió una medalla', 'css' => 'medal'],
+			17 => ['text' => 'Tu foto recibió una medalla', 'css' => 'medal'],
 		];
 	}
 
@@ -147,7 +147,7 @@ class tsMonitor {
 	/**
 	 * @name setNotificacion
 	 * @access public
-	 * @param int $type       Tipo de notificaci�n
+	 * @param int $type       Tipo de notificación
 	 * @param int $userId     Usuario que recibe
 	 * @param int $objUser    Usuario origen
 	 * @param int $objUno     ID del objeto principal (post, comment, etc.)
@@ -231,9 +231,9 @@ class tsMonitor {
 				$enviados[] = $val['c_user'];
 			}
 		}
-		// ENVIAMOS AL DUE�O DEL MURO
+		// ENVIAMOS AL DUEÑO DEL MURO
 		$this->setNotificacion(13, (int)$pUser, $this->User->uid, $pubId, 1);
-		// ENVIAMOS AL QUE PUBLICO SI NO FUE EL DUE�O DEL MURO
+		// ENVIAMOS AL QUE PUBLICO SI NO FUE EL DUEÑO DEL MURO
 		if(($pUser !== $pUserPub) && !in_array($pUserPub, $enviados)){
 			$this->setNotificacion(13, (int)$pUserPub, $this->User->uid, $pubId, 2);    
 		}
@@ -318,7 +318,7 @@ class tsMonitor {
 	      16 => "SELECT p.post_id, p.post_title, c.c_seo, m.medal_id, m.m_title, m.m_image FROM w_medallas_assign AS a LEFT JOIN p_posts AS p ON p.post_id = a.medal_for LEFT JOIN p_categorias AS c ON c.cid = p.post_category LEFT JOIN w_medallas AS m ON m.medal_id = a.medal_id WHERE m.medal_id = :obj AND p.post_id = {$objDos} LIMIT 1",
 	      17 => "SELECT f.foto_id, f.f_title, f.f_user, m.medal_id, m.m_title, m.m_image, u.user_id, u.user_name FROM w_medallas_assign AS a LEFT JOIN f_fotos AS f ON f.foto_id = a.medal_for LEFT JOIN u_miembros AS u ON u.user_id = f.f_user LEFT JOIN w_medallas AS m ON m.medal_id = a.medal_id WHERE m.medal_id = :obj AND f.foto_id = {$objDos} LIMIT 1",
 	      18 => "SELECT r_name FROM u_rangos WHERE rango_id = :obj LIMIT 1",
-	      default => throw new RuntimeException("Tipo de notificaci�n inv�lido: {$data['not_type']}")
+	      default => throw new RuntimeException("Tipo de notificación inválido: {$data['not_type']}")
 	   };
 	}
 
@@ -369,7 +369,7 @@ class tsMonitor {
 		$showType  = ($this->show_type === 1);
 		$noType    = (int)$data['not_type'];
 		if (!isset($this->monitor[$noType])) {
-			throw new RuntimeException("Tipo de monitor inv�lido: {$noType}");
+			throw new RuntimeException("Tipo de monitor inválido: {$noType}");
 		}
 		$monitor = $this->monitor[$noType] ?? [];
 		$lnText = $monitor['ln_text'] ?? null;
@@ -384,10 +384,8 @@ class tsMonitor {
 		//
 		$oracion = $this->baseOracion($data, $noType);
 		# CON UN SWITCH ESCOGEMOS QUE ORACION CONSTRUIR
-		switch($noType){
-			case 1:
-			case 3:
-			case 5:
+		match($noType) {
+			1, 3, 5 => (function() use (&$oracion, $noType, $data, $message, $txt_extra, $showType) {
 				// $this->buildPostAction($oracion, $data, $noType, $message, $txt_extra);
 				// 
 				$oracion['text'] = $this->monitor[$noType]['text'].$txt_extra;
@@ -397,21 +395,17 @@ class tsMonitor {
 				$oracion['link'] = $this->makeUrlOracion('post', $data);
 				$oracion['ltext'] = $showType ? $message : $data['post_title'];
 				$oracion['ltit'] = $showType ? $data['post_title'] : '';
-			break;
+			})(),
 			// FOLLOW
-			case 4:
+			4 => (function() use (&$oracion, $noType, $data, $showType) {
 				$oracion['text'] = $this->monitor[$noType]['text'];
 				if($data['follow'] !== true && $this->show_type === 2) {
 					$oracion['link'] = "#\" onclick=\"notifica.follow('user', {$data['obj_user']}, notifica.userInMonitorHandle, this)";
 					$oracion['ltext'] = $this->monitor[$noType]['ln_text'];    
 				}
-			break;
+			})(),
 			// PUEDEN SER MAS DE UNO
-			case 2:
-			case 6:
-			case 7:
-			case 8:
-			case 9:
+			2, 6, 7, 8, 9 => (function() use (&$oracion, $noType, $data, $message, $txt_extra, $showType) {
 				// $this->buildMultiAction($oracion, $data, $noType, $message, $txt_extra);
 				// CUANTOS
 				$no_total = (int)$data['not_total'];
@@ -421,7 +415,7 @@ class tsMonitor {
 					$text = $this->monitor[$noType]['text'][1].$txt_extra;
 					$oracion['text'] = $this->highlight($no_total, $text);
 				} else $oracion['text'] = $this->monitor[$noType]['text'][0].$txt_extra;
-				// �ES MI POST?
+				// ¿ES MI POST?
 				if((int)$data['post_user'] === $this->User->uid) {
 					$find = 'te recomienda un';
 					$oracion['text'] = $this->highlight('ha recomendado tu', $oracion['text'], $find);
@@ -440,21 +434,21 @@ class tsMonitor {
 				$oracion['link'] = $this->makeUrlOracion('post', $data, $idComment);
 				$oracion['ltext'] = $showType ? $message : $data['post_title'];
 				$oracion['ltit'] = $showType ? $data['post_title'] : '';
-			break;
+			})(),
 			// PUBLICACION EN MURO
 			// 12|13|14 $this->buildProfileAction($oracion, $data, $noType, $message, $txt_extra);
-			case 12:
+			12 => (function() use (&$oracion, $noType, $data, $message, $txt_extra, $showType) {
 				$oracion['text'] = $this->monitor[$noType]['text'].$txt_extra;
 				$oracion['link'] = $this->makeUrlOracion('perfil', $this->User->nick, $data['obj_uno']);
 				$oracion['ltext'] = $showType ? $message : $this->User->nick;
 				$oracion['ltit'] = $showType ? $this->User->nick : '';
-			break;
-			case 13:
+			})(),
+			13 => (function() use (&$oracion, $noType, $data, $message, $txt_extra, $showType) {
 				// DE QUIEN?
 				$de = match(true) {
 					($this->User->uid === (int)$data['p_user']) => ' tu',
 					((int)$data['p_user'] === (int)$data['p_user_resp']) => ' su',
-					default => ' la publicaci�n de'
+					default => ' la publicación de'
 				};
 				// CUANTOS
 				$no_total = (int)$data['not_total'];
@@ -467,8 +461,8 @@ class tsMonitor {
 				$oracion['link'] = $this->makeUrlOracion('perfil', $data['p_user_name'], $data['pub_id']);
 				$oracion['ltext'] = $showType ? $message : $this->User->nick;
 				$oracion['ltit'] = $showType ? $this->User->nick : '';
-			break;
-			case 14:
+			})(),
+			14 => (function() use (&$oracion, $noType, $data, $message, $showType) {
 				// CUANTOS
 				$no_total = (int)$data['not_total'];
 				// MAS DE UNA ACCION
@@ -481,20 +475,20 @@ class tsMonitor {
 				$oracion['link'] = $this->makeUrlOracion('perfil', $this->User->nick, $data['obj_uno']);
 				$oracion['ltext'] = $showType ? $message : substr($data['c_body'],0,20).'...';
 				$oracion['ltit'] = $showType ? substr($data['c_body'],0,20).'...' : '';
-			break;
+			})(),
 			// 15|16|17 $this->buildMedalAction($oracion, $data, $noType);
-			case 15:
+			15 => (function() use (&$oracion, $data, $urlImages) {
 				$oracion['text'] = "Recibiste una nueva <span title=\"{$data['m_title']}\"><strong>medalla</strong> <img class=\"item-image\" src=\"{$urlImages}/icons/medals/{$data['m_image']}_32.png\"/></span>";
-			break;
-			case 16:
+			})(),
+			16 => (function() use (&$oracion, $data, $urlImages) {
 				$urlPost = $this->makeUrlOracion('post', $data);
 				$oracion['text'] = "Tu <a href=\"{$urlPost}\" title=\"{$data['post_title']}\"><strong>post</strong></a> tiene una nueva <span title=\"{$data['m_title']}\"><strong>medalla</strong> <img class=\"item-image\" src=\"{$urlImages}/icons/medals/{$data['m_image']}_32.png\"/></span>";
-			break;
-			case 17:
+			})(),
+			17 => (function() use (&$oracion, $data, $urlImages) {
 				$urlFoto = $this->makeUrlOracion('foto', $data);
 				$oracion['text'] = "Tu <a href=\"{$urlFoto}\" title=\"{$data['f_title']}\"><strong>foto</strong></a> tiene una nueva <span title=\"{$data['m_title']}\"><strong>medalla</strong> <img class=\"item-image\" src=\"{$urlImages}/icons/medals/{$data['m_image']}_32.png\"/></span>";
-			break;
-		}
+			})(),
+		};
 		# RETORNAMOS
 		return $oracion;
 	}
@@ -562,10 +556,10 @@ class tsMonitor {
 			return "0-{$ctx['objectId']}-0-No puedes seguirte a ti mismo.";
 		}
 		if ($this->followExists($ctx)) {
-			return "2-{$ctx['objectId']}-0-Ya lo est�s siguiendo.";
+			return "2-{$ctx['objectId']}-0-Ya lo estás siguiendo.";
 		}
 		if (!$this->insertFollow($ctx)) {
-			return "0-{$ctx['objectId']}-0-No se pudo completar la acci�n.";
+			return "0-{$ctx['objectId']}-0-No se pudo completar la acción.";
 		}
 		if ($ctx['notifyUser'] > 0) {
 			$this->setNotificacion((int)$ctx['notType'], (int)$ctx['notifyUser'], $this->User->uid);
@@ -586,7 +580,7 @@ class tsMonitor {
 	public function setUnFollow(): string {
 		$ctx = $this->resolveFollowContext();
 		if (!DB::delete('u_follows', 'f_user = :uid AND f_id = :obj AND f_type = :type', ['uid' => $this->User->uid, 'obj' => $ctx['objectId'], 'type' => $ctx['type']])) {
-			return "1-{$ctx['objectId']}-0-No se pudo completar la acci�n.";
+			return "1-{$ctx['objectId']}-0-No se pudo completar la acción.";
 		}
 		$total = $this->countFollows($ctx);
 		return "0-{$ctx['objectId']}-{$total}";
@@ -624,7 +618,7 @@ class tsMonitor {
 	      'seguidores' => "SELECT u.user_id, u.user_name, p.user_pais, p.p_mensaje, f.follow_id FROM u_miembros AS u LEFT JOIN u_perfil AS p ON u.user_id = p.user_id LEFT JOIN u_follows AS f ON p.user_id = f.f_user WHERE f.f_id = :uid AND f.f_type = 1 ORDER BY f.f_date DESC",
 	      'siguiendo' => "SELECT u.user_id, u.user_name, p.user_pais, p.p_mensaje, f.follow_id FROM u_miembros AS u LEFT JOIN u_perfil AS p ON u.user_id = p.user_id LEFT JOIN u_follows AS f ON p.user_id = f.f_id WHERE f.f_user = :uid AND f.f_type = 1 ORDER BY f.f_date DESC",
 	      'posts' => "SELECT f.f_id, p.post_user, p.post_title, u.user_name, c.c_seo, c.c_nombre, c.c_img FROM u_follows AS f LEFT JOIN p_posts AS p ON f.f_id = p.post_id LEFT JOIN u_miembros AS u ON u.user_id = p.post_user LEFT JOIN p_categorias AS c ON c.cid = p.post_category WHERE f.f_user = :uid AND f.f_type = 2 ORDER BY f.f_date DESC",
-	      default => throw new InvalidArgumentException("Tipo de follow inv�lido: {$type}")
+	      default => throw new InvalidArgumentException("Tipo de follow inválido: {$type}")
 	   };
 	   $total = DB::numRows($query, ['uid' => $userId]);
 	   $pages = $this->Paginator->getPagination($total, 12);
@@ -658,7 +652,7 @@ class tsMonitor {
 	   $recomendado = DB::numRows("SELECT follow_id FROM u_follows WHERE f_id = :pid AND f_user = :uid AND f_type = 3 LIMIT 1", ['pid' => $postId, 'uid' => $this->User->uid]);
 
 	   if ($seguidores < 1)  return '0-Debes tener al menos un seguidor';
-	   if ($recomendado > 0) return '0-No puedes recomendar el mismo post m�s de una vez.';
+	   if ($recomendado > 0) return '0-No puedes recomendar el mismo post más de una vez.';
 
 	   $data = DB::fetch("SELECT post_user FROM p_posts WHERE post_id = :pid LIMIT 1", ['pid' => $postId]);
 	   if ((int)$data['post_user'] === $this->User->uid) return '0-No puedes recomendar tus posts.';
@@ -666,7 +660,7 @@ class tsMonitor {
 	   DB::insert('u_follows', ['f_id' => $postId, 'f_user' => $this->User->uid, 'f_type' => 3, 'f_date' => time()]);
 	   $this->setFollowNotificacion(6, 1, $this->User->uid, $postId);
 	   $tsActividad->setActividad(4, $postId);
-	   return '1-La recomendaci�n fue enviada.';
+	   return '1-La recomendación fue enviada.';
 	}
 	
 	/**

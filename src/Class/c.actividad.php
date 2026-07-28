@@ -10,7 +10,7 @@ declare(strict_types=1);
 
 defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
-class tsActividad {
+final class tsActividad {
 
 	private array $actividad = [];
 
@@ -225,35 +225,18 @@ class tsActividad {
 		foreach (['obj_uno', 'obj_dos'] as $obj) {
 			$data[$obj] = (int) $data[$obj];
 		}
-		switch ((int) $data['ac_type']) {
+		$sentencia = match ((int) $data['ac_type']) {
 			// DEL TIPO 1 al 7 USAMOS LA MISMA CONSULTA
-			case 1:
-			case 2:
-			case 3:
-			case 4:
-			case 5:
-			case 6:
-			case 7:
-				$sentencia = "SELECT p.post_id, p.post_title, c.c_seo FROM p_posts AS p LEFT JOIN p_categorias AS c ON p.post_category = c.cid WHERE p.post_id = :obj LIMIT 1";
-			break;
+			1, 2, 3, 4, 5, 6, 7 => "SELECT p.post_id, p.post_title, c.c_seo FROM p_posts AS p LEFT JOIN p_categorias AS c ON p.post_category = c.cid WHERE p.post_id = :obj LIMIT 1",
 			// SIGUIENDO A...
-			case 8:
-				$sentencia = "SELECT user_id AS avatar, user_name FROM u_miembros WHERE user_id = :obj LIMIT 1";
-			break;
+			8 => "SELECT user_id AS avatar, user_name FROM u_miembros WHERE user_id = :obj LIMIT 1",
 			// SUBIO UNA FOTO
-			case 9:
-				$sentencia = "SELECT f.foto_id, f.f_title, u.user_name FROM f_fotos AS f LEFT JOIN u_miembros AS u ON f.f_user = u.user_id WHERE f.foto_id = :obj LIMIT 1";
-			break;
+			9 => "SELECT f.foto_id, f.f_title, u.user_name FROM f_fotos AS f LEFT JOIN u_miembros AS u ON f.f_user = u.user_id WHERE f.foto_id = :obj LIMIT 1",
 			// PUBLICACION EN EL MURO & LE GUSTA
-			case 10:
-			case 11:
-				if ($data['obj_dos'] === 0 || $data['obj_dos'] === 2) {
-					$sentencia = "SELECT p.pub_id, u.user_name FROM u_muro AS p LEFT JOIN u_miembros AS u ON p.p_user = u.user_id WHERE p.pub_id = :obj LIMIT 1";
-				} else {
-					$sentencia = "SELECT c.pub_id, c.c_body, u.user_name FROM u_muro_comentarios AS c LEFT JOIN u_muro AS p ON c.pub_id = p.pub_id LEFT JOIN u_miembros AS u ON p.p_user = u.user_id WHERE cid = :obj LIMIT 1";
-				}
-			break;
-		}
+			10, 11 => ($data['obj_dos'] === 0 || $data['obj_dos'] === 2)
+				? "SELECT p.pub_id, u.user_name FROM u_muro AS p LEFT JOIN u_miembros AS u ON p.p_user = u.user_id WHERE p.pub_id = :obj LIMIT 1"
+				: "SELECT c.pub_id, c.c_body, u.user_name FROM u_muro_comentarios AS c LEFT JOIN u_muro AS p ON c.pub_id = p.pub_id LEFT JOIN u_miembros AS u ON p.p_user = u.user_id WHERE cid = :obj LIMIT 1",
+		};
 		return [
 			'sql' => $sentencia,
 			'param' => ['obj' => $data['obj_uno']]
@@ -276,20 +259,15 @@ class tsActividad {
 		$oracion['user']  = $data['usuario'] ?? '';
 		$oracion['uid']   = $data['user_id'];
 		# CON UN SWITCH ESCOGEMOS QUE ORACION CONSTRUIR
-		switch ($acType) {
+		match ($acType) {
 			# DEL TIPO 1-2, 4 y 7 USAMOS LA MISMA
-			case 1:
-			case 2:
-			case 4:
-			case 7:
+			1, 2, 4, 7 => (function() use (&$oracion, $acType, $data) {
 				$oracion['text']  = $this->actividad[$acType]['text'];
 				$oracion['link']  = $this->UrlHelper->buildPostUrl($data);
 				$oracion['ltext'] = $data['post_title'];
-			break;
+			})(),
 			# DEL TIPO 3, 5 y 6 USAMOS EL MISMO
-			case 3:
-			case 5:
-			case 6:
+			3, 5, 6 => (function() use (&$oracion, $acType, $data) {
 				$extra_text = match (true) {
 					($acType === 3) => $data['obj_dos'],
 					($acType === 5) => ($data['obj_dos'] === 0) ? '' : ($data['obj_dos'] + 1) . ' veces',
@@ -301,27 +279,27 @@ class tsActividad {
 				$oracion['ltext'] = $data['post_title'];
 				// ESTILO
 				$oracion['style'] = ($acType === 6) ? 'voto_' . $extra_text : $oracion['style'];
-			break;
+			})(),
 			# ESTA SIGUIENDO A..
-			case 8:
-      			$Avatar = Container::get(AvatarHelper::class)->loadAvatar()->getTags([
-      				'user1' => (int)$data['user_id'],
-      				'user2' => (int)$data['avatar']
-      			]);
+			8 => (function() use (&$oracion, $acType, $data) {
+				$Avatar = Container::get(AvatarHelper::class)->loadAvatar()->getTags([
+					'user1' => (int)$data['user_id'],
+					'user2' => (int)$data['avatar']
+				]);
 				// ORACION
 				$oracion['text']  = "{$Avatar['user1']} {$this->actividad[$acType]['text']} {$Avatar['user2']}";
 				$oracion['link']  = $this->UrlHelper->buildPerfilUrl($data['user_name']);
 				$oracion['ltext'] = $data['user_name'];
 				$oracion['style'] = '';
-			break;
+			})(),
 			# SUBIO NUEVA FOTO
-			case 9:
+			9 => (function() use (&$oracion, $acType, $data) {
 				$oracion['text']  = $this->actividad[$acType]['text'];
 				$oracion['link']  = $this->UrlHelper->buildFotoUrl($data);
 				$oracion['ltext'] = $data['f_title'];
-			break;
+			})(),
 			# MURO POSTS
-			case 10:
+			10 => (function() use (&$oracion, $acType, $data) {
 				// SEC TYPE
 				$sec_type  = $data['obj_dos'];
 				$link_text = $this->actividad[$acType][$sec_type]['link'];
@@ -330,9 +308,9 @@ class tsActividad {
 				$oracion['link']  = $this->UrlHelper->buildPerfilUrl($data['user_name'], (string)$data['pub_id']);
 				$oracion['ltext'] = empty($link_text) ? $data['user_name'] : $link_text;
 				$oracion['style'] = $this->actividad[$acType][$sec_type]['css'];
-			break;
+			})(),
 			# LIKES
-			case 11:
+			11 => (function() use (&$oracion, $acType, $data) {
 				// SEC TYPE
 				$sec_type  = (int) $data['obj_dos'];
 				$link_text = $this->actividad[$acType][$sec_type]['link'];
@@ -346,8 +324,8 @@ class tsActividad {
 					$end_text         = (strlen($data['c_body']) > 35) ? '...' : '';
 					$oracion['ltext'] = substr($data['c_body'], 0, 30) . $end_text;
 				}
-			break;
-		}
+			})(),
+		};
 		//
 		return $oracion;
 	}

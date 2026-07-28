@@ -10,7 +10,7 @@ declare(strict_types=1);
 
 defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 
-class tsMuro {
+final class tsMuro {
 
 	private string $myIP;
 
@@ -169,38 +169,36 @@ class tsMuro {
 		// SE PERMITE FIRMAR EL MURO?
 		if(!$privacidad['muro_firma']['status']) return '0: '.$privacidad['muro_firma']['message'];
 		// TIPO DE PUBLICACION
-		switch($type) {
+		match($type) {
 			// PUBLICAR STATUS/PUBLICACION
-			case 'status':
+			'status' => (function() use (&$return, $data, $pid, $date) {
 				$text = str_replace(["\n", "\t", ' '], '', $data);
 				if ($text === '') {
-					return '0: Tu publicación debe tener al menos una letra.';
+					return $return = '0: Tu publicación debe tener al menos una letra.';
 				}
 				$this->User->antiFlood();
 				//
 				$pubId = $this->MuroHelper->insertMuro($pid, $data, 1, $date);
 				if (!$pubId) {
-					return '0: Error al publicar.';
+					return $return = '0: Error al publicar.';
 				}
 				$return = $this->MuroHelper->baseReturn($pubId, $pid, 1, $date);
 				$return['p_body'] = $this->Core->parseBadWords($this->MuroHelper->setMenciones($data), true);
-			break;
+			})(),
 			 // PUBLICAR FOTO
-			case 'foto':
+			'foto' => (function() use (&$return, $attachment, $pid, $data, $date) {
 				$return = $this->streamPostFoto($attachment, $pid, $data, $date);
-			break;
+			})(),
 			// PUBLICAR ENLACE
-			case 'enlace':
+			'enlace' => (function() use (&$return, $attachment, $pid, $data, $date) {
 				$return = $this->streamPostEnlace($attachment, $pid, $data, $date);
-			break;
+			})(),
 			// PUBLICAR VIDEO
-			case 'video':
+			'video' => (function() use (&$return, $attachment, $pid, $data, $date) {
 				$return = $this->streamPostVideo($attachment, $pid, $data, $date);
-			break;
-			default:
-				$return = '0: El campo <b>type</b> es obligatorio.';
-			break;
-		}
+			})(),
+			default => $return = '0: El campo <b>type</b> es obligatorio.',
+		};
 		$this->registerPostSideEffects((int)$pid, (int)$return['pub_id']);
 		// RETORNAR VALOR
 		return $return;
@@ -420,14 +418,13 @@ class tsMuro {
 		getPubExtras($pud_id, $type)
 	*/
 	public function getPubExtras(int $pubId, string $type = 'likes', int $likes = 0): array {
-		switch($type){
-			case 'likes':
-				$data = $this->getPubExtrasLikes($pubId, $likes);
-			break;
-			case 'comments':
+		$data = match($type) {
+			'likes' => $this->getPubExtrasLikes($pubId, $likes),
+			'comments' => (function() use ($pubId, $likes) {
 				$limit = ($likes > 0) ? "LIMIT {$likes}" : '';
 				//
 				$query = DB::fetchAll("SELECT c.*, u.user_name FROM u_muro_comentarios AS c LEFT JOIN u_miembros AS u ON c.c_user = u.user_id WHERE c.pub_id = :uid ORDER BY c.c_date DESC :limit", ['pubid' => $pubId, 'limit' => $limit]);
+				$data = [];
 				foreach($query as $key => $row) {
 					$row['c_body'] = $this->Core->parseBadWords($this->Core->parseBBCode($this->MuroHelper->setMenciones($row['c_body'])), true);
 					$row['like'] = 'Me gusta';
@@ -439,8 +436,9 @@ class tsMuro {
 				}
 				// ORDENAMOS
 				asort($data);
-			break;
-		}
+				return $data;
+			})(),
+		};
 		return $data;
 	}
 
@@ -494,8 +492,8 @@ class tsMuro {
 		$id = (int) ($_POST['id'] ?? 0);
 		$type = ($_POST['type'] === 'pub') ? 'pub' : 'cmt';
 		//
-		switch($type) {
-			case 'pub':
+		return match($type) {
+			'pub' => (function() use ($id) {
 				// DATOS
 				$data = DB::fetch("SELECT `p_user`, `p_user_pub` FROM `u_muro` WHERE `pub_id` = :id LIMIT 1", ['id' => $id]);
 				//
@@ -530,9 +528,9 @@ class tsMuro {
 				DB::delete('u_muro_adjuntos', 'pub_id = :id', ['id' => $id]);
 				//
 				return '1: OK';
-			break;
+			})(),
 			// ELIMINAR COMENTARIO
-			case 'cmt':
+			'cmt' => (function() use ($id) {
 				// DATOS
 				$data = DB::fetch("SELECT c.cid, c.c_user, p.pub_id, p.p_user FROM u_muro_comentarios AS c LEFT JOIN u_muro AS p ON c.pub_id = p.pub_id WHERE c.cid = :id LIMIT 1", ['id' => $id]);
 				//
@@ -549,8 +547,8 @@ class tsMuro {
 				DB::decrement('u_muro', 'p_comments', 'pub_id = :pub_id', ['pub_id' => $data['pub_id']]);
 				//
 				return '1: Ok';
-			break;
-		}
+			})(),
+		};
 	}
 
 	/*
