@@ -32,29 +32,28 @@ if (!$tsLevelMsg) {
 
 require_once TS_LOGGER . '/LogParser.php';
 
-switch ($action) {
-   case 'logs-borrar':
-      $file     = trim($_POST['file']     ?? '');
-      $datetime = trim($_POST['datetime'] ?? '');
+match($action) {
+	'logs-borrar' => (static function() {
+		$file     = trim($_POST['file']     ?? '');
+		$datetime = trim($_POST['datetime'] ?? '');
 
-      if (empty($file) || empty($datetime)) {
-         echo json_encode(['status' => false, 'message' => 'Datos incompletos']);
-         die();
-      }
+		if (empty($file) || empty($datetime)) {
+			echo json_encode(['status' => false, 'message' => 'Datos incompletos']);
+			die();
+		}
 
-      $logsDir  = Config::app('paths.logs.full_path');
-      $filepath = realpath($logsDir . '/' . basename($file));
-   
-      // Verificar que el archivo esté dentro del directorio de logs
-      if (!$filepath || !str_starts_with($filepath, realpath($logsDir))) {
-         echo json_encode(['status' => false, 'message' => 'Archivo inválido']);
-         die();
-      }
+		$logsDir  = Config::app('paths.logs.full_path');
+		$filepath = realpath($logsDir . '/' . basename($file));
 
-      $ok = LogParser::deleteEntry($filepath, $datetime);
-      echo json_encode([
-         'status'  => $ok,
-         'message' => $ok ? 'Entrada eliminada' : 'No se pudo eliminar la entrada',
-      ]);
-   break;
-}
+		if (!$filepath || !str_starts_with($filepath, realpath($logsDir))) {
+			echo json_encode(['status' => false, 'message' => 'Archivo inválido']);
+			die();
+		}
+
+		$ok = LogParser::deleteEntry($filepath, $datetime);
+		echo json_encode([
+			'status'  => $ok,
+			'message' => $ok ? 'Entrada eliminada' : 'No se pudo eliminar la entrada',
+		]);
+	})(),
+};

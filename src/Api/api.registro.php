@@ -37,56 +37,48 @@ if(!$tsLevelMsg) {
 }
 	
 // CLASE
-require_once TS_CLASS . '/c.registro.php';
-$tsRegistro = new tsRegistro($tsCore, $tsUser);
+$tsRegistro = Container::get(tsRegistro::class);
 	
 // CODIGO
-switch($action) {
-	case 'registro-form':
-		if((int)$tsCore->settings['c_reg_active'] === 0) {
+match($action) {
+	'registro-form' => (static function() use ($tsCore, $tsAjax, $smarty) {
+		if ((int)$tsCore->settings['c_reg_active'] === 0) {
 			$tsAjax = true;
 			echo "0: El registro de nuevas cuentas en <strong>{$tsCore->settings['titulo']}</strong> está desactivado.";
 		} else {
 			$tsPaises = require_once TS_EXTRAS . "/Paises.php";
 			$tsMeses = require_once TS_EXTRAS . "/Meses.php";
-			
-			// SOLO MENORES DE 100 AÑOS xD Y MAYORES DE...
+
 			$minAge = (int)$tsCore->settings['c_allow_edad'];
 			$maxAge = 100;
 			$currentYear = date("Y");
 
 			$minBirthYear = $currentYear - $maxAge;
 			$maxBirthYear = $currentYear - $minAge;
-			
+
 			$smarty->assign("tsMax", (int)$maxBirthYear);
 			$smarty->assign("tsEndY", (int)$minBirthYear);
 			$smarty->assign("tsPaises", $tsPaises);
-			$smarty->assign("tsMeses", $tsMeses);	
+			$smarty->assign("tsMeses", $tsMeses);
 		}
-	break;
-	case 'registro-check-nick':	
-	case 'registro-check-email':	
-		echo $tsRegistro->checkUserEmail();
-	break;
-	case 'registro-geo':
+	})(),
+	'registro-check-nick', 'registro-check-email' => print $tsRegistro->checkUserEmail(),
+	'registro-geo' => (static function() {
 		$tsEstados = require TS_EXTRAS . "/geodata.php";
 		$pais = trim($_GET['pais_code'] ?? '');
 		if ($pais === '') {
-		   echo '0: El campo <strong>pais_code</strong> es requerido para esta operación';
-		   return;
+			echo '0: El campo <strong>pais_code</strong> es requerido para esta operación';
+			return;
 		}
 		if (!isset($tsEstados[$pais]) || !is_array($tsEstados[$pais])) {
-		   echo '0: Código de país incorrecto.';
-		   return;
+			echo '0: Código de país incorrecto.';
+			return;
 		}
 		$paisOption = [];
 		foreach ($tsEstados[$pais] as $key => $country) {
-		   $paisOption[] = '<option value="' . $key . '">' . $country . '</option>';
+			$paisOption[] = '<option value="' . $key . '">' . $country . '</option>';
 		}
 		echo '1: ' . implode("\n", $paisOption);
-	break;
-	
-	case 'registro-nuevo':
-		echo $tsRegistro->registerUser();
-	break;
-}
+	})(),
+	'registro-nuevo' => print $tsRegistro->registerUser(),
+};

@@ -29,26 +29,24 @@ $uid = (int)$tsData['user_id'];
 $time = time();
 $hash = strtoupper(bin2hex(random_bytes(4)));
 
-switch($action){
-	case 'recover-pass':
+match($action) {
+	'recover-pass' => (static function() use ($uid, $email, $time, $hash, $tsCore, $tsData, $tsEmail) {
 		DB::insert('w_contacts', ['user_id' => $uid, 'user_email' => $email, 'time' => $time, 'type' => 1, 'hash' => $hash]);
-		$body = 'Recuperar contrase&ntilde;a en <strong>'.$tsCore->settings['titulo'].'</strong><br /><br />
-		Hola '.$tsData['user_name'].':<br />
+		$body = 'Recuperar contrase&ntilde;a en <strong>' . $tsCore->settings['titulo'] . '</strong><br /><br />
+		Hola ' . $tsData['user_name'] . ':<br />
 		La verificación es usada para asegurar que sólo usted tenga acceso a 
-		su cuenta de '.$tsCore->settings['titulo'].' y que, si alguna vez olvida su contrase&ntilde;a, tengamos una forma de generarle una nueva. <br /><br />
-		Para recuperar su contrase&ntilde;a, acceda a <a href="'.$tsCore->settings['url'].'/password/'.$hash.'/1/'.Html::escape($email).'">este enlace</a><br /><br /><br />
+		su cuenta de ' . $tsCore->settings['titulo'] . ' y que, si alguna vez olvida su contrase&ntilde;a, tengamos una forma de generarle una nueva. <br /><br />
+		Para recuperar su contrase&ntilde;a, acceda a <a href="' . $tsCore->settings['url'] . '/password/' . $hash . '/1/' . Html::escape($email) . '">este enlace</a><br /><br /><br />
 		Si usted no pidió recuperación de su contrase&ntilde;a, ignore este e-mail.<br /><br />
-		El staff de <strong>'.$tsCore->settings['titulo'].'</strong>';
-		
-		// <--
-		if(!$tsEmail->send($email, 'password_recovery', $body)) {
+		El staff de <strong>' . $tsCore->settings['titulo'] . '</strong>';
+
+		if (!$tsEmail->send($email, 'password_recovery', $body)) {
 			echo '0: Hubo un error al intentar procesar lo solicitado';
 		}
-		echo '1: Las intrucciones para recuperar su contrase&ntilde;a de <b>'.$tsCore->settings['titulo'].'</b> a <b>'.$email.'</b>, si no aparece el e-mail en su bandeja de entrar, revise en correo no deseado porque puede haberse filtrado...';
-		// -->
-	break;
-	case 'recover-validation':
-		if((int)$tsData['user_activo'] === 1) echo '0: La cuenta ya se encuentra activada';
+		echo '1: Las intrucciones para recuperar su contrase&ntilde;a de <b>' . $tsCore->settings['titulo'] . '</b> a <b>' . $email . '</b>, si no aparece el e-mail en su bandeja de entrar, revise en correo no deseado porque puede haberse filtrado...';
+	})(),
+	'recover-validation' => (static function() use ($tsData, $hash, $uid, $time, $IP, $email, $tsCore, $tsEmail, $Routes) {
+		if ((int)$tsData['user_activo'] === 1) echo '0: La cuenta ya se encuentra activada';
 		$pinHash = password_hash($hash, PASSWORD_DEFAULT);
 		DB::insert('w_activate', ['user_id' => $uid, 'user_email' => $tsData['user_email'], 'code_hash' => $pinHash, 'expire_at' => $time, 'type' => 'validation', 'used' => 0, 'ip' => $IP]);
 
@@ -70,7 +68,7 @@ switch($action){
 				<p>Antes de empezar a interactuar con la comunidad, te recomendamos que visites el <a target="_blank" href="{$Routes->route('url')}/pages/protocolo/">Protocolo</a> del sitio.</p>
 				<p>Esperamos que disfrutes enormemente tu visita.</p>
 				<p>&iexcl;Te damos la bienvenida a Muchas gracias!</p>
-				<p>Staff de $title.</p>		
+				<p>Staff de $title.</p>
 				<div style="border-top:#CCC solid 1px;padding:10px 0">
 					<span style="color:#666;font-size:11px">
 						<center>El staff de <strong>$title</strong></center>
@@ -79,15 +77,11 @@ switch($action){
 			</div>
 		</div>
 		ACTIVE;
-		
-		// <--
-		if(!$tsEmail->send($email, 'activate', $body)) {
+
+		if (!$tsEmail->send($email, 'activate', $body)) {
 			echo '0: Hubo un error al intentar procesar lo solicitado';
 		}
-		echo '1: Hemos enviado un correo a <b>'.$email.'</b> con los últimos pasos para finalizar con el registro.<br><br>Si en los próximos minutos no lo encuentras en tu bandeja de entrada, por favor, revisa tu carpeta de correo no deseado, es posible que se haya filtrado.<br><br>&iexcl;Muchas gracias!';
-		// -->
-	break;
-	default:
-		echo '0: Este archivo no existe.';
-	break;
-}
+		echo '1: Hemos enviado un correo a <b>' . $email . '</b> con los últimos pasos para finalizar con el registro.<br><br>Si en los próximos minutos no lo encuentras en tu bandeja de entrada, por favor, revisa tu carpeta de correo no deseado, es posible que se haya filtrado.<br><br>&iexcl;Muchas gracias!';
+	})(),
+	default => print '0: Este archivo no existe.',
+};

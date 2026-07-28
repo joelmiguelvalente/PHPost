@@ -33,14 +33,11 @@ if(!$tsLevelMsg) {
 }
 
 // CLASE
-require_once TS_CLASS . '/c.dbmanager.php';
-$DBManager = new tsDBManager();
+$DBManager = Container::get(tsDBManager::class);
 
 $flash = null;
 
 // CODIGO
-switch($action) {
-   case 'dbmanager-delete_backup':
-      echo $DBManager->deleteBackup(); 
-   break;
-}
+match($action) {
+	'dbmanager-delete_backup' => print $DBManager->deleteBackup(),
+};
