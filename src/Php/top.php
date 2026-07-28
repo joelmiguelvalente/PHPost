@@ -19,9 +19,7 @@ $ctx = Controller::init('tops', 'everybody');
 
 if($ctx->continue()) {
 
-	// CLASE TOPS
-	require_once TS_CLASS . "/c.tops.php";
-	$tsTops = new tsTops($tsCore);
+	$tsTops = Container::get(tsTops::class);
 	//
 	$fecha = (int)($_GET['fecha'] ?? 0);
 	$cat = (int)($_GET['cat'] ?? 0);
@@ -30,25 +28,25 @@ if($ctx->continue()) {
 	$smarty->assign("tsCat",$cat);
 	$smarty->assign("tsAction",$action);
 
-	switch($action){
-		case 'posts':
+	$boxes = match($action) {
+		'posts' => (function() use ($smarty, $tsTops, $fecha, $cat) {
 			$smarty->assign("tsTops", $tsTops->getTopPosts($fecha, $cat));
-			$boxes = [
+			return [
 				'puntos' 	=> ['txt' => 'puntos', 'count' => 'post_puntos', 'icon' => 'puntos'],
 				'favoritos' => ['txt' => 'favoritos', 'count' => 'post_favoritos', 'icon' => 'favoritos'],
 				'comments'  => ['txt' => 'comentado', 'count' => 'post_comments', 'icon' => 'comentarios'],
 				'seguidores'  => ['txt' => 'seguidores', 'count' => 'post_seguidores', 'icon' => 'follow']
 			];
-		break;
-		case 'usuarios':
+		})(),
+		'usuarios' => (function() use ($smarty, $tsTops, $fecha, $cat) {
 			$smarty->assign("tsTops", $tsTops->getTopUsers($fecha, $cat));
-			$boxes = [
+			return [
 				'puntos' 	=> ['txt' => 'puntos', 'icon' => 'puntos'],
 				'seguidores' => ['txt' => 'seguidores', 'icon' => 'follow'],
 				'medallas'  => ['txt' => 'medallas', 'icon' => 'medallas']
 			];
-		break;
-	}
+		})(),
+	};
 	$smarty->assign("tsBoxes", $boxes);
 }
 

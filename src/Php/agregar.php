@@ -27,14 +27,11 @@ if($ctx->continue()) {
 	$action = trim($_GET['action'] ?? '');
 
 	if($action === 'editar' || isset($_POST['title'])) {
-		// CLASE
-		require_once TS_CLASS . "/c.agregar.php";
-		$tsAgregar = new tsAgregar($tsCore, $tsUser);
+		$tsAgregar = Container::get(tsAgregar::class);
 	}
 
 	if(is_numeric($action)) {
-		require_once TS_CLASS . "/c.borradores.php";
-		$tsBorradores = new tsBorradores($tsCore, $tsUser);
+		$tsBorradores = Container::get(tsBorradores::class);
 		$tsBorrador = $tsBorradores->getDraft();
 		$smarty->assign("tsDraft", $tsBorrador);
 		//

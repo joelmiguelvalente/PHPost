@@ -380,45 +380,45 @@ if($ctx->continue()) {
 				$smarty->assign("tsPrivacidad", $tsPrivacidad);
 				$smarty->assign("tsContenido", $tsContenido);
 			}
-			switch($type){
-				case 5:
+				match($type){
+				5 => (function() use ($smarty, $tsUserAdmin, $userID, $tsCore) {
 					if(!empty($_POST['save'])) {
 						$update = $tsUserAdmin->setUserPrivacidad($userID);
 						if($update === 'OK') $tsCore->redirectTo('/admin/users?act=show&uid='.$userID.'&save=true');
 						else $smarty->assign("tsError", $update);
 					}
-				break;
-				case 6:
+				})(),
+				6 => (function() use ($smarty, $tsUserAdmin, $userID, $tsCore) {
 					if(!empty($_POST['save'])) {
 						$delete = $tsUserAdmin->deleteContent($userID);
 						if($delete === 'OK') $tsCore->redirectTo('/admin/users?act=show&uid='.$userID.'&save=true');
 						else $smarty->assign("tsError", $delete);
 					}
-				break;
-				case 7: // Rango
+				})(),
+				7 => (function() use ($smarty, $tsAdmin, $tsUserAdmin, $userID, $tsCore) {
 					if(!empty($_POST['save'])) {
 						$update = $tsAdmin->setUserRango($userID);
 						if($update === 'OK') $tsCore->redirectTo('/admin/users?act=show&uid='.$userID.'&save=true');
 						else $smarty->assign("tsError", $update);
 					}
 					$smarty->assign("tsUserR", $tsUserAdmin->getUserRango($userID));
-				break;
-				case 8: // Firma
+				})(),
+				8 => (function() use ($smarty, $tsUserAdmin, $userID, $tsCore) {
 					if(!empty($_POST['save'])){
 						$update = $tsUserAdmin->setUserFirma($userID);
 						if($update === 'OK') $tsCore->redirectTo('/admin/users?act=show&uid='.$userID.'&save=true');
 						else $smarty->assign("tsError", $update);
 					}
 					$smarty->assign("tsUserF", $tsUserAdmin->getUserData());
-				break;
-				default:
+				})(),
+				default => (function() use ($smarty, $tsUserAdmin, $userID, $tsCore) {
 					if(!empty($_POST['user_name'])) {
 						$update = $tsUserAdmin->setUserData();
 						if($update === 'OK') $tsCore->redirectTo('/admin/users?act=show&uid='.$userID.'&save=true');
 						else $smarty->assign("tsError", $update);
 					}
 					$smarty->assign("tsUserD", $tsUserAdmin->getUserData());
-				break;
+				})(),
 			}
 			// TIPO
 			$smarty->assign("tsType", $type);

@@ -29,17 +29,10 @@ if($ctx->continue()) {
 	};
 	$second = ($action === '') ? $unread : '';
 
-	switch($action) {
-		case '':
-		case 'enviados':
-		case 'respondidos':
-		case 'search':
-			$smarty->assign("tsMensajes",$tsMensajes->getMensajes($first, $second));
-		break;
-		case 'leer':
-			$smarty->assign("tsMensajes",$tsMensajes->readMensaje());
-		break;
-		case 'avisos':
+	match($action) {
+		'', 'enviados', 'respondidos', 'search' => $smarty->assign("tsMensajes",$tsMensajes->getMensajes($first, $second)),
+		'leer' => $smarty->assign("tsMensajes",$tsMensajes->readMensaje()),
+		'avisos' => (function() use ($smarty, $tsMonitor, $tsCore) {
 			$aid = (int)($_GET['aid'] ?? 0);
 			$did = (int)($_GET['did'] ?? 0);
 			if($aid === 0 && $did === 0) {
@@ -51,8 +44,8 @@ if($ctx->continue()) {
 					$tsCore->redirectTo($tsCore->settings['url'].'/mensajes/avisos/');
 				}
 			}
-		break;
-	}
+		})(),
+	};
 	# VARIABLE
 	$smarty->assign("tsQT", $unread);
 	$smarty->assign("tsAction",$action);

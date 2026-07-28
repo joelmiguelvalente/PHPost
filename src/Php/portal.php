@@ -25,7 +25,7 @@ if($ctx->continue()) {
     if(!empty($_GET['ref'])) $tsAfiliado->urlIn();
 
     $smarty->assign("tsMuro",$tsPortal->getNews());
-    $smarty->assign("tsInfo",array('uid' => $tsUser->uid));
+    $smarty->assign("tsInfo",['uid' => $tsUser->uid]);
     $smarty->assign("tsType", "news");
     //
     $smarty->assign("tsCategories",$tsPortal->composeCategories());
