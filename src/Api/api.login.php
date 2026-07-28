@@ -35,36 +35,27 @@ if(!$tsLevelMsg) {
 }
 
 // CODIGO
-switch($action){
-	case 'login-user':
+match($action) {
+	'login-user' => (static function() use ($tsUser) {
 		$username = Html::escape($_POST['username']);
-		// La contraseña no se sanitiza! aprendido :D
 		$password = (string) ($_POST['password'] ?? '');
 		$remember = ((string)$_POST['remember'] === 'true');
-		//
-		if(empty($username) || empty($password)) echo '0: Faltan datos';
+		if (empty($username) || empty($password)) echo '0: Faltan datos';
 		else echo $tsUser->loginUser($username, $password, $remember, null);
-	break;
-	case 'login-activar':
-		//<--
-			$activar = $tsUser->userActivate();
-			if($activar['user_password'])
-				$tsUser->loginUser($activar['user_nick'], $activar['user_password'], true, $tsCore->settings['url'].'/cuenta/');
-			else {
-				$tsPage = "aviso";
-				$tsAjax = 0;
-				$tsAviso = [
-					'titulo' => 'Error al activar tu cuenta',
-					'mensaje' => 'El código de validación es incorrecto.'
-				];
-				//
-				$smarty->assign("tsAviso",$tsAviso);
-			}
-		//-->
-	break;
-	case 'login-salir':
-		//<---
-		$tsUser->logoutUser((int)$tsUser->uid, $tsCore->settings['url']);
-		//--->
-	break;
-}
+	})(),
+	'login-activar' => (static function() use ($tsUser, $tsCore, $smarty, &$tsPage, &$tsAjax) {
+		$activar = $tsUser->userActivate();
+		if ($activar['user_password'])
+			$tsUser->loginUser($activar['user_nick'], $activar['user_password'], true, $tsCore->settings['url'] . '/cuenta/');
+		else {
+			$tsPage = "aviso";
+			$tsAjax = 0;
+			$tsAviso = [
+				'titulo' => 'Error al activar tu cuenta',
+				'mensaje' => 'El código de validación es incorrecto.',
+			];
+			$smarty->assign("tsAviso", $tsAviso);
+		}
+	})(),
+	'login-salir' => $tsUser->logoutUser((int)$tsUser->uid, $tsCore->settings['url']),
+};

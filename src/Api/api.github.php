@@ -29,47 +29,47 @@ if (!$tsLevelMsg) {
    die();
 }
 
-switch ($action) {
-   case 'github-commit':
-      $branch = rawurlencode(trim($_GET['branch'] ?? 'php-8-migration'));
-      $url    = "https://api.github.com/repos/joelmiguelvalente/PHPost/commits/{$branch}";
+match($action) {
+	'github-commit' => (static function() {
+		$branch = rawurlencode(trim($_GET['branch'] ?? 'php-8-migration'));
+		$url    = "https://api.github.com/repos/joelmiguelvalente/PHPost/commits/{$branch}";
 
-      $context = stream_context_create([
-         'http' => [
-            'method' => 'GET',
-            'header' => [
-               'User-Agent: PHPostApp',
-               'Accept: application/vnd.github.v3+json',
-            ],
-            'timeout' => 5,
-         ]
-      ]);
+		$context = stream_context_create([
+			'http' => [
+				'method' => 'GET',
+				'header' => [
+					'User-Agent: PHPostApp',
+					'Accept: application/vnd.github.v3+json',
+				],
+				'timeout' => 5,
+			]
+		]);
 
-      $response = @file_get_contents($url, false, $context);
+		$response = @file_get_contents($url, false, $context);
 
-      if ($response === false) {
-         echo json_encode(['state' => 0, 'data' => 'No se pudo conectar con la API de GitHub']);
-         die();
-      }
+		if ($response === false) {
+			echo json_encode(['state' => 0, 'data' => 'No se pudo conectar con la API de GitHub']);
+			die();
+		}
 
-      $data = json_decode($response, true);
+		$data = json_decode($response, true);
 
-      if (empty($data) || isset($data['message'])) {
-         echo json_encode(['state' => 0, 'data' => 'Rama no encontrada o sin commits']);
-         die();
-      }
+		if (empty($data) || isset($data['message'])) {
+			echo json_encode(['state' => 0, 'data' => 'Rama no encontrada o sin commits']);
+			die();
+		}
 
-      echo json_encode([
-         'state' => 1,
-         'data'  => [
-            'sha'      => $data['sha'],
-            'html_url' => $data['html_url'],
-            'author'   => $data['commit']['author']['name'],
-            'message'  => $data['commit']['message'],
-            'date'     => $data['commit']['author']['date'],
-            'verified' => $data['commit']['verification']['verified'],
-            'reason'   => $data['commit']['verification']['reason'],
-         ]
-      ]);
-   break;
-}
+		echo json_encode([
+			'state' => 1,
+			'data'  => [
+				'sha'      => $data['sha'],
+				'html_url' => $data['html_url'],
+				'author'   => $data['commit']['author']['name'],
+				'message'  => $data['commit']['message'],
+				'date'     => $data['commit']['author']['date'],
+				'verified' => $data['commit']['verification']['verified'],
+				'reason'   => $data['commit']['verification']['reason'],
+			]
+		]);
+	})(),
+};

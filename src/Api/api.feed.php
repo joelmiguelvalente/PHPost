@@ -18,7 +18,7 @@ const ACTIONS = [
 $Response = Container::get(Response::class);
 
 if (!array_key_exists($action, ACTIONS)) {
-   $Response->text('AcciÛn inv·lida', 403);
+   $Response->text('Acci√≥n inv√°lida', 403);
 }
 
 $config = ACTIONS[$action];
@@ -47,33 +47,23 @@ $endpoint = file_get_contents("http://phpost-api.test/v1/scripts/phpost/{$type}"
 $Response->contentType('application/json');
 // CODIGO
 
-switch($action) {
-	case 'feed-support':
-	case 'feed-version':
-		// Al no existir el endpoint genera error 522!
-		//echo $endpoint;
-		if($action === 'feed-version') {
-			$version = Config::app('app.version');
-			$version_code = Config::app('app.version_code');
-			$time = time();
-			if($tsCore->settings['version'] !== $version) {
-				// Actualizamos version
-				DB::update('w_configuracion', [
-					'version' => $version,
-					'version_code' => $version_code
-				], 'phpost_id = :id', ['id' => 1]);
-				// Actualizamos fecha
-				DB::update('w_stats', [
-					'stats_time_upgrade' => $time
-				], 'stats_no = :id', ['id' => 1]);
-			}
+match($action) {
+	'feed-support', 'feed-version' => $action === 'feed-version' ? (static function() use ($tsCore) {
+		$version = Config::app('app.version');
+		$version_code = Config::app('app.version_code');
+		$time = time();
+		if ($tsCore->settings['version'] !== $version) {
+			DB::update('w_configuracion', [
+				'version' => $version,
+				'version_code' => $version_code,
+			], 'phpost_id = :id', ['id' => 1]);
+			DB::update('w_stats', [
+				'stats_time_upgrade' => $time,
+			], 'stats_no = :id', ['id' => 1]);
 		}
-		
-	break;
-	default:
-		$Response->json([
+	})() : null,
+	default => $Response->json([
          'error' => true,
-         'message' => 'Endpoint inv·lido'
-      ], 404);
-   break;
-}
+         'message' => 'Endpoint inv√°lido'
+	], 404);
+};

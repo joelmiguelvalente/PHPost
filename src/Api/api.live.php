@@ -16,7 +16,7 @@ const ACTIONS = [
 
 if (!array_key_exists($action, ACTIONS)) {
    http_response_code(403);
-   exit('Acción inválida');
+   exit('AcciÃ³n invÃ¡lida');
 }
 
 $config = ACTIONS[$action];
@@ -32,20 +32,16 @@ if (!$tsLevelMsg) {
 }
 
 // CODIGO
-switch($action) {
-	case 'live-stream':
-		// NOTIFICACIONES
-		if($_POST['nots'] !== 'OFF') {
+match($action) {
+	'live-stream' => (static function() use ($tsMonitor, $tsMensajes, $smarty) {
+		if ($_POST['nots'] !== 'OFF') {
 			$tsStream = $tsMonitor->getNotificaciones(true);
 			$smarty->assign("tsStream", $tsStream);
 		}
-		// MENSAJES
-		if($_POST['mps'] !== 'OFF') {
+		if ($_POST['mps'] !== 'OFF') {
 			$tsMensajes = $tsMensajes->getMensajes(1, true, 'live');
-			$smarty->assign("tsMensajes", $tsMensajes);   
+			$smarty->assign("tsMensajes", $tsMensajes);
 		}
-	break;
-	default:
-		die('0: Este archivo no existe.');
-	break;
-}
+	})(),
+	default => die('0: Este archivo no existe.'),
+};

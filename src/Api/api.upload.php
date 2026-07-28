@@ -18,7 +18,7 @@ const ACTIONS = [
 
 if (!array_key_exists($action, ACTIONS)) {
 	http_response_code(403);
-	exit('Acci�n inv�lida');
+	exit('Acción inválida');
 }
 
 $config = ACTIONS[$action];
@@ -38,18 +38,16 @@ if(!$tsLevelMsg) {
 $tsUpload = Container::get(tsUpload::class);
 
 // CODIGO
-switch($action){
-	case 'upload-avatar':
+match($action) {
+	'upload-avatar' => (static function() use ($tsUpload) {
 		$file = $_FILES['file'] ?? null;
 		$url  = $_POST['url'] ?? null;
 		$result = $tsUpload->uploadTempImage($file, $url);
 		echo json_encode($result);
-	break;
-	case 'upload-crop':
+	})(),
+	'upload-crop' => (static function() use ($tsUpload, $tsUser) {
 		echo json_encode($tsUpload->cropAvatarWebp((int)$tsUser->uid));
 		DB::update('u_perfil', ['p_avatar' => 1], 'user_id = :uid', ['uid' => $tsUser->uid]);
-	break;
-	case 'upload-images':
-		echo json_encode(['error' => 'No implementado']);
-	break;
-}
+	})(),
+	'upload-images' => print json_encode(['error' => 'No implementado']),
+};
