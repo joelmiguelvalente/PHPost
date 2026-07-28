@@ -100,8 +100,8 @@ if (
     }
 }
 
-switch($Step->current()) {
-    case 'bienvenida':
+match($Step->current()) {
+    'bienvenida' => (function() use ($CsrfToken, $Step) {
         $license = file_get_contents(LICENSE) ?: 'Licencia no encontrada.';
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['license'])) {
@@ -110,8 +110,8 @@ switch($Step->current()) {
             header('Location: ' . $Step->nextUrl());
             exit;
         }
-    break;
-    case 'permisos':
+    })(),
+    'permisos' => (function() use ($CsrfToken, $Step, &$errors) {
         if (empty($_SESSION['LICENSE_ACCEPTED'])) {
             header('Location: index.php');
             exit;
@@ -180,8 +180,8 @@ switch($Step->current()) {
             header("Location: ./" . $Step->nextUrl());
             die;
         }
-    break;
-    case 'base_de_datos':
+    })(),
+    'base_de_datos' => (function() use ($CsrfToken, $Step, $DB, &$errors) {
         if (empty($_SESSION['LICENSE_ACCEPTED'])) {
             header('Location: index.php');
             exit;
@@ -220,7 +220,7 @@ switch($Step->current()) {
                         // Conectar a la base de datos
                         if (!$DB->connect()) {
                             $error = 'No se pudo conectar a la base de datos.';
-                            break;
+                            return;
                         }
 
                         try {
@@ -274,8 +274,8 @@ switch($Step->current()) {
                 }
             }
         }
-    break;
-    case 'datos_phpmailer':
+    })(),
+    'datos_phpmailer' => (function() use ($CsrfToken, $Step, &$errors) {
         if (empty($_SESSION['LICENSE_ACCEPTED'])) {
             $CsrfToken->regenerate();
             header('Location: index.php');
@@ -294,7 +294,7 @@ switch($Step->current()) {
             $filename = ABSPATH . "/config/{$configFile}";
             if (!file_exists($filename)) {
                 $error = 'Archivo de configuración no encontrado.';
-                break;
+                return;
             }
             $content = file_get_contents($filename);
             $replace = str_replace(['smtphost', 'smtpuser', 'smtppass', 'smtpfrom'], $default, $content);
@@ -307,8 +307,8 @@ switch($Step->current()) {
                 $error = 'No se pudo guardar la configuración. Verifica permisos.';
             }
         }
-    break;
-    case 'datos_sitio':
+    })(),
+    'datos_sitio' => (function() use ($CsrfToken, $Step, $DB, &$errors) {
         if (empty($_SESSION['LICENSE_ACCEPTED'])) {
             header('Location: index.php');
             exit;
@@ -316,7 +316,7 @@ switch($Step->current()) {
 
         if (!$DB || !$DB->isConnected()) {
             $errors[] = 'No hay conexión a la base de datos.';
-            break;
+            return;
         }
 
         $required = ['titulo', 'slogan', 'url', 'email'];
@@ -342,7 +342,7 @@ switch($Step->current()) {
                     $admin = $DB->selectOne('u_miembros', 'user_id', ['user_rango' => 1]);
                     if ($admin) {
                         $errors[] = 'Ya existe un usuario administrador configurado.';
-                        break;
+                        return;
                     }
                     $time = time();
                     // Iniciar transacción
@@ -396,8 +396,8 @@ switch($Step->current()) {
                 }
             }
         }
-    break;
-    case 'datos_admin':
+    })(),
+    'datos_admin' => (function() use ($CsrfToken, $Step, $DB, &$errors) {
         if (empty($_SESSION['LICENSE_ACCEPTED'])) {
             header('Location: index.php');
             exit;
@@ -405,7 +405,7 @@ switch($Step->current()) {
 
         if (!$DB || !$DB->isConnected()) {
             $errors[] = 'No hay conexión a la base de datos.';
-            break;
+            return;
         }
 
         $default = sanitizeInput(['nickname', 'email', 'password', 'confirm_password']);
@@ -444,7 +444,7 @@ switch($Step->current()) {
                     $admin = $DB->selectOne('u_miembros', '1', ['user_rango' => 1]);
                     if ($admin) {
                         $errors[] = 'Ya existe un administrador registrado.';
-                        break;
+                        return;
                     }
 
                     $DB->beginTransaction();
@@ -507,8 +507,8 @@ switch($Step->current()) {
                 }
             }
         }
-    break;
-    case 'finalizar':
+    })(),
+    'finalizar' => (function() use ($Step, $DB, &$errors) {
         if (empty($_SESSION['LICENSE_ACCEPTED'])) {
             header('Location: index.php');
             exit;
@@ -516,7 +516,7 @@ switch($Step->current()) {
 
         if (!$DB || !$DB->isConnected()) {
             $errors[] = 'No hay conexión a la base de datos.';
-            break;
+            return;
         }
 
         $datos = $DB->selectOne('w_configuracion', 'titulo, url', ['phpost_id' => 1]);
@@ -543,7 +543,7 @@ switch($Step->current()) {
                 exit;
             }
         }
-    break;
+    })(),
 }
 
 // Generar token CSRF para el formulario

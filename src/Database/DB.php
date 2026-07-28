@@ -23,24 +23,27 @@ final class DB {
 	}
 
 	public static function fetchAll(string $sql, array $params = []): array {
-		$stmt = self::db()->preparedQuery($sql, $params);
-		return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+		return self::db()->preparedFetchAll($sql, $params);
 	}
 
 	public static function fetchRow(string $sql, array $params = []): ?array {
 		$stmt = self::db()->preparedQuery($sql, $params);
-		return $stmt->get_result()->fetch_row() ?: null;
+		$row = $stmt->fetch(PDO::FETCH_NUM) ?: null;
+		$stmt->closeCursor();
+		return $row;
 	}
 
 	// Sección: Query --------------------------------------------------
 
-	public static function query(string $sql, array $params = []): mysqli_stmt {
+	public static function query(string $sql, array $params = []): PDOStatement {
 		return self::db()->preparedQuery($sql, $params);
 	}
 
 	public static function numRows(string $sql, array $params = []): int {
 		$stmt = self::db()->preparedQuery($sql, $params);
-		return $stmt->get_result()->num_rows;
+		$count = $stmt->rowCount();
+		$stmt->closeCursor();
+		return $count;
 	}
 
 	/**
@@ -103,7 +106,9 @@ final class DB {
 		}
 		$params += $whereParams;
 		$stmt = self::query($sql, $params);
-		return $stmt->affected_rows;
+		$count = $stmt->rowCount();
+		$stmt->closeCursor();
+		return $count;
 	}
 
 	/**
@@ -113,8 +118,11 @@ final class DB {
 	public static function delete(string $table, string $where, array $params = []): int {
 		$sql = "DELETE FROM {$table} WHERE {$where}";
 		$stmt = self::query($sql, $params);
-		return $stmt->affected_rows;
+		$count = $stmt->rowCount();
+		$stmt->closeCursor();
+		return $count;
 	}
+
 	/**
 	 * UPSERT - Inserta o actualiza si existe
 	 * USO:
@@ -130,7 +138,6 @@ final class DB {
 		$columns = array_keys($data);
 		$fields = implode(', ', $columns);
 		$placeholders = ':' . implode(', :', $columns);
-		// Construir la parte de UPDATE
 		$updates = [];
 		foreach (array_diff($columns, $uniqueColumns) as $column) {
 			$updates[] = "{$column} = VALUES({$column})";
@@ -138,15 +145,17 @@ final class DB {
 		$updateClause = !empty($updates) ? ' ON DUPLICATE KEY UPDATE ' . implode(', ', $updates) : '';
 		$sql = "INSERT INTO {$table} ({$fields}) VALUES ({$placeholders}){$updateClause}";
 		$stmt = self::query($sql, $data);
-		return $stmt->affected_rows;
+		$count = $stmt->rowCount();
+		$stmt->closeCursor();
+		return $count;
 	}
 
 	/**
 	 * Consulta raw con parámetros
 	 * USO:
-	 * DB::raw("SELECT * FROM users WHERE id = ? AND status = ?", [$id, $status]);
+	 * DB::raw("SELECT * FROM users WHERE id = :id AND status = :status", ['id' => $id, 'status' => $status]);
 	*/
-	public static function raw(string $sql, array $params = []): mysqli_stmt {
+	public static function raw(string $sql, array $params = []): PDOStatement {
 		return self::query($sql, $params);
 	}
 
@@ -161,7 +170,7 @@ final class DB {
 	}
 
 	/**
-	 * Incrementa un contador numérico en cualquier tabla
+	 * Decrementa un contador numérico en cualquier tabla
 	 * USO:
 	 * DB::decrement('w_stats', 'stats_comments', 'stats_no = :stats_no', ['stats_no' => 1]);
 	 */
@@ -186,8 +195,8 @@ final class DB {
 
 	// Sección: Low level --------------------------------------------------
 
-	public static function free(mysqli_result $result): void {
-		$result->free();
+	public static function free(PDOStatement $result): void {
+		$result->closeCursor();
 	}
 
 	// Sección: Transactions --------------------------------------------------

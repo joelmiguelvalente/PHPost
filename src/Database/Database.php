@@ -13,12 +13,17 @@ defined('TS_HEADER') || exit('No se permite el acceso directo al script.');
 final class Database {
 
 	private static ?self $instance = null;
-	private mysqli $connection;
+	private PDO $connection;
+	private int $transactionLevel = 0;
 
 	private const INTERNAL_CLASSES = [
 	   Database::class,
 	   DB::class
 	];
+
+	private const RECOVERABLE_ERRORS = [2006, 2013];
+
+	private const SLOW_QUERY_THRESHOLD_MS = 200;
 
 	private function __construct() {
 		$this->connect();
@@ -35,218 +40,216 @@ final class Database {
 	}
 
 	private function connect(): void {
-		mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+		$dsn = sprintf(
+			'mysql:host=%s;port=%d;dbname=%s;charset=%s',
+			Config::db('hostname'),
+			Config::db('port') ?? 3306,
+			Config::db('database'),
+			Config::db('charset') ?? 'utf8mb4'
+		);
+
+		$options = [
+			PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+			PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+			PDO::ATTR_EMULATE_PREPARES   => false,
+			PDO::ATTR_TIMEOUT            => Config::db('timeout') ?? 5,
+			PDO::ATTR_PERSISTENT         => (bool) (Config::db('persistent') ?? false),
+		];
+
+		if (!empty(Config::db('ssl.ca')) || !empty(Config::db('ssl.cert'))) {
+			$options[PDO::MYSQL_ATTR_SSL_KEY]  = Config::db('ssl.key') ?? null;
+			$options[PDO::MYSQL_ATTR_SSL_CERT] = Config::db('ssl.cert') ?? null;
+			$options[PDO::MYSQL_ATTR_SSL_CA]   = Config::db('ssl.ca') ?? null;
+		}
 
 		try {
-			$mysqli = mysqli_init();
-			$mysqli->options(
-	            MYSQLI_OPT_CONNECT_TIMEOUT,
-	            Config::db('timeout') ?? 5
-	        );
-			// SSL
-			if (!empty(Config::db('ssl.ca')) || !empty(Config::db('ssl.cert'))) {
-			    $mysqli->ssl_set(
-			        Config::db('ssl.key') ?? null,
-			        Config::db('ssl.cert') ?? null,
-			        Config::db('ssl.ca') ?? null,
-			        null,
-			        null
-			    );
-			}
-			$mysqli->real_connect(
-				Config::db('hostname'),
-				Config::db('username'),
-				Config::db('password'),
-				Config::db('database'),
-				Config::db('port') ?? 3306,
-				Config::db('socket')
-			);
-			$mysqli->set_charset(Config::db('charset') ?? 'utf8mb4');
-			$this->connection = $mysqli;
-		} catch (mysqli_sql_exception) {
+			$this->connection = new PDO($dsn, Config::db('username'), Config::db('password'), $options);
+		} catch (PDOException $e) {
+			error_log('[DB CONNECT ERROR] ' . $e->getMessage());
 			show_error('Error de conexión a la base de datos.', 'db');
 		}
 	}
 
 	// Sección: Named Prepared --------------------------------------------------
 
-	private function getParamType(mixed $value): string {
-	    return match (true) {
-	        is_int($value)   => 'i',
-	        is_float($value) => 'd',
-	        default          => 's',
-	    };
+	public function preparedQuery(string $sql, array $params = []): PDOStatement {
+		return $this->executeQuery($sql, $params);
 	}
 
-	public function preparedQuery(string $sql, array $params = []): mysqli_stmt {
+	private function executeQuery(string $sql, array $params, bool $isRetry = false): PDOStatement {
+		$start = hrtime(true);
+
 		try {
-			$types = '';
-			$values = [];
-			$usedParams = [];
-
-			$sql = preg_replace_callback('/:([a-zA-Z0-9_]+)/',
-				function ($match) use ($params, &$types, &$values, &$usedParams) {
-					$key = $match[1];
-					if (!array_key_exists($key, $params)) {
-						throw new InvalidArgumentException("Missing parameter: $key");
-					}
-					$value = $params[$key];
-					$usedParams[] = $key;
-					$types .= $this->getParamType($value);
-					$values[] = $value;
-					return '?';
-				},
-				$sql
-			);
-
-			// Validar params extra
-			$extra = array_diff(array_keys($params), $usedParams);
-			if ($extra) {
-				throw new InvalidArgumentException('Unused parameters: ' . implode(', ', $extra));
-			}
 			$stmt = $this->connection->prepare($sql);
-			if ($values) {
-				$stmt->bind_param($types, ...$values);
-			}
-			$stmt->execute();
+			$stmt->execute($params);
+			$this->logSlowQuery($sql, $start);
+
 			return $stmt;
-		} catch (Throwable $e) {
-        	$this->handleException($e, $sql);
-        	throw $e;
-    	}
+		} catch (PDOException $e) {
+			if (!$isRetry && $this->isRecoverable($e)) {
+				$this->connect();
+				return $this->executeQuery($sql, $params, isRetry: true);
+			}
+
+			$this->handleException($e, $sql);
+			throw new DatabaseException('Error al ejecutar la consulta', previous: $e);
+		}
+	}
+
+	private function isRecoverable(PDOException $e): bool {
+		$code = (int) ($e->errorInfo[1] ?? 0);
+		return in_array($code, self::RECOVERABLE_ERRORS, true);
+	}
+
+	private function logSlowQuery(string $sql, int $start): void {
+		$elapsedMs = (hrtime(true) - $start) / 1_000_000;
+		if ($elapsedMs > self::SLOW_QUERY_THRESHOLD_MS) {
+			error_log(sprintf('[SLOW QUERY] %.2fms | %s', $elapsedMs, $sql));
+		}
 	}
 
 	// Sección: Raw Query --------------------------------------------------
 
-	public function rawQuery(string $sql): mysqli_result|bool {
+	public function rawQuery(string $sql): PDOStatement|bool {
 		try {
 			return $this->connection->query($sql);
-		} catch (mysqli_sql_exception $e) {
+		} catch (PDOException $e) {
 			error_log('[SQL ERROR] ' . $e->getMessage());
 			return false;
 		}
 	}
 
 	public function escape(string $value): string {
-		return $this->connection->real_escape_string($value);
+		return trim($this->connection->quote($value), "'");
 	}
 
 	public function insertId(): int {
-		return $this->connection->insert_id;
+		return (int) $this->connection->lastInsertId();
 	}
 
 	public function lastError(): array {
 		return [
-			'errno'    => $this->connection->errno,
-			'error'    => $this->connection->error,
-			'sqlstate' => $this->connection->sqlstate
+			'errno'    => (int) ($this->connection->errorInfo[1] ?? 0),
+			'error'    => $this->connection->errorInfo[2] ?? '',
+			'sqlstate' => $this->connection->errorInfo[0] ?? ''
 		];
 	}
 
 	// Sección: Modern Helpers --------------------------------------------------
 
-	public function prepare(string $sql): mysqli_stmt {
+	public function prepare(string $sql): PDOStatement {
 		return $this->connection->prepare($sql);
 	}
 
-	public function fetchAll(mysqli_result $result): array {
-		return $result->fetch_all(MYSQLI_ASSOC);
+	public function fetchAll(PDOStatement $stmt): array {
+		return $stmt->fetchAll();
 	}
 
-	public function fetch(mysqli_result $result): ?array {
-		return $result->fetch_assoc() ?: null;
+	public function fetch(PDOStatement $stmt): ?array {
+		return $stmt->fetch() ?: null;
 	}
 
-	public function fetchRow(mysqli_result $result): ?array {
-		return $result->fetch_row() ?: null;
+	public function fetchRow(PDOStatement $stmt): ?array {
+		return $stmt->fetch(PDO::FETCH_NUM) ?: null;
 	}
 
-	public function numRows(mysqli_result $result): int {
-		return $result->num_rows;
-	}
-
-	private function getCaller(): array {
-		$trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 15);
-		foreach ($trace as $frame) {
-	   		if (!isset($frame['file'])) {
-	         	continue;
-	      	}
-	    	// Ignorar cualquier llamada dentro de Database.php o DB.php
-	    	if (str_contains($frame['file'], 'Database.php') || str_contains($frame['file'], 'DB.php')) {
-	    		continue;
-	    	}
-	    	return [
-	    		'file' => $frame['file'],
-	    		'line' => $frame['line'] ?? null,
-	    		'function' => $frame['function'] ?? null,
-	    		'class' => $frame['class'] ?? null
-	    	];
-	    }
-
-	    return [];
+	public function numRows(PDOStatement $stmt): int {
+		return $stmt->rowCount();
 	}
 
 	// Sección: Prepared Fetch Helpers --------------------------------------------------
 
 	public function preparedFetch(string $sql, array $params = []): ?array {
 		$stmt = $this->preparedQuery($sql, $params);
-		$result = $this->safeGetResult($stmt)->fetch_assoc() ?: null;
-		$stmt->close();
-		return $result;
+		$row = $stmt->fetch() ?: null;
+		$stmt->closeCursor();
+		return $row;
 	}
 
 	public function preparedFetchAll(string $sql, array $params = []): array {
 		$stmt = $this->preparedQuery($sql, $params);
-		$result = $this->safeGetResult($stmt)->fetch_all(MYSQLI_ASSOC);
-		$stmt->close();
-		return $result;
-	}
-
-	private function safeGetResult(mysqli_stmt $stmt): mysqli_result {
-		$result = $stmt->get_result();
-
-		if (!$result) {
-			throw new RuntimeException(
-				'mysqlnd is required for get_result()'
-			);
-		}
-
+		$result = $stmt->fetchAll();
+		$stmt->closeCursor();
 		return $result;
 	}
 
 	// Sección: Transactions --------------------------------------------------
 
 	public function beginTransaction(): void {
-		$this->connection->begin_transaction();
+		if ($this->transactionLevel === 0) {
+			$this->connection->beginTransaction();
+		} else {
+			$this->connection->exec("SAVEPOINT level_{$this->transactionLevel}");
+		}
+		$this->transactionLevel++;
 	}
 
 	public function commit(): void {
-		$this->connection->commit();
+		$this->transactionLevel--;
+		if ($this->transactionLevel === 0) {
+			$this->connection->commit();
+		} else {
+			$this->connection->exec("RELEASE SAVEPOINT level_{$this->transactionLevel}");
+		}
 	}
 
 	public function rollback(): void {
-		$this->connection->rollback();
+		$this->transactionLevel--;
+		if ($this->transactionLevel === 0) {
+			$this->connection->rollBack();
+		} else {
+			$this->connection->exec("ROLLBACK TO SAVEPOINT level_{$this->transactionLevel}");
+		}
 	}
 
 	// Sección: Low Level --------------------------------------------------
 
-	public function connection(): mysqli {
+	public function connection(): PDO {
 		return $this->connection;
 	}
 
 	private function handleException(Throwable $e, string $query): void {
-	   	global $tsUser, $tsAjax;
+		global $tsUser, $tsAjax;
 
-	   	$caller = $this->getCaller();
+		$caller = $this->getCaller();
 
-	   	if (!$tsAjax && Config::app('debug.active') && $tsUser->is_admod) {
-	     	show_error('Error en consulta SQL.', 'db', [
-	     		'file'  => $caller['file'],
-	     		'line'  => $caller['line'],
-	     		'query' => $query,
-	     		'error' => $e->getMessage()
-	     	]);
-	   	}
+		error_log(sprintf(
+			'[SQL ERROR] %s | file=%s line=%s | query=%s',
+			$e->getMessage(),
+			$caller['file'] ?? 'unknown',
+			$caller['line'] ?? '?',
+			$query
+		));
+
+		if (!$tsAjax && Config::app('debug.active') && $tsUser->is_admod) {
+			show_error('Error en consulta SQL.', 'db', [
+				'file'  => $caller['file'],
+				'line'  => $caller['line'],
+				'query' => $query,
+				'error' => $e->getMessage()
+			]);
+		}
+	}
+
+	private function getCaller(): array {
+		$trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 15);
+		foreach ($trace as $frame) {
+			if (isset($frame['class']) && in_array($frame['class'], self::INTERNAL_CLASSES, true)) {
+				continue;
+			}
+			if (!isset($frame['file'])) {
+				continue;
+			}
+			return [
+				'file' => $frame['file'],
+				'line' => $frame['line'] ?? null,
+				'function' => $frame['function'] ?? null,
+				'class' => $frame['class'] ?? null,
+			];
+		}
+		return [];
 	}
 
 }
+
+final class DatabaseException extends \RuntimeException {}

@@ -9,7 +9,7 @@ declare(strict_types=1);
  * @copyright  2026
 */
 
-class Connection {
+final class Connection {
 
     private array $dbConfig = [];
 
