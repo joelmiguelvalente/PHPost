@@ -21,7 +21,8 @@ if ($tsUser->is_admod !== 1) {
    header('Location: ../'); 
    exit; 
 }
-require_once TS_UTILS . '/Generator.php';
+
+require_once TS_MISC . '/Generator.php';
 
 // ─── Detectar themes disponibles ─────────────────────────────────────────────
 $themesDir    = TS_THEMES;

@@ -2,7 +2,7 @@
 
 ## Versiones compatibles
 
-PHPost v3.9.9 es compatible con PHP 8.5+ (PHP 8.4.13 y 8.5.0 soportados) y Smarty 5.8.2+.
+PHPost v3.9.10 es compatible con PHP 8.5+ (PHP 8.4.13 y 8.5.0 soportados) y Smarty 5.8.2+.
 
 | Versión | Tipo | Soportado |
 | ------- | ---- | --------- |
